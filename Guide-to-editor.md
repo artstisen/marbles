@@ -2,11 +2,13 @@
 
 
 ## Primary shortcuts
+
 ```CTRL+S ``` .............. Save
 ```CTRL+Q ``` .............. Save and close editor
 ```Esc``` ................. Deselect/Close editor
     
 ## Compound keyboard shortcuts
+
 ```CTRL+K``` .............. Repeat last shortcut
 ```CTRL+W``` .............. Shortcuts mode
 ```W``` .............. Sustain (lock) shortcuts mode
@@ -27,6 +29,7 @@
 ```J``` .............. Paste (copy all)
          
 ## String Memory (limit: 64 strings)
+
  ```C``` .............. Copy line/selection
  ```X``` .............. Cut line/selection
  ```V``` .............. Paste current memory string
@@ -37,6 +40,7 @@
  ```E``` .............. Clear string memory
          
 ## Standard shortcuts for document navigation
+
 ```CTRL+O``` .............. Make selection
 ```CTRL+L``` .............. Move cursor to next word
 ```CTRL+N``` .............. Move cursor to previous word
@@ -48,6 +52,7 @@
                ```A``` .... Move cursor to document end
                    
 ## Basic editing
+
 ```Backspace``` ........... Delete left (1 character space/selection)
 ```Delete``` .............. Delete right (1 character space/selection)
 ```Tab``` ................. Insert blank space x 4
