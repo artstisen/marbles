@@ -1,5 +1,7 @@
 # Editor Keyboard Functions
 
+Due to the difference between terminal applications and their tradition for defaulting to specific keyboard shortcuts for intrinsic functionality, compound keyboard shortcuts are provided for many operations within Marbles.
+The default compound shortcut is ```CTRL+W```. The ```W``` key can be changed to a character of your own choosing from the main menu. A typical compound keyboard shortcut is ```CTRL+W+Z``` (undo). You can repeat the last compound shortcut by pressing ```CTRL+K``` to speed up the action.
 
 ## Primary shortcuts
 
@@ -11,7 +13,7 @@
 ## Compound keyboard shortcuts
 
 - Repeat last shortcut ```CTRL+K```
-- Shortcuts mode ```CTRL+W``` +
+- Press ```CTRL+W``` +
   - Sustain (lock) shortcuts mode ```W```
   - Exit shortcuts mode ```Esc```
   - Undo (500 steps) ```Z``` 
