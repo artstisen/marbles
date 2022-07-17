@@ -10,9 +10,9 @@
     
 ## Compound keyboard shortcuts
 
-```CTRL+K``` .............. Repeat last shortcut
-```CTRL+W``` .............. Shortcuts mode
-```W``` .............. Sustain (lock) shortcuts mode
+- Repeat last shortcut ```CTRL+K```
+- Shortcuts mode ```CTRL+W```
+- Sustain (lock) shortcuts mode ```W```
 ```Esc``` ............ Exit shortcuts mode
 ```Z``` .............. Undo (500 steps)
 ```Y``` .............. Redo (250 steps)
