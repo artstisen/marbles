@@ -7,7 +7,7 @@ Search results can be sorted by date changed, date created and alphabetically by
 
 ### Favorites ```F```
 Collect your favorite entries in the favorites list (sorted by Date changed).
-Pin entries to the top of the favorites list (Press ```P```) and arrange them in the order you like (Press ```Tab```)
+Pin entries to the top of the favorites list (Press ```P```) and arrange them in the order you like (Press ```Tab```).
 Colorize pinned entries to highlight them (Press ```CTRL+W, 1-3```)
 
 ### Top 20 ```T```
