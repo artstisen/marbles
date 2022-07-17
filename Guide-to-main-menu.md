@@ -25,16 +25,16 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
   - ```J``` **Transfer**: Collect entries for transfer to another data file.
   - ```I``` **Import .txt**: Import a plain text document (must be titled "import.txt").
   - ```V``` **Text vignette**: Create a static text vignette to be shown on the main page in Marbles.
-  - ```M``` **Change dimensions**: 
-  - ```P``` **Color preset**: 
-  - ```L``` **Logo preset**: 
-  - ```K``` **Toggle Backup**: 
-  - ```W``` **Set shortcuts key**: 
-  - ```E``` **Reset shortcuts key**: 
-  - ```R``` **Reset password**: 
-  - ```X``` **Default settings**: 
-  - ```Y``` **Restart Marbles**: 
-  - ```Q``` **Exit**: 
+  - ```M``` **Change dimensions**: Set the row and column count for the Marbles terminal output.
+  - ```P``` **Color preset**: Cycle the 6 color presets (see **Page 4** for customizing color schemes).
+  - ```L``` **Logo preset**: Cycle the 8 logo presets (the 8th preset can be customized by editing the settings.init file from the login menu or via the file system)
+  - ```K``` **Toggle Backup**: Save a copy of the data file in a different location.
+  - ```W``` **Set shortcuts key**: Change the default compound shortcuts key.
+  - ```E``` **Reset shortcuts key**: Revert the compound shortcuts key to it's default value (W).
+  - ```R``` **Reset password**: Reset the password to the data file (it is not possible recover your notes if you forget your password).
+  - ```X``` **Default settings**: Reset all settings to default.
+  - ```Y``` **Restart Marbles**: Restart Marbles.
+  - ```Q``` **Exit**: Exit Marbles.
 
 ## Page 4
 
