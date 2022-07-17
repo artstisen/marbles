@@ -14,7 +14,7 @@ Press ```Space``` to move the selected data file to another directory. Press ```
 - ```R``` to refresh (redraw) the interface
 - ```Y``` to restart Marbles
 - ```L``` to show the log
-- ```S``` to edit the application settings file (can also be done directly from the file system)
+- ```S``` to edit the application settings file _settings.ini_ (can also be done directly from the file system). Marbles will automatically restart and load the changed settings when saving and exiting the _settings.ini_ file.
 - ```Q``` to exit Marbles
 
 Marbles automatically creates the "data" directory in the same directory as the executable.
