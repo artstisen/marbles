@@ -11,7 +11,7 @@
 ## Compound keyboard shortcuts
 
 - Repeat last shortcut ```CTRL+K```
-- Shortcuts mode ```CTRL+W```
+- Shortcuts mode ```CTRL+W``` +
   - Sustain (lock) shortcuts mode ```W```
   - Exit shortcuts mode ```Esc```
   - Undo (500 steps) ```Z``` 
@@ -31,14 +31,15 @@
          
 ## String Memory (limit: 64 strings)
 
- - Copy line/selection ```C```
- - Cut line/selection ```X```
- - Paste current memory string ```V```
- - Select from string memory ```Left/Right```
- - First memory string ```Up```
- - Last memory string ```Down``` 
- - Insert all ```Tab``` 
- - Clear string memory ```E``` 
+- Press ```CTRL+W``` +
+  - Copy line/selection ```C```
+  - Cut line/selection ```X```
+  - Paste current memory string ```V```
+  - Select from string memory ```Left/Right```
+  - First memory string ```Up```
+  - Last memory string ```Down``` 
+  - Insert all ```Tab``` 
+  - Clear string memory ```E``` 
          
 ## Standard shortcuts for document navigation
 
