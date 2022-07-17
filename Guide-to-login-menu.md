@@ -8,6 +8,7 @@ Use the Up/Down arrow keys to select the desired directory
 Press Space to move the selected data file to another directory
 Press Esc to clear the login field/close the options menu
 Press CTRL+W and one of the following keys to enable additional options:
+
 	- I to show data file info
 	- N to create a new data file
 	- X to rename the selected data file
