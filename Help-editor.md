@@ -1,5 +1,4 @@
 #Text editor
-
  ```
  Editor Keyboard Functions
  Primary shortcuts
