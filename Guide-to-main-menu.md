@@ -13,10 +13,10 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
 - **Top 20** ```T``` Shows the 20 recent edited entries sorted by date changed.
 - **Session history** ```M``` Shows the entries viewed in the current session, sorted by first to last. A session starts when logging into a data file and ends when logging out. This list is practical when switching back and fourth between several entries in a session.
 - **List all** ```L``` Lists all entries with the option to sort by Created date, Changed date and Title (Press ```Tab```).
-- **File info** ```I```
-- **Display timestamp** ```D```
-- **Help** ```H```
-- **About** ```A```
+- **File info** ```I``` Show current working directory, file name and file size etc.
+- **Display timestamp** ```D``` Shows a dialog with the current date/time and week number.
+- **Help** ```H``` Shows the [Guide to editor](Guide-to-editor.md).
+- **About** ```A``` Show general info about Marbles.
 
 
 ## Page 3
