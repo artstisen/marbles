@@ -1,11 +1,11 @@
-# Text editor
+# Editor Keyboard Functions
 
  ```
- Editor Keyboard Functions
  Primary shortcuts
     CTRL+S .............. Save
     CTRL+Q .............. Save and close editor
     Esc ................. Deselect/Close editor
+    
  Compound keyboard shortcuts
     CTRL+K .............. Repeat last shortcut
     CTRL+W .............. Shortcuts mode
@@ -25,6 +25,7 @@
          R .............. Clear all
          K .............. Copy all
          J .............. Paste (copy all)
+         
  String Memory (limit: 64 strings)
          C .............. Copy line/selection
          X .............. Cut line/selection
@@ -34,16 +35,18 @@
          Down ........... Last memory string
          Tab ............ Insert all
          E .............. Clear string memory
+         
  Standard shortcuts for document navigation
     CTRL+O .............. Make selection
     CTRL+L .............. Move cursor to next word
-        CTRL+N .............. Move cursor to previous word
+    CTRL+N .............. Move cursor to previous word
     Home | CTRL+W, N .... Move cursor to line start
     End  |         M .... Move cursor to line end
     PgUp |         I .... Move cursor up 1 page
     PgDn |         O .... Move cursor down 1 page
                    Q .... Move cursor to document top
                    A .... Move cursor to document end
+                   
  Basic editing
     Backspace ........... Delete left (1 character space/selection)
     Delete .............. Delete right (1 character space/selection)
