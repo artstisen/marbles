@@ -1,7 +1,7 @@
 # Guide to main menu
 Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate the 4 pages of the main menu. Use ```Home/End``` to navigate to the start (page 1) and end (page 2).
 
-## Page 1
+## Page 1/4
 
 - ```N``` **New**: Create a new entry (write a title and enter your notes).
 - ```S``` **Search**: Search entries in the current data file. Search results can be sorted (Press ```Tab```) by _date changed_, _date created_ and alphabetically by _title_.
@@ -11,7 +11,7 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
 
 [^1]: The **Transfer** option on **Page 3** will retain the collected entries in memory for the current session or until discarded through the Transfer options.
 
-## Page 2
+## Page 2/4
 - ```T``` **Top 20**: Shows the 20 recent edited entries sorted by date changed.
 - ```M``` **Session history**: Shows the entries viewed in the current session, sorted by first to last. A session starts when logging into a data file and ends when logging out. This list is practical when switching back and fourth between several entries in a session.
 - ```L``` **List all**: Lists all entries with the option to sort by Created date, Changed date and Title (Press ```Tab```).
@@ -21,7 +21,7 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
 - ```A``` **About**: Show general info about Marbles.
 
 
-## Page 3
+## Page 3/4
 - Press ```CTRL+W``` +
   - ```Z``` **Undo deletion**: Undo the last deletion of an entry (in the current session).
   - ```J``` **Transfer**: Collect entries for transfer to another data file using password protection.
@@ -38,7 +38,7 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
   - ```Y``` **Restart Marbles**: This will restart the application clearing all variables in memory and load the settings again.
   - ```Q``` **Exit**: Clear all variables in memory and exit Marbles.
 
-## Page 4
+## Page 4/4
 - Press ```CTRL+W``` +
   - ```G``` to **Unlock color scheme**: Unlock the controls to customize the selected color scheme
   - ```Up/Down``` to select which color group to change (indicated by the selection cursor)
