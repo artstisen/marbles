@@ -1,5 +1,5 @@
 # Guide to main menu
-Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate the pages of the main menu. Use ```Home/End``` to navigate to the start and end of the menu pages.
+Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate the 4 pages of the main menu. Use ```Home/End``` to navigate to the start (page 1) and end (page 2).
 
 ## Page 1
 
@@ -10,9 +10,17 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
 - **Logout** ```X``` Return to the login menu (see the [Guide to login menu](Guide-to-login-menu.md))
 
 ## Page 2
+- **Top 20** ```T``` Shows the 20 recent edited entries sorted by date changed.
+- **Session history** ```M``` Shows the entries viewed in the current session, sorted by first to last. A session starts when logging into a data file and ends when logging out. This list is practical when switching back and fourth between several entries in a session.
+- **List all** ```L``` Lists all entries with the option to sort by Created date, Changed date and Title (Press ```Tab```).
+- **File info** ```I```
+- **Display timestamp** ```D```
+- **Help** ```H```
+- **About** ```A```
 
 
 ## Page 3
 
 
 ## Page 4
+
