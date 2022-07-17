@@ -1,25 +1,18 @@
-# Login menu
-Data files (your encrypted collections of notes) are managed from the login menu when starting Marbles.
-A default data file "data.mbls" is created when first starting Marbles. You can rename it (Press ```X```) if you prefer a different file name. The following options are available from the login menu:
+# Guide to main menu
+Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate the pages of the main menu. Use ```Home/End``` to navigate to the start and end of the menu pages.
 
-Login to the selected data file by typing your password in the input field.
-Use the ```Left/Right``` arrow keys select a data file within the current directory.
-Use the ```Up/Down``` arrow keys to select the desired directory
-Press ```Space``` to move the selected data file to another directory
-Press ```Esc``` to clear the login field/close the options menu
-Press ```CTRL+W``` and one of the following keys to enable additional options:
+## Page 1
 
-- ```I``` to show data file info
-- ```N``` to create a new data file
-- ```X``` to rename the selected data file
-- ```C``` to create a copy (duplicate) of the selected data file
-- ```D``` to delete the selected data file
-- ```M``` to merge or export data files
-- ```R``` to refresh (redraw) the interface
-- ```Y``` to restart Marbles
-- ```L``` to show the log
-- ```S``` to edit the application settings file (can also be done directly from the file system)
-- ```Q``` to exit Marbles
+- **New** ```N``` Create a new entry (write a title and enter your notes).
+- **Search** ```S``` Search entries in the current data file. Search results can be sorted by date changed, date created and alphabetically by title (Press ```Tab```).
+- **Reselect** ```R``` Select the last edited entry again
+- **Favorites** ```F``` Show all entries added to the favorites list: Collect your favorite entries in the favorites list (sorted by Date changed). Pin entries to the top of the favorites list (Press ```P```) and arrange them in the order you like (Press ```Tab```). Colorize pinned entries to highlight them (Press ```CTRL+W, 1-3```).
+- **Logout** ```X``` Return to the login menu (see the [Guide to login menu](/artstisen/marbles/blob/main/Guide-to-login-menu.md))
 
-Marbles automatically creates the "data" directory in the same directory as the executable.
-New directories within the data directory must be created manually. Refresh the interface (Press ```R``` or press one of the arrow keys) to detect new directories (subdirectories are not supported in the Marbles data file structure).
+## Page 2
+
+
+## Page 3
+
+
+## Page 4
