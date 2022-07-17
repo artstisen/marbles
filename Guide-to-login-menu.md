@@ -1,13 +1,13 @@
 # Login menu
 Data files (your encrypted collections of notes) are managed from the login menu when starting Marbles.
-A default data file "data.mbls" is created when first starting Marbles. You can rename it (Press X) if you prefer a different file name. The following options are available from the login menu:
+A default data file "data.mbls" is created when first starting Marbles. You can rename it (Press ```X```) if you prefer a different file name. The following options are available from the login menu:
 
 Login to the selected data file by typing your password in the input field.
-Use the Left/Right arrow keys select a data file within the current directory.
-Use the Up/Down arrow keys to select the desired directory
-Press Space to move the selected data file to another directory
-Press Esc to clear the login field/close the options menu
-Press CTRL+W and one of the following keys to enable additional options:
+Use the ```Left/Right``` arrow keys select a data file within the current directory.
+Use the ```Up/Down``` arrow keys to select the desired directory
+Press ```Space``` to move the selected data file to another directory
+Press ```Esc``` to clear the login field/close the options menu
+Press ```CTRL+W``` and one of the following keys to enable additional options:
 
 - ```I``` to show data file info
 - ```N``` to create a new data file
