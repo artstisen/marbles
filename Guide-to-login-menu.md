@@ -9,17 +9,17 @@ Press Space to move the selected data file to another directory
 Press Esc to clear the login field/close the options menu
 Press CTRL+W and one of the following keys to enable additional options:
 
-- I to show data file info
-- N to create a new data file
-- X to rename the selected data file
-- C to create a copy (duplicate) of the selected data file
-- D to delete the selected data file
-- M to merge or export data files
-- R to refresh (redraw) the interface
-- Y to restart Marbles
-- L to show the log
-- S to edit the application settings file (can also be done directly from the file system)
-- Q to exit Marbles
+- ```I``` to show data file info
+- ```N``` to create a new data file
+- ```X``` to rename the selected data file
+- ```C``` to create a copy (duplicate) of the selected data file
+- ```D``` to delete the selected data file
+- ```M``` to merge or export data files
+- ```R``` to refresh (redraw) the interface
+- ```Y``` to restart Marbles
+- ```L``` to show the log
+- ```S``` to edit the application settings file (can also be done directly from the file system)
+- ```Q``` to exit Marbles
 
 Marbles automatically creates the "data" directory in the same directory as the executable.
 New directories within the data directory must be created manually. Refresh the interface (R) or press one of the arrow keys to detect new directories (subdirectories are not supported in the Marbles data file structure).
