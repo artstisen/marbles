@@ -1,4 +1,4 @@
-#Text editor
+# Text editor
 
  ```
  Editor Keyboard Functions
