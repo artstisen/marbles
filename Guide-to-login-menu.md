@@ -22,4 +22,4 @@ Press ```CTRL+W``` and one of the following keys to enable additional options:
 - ```Q``` to exit Marbles
 
 Marbles automatically creates the "data" directory in the same directory as the executable.
-New directories within the data directory must be created manually. Refresh the interface (R) or press one of the arrow keys to detect new directories (subdirectories are not supported in the Marbles data file structure).
+New directories within the data directory must be created manually. Refresh the interface (Press ```R``` or press one of the arrow keys) to detect new directories (subdirectories are not supported in the Marbles data file structure).
