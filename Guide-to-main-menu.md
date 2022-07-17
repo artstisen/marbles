@@ -15,12 +15,26 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
 - ```L``` **List all**: Lists all entries with the option to sort by Created date, Changed date and Title (Press ```Tab```).
 - ```I``` **File info**: Show current working directory, file name and file size etc.
 - ```D``` **Display timestamp**: Shows a dialog with the current date/time and week number.
-- ```H``` **Help**: Shows the [Guide to editor](Guide-to-editor.md).
+- ```H``` **Help**: Shows the contents of the [Guide to editor](Guide-to-editor.md).
 - ```A``` **About**: Show general info about Marbles.
 
 
 ## Page 3
-
+- Press ```CTRL+W``` +
+  - ```Z``` **Undo deletion**: Undo the last deletion of an entry (in the current session).
+  - ```J``` **Transfer**: Collect entries for transfer to another data file.
+  - ```I``` **Import .txt**: Import a plain text document (must be titled "import.txt").
+  - ```V``` **Text vignette**: Create a static text vignette to be shown on the main page in Marbles.
+  - ```M``` **Change dimensions**: 
+  - ```P``` **Color preset**: 
+  - ```L``` **Logo preset**: 
+  - ```K``` **Toggle Backup**: 
+  - ```W``` **Set shortcuts key**: 
+  - ```E``` **Reset shortcuts key**: 
+  - ```R``` **Reset password**: 
+  - ```X``` **Default settings**: 
+  - ```Y``` **Restart Marbles**: 
+  - ```Q``` **Exit**: 
 
 ## Page 4
 
