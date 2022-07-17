@@ -3,11 +3,9 @@
 
 ## Primary shortcuts
 
-```CTRL+S ``` .............. Save
-
-```CTRL+Q ``` .............. Save and close editor
-
-```Esc``` ................. Deselect/Close editor
+Save ```CTRL+S ``` 
+Save and close editor ```CTRL+Q ``` 
+Deselect/Close editor ```Esc``` 
 
     
 ## Compound keyboard shortcuts
