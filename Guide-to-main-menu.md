@@ -4,7 +4,7 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
 ## Page 1
 
 - **New** ```N``` Create a new entry (write a title and enter your notes).
-- **Search** ```S``` Search entries in the current data file. Search results can be sorted by _date changed_, _date created_ and alphabetically by _title_ (Press ```Tab```).
+- **Search** ```S``` Search entries in the current data file. Search results can be sorted (Press ```Tab```) by _date changed_, _date created_ and alphabetically by _title_.
 - **Reselect** ```R``` Select the last edited entry again (use Session history ```M``` to show last viewed)
 - **Favorites** ```F``` Show all entries added to the favorites list: Collect your favorite entries in the favorites list (sorted by Date changed). Pin entries to the top of the favorites list (Press ```P```) and arrange them in the order you like (Press ```Tab```). Colorize pinned entries to highlight them (Press ```CTRL+W, 1-3```).
 - **Logout** ```X``` Return to the login menu (see the [Guide to login menu](Guide-to-login-menu.md))
