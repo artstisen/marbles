@@ -7,7 +7,7 @@ The default compound shortcut is ```CTRL+W```. The ```W``` key can be changed to
 
 - ```CTRL+S``` Save
 - ```CTRL+Q``` Save and close editor
-- ```Esc``` Deselect/Close editor
+- ```Esc``` Deselect/Cancel/Close editor
 
     
 ## Compound keyboard shortcuts
