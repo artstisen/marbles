@@ -32,9 +32,9 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
   - ```W``` **Set shortcuts key**: Change the default compound shortcuts key.
   - ```E``` **Reset shortcuts key**: Revert the compound shortcuts key to it's default value "W".
   - ```R``` **Reset password**: Reset the password to the data file (it is not possible recover your notes if you forget your password).
-  - ```X``` **Default settings**: Reset all settings to default.
-  - ```Y``` **Restart Marbles**: Restart Marbles.
-  - ```Q``` **Exit**: Exit Marbles.
+  - ```X``` **Default settings**: Reset all settings to default (can also be done by deleting the _settings.ini_ file and restarting Marbles).
+  - ```Y``` **Restart Marbles**: This will restart the application clearing all variables in memory and load the settings again.
+  - ```Q``` **Exit**: Clear all variables from memory and exit Marbles.
 
 ## Page 4
 - Press ```CTRL+W``` +
