@@ -30,7 +30,7 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
   - ```L``` **Logo preset**: Cycle the 8 logo presets (the 8th preset can be customized by editing the settings.init file from the login menu or via the file system)
   - ```K``` **Toggle Backup**: Save a copy of the data file in a different location.
   - ```W``` **Set shortcuts key**: Change the default compound shortcuts key.
-  - ```E``` **Reset shortcuts key**: Revert the compound shortcuts key to it's default value (W).
+  - ```E``` **Reset shortcuts key**: Revert the compound shortcuts key to it's default value "W".
   - ```R``` **Reset password**: Reset the password to the data file (it is not possible recover your notes if you forget your password).
   - ```X``` **Default settings**: Reset all settings to default.
   - ```Y``` **Restart Marbles**: Restart Marbles.
