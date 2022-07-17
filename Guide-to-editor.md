@@ -5,29 +5,29 @@
 
 - Save ```CTRL+S ```
 - Save and close editor ```CTRL+Q ```
-- Deselect/Cancel/Close editor ```Esc``` 
+- Deselect/Close editor ```Esc``` 
 
     
 ## Compound keyboard shortcuts
 
 - Repeat last shortcut ```CTRL+K```
 - Shortcuts mode ```CTRL+W```
-- Sustain (lock) shortcuts mode ```W```
-- Exit shortcuts mode ```Esc```
-- Undo (500 steps) ```Z``` 
-- Redo (250 steps) ```Y```
-- Content search ```S```
-- Line delete ```L```
-- Line duplicate ```D```
-- Line/selection to UPPERCASE ```U```
-- Line/selection to lowercase ```G```
-- Trim blank space (line start/end) ```B```
-- Insert ISO timestamp (YYYY-MM-DD HH:MM:SS) ```T```
-- Insert calendar... ```F```
-- Generate strong password ```P```
-- Clear all ```R```
-- Copy all ```K```
-- Paste (copy all) ```J```
+  - Sustain (lock) shortcuts mode ```W```
+  - Exit shortcuts mode ```Esc```
+  - Undo (500 steps) ```Z``` 
+  - Redo (250 steps) ```Y```
+  - Content search ```S```
+  - Line delete ```L```
+  - Line duplicate ```D```
+  - Line/selection to UPPERCASE ```U```
+  - Line/selection to lowercase ```G```
+  - Trim blank space (line start/end) ```B```
+  - Insert ISO timestamp (YYYY-MM-DD HH:MM:SS) ```T```
+  - Insert calendar... ```F```
+  - Generate strong password ```P```
+  - Clear all ```R```
+  - Copy all ```K```
+  - Paste (copy all) ```J```
          
 ## String Memory (limit: 64 strings)
 
