@@ -38,10 +38,10 @@ Press the ```Left/Right``` arrow keys, ```Tab``` or ```Shift+Tab``` to navigate 
 
 ## Page 4
 - Press ```CTRL+W``` +
-  - ```G``` **Unlock color scheme**: Customize the selected color scheme
-  - ```Up/Down``` Select which color group to change
-  - ```Left/Right``` Cycle available colors
-  - ```T``` **Toggle Text/Background**: Switch between foreground and background colors
-  - ```E``` **Reset**: Reset to default (the colors of the selected color scheme on **Page 3**)
-  - ```Enter``` **Save and exit**: Save the selected color combination to the _settings.ini_ file (can be edited in plain text from the login menu (see the [Guide to login menu](Guide-to-login-menu.md))). 
-  - ```Esc``` **Cancel (exit)**: Cancel and lock the color editing menu.
+  - ```G``` to **Unlock color scheme**: Unlock the controls to customize the selected color scheme
+  - ```Up/Down``` to select which color group to change (indicated by the selection cursor)
+  - ```Left/Right``` to cycle available colors
+  - ```T``` to **Toggle Text/Background**: Switch between foreground and background colors
+  - ```E``` to **Reset**: Revert to default colors of the selected color scheme (selected on **Page 3**)
+  - ```Enter``` to **Save and exit**: Save the selected color combination to the _settings.ini_ file (can be edited in plain text from the login menu (see the [Guide to login menu](Guide-to-login-menu.md))). 
+  - ```Esc``` to **Cancel (exit)**: Cancel your changes and lock the color editing controls.
