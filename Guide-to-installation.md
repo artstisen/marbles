@@ -33,6 +33,8 @@ The preferred terminal on Windows is the _Windows Terminal_. But if you prefer a
 
 If you are using the Ahoy note-taking application you can migrate your data to Marbles using the AhoyToMarbles migration tool.
 
+![AhoyToMarbles](AhoyToMarbles-migration-tool.png)
+
 ### Specifications:
 
 - Supported platforms: Windows and Linux
