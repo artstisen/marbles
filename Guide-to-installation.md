@@ -14,7 +14,7 @@ Ensure that you have .NET 6/core installed on your system. If not you can get it
 
 ## Download and run Marbles (Windows/Linux)
 
-   1. Download: [Marbles1011.zip](/releases/download/v1.0.1.1/Marbles1011.zip) (73Kb)
+   1. Download: [Marbles1011.zip](https://github.com/artstisen/marbles/releases/download/v1.0.1.1/Marbles1011.zip) (73Kb)
    2. Unzip the _Marbles.dll_ and _Marbles.runtimeconfig.json_ into a directory of your choosing.
    3. Open your favorite terminal, navigate to the Marbles directory and type ```dotnet Marbles.dll``` (Linux is case sensitive)
 
@@ -25,7 +25,7 @@ You can always simplify the process and create an alias like "_mbls_" etc. to ru
 
 The preferred terminal on Windows is the _Windows Terminal_. But if you prefer a Windows download that contains an executable that you can run directly, use the following option. The supplied Conhost executable is the same application used for the classic Windows console or cmd.exe. The Zip contains _Marbles.exe_, _Marbles.dll_ and _Marbles.runtimeconfig.json_ (The _Marbles.dll_ and _Marbles.runtimeconfig.json_ in this download are the same builds as the first download for Windows and Linux).
 
-- Download: [Marbles1011-WinExe.zip](/releases/download/v1.0.1.1/Marbles1011-WinExe.zip) (145Kb)
+- Download: [Marbles1011-WinExe.zip](https://github.com/artstisen/marbles/releases/download/v1.0.1.1/Marbles1011-WinExe.zip) (145Kb)
 
 
 
@@ -39,5 +39,5 @@ If you are using the Ahoy note-taking application you can migrate your data to M
 - Requirements: .NET 6/Core
 - Code signing: SHA-256
 - Software license: MIT
-- Download: [AhoyToMarbles1012.zip](/releases/download/v1.0.1.1/AhoyToMarbles1012.zip) (18Kb)
-- Download w. Conhost executable (Windows): [AhoyToMarbles1012-WinExe.zip](/releases/download/v1.0.1.1/AhoyToMarbles1012-WinExe.zip) (90Kb)
+- Download: [AhoyToMarbles1012.zip](https://github.com/artstisen/marbles/releases/download/v1.0.1.1/AhoyToMarbles1012.zip) (18Kb)
+- Download w. Conhost executable (Windows): [AhoyToMarbles1012-WinExe.zip](https://github.com/artstisen/marbles/releases/download/v1.0.1.1/AhoyToMarbles1012-WinExe.zip) (90Kb)
