@@ -36,7 +36,7 @@ If you are using the Ahoy note-taking application you can migrate your data to M
 ### Specifications:
 
 - Supported platforms: Windows and Linux
-- Requirements: .NET 6/Core
+- Requirements: .NET 6
 - Code signing: SHA-256
 - Software license: MIT
 - Download: [AhoyToMarbles1012.zip](https://github.com/artstisen/marbles/releases/download/v1.0.1.1/AhoyToMarbles1012.zip) (18Kb)
