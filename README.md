@@ -7,15 +7,15 @@ Marbles provides a simple and intuitive interface for creating, editing, searchi
 
 ## Specifications
 - Supported platforms: Windows and Linux
-- Requirements: .NET 6/Core
+- Requirements: .NET 6
 - Distribution: Cross-platform binaries
 - Application type: Text mode
-- Box drawing: ASCII (No special fonts required)
+- Box drawing: ASCII
 - Console I/O encoding: UTF-8
 - Date/time format: ISO 8601
 - File encryption: AES-256
 - Code signing: SHA-256
-- Software license: MIT (it's free software)
+- Software license: MIT
 
 ## Tools used
 - Programming language: C# 10
@@ -28,4 +28,3 @@ Marbles is a pure ASCII text mode application (as in standard 128-char ASCII. No
 - [Login menu](Guide-to-login-menu.md)
 - [Main menu](Guide-to-main-menu.md)
 - [Editor](Guide-to-editor.md)
-
