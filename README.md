@@ -2,6 +2,7 @@
 A lightweight cross-platform text mode application for taking notes with encryption in any terminal application on Windows and Linux.
 
 ![Marbles animation](marbles.gif)
+
 Click the **Play** button in the upper right corner of the image to start the GIF animation.
 
 ## About Marbles
