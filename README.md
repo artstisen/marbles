@@ -24,7 +24,7 @@ Marbles provides a simple and intuitive interface for creating, editing, searchi
 - Programming language: C# 10
 - Programming environment: JetBrains Rider
 
-Marbles is a pure ASCII text mode application (as in standard 128-char ASCII. No extended ASCII or ANSI char sets used). This makes Marbles compatible with all standard monospaced fonts, regardless of platform. You can either run it with the supplied Conhost executable (on Windows) or use your favorite terminal to run the Marbles.dll binary.
+Marbles is a pure ASCII text mode application (as in _standard 128-char ASCII_. No extended ASCII or ANSI char sets used). This makes Marbles compatible with all standard monospaced fonts, regardless of the supported platform. You can either use your favorite terminal emulator or use the supplied Conhost executable supplied with the download for Windows.
 
 ## Guides/getting started
 - [Installation](Guide-to-installation.md)
