@@ -34,9 +34,10 @@ The preferred terminal on Windows is the _Windows Terminal_. But if you prefer a
 If you are using the Ahoy note-taking application you can migrate your data to Marbles using the AhoyToMarbles migration tool.
 
 ### Specifications:
-    - Supported platforms: Windows and Linux
-    - Requirements: .NET 6/Core
-    - Code signing: SHA-256
-    - Software license: MIT
-	- Download: [AhoyToMarbles1012.zip](/releases/download/v1.0.1.1/AhoyToMarbles1012.zip) (18Kb)
-	- Download w. Conhost executable (Windows): [AhoyToMarbles1012-WinExe.zip](/releases/download/v1.0.1.1/AhoyToMarbles1012-WinExe.zip) (90Kb)
+
+- Supported platforms: Windows and Linux
+- Requirements: .NET 6/Core
+- Code signing: SHA-256
+- Software license: MIT
+- Download: [AhoyToMarbles1012.zip](/releases/download/v1.0.1.1/AhoyToMarbles1012.zip) (18Kb)
+- Download w. Conhost executable (Windows): [AhoyToMarbles1012-WinExe.zip](/releases/download/v1.0.1.1/AhoyToMarbles1012-WinExe.zip) (90Kb)
