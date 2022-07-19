@@ -35,11 +35,15 @@ Marbles is a pure ASCII text mode application (as in _standard 128-char ASCII_. 
 
 Marbles in Windows Terminal on Windows 11:
 ![Marbles in WT on Windows 11](marbles-wt-win11.jpg)
+
 Marbles in QTerminal on Lubuntu (lightweight Linux distribution based on Ubuntu):
 ![Marbles in QTerminal on Lubuntu](marbles-qterminal.jpg)
+
 Marbles in LXTerminal on Raspberry Pi (Debian-based Linux distribution):
 ![Marbles in LXTerminal on Raspberry Pi](marbles-lxterminal.jpg)
+
 Marbles in Windows Terminal with CRT mod:
 ![Marbles Windows Terminal with CRT mod](marbles-crt.gif)
+
 Multiple instances of Marbles in split Windows Terminal with CRT mod:
 ![Marbles Windows Terminal split with CRT mod](marbles-wt-crt-mod.jpg)
