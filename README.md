@@ -47,3 +47,8 @@ Marbles in Windows Terminal with CRT mod:
 
 Multiple instances of Marbles in split Windows Terminal with CRT mod:
 ![Marbles Windows Terminal split with CRT mod](marbles-wt-crt-mod.jpg)
+
+### Windows Terminal CRT mod info:
+[Windows Terminal Shaders](https://github.com/Hammster/windows-terminal-shaders)
+[Font: AcPlus_IBM_EGA_9x8.ttf](https://int10h.org/oldschool-pc-fonts/) 
+"CRT" background image: Home made :)
