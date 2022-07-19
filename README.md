@@ -3,7 +3,6 @@ A lightweight cross-platform text mode application for taking notes with encrypt
 
 ![Marbles animation](marbles.gif)
 
-Click the **Play** button in the upper right corner of the image to start the GIF animation.
 
 ## About Marbles
 Marbles provides a simple and intuitive interface for creating, editing, searching, copying, arranging, importing, exporting and deleting notes. Notes are stored as a searchable collection of entries contained in a single encrypted file for easy portability. Multiple files can be created and managed from within the program itself. Marbles will handle large text documents and data files with thousands of notes. Plug Marbles into any Windows or Linux system and access your secure data in a 1-to-1 experience across platforms in your preferred terminal.
