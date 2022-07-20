@@ -53,3 +53,4 @@ Multiple instances of Marbles in split Windows Terminal with CRT mod:
 - [Windows Terminal Shaders](https://github.com/Hammster/windows-terminal-shaders)
 - [Font: AcPlus_IBM_EGA_9x8.ttf](https://int10h.org/oldschool-pc-fonts/) 
 - ["CRT" background image](wt-crt-bg1.jpg)
+- Change the Marbles ASCII drawing style to ```asciistyle=1``` in the _settings.ini_ (Can be edited from within Marbles through the login menu)
