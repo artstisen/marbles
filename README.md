@@ -52,4 +52,4 @@ Multiple instances of Marbles in split Windows Terminal with CRT mod:
 
 - [Windows Terminal Shaders](https://github.com/Hammster/windows-terminal-shaders)
 - [Font: AcPlus_IBM_EGA_9x8.ttf](https://int10h.org/oldschool-pc-fonts/) 
-- "CRT" background image: Home made :)
+- ["CRT" background image](wt-crt-bg1.jpg)
