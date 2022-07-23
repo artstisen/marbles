@@ -25,7 +25,7 @@ Marbles provides a simple and intuitive interface for creating, editing, searchi
 
 Marbles is a pure ASCII text mode application (as in _standard 128-char ASCII_. No extended ASCII or ANSI char sets used). This makes Marbles compatible with all standard monospaced fonts, regardless of the supported platform. You can either use your favorite terminal emulator or use the supplied Conhost executable supplied with the download for Windows (view the [installation guide](Guide-to-installation.md) for more info).
 
-Marbles relies on the .NET framework intrinsic distinctions between the different platforms and therefore has no OS-specific logic built into the source. I chose this approach to make it as clean as possible to maintain. This still presented enough options to program the text editor logic that I had on my wish list for this application, although it won't match the editor capabilities of VIM etc. -that was never the goal. You can review the editor options [here](Guide-to-editor.md).
+Marbles relies on the .NET framework intrinsic distinctions between the different platforms and therefore has no OS-specific logic built into the source. I chose this approach to make it as clean as possible to maintain. This still presented enough options to program the text editor logic I had on my wish list for this application, although it won't match the editor capabilities of VIM etc. -that was never the goal. You can review the editor options [here](Guide-to-editor.md).
 
 ## Guides/getting started
 - [Installation](Guide-to-installation.md)
