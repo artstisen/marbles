@@ -18,7 +18,7 @@ Ensure that you have .NET 6/core installed on your system. If not you can get it
    2. Unzip the _Marbles.dll_ and _Marbles.runtimeconfig.json_ into a directory of your choosing.
    3. Open your favorite terminal, navigate to the Marbles directory and type ```dotnet Marbles.dll``` (Linux is case sensitive)
 
-You can always simplify the process and create an alias like "_mbls_" etc. to run Marbles with less typing.
+You can always simplify the process and create an alias like "_mbls_" etc. to run Marbles with less typing. See [this guide](Guide-to-windows-terminal-crt.md) for more info.
 
 
 ### Download with Conhost executable (Windows)
