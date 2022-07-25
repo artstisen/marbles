@@ -106,7 +106,7 @@ New-Alias -Name wtedit -Value fnc-wt1
 Typing "**wtedit"** will now open the settings.json in your preferred editor.
 
 
-Insert the following lines in below the ```"defaultProfile": "{GUID}",``` in the WT settings file:
+Insert the following lines in below the ```"defaultProfile": "{GUID}",``` in the WT settings file (see full example further down):
 
 ```
 "centerOnLaunch": true,
@@ -134,7 +134,7 @@ Insert the following lines into the WT settings file, inside the ```profiles```,
 Download the [oldschool font pack](https://int10h.org/oldschool-pc-fonts/) and extract the _AcPlus_IBM_EGA_9x8.ttf_ font file and drag it to your Fonts folder within your control panel to install it on your system. The font is named "AcPlus IBM EGA 9x8" on your system.
 Download the [shader effect crt.hlsl](https://github.com/Hammster/windows-terminal-shaders) and place the _crt.hlsl_ file within the "_WT_" folder created earlier.
 
-Insert the following lines inside the ```profiles```, ```list``` array (see full example further down):
+Insert the following lines inside the ```profiles```, ```list``` array:
 
 ```
 "experimental.pixelShaderPath": "C:\\Users\\User\\Documents\\WT\\crt.hlsl",
