@@ -52,4 +52,4 @@ Multiple instances of Marbles in split Windows Terminal with CRT mod:
 
 ### Windows Terminal CRT mod:
 
-- [Guide to the Windows Terminal CRT mod](Guide-to-windows-terminal-crt.md)
+- [Guide to installing the Windows Terminal CRT mod](Guide-to-windows-terminal-crt.md)
