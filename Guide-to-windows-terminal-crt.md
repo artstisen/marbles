@@ -85,7 +85,9 @@ To install the mod we need to add a few settings to the Windows Terminal setting
 ## Setting startup behaviour for Windows Terminal
 
 Open the WT (Windows Terminal) settings file found in:
+
 ```C:\Users\User\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json```
+
 (remember to replace "_User_" with your own user)
 
 You can also open the file directly from WT by pressing ```CTRL+,``` and clicking the "Open JSON file" found in the bottom left corner of the settings window.
@@ -131,6 +133,7 @@ Insert the following lines into the WT settings file, inside the ```profiles```,
 
 Download the [oldschool font pack](https://int10h.org/oldschool-pc-fonts/) and extract the _AcPlus_IBM_EGA_9x8.ttf_ font file and drag it to your Fonts folder within your control panel to install it on your system. The font is named "AcPlus IBM EGA 9x8" on your system.
 Download the [shader effect crt.hlsl](https://github.com/Hammster/windows-terminal-shaders) and place the _crt.hlsl_ file within the "_WT_" folder created earlier.
+
 Insert the following lines inside the ```profiles```, ```list``` array (see full example further down):
 
 ```
@@ -238,7 +241,7 @@ Your WT settings.json file should look something like this with the new lines ad
 
 ## Adjust the Marbles settings
 
-Start Windows Terminal at type "mbls" to start Marbles.
+Start Windows Terminal at type "**mbls**" to start Marbles.
 Press ```CTRL+W, S``` from the login menu and update the following settings (same as editing the _settings.ini_ file within the Marbles directory) to accommodate the settings in WT:
 
 ```
@@ -251,7 +254,7 @@ Press ```CTRL+Q``` to save and exit to the login menu. This will restart Marbles
 This completes the configuration.
 
 
-**PS:** Try using SHIFT+F11 to toggle focus mode on/off, this will give you a borderless terminal window which compliments the CRT mod. 
+**PS:** Try using ```SHIFT+F11``` to toggle focus mode on/off, this will give you a borderless terminal window which compliments the CRT mod. 
 
 
 
