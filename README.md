@@ -32,6 +32,7 @@ Marbles relies on the .NET framework intrinsic distinctions between the differen
 - [Login menu](Guide-to-login-menu.md)
 - [Main menu](Guide-to-main-menu.md)
 - [Editor](Guide-to-editor.md)
+- [Migrating from _AHOY!_ to Marbles](Guide-to-installation.md)
 - [PowerShell scripting tips (Optional)](Guide-to-windows-terminal-crt.md)
 
 ## Gallery
