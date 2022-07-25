@@ -59,7 +59,7 @@ Finally you can create a simple help text to display your new commands by creati
 ```
 *** Custom help ***
 
-nps1 = Open PowerShell settings file
+ps1 = Open PowerShell settings file
 wtedit = Open Windows Terminal settings file
 mbls = Run Marbles
 marbles = Open Marbles directory
