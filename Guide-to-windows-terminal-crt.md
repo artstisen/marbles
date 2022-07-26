@@ -22,15 +22,20 @@ Now open the .ps1 file in notepad etc. and add the following script:
 # Create a variable to hold the path to the working directory
 $marblesDir = "C:\Users\User\Documents\Marbles"
 
-# Create a function that will change directory to this directory using the variable and execute the dotnet application
-Function fnc-marbles {cd $marblesDir\; dotnet Marbles.dll}
+# Create a function that will change current directory using $marblesDir and start Marbles
+Function fnc-marbles {cd $marblesDir; dotnet Marbles.dll}
+# If we don't change directory the application will be started in the current directory which may not
+# be the Marbles directory. Marbles always checks for the "data" folder inside its executing directory.
+# If no data folder is found in the executing directory Marbles will create it and place its settings.ini inside it.
+# (this can be used intentionally to create multiple configurations)
+
 # Create an alias to call the function
 New-Alias -Name mbls -Value fnc-marbles
 
 # Create an alias to open the marbles directory (optional)
 New-Alias -Name marbles -Value fnc-marblesop
 # The ii is short for Invoke-Item, and the dot is the current directory.
-Function fnc-marblesop {cd $marblesDir; ii .}
+Function fnc-marblesop {ii $marblesDir}
 ```
 (remember to replace "_User_" with your own user)
 
@@ -43,10 +48,10 @@ If you want to be able to quickly edit your profile by typing "**ps1**" copy the
 
 ```
 # -=-=-=-=-=-=-=- PowerShell -=-=-=-=-=-=-=-
-# Create variable to hold the path of the Powershell profile folder
+# Create variable to hold the path to the Powershell profile folder
 $psDir = "C:\Users\User\Documents\PowerShell"
-# Create a function to invoke the PowerShell profile file (this file)
-Function fnc-ps1 {cd $psDir; ii .\Microsoft.PowerShell_profile.ps1}
+# Create a function to open the file (this file)
+Function fnc-ps1 {ii $psDir\Microsoft.PowerShell_profile.ps1}
 # Create an alias to call the function
 New-Alias -Name ps1 -Value fnc-ps1
 ```
