@@ -18,7 +18,7 @@ Ensure that you have .NET 6/core installed on your system. If not you can get it
    2. Unzip the _Marbles.dll_ and _Marbles.runtimeconfig.json_ into a directory of your choosing.
    3. Open your favorite terminal, navigate to the Marbles directory and type ```dotnet Marbles.dll``` (Linux is case sensitive)
 
-You can always simplify the process and create an alias like "_mbls_" etc. to run Marbles with less typing. See [this guide](Guide-to-windows-terminal-crt.md) for more info.
+You can always **simplify the process** and create an alias like "_mbls_" etc. to run Marbles with less typing. See [this guide](Guide-to-windows-terminal-crt.md) for more information.
 
 
 ### Download with Conhost executable (Windows)
@@ -29,7 +29,7 @@ The preferred terminal on Windows is the _Windows Terminal_. But if you prefer a
 
 
 
-## Migrating your notes from Ahoy to Marbles
+# Migrating your notes from AHOY! to Marbles
 
 If you are using the [Ahoy note-taking application](https://github.com/artstisen/AHOY) you can migrate your data to Marbles using the AhoyToMarbles migration tool.
 
