@@ -28,7 +28,7 @@ Marbles is a pure ASCII text mode application (as in _standard 128-char ASCII_. 
 Marbles relies on the .NET framework intrinsic distinctions between the different platforms and therefore has no OS-specific logic built into the source. I chose this approach to make it as clean as possible to maintain. This still presented enough options to program the text editor logic I had on my wish list for this application, although it won't match the editor capabilities of VIM etc. -that was never the goal. You can review the editor options [here](Guide-to-editor.md).
 
 ## Guides/getting started
-- [Installation](Guide-to-installation.md)
+- [Download and installation](Guide-to-installation.md)
 - [Login menu](Guide-to-login-menu.md)
 - [Main menu](Guide-to-main-menu.md)
 - [Editor](Guide-to-editor.md)
