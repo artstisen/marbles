@@ -18,12 +18,16 @@ To persist aliases in PowerShell between restarts we need to save them to a cust
 Now open the .ps1 file in notepad etc. and add the following script:
 
 ```
+# -=-=-=-=-=-=-=- Environment -=-=-=-=-=-=-=-
+# Create a variable to hold the path to the user root
+$psUser = Resolve-Path ~
+
 # -=-=-=-=-=-=-=- Marbles -=-=-=-=-=-=-=-
 # Create a variable to hold the path to the working directory
-$marblesDir = "C:\Users\User\Documents\Marbles"
+$marblesDir = "\Documents\Marbles"
 
 # Create a function that will change current directory using $marblesDir and start Marbles
-Function fnc-marbles {cd $marblesDir; dotnet Marbles.dll}
+Function fnc-marbles {cd $psUser$marblesDir; dotnet Marbles.dll}
 # If we don't change directory the application will be started in the current directory which may not
 # be the Marbles directory. Marbles always checks for the "data" folder inside its executing directory.
 # If no data folder is found in the executing directory Marbles will create it and place its settings.ini inside it.
@@ -35,9 +39,8 @@ New-Alias -Name mbls -Value fnc-marbles
 # Create an alias to open the marbles directory (optional)
 New-Alias -Name marbles -Value fnc-marblesop
 # The ii is short for Invoke-Item, and the dot is the current directory.
-Function fnc-marblesop {ii $marblesDir}
+Function fnc-marblesop {ii $psUser$marblesDir}
 ```
-(remember to replace "_User_" with your own user)
 
 Now you can start Marbles by typing "**mbls**" and open the marbles directory in Windows Explorer by typing "**marbles**".
 You can always modify the PowerShell script to encompass multiple copies of Marbles etc.
@@ -49,13 +52,14 @@ If you want to be able to quickly edit your profile by typing "**ps1**" copy the
 ```
 # -=-=-=-=-=-=-=- PowerShell -=-=-=-=-=-=-=-
 # Create variable to hold the path to the Powershell profile folder
-$psDir = "C:\Users\User\Documents\PowerShell"
+$psDir = "\Documents\PowerShell"
 # Create a function to open the file (this file)
-Function fnc-ps1 {ii $psDir\Microsoft.PowerShell_profile.ps1}
+Function fnc-ps1 {ii $psUser$psDir\Microsoft.PowerShell_profile.ps1}
 # Create an alias to call the function
 New-Alias -Name ps1 -Value fnc-ps1
 ```
-(remember to replace "_User_" with your own user. You can display your absolute profile path (including your user name) by typing ```$PROFILE``` in PowerShell)
+Remember to initialize the ```$psUser``` variable as described in the top of the article.
+TIP: You can display your absolute profile path (including your user name) by typing ```$PROFILE``` in PowerShell.
 
 ## Creating a custom help text with your changes (optional)
 
@@ -75,7 +79,7 @@ marbles = Open Marbles directory
 ```
 # -=-=-=-=-=-=-=- HELP -=-=-=-=-=-=-=-
 # Read content of the myhelp.txt file inside the psDir
-Function fnc-myHelp {Get-Content $psDir\myhelp.txt}
+Function fnc-myHelp {Get-Content $psUser$psDir\myhelp.txt}
 New-Alias -Name myhelp -Value fnc-myHelp
 ```
 Now use the alias "**myhelp**" to display the help text when you need to refresh your memory (PowerShell also has dedicated tags for adding help content directly to the PS help system).
@@ -101,13 +105,14 @@ You can also open the file directly from WT by pressing ```CTRL+,``` and clickin
 ```
 # -=-=-=-=-=-=-=- Windows Terminal  -=-=-=-=-=-=-=-
 # Create variable to hold the path of the WT settings file
-$wtDir = "C:\Users\User\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\"
+$wtDir = "\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\"
 # Create a function to open the settings file
-Function fnc-wt1 {ii $wtDir\settings.json}
+Function fnc-wt1 {ii $psUser$wtDir\settings.json}
 # Create an alias to call the function
 New-Alias -Name wtedit -Value fnc-wt1
 ```
-(remember to replace "_User_" with your own user)
+Remember to initialize the ```$psUser``` variable as described in the top of the article.
+
 Typing "**wtedit"** will now open the settings.json in your preferred editor.
 
 
