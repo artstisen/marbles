@@ -944,7 +944,7 @@ internal static class Actions
     private static void NewEntry()
     {
         Tools.ClearScreen();
-        Menu.WriteModeLabel(DialogText.New, DialogText.EnterTitleAndPressEnter + DialogText.PressCtrlPlusForOptions(),
+        Menu.WriteModeLabel(DialogText.New, DialogText.EnterTitleAndPressEnter + " " + DialogText.PressEscToExitP,
             1);
         Menu.WriteNameInTopBar(true);
         Tools.CursorDown(3);
@@ -1056,7 +1056,7 @@ internal static class Actions
         {
             Tools.ClearScreen();
             Menu.WriteModeLabel(DialogText.EditTitle,
-                DialogText.EditTitleAndPressEnter + DialogText.PressCtrlPlusForOptions(), 1);
+                DialogText.EditTitleAndPressEnter + " " + DialogText.PressEscToExitP, 1);
             Menu.WriteNameInTopBar(true);
             Tools.CursorDown(3);
             Console.Write(" " + DialogText.TitleColon);
@@ -1174,15 +1174,9 @@ internal static class Actions
                 Init.LineCount - 10, Entries.CurrentEntry.Text, Entries.CurrentEntry.CursorIndex, false, true, false, 0);
             if (textPreviewArea.GetText().Length > 0)
             {
-                // Move cursor down to prepare cursor for scrolling further than to the bottom
-                for (int i = 0; i < 5; i++)
-                {
-                    textPreviewArea.CursorMoveDown();
-                }
-
                 do
                 {
-                    if (GetPreviewLineCount(textPreviewArea.GetText()) > (Init.LineCount - 10))
+                    if (textPreviewArea.CanScroll)
                     {
                         Menu.WriteDocumentScrollLabel();
                     }
@@ -1222,11 +1216,6 @@ internal static class Actions
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
     }
 
-
-    internal static int GetPreviewLineCount(string text)
-    {
-        return Tools.SplitStringOnNewLine(text, false).Length;
-    }
 
     private static void ExportCurrentEntry()
     {
@@ -1340,7 +1329,6 @@ internal static class Actions
             Vignette.SetDefaultVignetteState();
             Logo.ResetLogoIndex();
             Logo.ResetLogoText();
-            TextArea.InitCommandMemoryIndex();
             Init.SetDefaultOutputDimensions();
             FileIo.SaveSettings();
             Menu.DrawTopMenu(false, true, false);
@@ -1832,7 +1820,7 @@ internal static class Actions
             if (!string.IsNullOrEmpty(_searchQuery))
             {
                 Menu.WriteModeLabel(DialogText.TitleSearch,
-                    DialogText.EnterQueryForSearch + DialogText.PressCtrlPlusForOptions(),
+                    DialogText.EnterQueryForSearch + " " + DialogText.PressEscToExitP,
                     1);
             }
             else

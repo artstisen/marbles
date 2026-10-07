@@ -1,0 +1,1095 @@
+﻿using System.Text;
+
+namespace Marbles;
+
+// Normal and Visual mode: counts, operators ("d", "c", "y" ...), text objects and the single key commands.
+internal sealed partial class EditorEngine
+{
+    private const char CtrlB = '\u0002';
+    private const char CtrlD = '\u0004';
+    private const char CtrlE = '\u0005';
+    private const char CtrlF = '\u0006';
+    private const char CtrlN = '\u000E';
+    private const char CtrlP = '\u0010';
+    private const char CtrlR = '\u0012';
+    private const char CtrlU = '\u0015';
+    private const char CtrlY = '\u0019';
+    private const char NoKey = '\0';
+    private const int MaxCount = 100000;
+
+    // The parts typed so far of a command that is not yet complete, like the "2d" of "2d3w"
+    private string _count = string.Empty; // The count being typed
+    private string _opCount = string.Empty; // The count typed before the operator
+    private char _operator; // "d", "c", "y", ">", "<", or "u", "U" and "~" for "gu", "gU" and "g~"
+    private char _prefix; // A key waiting for a second key: "g", "z", "Z", "r", "f", "F", "t", "T", "i" or "a"
+    private TextPos _visualAnchor; // Where the selection was started in Visual mode
+
+    private bool HasPending => _count.Length > 0 || _opCount.Length > 0 || _operator != NoKey || _prefix != NoKey;
+
+    private void ResetPending()
+    {
+        _count = string.Empty;
+        _opCount = string.Empty;
+        _operator = NoKey;
+        _prefix = NoKey;
+    }
+
+    private static string OperatorName(char op)
+    {
+        return op is 'u' or 'U' or '~' ? "g" + op : op.ToString();
+    }
+
+    // The count of the current command (the counts before and after an operator are multiplied)
+    private int? TakeCount()
+    {
+        if (_count.Length == 0 && _opCount.Length == 0) return null;
+        var count = (long)(_opCount.Length > 0 ? int.Parse(_opCount) : 1) * (_count.Length > 0 ? int.Parse(_count) : 1);
+        _count = string.Empty;
+        _opCount = string.Empty;
+        return (int)Math.Clamp(count, 1, MaxCount);
+    }
+
+    // Translate a key press to the character used for it in Normal mode
+    private static char Translate(ConsoleKeyInfo key)
+    {
+        if (IsText(key)) return key.KeyChar;
+        var control = (key.Modifiers & ConsoleModifiers.Control) != 0 && (key.Modifiers & ConsoleModifiers.Alt) == 0;
+        switch (key.Key)
+        {
+            case ConsoleKey.LeftArrow:
+                return control ? 'b' : 'h';
+            case ConsoleKey.RightArrow:
+                return control ? 'w' : 'l';
+            case ConsoleKey.Backspace:
+                return 'h';
+            case ConsoleKey.UpArrow:
+                return 'k';
+            case ConsoleKey.DownArrow:
+                return 'j';
+            case ConsoleKey.Home:
+                return '0';
+            case ConsoleKey.End:
+                return '$';
+            case ConsoleKey.Delete:
+                return 'x';
+            case ConsoleKey.PageDown:
+                return CtrlF;
+            case ConsoleKey.PageUp:
+                return CtrlB;
+        }
+
+        if (IsEnter(key)) return '\r';
+        if (control && key.Key is >= ConsoleKey.A and <= ConsoleKey.Z) return (char)(key.Key - ConsoleKey.A + 1);
+        return NoKey;
+    }
+
+    private void HandleNormal(ConsoleKeyInfo key)
+    {
+        if (IsEscape(key))
+        {
+            if (HasPending)
+            {
+                ResetPending();
+            }
+            else if (IsVisual)
+            {
+                Mode = EditorMode.Normal;
+            }
+            else
+            {
+                HighlightSearch = false;
+            }
+
+            return;
+        }
+
+        var cmd = Translate(key);
+        if (cmd == NoKey)
+        {
+            ResetPending();
+            return;
+        }
+
+        // Second key of a two key command
+        if (_prefix != NoKey)
+        {
+            var prefix = _prefix;
+            _prefix = NoKey;
+            HandlePrefixed(prefix, cmd, IsText(key));
+            return;
+        }
+
+        // Count
+        if (char.IsAsciiDigit(cmd) && (cmd != '0' || _count.Length > 0))
+        {
+            if (_count.Length < 6) _count += cmd;
+            return;
+        }
+
+        // First key of a two key command
+        var operatorPending = _operator != NoKey;
+        if (cmd is 'i' or 'a' && (operatorPending || IsVisual) ||
+            cmd is 'f' or 'F' or 't' or 'T' or 'g' or 'z' ||
+            cmd is 'Z' or 'r' && !operatorPending && !IsVisual)
+        {
+            _prefix = cmd;
+            return;
+        }
+
+        // Operators
+        if (cmd is 'd' or 'c' or 'y' or '>' or '<' || operatorPending && cmd == _operator)
+        {
+            HandleOperatorKey(cmd);
+            return;
+        }
+
+        // Up and down move by rows as shown on screen (as the target of an operator they are whole lines)
+        if (!operatorPending && cmd is 'j' or 'k')
+        {
+            var rows = TakeCount() ?? 1;
+            MoveRows(cmd == 'j' ? rows : -rows);
+            ResetPending();
+            return;
+        }
+
+        // Motions
+        var count = TakeCount();
+        var motionKey = cmd;
+        // "cw" on a word changes to the end of the word, leaving the blank space after it
+        if (_operator == 'c' && cmd is 'w' or 'W' && Cursor.Col < CurrentLine.Length &&
+            !char.IsWhiteSpace(CurrentLine[Cursor.Col]))
+        {
+            motionKey = cmd == 'w' ? 'e' : 'E';
+        }
+
+        if (TryMotion(motionKey, count, operatorPending, out var motion))
+        {
+            RunMotion(motion);
+            return;
+        }
+
+        // Everything else
+        if (!operatorPending && !(IsVisual && HandleVisualCommand(cmd)))
+        {
+            HandleCommand(cmd, count);
+        }
+
+        ResetPending();
+    }
+
+    private void RunMotion(Motion motion)
+    {
+        if (_operator != NoKey)
+        {
+            ApplyOperator(_operator, motion);
+        }
+        else
+        {
+            Cursor = motion.Target;
+        }
+
+        ResetPending();
+    }
+
+    private void HandlePrefixed(char prefix, char cmd, bool isText)
+    {
+        var last = Buffer.LineCount - 1;
+        switch (prefix)
+        {
+            case 'f':
+            case 'F':
+            case 't':
+            case 'T':
+                if (isText)
+                {
+                    _lastFindCommand = prefix;
+                    _lastFindChar = cmd;
+                    if (FindChar(prefix, cmd, TakeCount() ?? 1, false, out var motion))
+                    {
+                        RunMotion(motion);
+                        return;
+                    }
+                }
+
+                break;
+            case 'r':
+                if (isText) ReplaceChars(cmd, TakeCount() ?? 1);
+                break;
+            case 'i':
+            case 'a':
+                if (TextObject(cmd, prefix == 'a', out var from, out var to))
+                {
+                    if (IsVisual)
+                    {
+                        _visualAnchor = from;
+                        Cursor = Left(to, 1);
+                        Mode = EditorMode.Visual;
+                    }
+                    else
+                    {
+                        ApplyOperatorToRange(_operator, from, to);
+                    }
+                }
+
+                break;
+            case 'g':
+                switch (cmd)
+                {
+                    case 'g':
+                    {
+                        var count = TakeCount();
+                        var line = count.HasValue ? Math.Clamp(count.Value - 1, 0, last) : 0;
+                        RunMotion(new Motion(new TextPos(line, FirstNonBlank(line)), true));
+                        return;
+                    }
+                    case 'u':
+                    case 'U':
+                    case '~':
+                        HandleOperatorKey(cmd);
+                        return;
+                    case 'j':
+                    case 'k':
+                    {
+                        // Move by lines of the document instead of rows on screen
+                        var count = TakeCount() ?? 1;
+                        var line = Math.Clamp(Cursor.Line + (cmd == 'j' ? count : -count), 0, last);
+                        if (_operator == NoKey)
+                        {
+                            Cursor = new TextPos(line, Cursor.Col);
+                        }
+                        else
+                        {
+                            ApplyOperator(_operator, new Motion(new TextPos(line, 0), true));
+                        }
+
+                        break;
+                    }
+                }
+
+                break;
+            case 'z':
+            {
+                // Scroll the view to place the cursor row at the top (t), center (z) or bottom (b)
+                var row = Layout.RowOf(Cursor);
+                var top = cmd switch
+                {
+                    't' or '\r' => row,
+                    'z' or '.' => row - Height / 2,
+                    'b' or '-' => row - Height + 1,
+                    _ => TopRow
+                };
+                TopRow = Math.Clamp(top, 0, Math.Max(0, Layout.TotalRows() - 1));
+                break;
+            }
+            case 'Z':
+                if (cmd == 'Z') _request = EditorRequest.SaveAndQuit;
+                if (cmd == 'Q') _request = EditorRequest.ForceQuit;
+                break;
+        }
+
+        ResetPending();
+    }
+
+    #region Operators
+
+    private void HandleOperatorKey(char op)
+    {
+        if (IsVisual)
+        {
+            ApplyOperatorToSelection(op, false);
+            ResetPending();
+        }
+        else if (_operator == op)
+        {
+            // The operator typed twice works on whole lines ("dd", "3yy", "guu")
+            var count = TakeCount() ?? 1;
+            var lastLine = Math.Min(Buffer.LineCount - 1, Cursor.Line + count - 1);
+            ApplyOperator(op, new Motion(new TextPos(lastLine, 0), true));
+            ResetPending();
+        }
+        else if (_operator != NoKey)
+        {
+            ResetPending();
+        }
+        else
+        {
+            _operator = op;
+            _opCount = _count;
+            _count = string.Empty;
+        }
+    }
+
+    private void ApplyOperator(char op, Motion motion)
+    {
+        if (motion.Linewise)
+        {
+            ApplyOperatorToLines(op, Math.Min(Cursor.Line, motion.Target.Line),
+                Math.Max(Cursor.Line, motion.Target.Line));
+            return;
+        }
+
+        var from = TextPos.Min(Cursor, motion.Target);
+        var to = TextPos.Max(Cursor, motion.Target);
+        if (motion.Inclusive)
+        {
+            if (to.Col < Buffer.LineLength(to.Line))
+            {
+                to = to with { Col = to.Col + TextMetrics.ElementLength(Buffer[to.Line], to.Col) };
+            }
+        }
+        else if (to.Col == 0 && to.Line > from.Line)
+        {
+            // A motion ending at the start of a line stops at the end of the line before it
+            to = new TextPos(to.Line - 1, Buffer.LineLength(to.Line - 1));
+        }
+
+        ApplyOperatorToRange(op, from, to);
+    }
+
+    private void ApplyOperatorToSelection(char op, bool forceLinewise)
+    {
+        var from = TextPos.Min(_visualAnchor, Cursor);
+        var to = TextPos.Max(_visualAnchor, Cursor);
+        var linewise = Mode == EditorMode.VisualLine || forceLinewise;
+        Mode = EditorMode.Normal;
+        Cursor = from;
+        if (linewise)
+        {
+            ApplyOperatorToLines(op, from.Line, to.Line);
+            return;
+        }
+
+        if (to.Col < Buffer.LineLength(to.Line))
+        {
+            to = to with { Col = to.Col + TextMetrics.ElementLength(Buffer[to.Line], to.Col) };
+        }
+
+        ApplyOperatorToRange(op, from, to);
+    }
+
+    // Apply an operator to the text from a position and up to (not including) another
+    private void ApplyOperatorToRange(char op, TextPos from, TextPos to)
+    {
+        if (op is '>' or '<')
+        {
+            ApplyOperatorToLines(op, from.Line, to.Line);
+            return;
+        }
+
+        var text = Buffer.GetText(from, to);
+        switch (op)
+        {
+            case 'd':
+            case 'c':
+                if (text.Length > 0)
+                {
+                    // Like in Vim, text deleted within a line does not replace what was yanked
+                    StoreRegister(text, false, !text.Contains(TextBuffer.NewLine));
+                    Delete(from, to);
+                }
+
+                Cursor = from;
+                if (op == 'c') EnterInsert();
+                break;
+            case 'y':
+                StoreRegister(text, false, false);
+                Cursor = from;
+                break;
+            case 'u':
+            case 'U':
+            case '~':
+                ChangeCase(op, from, to);
+                Cursor = from;
+                break;
+        }
+    }
+
+    // Apply an operator to whole lines
+    private void ApplyOperatorToLines(char op, int first, int last)
+    {
+        var start = new TextPos(first, 0);
+        var end = new TextPos(last, Buffer.LineLength(last));
+        var count = last - first + 1;
+        switch (op)
+        {
+            case 'd':
+                StoreRegister(Buffer.GetText(start, end), true, false);
+                if (last < Buffer.LineCount - 1)
+                {
+                    Delete(start, new TextPos(last + 1, 0));
+                }
+                else if (first > 0)
+                {
+                    Delete(new TextPos(first - 1, Buffer.LineLength(first - 1)), end);
+                }
+                else
+                {
+                    Delete(start, end);
+                }
+
+                var line = Math.Min(first, Buffer.LineCount - 1);
+                Cursor = new TextPos(line, FirstNonBlank(line));
+                if (count > 2) Message = count + " fewer lines";
+                break;
+            case 'c':
+                StoreRegister(Buffer.GetText(start, end), true, false);
+                Delete(start, end);
+                Cursor = start;
+                EnterInsert();
+                break;
+            case 'y':
+                StoreRegister(Buffer.GetText(start, end), true, false);
+                Cursor = new TextPos(first, Cursor.Col);
+                if (count > 2) Message = count + " lines yanked";
+                break;
+            case '>':
+                for (var i = first; i <= last; i++)
+                {
+                    if (Buffer.LineLength(i) > 0) Insert(new TextPos(i, 0), new string(' ', TabWidth));
+                }
+
+                Cursor = new TextPos(first, FirstNonBlank(first));
+                break;
+            case '<':
+                for (var i = first; i <= last; i++)
+                {
+                    var indent = Math.Min(TabWidth, FirstNonBlank(i));
+                    Delete(new TextPos(i, 0), new TextPos(i, indent));
+                }
+
+                Cursor = new TextPos(first, FirstNonBlank(first));
+                break;
+            case 'u':
+            case 'U':
+            case '~':
+                ChangeCase(op, start, end);
+                Cursor = new TextPos(first, Cursor.Line == first ? Cursor.Col : 0);
+                break;
+        }
+    }
+
+    private void ChangeCase(char op, TextPos from, TextPos to)
+    {
+        var text = Buffer.GetText(from, to);
+        var changed = op switch
+        {
+            'u' => text.ToLower(),
+            'U' => text.ToUpper(),
+            _ => string.Concat(text.Select(c => char.IsUpper(c) ? char.ToLower(c) : char.ToUpper(c)))
+        };
+        // Leave the text alone if the change of case alters its length (possible for a few special characters)
+        if (changed == text || changed.Length != text.Length) return;
+        Delete(from, to);
+        Insert(from, changed);
+    }
+
+    #endregion
+
+    #region Text objects
+
+    // The "iw", "aw", "i(" ... objects: a piece of text on the current line selected by what it is
+    private bool TextObject(char obj, bool around, out TextPos from, out TextPos to)
+    {
+        from = to = Cursor;
+        var line = CurrentLine;
+        if (line.Length == 0) return false;
+        var col = Math.Min(Cursor.Col, line.Length - 1);
+        int start, end;
+        switch (obj)
+        {
+            case 'w':
+            case 'W':
+            {
+                var big = obj == 'W';
+                var charClass = CharClass(line, col, big);
+                start = col;
+                end = col + 1;
+                while (start > 0 && CharClass(line, start - 1, big) == charClass) start--;
+                while (end < line.Length && CharClass(line, end, big) == charClass) end++;
+                if (around && charClass != 0)
+                {
+                    // Include the blank space after the word, or else before it
+                    var wordEnd = end;
+                    while (end < line.Length && CharClass(line, end, big) == 0) end++;
+                    if (end == wordEnd)
+                    {
+                        while (start > 0 && CharClass(line, start - 1, big) == 0) start--;
+                    }
+                }
+                else if (around && end < line.Length)
+                {
+                    // On blank space: include the word after it
+                    var nextClass = CharClass(line, end, big);
+                    while (end < line.Length && CharClass(line, end, big) == nextClass) end++;
+                }
+
+                break;
+            }
+            case '"':
+            case '\'':
+            case '`':
+            {
+                // The quotes on the line are paired from the left. Use the first pair ending at or after the cursor
+                start = -1;
+                end = -1;
+                var open = -1;
+                for (var i = 0; i < line.Length; i++)
+                {
+                    if (line[i] != obj) continue;
+                    if (open < 0)
+                    {
+                        open = i;
+                    }
+                    else if (i >= col)
+                    {
+                        start = open;
+                        end = i;
+                        break;
+                    }
+                    else
+                    {
+                        open = -1;
+                    }
+                }
+
+                if (start < 0) return false;
+                if (around)
+                {
+                    end++;
+                }
+                else
+                {
+                    start++;
+                }
+
+                break;
+            }
+            default:
+            {
+                char openChar, closeChar;
+                switch (obj)
+                {
+                    case '(' or ')' or 'b':
+                        (openChar, closeChar) = ('(', ')');
+                        break;
+                    case '[' or ']':
+                        (openChar, closeChar) = ('[', ']');
+                        break;
+                    case '{' or '}' or 'B':
+                        (openChar, closeChar) = ('{', '}');
+                        break;
+                    case '<' or '>':
+                        (openChar, closeChar) = ('<', '>');
+                        break;
+                    default:
+                        return false;
+                }
+
+                // Find the bracket opening before the cursor, and the one closing it
+                start = -1;
+                end = -1;
+                var depth = 0;
+                for (var i = col; i >= 0; i--)
+                {
+                    if (line[i] == closeChar && i != col)
+                    {
+                        depth++;
+                    }
+                    else if (line[i] == openChar)
+                    {
+                        if (depth == 0)
+                        {
+                            start = i;
+                            break;
+                        }
+
+                        depth--;
+                    }
+                }
+
+                if (start < 0) return false;
+                depth = 0;
+                for (var i = start + 1; i < line.Length; i++)
+                {
+                    if (line[i] == openChar)
+                    {
+                        depth++;
+                    }
+                    else if (line[i] == closeChar)
+                    {
+                        if (depth == 0)
+                        {
+                            end = i;
+                            break;
+                        }
+
+                        depth--;
+                    }
+                }
+
+                if (end < 0) return false;
+                if (around)
+                {
+                    end++;
+                }
+                else
+                {
+                    start++;
+                }
+
+                break;
+            }
+        }
+
+        from = Cursor with { Col = start };
+        to = Cursor with { Col = end };
+        return true;
+    }
+
+    #endregion
+
+    #region Visual mode commands
+
+    private bool HandleVisualCommand(char cmd)
+    {
+        switch (cmd)
+        {
+            case 'v':
+                Mode = Mode == EditorMode.Visual ? EditorMode.Normal : EditorMode.Visual;
+                return true;
+            case 'V':
+                Mode = Mode == EditorMode.VisualLine ? EditorMode.Normal : EditorMode.VisualLine;
+                return true;
+            case 'o':
+                // Move the cursor to the other end of the selection
+                (_visualAnchor, Cursor) = (Cursor, _visualAnchor);
+                return true;
+            case 'x':
+                ApplyOperatorToSelection('d', false);
+                return true;
+            case 's':
+                ApplyOperatorToSelection('c', false);
+                return true;
+            case 'X':
+            case 'D':
+                ApplyOperatorToSelection('d', true);
+                return true;
+            case 'Y':
+                ApplyOperatorToSelection('y', true);
+                return true;
+            case 'C':
+            case 'S':
+            case 'R':
+                ApplyOperatorToSelection('c', true);
+                return true;
+            case 'u':
+            case 'U':
+            case '~':
+                ApplyOperatorToSelection(cmd, false);
+                return true;
+            case 'J':
+            {
+                var first = Math.Min(_visualAnchor.Line, Cursor.Line);
+                var last = Math.Max(_visualAnchor.Line, Cursor.Line);
+                Mode = EditorMode.Normal;
+                Cursor = new TextPos(first, 0);
+                JoinLines(last - first + 1);
+                return true;
+            }
+            case 'p':
+            case 'P':
+            {
+                // Replace the selection with the register
+                var text = GetRegister(out _).TrimEnd(TextBuffer.NewLine);
+                var from = TextPos.Min(_visualAnchor, Cursor);
+                var to = TextPos.Max(_visualAnchor, Cursor);
+                if (Mode == EditorMode.VisualLine)
+                {
+                    from = new TextPos(from.Line, 0);
+                    to = to with { Col = Buffer.LineLength(to.Line) };
+                }
+                else if (to.Col < Buffer.LineLength(to.Line))
+                {
+                    to = to with { Col = to.Col + TextMetrics.ElementLength(Buffer[to.Line], to.Col) };
+                }
+
+                Mode = EditorMode.Normal;
+                Delete(from, to);
+                Cursor = Left(Insert(from, text), 1);
+                return true;
+            }
+            case 'i':
+            case 'a':
+            case 'I':
+            case 'A':
+            case '.':
+                return true; // Not available in Visual mode
+            default:
+                return false;
+        }
+    }
+
+    #endregion
+
+    #region Normal mode commands
+
+    private void HandleCommand(char cmd, int? count)
+    {
+        var n = count ?? 1;
+        var line = CurrentLine;
+        switch (cmd)
+        {
+            // Entering Insert mode
+            case 'i':
+                EnterInsert();
+                break;
+            case 'a':
+                if (line.Length > 0)
+                {
+                    Cursor = Cursor with { Col = Cursor.Col + TextMetrics.ElementLength(line, Cursor.Col) };
+                }
+
+                EnterInsert();
+                break;
+            case 'I':
+                Cursor = Cursor with { Col = FirstNonBlank(Cursor.Line) };
+                EnterInsert();
+                break;
+            case 'A':
+                Cursor = Cursor with { Col = line.Length };
+                EnterInsert();
+                break;
+            case 'o':
+                Cursor = Insert(Cursor with { Col = line.Length }, TextBuffer.NewLine.ToString());
+                EnterInsert();
+                break;
+            case 'O':
+                Insert(Cursor with { Col = 0 }, TextBuffer.NewLine.ToString());
+                Cursor = Cursor with { Col = 0 };
+                EnterInsert();
+                break;
+
+            // Shorthands for an operator and a motion
+            case 'x':
+                OperatorWithMotion('d', 'l', n);
+                break;
+            case 'X':
+                OperatorWithMotion('d', 'h', n);
+                break;
+            case 'D':
+                OperatorWithMotion('d', '$', n);
+                break;
+            case 'C':
+                OperatorWithMotion('c', '$', n);
+                break;
+            case 's':
+                OperatorWithMotion('c', 'l', n);
+                break;
+            case 'S':
+                ApplyOperatorToLines('c', Cursor.Line, Math.Min(Buffer.LineCount - 1, Cursor.Line + n - 1));
+                break;
+            case 'Y':
+                ApplyOperatorToLines('y', Cursor.Line, Math.Min(Buffer.LineCount - 1, Cursor.Line + n - 1));
+                break;
+
+            // Editing
+            case 'p':
+                Put(true, n);
+                break;
+            case 'P':
+                Put(false, n);
+                break;
+            case 'J':
+                JoinLines(Math.Max(2, n));
+                break;
+            case '~':
+            {
+                var to = Right(Cursor, n, true);
+                ChangeCase('~', Cursor, to);
+                Cursor = to;
+                break;
+            }
+            case 'u':
+                Undo(n);
+                break;
+            case 'U':
+            case CtrlR:
+                Redo(n);
+                break;
+            case '.':
+                Repeat(n);
+                break;
+
+            // Visual mode
+            case 'v':
+                _visualAnchor = Cursor;
+                Mode = EditorMode.Visual;
+                break;
+            case 'V':
+                _visualAnchor = Cursor;
+                Mode = EditorMode.VisualLine;
+                break;
+
+            // Command line and search
+            case ':':
+                OpenCommandLine(':');
+                break;
+            case '/':
+            case '?':
+                OpenCommandLine(cmd);
+                break;
+            case '*':
+            case '#':
+                if (TextObject('w', false, out var from, out var end) && !char.IsWhiteSpace(line[from.Col]))
+                {
+                    if (IsVisual) Mode = EditorMode.Normal;
+                    Cursor = from;
+                    StartSearch(Buffer.GetText(from, end), cmd == '*');
+                }
+
+                break;
+
+            // Registers
+            case CtrlN:
+                Tools.NextLineMemoryIndex();
+                _useSmallRegister = false;
+                ShowRegister();
+                break;
+            case CtrlP:
+                Tools.PreviousLineMemoryIndex();
+                _useSmallRegister = false;
+                ShowRegister();
+                break;
+
+            // Scrolling
+            case CtrlF:
+                ScrollRows(Height * n);
+                break;
+            case CtrlB:
+                ScrollRows(-Height * n);
+                break;
+            case CtrlD:
+                ScrollRows(Math.Max(1, Height / 2));
+                break;
+            case CtrlU:
+                ScrollRows(-Math.Max(1, Height / 2));
+                break;
+            case CtrlE:
+            case CtrlY:
+            {
+                // Scroll the view one row and only move the cursor if it would leave the view
+                ScrollView(cmd == CtrlE ? n : -n);
+                var row = Layout.RowOf(Cursor);
+                if (row < TopRow) MoveRows(TopRow - row);
+                if (row >= TopRow + Height) MoveRows(TopRow + Height - 1 - row);
+                break;
+            }
+        }
+    }
+
+    private void OperatorWithMotion(char op, char motionKey, int count)
+    {
+        if (TryMotion(motionKey, count, true, out var motion)) ApplyOperator(op, motion);
+    }
+
+    // The "r" command: replace characters with another
+    private void ReplaceChars(char replacement, int count)
+    {
+        var line = CurrentLine;
+        var col = Cursor.Col;
+        var replaced = 0;
+        while (replaced < count && col < line.Length)
+        {
+            col += TextMetrics.ElementLength(line, col);
+            replaced++;
+        }
+
+        if (replaced < count) return; // Not enough characters on the line
+        var to = Cursor with { Col = col };
+        Delete(Cursor, to);
+        Cursor = Left(Insert(Cursor, new string(replacement, count)), 1);
+    }
+
+    // The "J" command: join lines, with a single blank space between them
+    private void JoinLines(int lineCount)
+    {
+        for (var i = 1; i < lineCount && Cursor.Line < Buffer.LineCount - 1; i++)
+        {
+            var line = CurrentLine;
+            var next = Buffer[Cursor.Line + 1];
+            var joinAt = Cursor with { Col = line.Length };
+            var nextStart = FirstNonBlank(Cursor.Line + 1);
+            Delete(joinAt, new TextPos(Cursor.Line + 1, nextStart));
+            if (line.Length > 0 && !char.IsWhiteSpace(line[^1]) && nextStart < next.Length)
+            {
+                Insert(joinAt, " ");
+            }
+
+            Cursor = joinAt;
+        }
+    }
+
+    private void Undo(int count)
+    {
+        Buffer.EndStep(Cursor);
+        _doNotRecord = true;
+        while (count-- > 0)
+        {
+            if (Buffer.Undo(out var cursor))
+            {
+                Cursor = cursor;
+            }
+            else
+            {
+                Message = "Already at oldest change";
+                break;
+            }
+        }
+    }
+
+    private void Redo(int count)
+    {
+        Buffer.EndStep(Cursor);
+        _doNotRecord = true;
+        while (count-- > 0)
+        {
+            if (Buffer.Redo(out var cursor))
+            {
+                Cursor = cursor;
+            }
+            else
+            {
+                Message = "Already at newest change";
+                break;
+            }
+        }
+    }
+
+    // The "." command: repeat the last change by replaying its keys
+    private void Repeat(int count)
+    {
+        if (_replaying || _lastChange.Length == 0) return;
+        ResetPending();
+        Buffer.EndStep(Cursor);
+        var keys = _lastChange;
+        _replaying = true;
+        try
+        {
+            while (count-- > 0)
+            {
+                foreach (var key in keys)
+                {
+                    HandleKey(key);
+                }
+            }
+        }
+        finally
+        {
+            _replaying = false;
+            _doNotRecord = true;
+            _request = EditorRequest.None;
+        }
+    }
+
+    #endregion
+
+    #region Registers
+
+    // Yanked and deleted text is kept in the string memory shared by all editors in the session, where the
+    // current string acts as the register used by "p". Text ending with a newline is whole lines.
+    private string _smallRegister = string.Empty; // The last text deleted within a line
+    private bool _useSmallRegister;
+
+    private void StoreRegister(string text, bool linewise, bool small)
+    {
+        if (text.Length == 0) return;
+        if (linewise && !text.EndsWith(TextBuffer.NewLine)) text += TextBuffer.NewLine;
+        _useSmallRegister = small;
+        if (small)
+        {
+            _smallRegister = text;
+        }
+        else
+        {
+            Tools.StoreInLineMemory(text);
+        }
+    }
+
+    private string GetRegister(out bool linewise)
+    {
+        var text = _useSmallRegister ? _smallRegister : Tools.GetCurrentLineFromLineMemory();
+        linewise = !SingleLine && text.EndsWith(TextBuffer.NewLine);
+        return text;
+    }
+
+    // The "p" and "P" commands: insert the register after or before the cursor
+    private void Put(bool after, int count)
+    {
+        var text = GetRegister(out var linewise);
+        if (text.Length == 0) return;
+        if (count > 1) text = new StringBuilder().Insert(0, text, count).ToString();
+        if (linewise)
+        {
+            var line = Cursor.Line;
+            if (!after)
+            {
+                Insert(new TextPos(line, 0), text);
+            }
+            else if (line == Buffer.LineCount - 1)
+            {
+                Insert(new TextPos(line, Buffer.LineLength(line)), TextBuffer.NewLine + text[..^1]);
+                line++;
+            }
+            else
+            {
+                line++;
+                Insert(new TextPos(line, 0), text);
+            }
+
+            Cursor = new TextPos(line, FirstNonBlank(line));
+        }
+        else
+        {
+            var at = Cursor;
+            if (after && CurrentLine.Length > 0)
+            {
+                at = at with { Col = at.Col + TextMetrics.ElementLength(CurrentLine, at.Col) };
+            }
+
+            var end = Insert(at, text);
+            Cursor = text.Contains(TextBuffer.NewLine) ? at : Left(end, 1);
+        }
+    }
+
+    // Insert all strings in the string memory as lines below the cursor
+    private void PutAllRegisters()
+    {
+        var all = Tools.GetAllLinesFromLineMemory();
+        if (all.Count == 0) return;
+        var builder = new StringBuilder();
+        foreach (var text in all)
+        {
+            builder.Append(text.TrimEnd(TextBuffer.NewLine)).Append(TextBuffer.NewLine);
+        }
+
+        var line = Cursor.Line;
+        Insert(new TextPos(line, Buffer.LineLength(line)), TextBuffer.NewLine + builder.ToString()[..^1]);
+        Cursor = new TextPos(line + 1, 0);
+    }
+
+    private void ShowRegister()
+    {
+        if (!Tools.HasLineMemory())
+        {
+            Message = "String memory is empty";
+            return;
+        }
+
+        var text = Tools.GetCurrentLineFromLineMemory();
+        var preview = Tools.TruncateString(text.TrimEnd(TextBuffer.NewLine).Replace(TextBuffer.NewLine, ' '), 40, true);
+        Message = "String " + Tools.GetLineMemoryPosition() + (text.EndsWith(TextBuffer.NewLine) ? " (lines): " : ": ") +
+                  preview;
+    }
+
+    #endregion
+}

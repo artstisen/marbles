@@ -287,6 +287,15 @@ internal static class DialogText
     public const string Loading = "Loading...";
     public const string Reading = "Reading...";
 
+    // Editor status line
+    public const string EditorModeNormal = " NORMAL ";
+    public const string EditorModeInsert = " INSERT ";
+    public const string EditorModeVisual = " VISUAL ";
+    public const string EditorModeVisualLine = " V-LINE ";
+    public const string EditorMemory = "mem";
+    public const string EditorSaved = "Saved";
+    public const string EditorNoChanges = "No changes to save";
+
     // Legacy data file conversion
     public const string LegacyFileConverted = "Data file converted to the current file format";
     public const string LegacyFileCopyColon = "A copy of the original data file was kept as: ";
@@ -320,9 +329,4 @@ internal static class DialogText
     public const string BFalse = "false";
     public const string CancelCommand = "#cancelcommand";
 
-    // Dynamic texts
-    internal static string PressCtrlPlusForOptions()
-    {
-        return " (" + DialogText.CtrlPlus + Keyboard.GetTriggerAsString() + " for Options)";
-    }
 }

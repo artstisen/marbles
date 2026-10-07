@@ -297,7 +297,6 @@ internal static class Init
         Vignette.SetDefaultVignetteState();
         Logo.ResetLogoIndex();
         Logo.ResetLogoText();
-        TextArea.InitCommandMemoryIndex();
         WriteProgressBar(8); // progress
         // Set default colors
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);

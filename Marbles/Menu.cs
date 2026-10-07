@@ -260,7 +260,7 @@ internal static class Menu
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.Edit)
         {
-            WriteMenuItem(Keyboard.CmpTrig() + "H", "Help", true);
+            WriteMenuItem(":help", "Help", true);
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.Search)
         {

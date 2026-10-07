@@ -626,6 +626,33 @@ internal static class Tools
         return 2;
     }
 
+    /// <summary>
+    /// Add a string to the string memory and make it the current one.
+    /// A string already in memory is not added again, but becomes the current one.
+    /// </summary>
+    internal static void StoreInLineMemory(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+        var index = _stringMemory.IndexOf(text);
+        if (index >= 0)
+        {
+            _currentLineMemoryIndex = index;
+            return;
+        }
+
+        _stringMemory.Add(text);
+        LimitLineMemory();
+        _currentLineMemoryIndex = _stringMemory.Count - 1;
+    }
+
+    /// <summary>
+    /// The number of the current string and the total count, like "2/5"
+    /// </summary>
+    internal static string GetLineMemoryPosition()
+    {
+        return (_currentLineMemoryIndex + 1) + "/" + _stringMemory.Count;
+    }
+
     private static bool AlreadyInLineMemory(string text)
     {
         return _stringMemory.Count > 0 && _stringMemory.Any(t => t == text);
@@ -1299,66 +1326,80 @@ internal static class Tools
             _shortcutListPages = new List<List<Shortcut>>();
             // Start by collecting all shortcuts
             _shortcutList.Add(new Shortcut(string.Empty, "Editor Keyboard Functions", true));
-            _shortcutList.Add(new Shortcut(string.Empty, "Primary shortcuts", true));
-            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + Keyboard.KbSave, "Save", false));
-            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + Keyboard.KbSaveExit, "Save and close editor", false));
-            _shortcutList.Add(new Shortcut("Esc", "Deselect/Save/Cancel/Close editor", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Compound keyboard shortcuts", true));
-            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + Keyboard.KbRepeat, "Repeat last shortcut", false));
-            _shortcutList.Add(new Shortcut("CTRL+" + Keyboard.GetTriggerAsString(), "Shortcuts mode", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + Keyboard.GetTriggerAsString(),
-                "Sustain (lock) shortcuts mode", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Esc", "Exit shortcuts mode", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Z",
-                "Undo (" + (TextArea.UndoCacheSize / 3) + " steps)", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Y",
-                "Redo (" + (TextArea.RedoCacheSize / 3) + " steps)", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "S", "Content search", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "L", "Line delete", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "D", "Line duplicate", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "U", "Line/selection to UPPERCASE", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "G", "Line/selection to lowercase", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "B", "Trim blank space (line start/end)", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "T", "Insert ISO timestamp (YYYY-MM-DD HH:MM:SS)",
-                false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "F", "Insert calendar...", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "P", "Generate strong password", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "R", "Clear all", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "K", "Copy all", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "J", "Paste (copy all)", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "String Memory (limit: " + MaxLineMemoryCount + " strings)",
-                true));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "C", "Copy line/selection", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "X", "Cut line/selection", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "V", "Paste current memory string", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Left/Right", "Select from string memory", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Up", "First memory string", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Down", "Last memory string", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Tab", "Insert all", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 5) + "E", "Clear string memory", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Standard shortcuts for document navigation", true));
-            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + "Left/" + Keyboard.KbPreword, "Move cursor to previous word", false));
-            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + "Right/" + Keyboard.KbNxtword, "Move cursor to next word", false));
-            _shortcutList.Add(new Shortcut(DialogText.CtrlShift + "Right", "Forward selection", false));
-            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + Keyboard.KbSelect, "Forward selection mode", false));
-            _shortcutList.Add(new Shortcut(DialogText.ShiftPlus + "Home/End", "Select line", false));
-            _shortcutList.Add(new Shortcut("Home | " + Keyboard.CmpTrig() + "N", "Move cursor to line start", false));
-            _shortcutList.Add(new Shortcut("End  | " + new string(' ', 8) + "M", "Move cursor to line end", false));
-            _shortcutList.Add(new Shortcut("PgUp | " + new string(' ', 8) + "I", "Move cursor up 1 page", false));
-            _shortcutList.Add(new Shortcut("PgDn | " + new string(' ', 8) + "O", "Move cursor down 1 page", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 15) + "Q", "Move cursor to document top", false));
-            _shortcutList.Add(new Shortcut(new string(' ', 15) + "A", "Move cursor to document end", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Basic editing", true));
-            _shortcutList.Add(new Shortcut("Backspace", "Delete left (1 character space/selection)", false));
-            _shortcutList.Add(new Shortcut("Delete", "Delete right (1 character space/selection)", false));
-            _shortcutList.Add(new Shortcut("Tab", "Insert blank space x 4", false));
-            _shortcutList.Add(new Shortcut("Enter", "Insert new line", false));
-            _shortcutList.Add(new Shortcut("Up/Down", "Move cursor", false));
-            _shortcutList.Add(new Shortcut("Left/Right", "Move cursor/Refine selection", false));
-            _shortcutList.Add(new Shortcut(Keyboard.CmpTrig() + "7", "Toggle scroll indicator On/Off (temporary)",
-                false));
-            _shortcutList.Add(new Shortcut(Keyboard.CmpTrig() + "8", "Toggle undo cache On/Off (temporary)", false));
-            _shortcutList.Add(new Shortcut(Keyboard.CmpTrig() + "9", "Toggle row/column display On/Off (temporary)", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Modes", true));
+            _shortcutList.Add(new Shortcut("Esc", "Normal mode (navigate and give commands)", false));
+            _shortcutList.Add(new Shortcut("i a", "Insert mode before/after the cursor", false));
+            _shortcutList.Add(new Shortcut("I A", "Insert mode at line start/end", false));
+            _shortcutList.Add(new Shortcut("o O", "Insert mode on a new line below/above", false));
+            _shortcutList.Add(new Shortcut("v V", "Visual mode (select text/lines)", false));
+            _shortcutList.Add(new Shortcut(":", "Command line (type a command, press Enter)", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Save and close", true));
+            _shortcutList.Add(new Shortcut(":w", "Save", false));
+            _shortcutList.Add(new Shortcut(":wq :x ZZ", "Save and close editor", false));
+            _shortcutList.Add(new Shortcut(":q", "Close editor (asks to save changes)", false));
+            _shortcutList.Add(new Shortcut(":q! ZQ", "Close editor without saving", false));
+            _shortcutList.Add(new Shortcut(":help", "Show this help", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Moving the cursor (Normal and Visual mode)", true));
+            _shortcutList.Add(new Shortcut("h j k l", "Left/Down/Up/Right (as the arrow keys)", false));
+            _shortcutList.Add(new Shortcut("w b e", "Next word/Previous word/End of word", false));
+            _shortcutList.Add(new Shortcut("W B E", "As above, words separated by blank space", false));
+            _shortcutList.Add(new Shortcut("0 _ $", "Line start/First character/Line end", false));
+            _shortcutList.Add(new Shortcut("gg G", "Document top/Document end", false));
+            _shortcutList.Add(new Shortcut("5G :5", "Go to line 5", false));
+            _shortcutList.Add(new Shortcut("{ }", "Previous/Next blank line", false));
+            _shortcutList.Add(new Shortcut("f. t.", "To/Before next \".\" on line (F T: backwards)", false));
+            _shortcutList.Add(new Shortcut("; ,", "Repeat f/t forwards/backwards", false));
+            _shortcutList.Add(new Shortcut("PgUp PgDn", "Move one page up/down", false));
+            _shortcutList.Add(new Shortcut("CTRL+U CTRL+D", "Move half a page up/down", false));
+            _shortcutList.Add(new Shortcut("zt zz zb", "Scroll cursor row to top/center/bottom", false));
+            _shortcutList.Add(new Shortcut("5j 3w ...", "A number repeats a movement or command", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Search", true));
+            _shortcutList.Add(new Shortcut("/text ?text", "Search forwards/backwards", false));
+            _shortcutList.Add(new Shortcut("n N", "Next/Previous match", false));
+            _shortcutList.Add(new Shortcut("*", "Search for the word under the cursor", false));
+            _shortcutList.Add(new Shortcut("Esc :noh", "Remove search highlighting", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Editing (Normal mode)", true));
+            _shortcutList.Add(new Shortcut("x X", "Delete character under/before the cursor", false));
+            _shortcutList.Add(new Shortcut("r.", "Replace character with \".\"", false));
+            _shortcutList.Add(new Shortcut("d c y", "Delete/Change/Yank (copy) + movement:", false));
+            _shortcutList.Add(new Shortcut("  dw d$ dG", "Delete word/to line end/to document end", false));
+            _shortcutList.Add(new Shortcut("  cw ciw ci\"", "Change word/whole word/text in quotes", false));
+            _shortcutList.Add(new Shortcut("  yy dd cc", "Yank/Delete/Change line (3dd: 3 lines)", false));
+            _shortcutList.Add(new Shortcut("D C Y", "Delete/Change to line end, Yank line", false));
+            _shortcutList.Add(new Shortcut("p P", "Paste after/before the cursor", false));
+            _shortcutList.Add(new Shortcut("J", "Join line with the next", false));
+            _shortcutList.Add(new Shortcut(">> <<", "Indent/Unindent line", false));
+            _shortcutList.Add(new Shortcut("~", "Switch case of character", false));
+            _shortcutList.Add(new Shortcut("gUU guu", "Line to UPPERCASE/lowercase", false));
+            _shortcutList.Add(new Shortcut("gUw guw", "Word to UPPERCASE/lowercase", false));
+            _shortcutList.Add(new Shortcut("u", "Undo (" + TextBuffer.MaxUndoSteps + " steps)", false));
+            _shortcutList.Add(new Shortcut("U CTRL+R", "Redo", false));
+            _shortcutList.Add(new Shortcut(".", "Repeat last change", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Visual mode (select with the movement keys)", true));
+            _shortcutList.Add(new Shortcut("d y c", "Delete/Yank/Change selection", false));
+            _shortcutList.Add(new Shortcut("p", "Replace selection with pasted text", false));
+            _shortcutList.Add(new Shortcut("U u ~", "Selection to UPPERCASE/lowercase/switch", false));
+            _shortcutList.Add(new Shortcut("> < J", "Indent/Unindent/Join selected lines", false));
+            _shortcutList.Add(new Shortcut("iw i\" i(", "Select word/text in quotes/in brackets", false));
+            _shortcutList.Add(new Shortcut("o", "Move cursor to other end of selection", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Insert mode", true));
+            _shortcutList.Add(new Shortcut("Tab", "Insert blank space x " + EditorEngine.TabWidth, false));
+            _shortcutList.Add(new Shortcut("CTRL+W", "Delete word before the cursor", false));
+            _shortcutList.Add(new Shortcut("CTRL+U", "Delete line before the cursor", false));
+            _shortcutList.Add(new Shortcut("CTRL+R", "Paste current memory string", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "String Memory (limit: " + MaxLineMemoryCount + " strings)", true));
+            _shortcutList.Add(new Shortcut("y d c", "Yanked/deleted text is added to memory", false));
+            _shortcutList.Add(new Shortcut("CTRL+P CTRL+N", "Select previous/next memory string", false));
+            _shortcutList.Add(new Shortcut(":reg", "Show current memory string", false));
+            _shortcutList.Add(new Shortcut(":putall", "Insert all memory strings", false));
+            _shortcutList.Add(new Shortcut(":regclear", "Clear string memory", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Other commands", true));
+            _shortcutList.Add(new Shortcut(":ts", "Insert ISO timestamp (YYYY-MM-DD HH:MM:SS)", false));
+            _shortcutList.Add(new Shortcut(":cal", "Insert calendar...", false));
+            _shortcutList.Add(new Shortcut(":pw", "Insert generated strong password", false));
+            _shortcutList.Add(new Shortcut(":trim", "Trim blank space (line start/end)", false));
+            _shortcutList.Add(new Shortcut(":%y :%d", "Yank all/Delete all", false));
+            _shortcutList.Add(new Shortcut(":clear", "Clear all", false));
         }
 
         // Get shortcuts as pages (must be done every time to compensate for changes in output dimensions)
@@ -1420,7 +1461,7 @@ internal static class Tools
         for (int i = 0; i < tempOutput.Length; i++)
         {
             // count lines
-            tempPreviewLineCounter += Actions.GetPreviewLineCount(tempOutput[i]);
+            tempPreviewLineCounter += 1;
             // Insert line of text
             Console.WriteLine(tempOutput[i]);
 

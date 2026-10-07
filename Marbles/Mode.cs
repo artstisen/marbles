@@ -59,39 +59,4 @@ class Mode
     }
 
     #endregion
-
-
-
-
-
-    #region Editor modes
-
-    public static EditorScrollIndicator CurrentEditorScrollIndicator { get; set; }
-
-    public enum EditorScrollIndicator
-    {
-        Off,
-        On
-    }
-
-    public static void SetEditorScrollIndicator(EditorScrollIndicator mode)
-    {
-        CurrentEditorScrollIndicator = mode;
-    }
-
-    public static EditorUndoState CurrentEditorUndoState { get; set; }
-
-    public enum EditorUndoState
-    {
-        Off,
-        On
-    }
-
-    public static void SetEditorUndoState(EditorUndoState mode)
-    {
-        CurrentEditorUndoState = mode;
-    }
-
-    #endregion
-
 }
