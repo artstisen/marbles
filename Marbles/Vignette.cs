@@ -110,7 +110,7 @@ internal static class Vignette
         {
             Entries.NewEntry("Calendar info " + VignetteName, Entries.NewLineCharString + "Press F to view calendar" +
                                                               Entries.NewLineCharString + new string('-', 24) +
-                                                              Entries.NewLineCharString + "Press [" + Keyboard.CmpTrig() + "1-3] to change" +
+                                                              Entries.NewLineCharString + "Type [:pin 1-3] to change" +
                                                               Entries.NewLineCharString + "entry color...");
         }
         else

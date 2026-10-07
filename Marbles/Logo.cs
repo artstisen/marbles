@@ -42,7 +42,7 @@ internal static class Logo
         @" ",
         @" ",
         @"Your custom text from " + FileIo.SettingsFileName + "...",
-        @"(from login menu press " + DialogText.CtrlPlus + Keyboard.GetTriggerAsString() + ", S and set the \"logotxt\" property)",
+        @"(from login menu press Esc, S and set the ""logotxt"" property)",
         @" "
     };
 

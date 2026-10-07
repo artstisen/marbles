@@ -276,7 +276,6 @@ internal static class Init
         WriteProgressBar(1); // progress
         Log(DialogText.InitInitializing, true);
         WriteProgressBar(2); // progress
-        Keyboard.ResetTriggerKey();
         WriteProgressBar(3); // progress
         Mode.SetMode(Mode.SelectedMode.Login); // Mode decides everything, if logged in/authorized, if searching etc.
         FileActions.CurrentFileType = FileActions.FileType.Normal; // Set file type

@@ -22,7 +22,8 @@ internal static class DialogText
                                 "This application is cross-platform software that can run on different\n" +
                                 "systems. Due to the difference between terminal programs and their\n" +
                                 "tradition of using specific keyboard shortcuts for built-in functions,\n" +
-                                "there are composite keyboard shortcuts for many operations in Marbles";
+                                "Marbles is operated with plain keys and commands in the style of Vim.\n" +
+                                "Press ? for help.";
 
     //                                                                                \n <- Max line length
     // --------------------------------------------------------------------------------
@@ -114,7 +115,7 @@ internal static class DialogText
     public const string Spacebar = "Spacebar";
 
     // Indicators/Misc. texts
-    public const string DocumentScroll = " (Press Spacebar to scroll down, E to scroll up) ";
+    public const string DocumentScroll = " (Press j/k to scroll, Spacebar/b for page down/up) ";
     public const string TitleCopyText = " (copy)";
     public const string InitNoData = "No data";
     public const string CheckedSetting = "[x]";
@@ -177,8 +178,6 @@ internal static class DialogText
     public const string ImportYn = "Import .txt? " + YesNo;
     public const string BackupYn = "Set backup directory? " + YesNo;
     public const string BackupDisableYn = "Disable backup? " + YesNo;
-    public const string SetCompoundTrigger = "Set shortcut key? " + YesNo;
-    public const string SetDefaultCompoundTrigger = "Reset shortcut key? " + YesNo;
     public const string DiscardTransferCollection = "Discard transfer? " + YesNo;
     public const string ClearStringMemory = "Clear string memory? " + YesNo;
 
@@ -251,7 +250,6 @@ internal static class DialogText
 
     // Status messages (styled)
     public const string NoEntrySelected = "No entry selected";
-    public const string InvalidTriggerKey = "Invalid or reserved trigger key";
     public const string PasswordLength = "Password must be between 8 and 32 characters long";
     public const string PasswordMismatch = "The two passwords do not match";
     public const string InvalidPasswordDot = "Invalid password."; // Must have period.
@@ -286,6 +284,10 @@ internal static class DialogText
     public const string LoadComplete = "Load complete.";
     public const string Loading = "Loading...";
     public const string Reading = "Reading...";
+
+    // Command line
+    public const string NotACommand = "Not a command: ";
+    public const string SelectFileDirectory = "File/Directory";
 
     // Editor status line
     public const string EditorModeNormal = " NORMAL ";

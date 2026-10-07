@@ -125,7 +125,7 @@ internal static class Menu
                 WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 WriteMenuItem("N", "New", true);
-                WriteMenuItem("S", "Search", true);
+                WriteMenuItem("S /", "Search", true);
                 WriteMenuItem("R", "Reselect", true);
                 WriteMenuItem("F", "Favorites " + Entries.GetFavoritesCount(), true);
                 WriteMenuItem("X", "Logout", true);
@@ -139,11 +139,11 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 WriteMenuItem("T", "Top 20", true);
                 WriteMenuItem("M", "Session history " + Entries.GetSessionCountAsString(), true);
-                WriteMenuItem("L", "List all " + Entries.GetEntriesCountAsString(), true);
+                WriteMenuItem("A", "List all " + Entries.GetEntriesCountAsString(), true);
                 WriteMenuItem("I", "File info", true);
                 WriteMenuItem("D", "Display timestamp", true);
-                WriteMenuItem("H", "Help", true);
-                WriteMenuItem("A", "About", true);
+                WriteMenuItem("?", "Help", true);
+                WriteMenuItem(":about", "About", true);
             }
             else if (_manageModePage == 2)
             {
@@ -151,23 +151,21 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem(Keyboard.CmpTrig() + "Z", "Undo deletion", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "J", "Transfer " + Entries.GetTransferState(), true);
-                WriteMenuItem(Keyboard.CmpTrig() + "I", "Import .txt", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "V", "Text vignette", true);
+                WriteMenuItem(":undelete", "Undo deletion", true);
+                WriteMenuItem(":transfer", "Transfer " + Entries.GetTransferState(), true);
+                WriteMenuItem(":import", "Import .txt", true);
+                WriteMenuItem(":vignette", "Text vignette", true);
                 WriteMenuItem("", "-", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "M", "Change dimensions " + Init.GetOutputDimensions(), true);
-                WriteMenuItem(Keyboard.CmpTrig() + "P",
+                WriteMenuItem(":size", "Change dimensions " + Init.GetOutputDimensions(), true);
+                WriteMenuItem(":color",
                     "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] Color preset", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "L", "[" + (Logo.GetLogoIndex() + 1) + "] Logo preset", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "K", FileIo.GetBackupStatus() + " Toggle Backup", true);
-                WriteMenuItem(Keyboard.CmpTrig() + Keyboard.GetTriggerAsString(),
-                    "[" + Keyboard.GetTriggerAsString() + "] Set shortcuts key", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "E", "Reset shortcuts key", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "R", "Reset password", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "X", "Default settings", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "Y", "Restart Marbles", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "Q", "Exit", true);
+                WriteMenuItem(":logo", "[" + (Logo.GetLogoIndex() + 1) + "] Logo preset", true);
+                WriteMenuItem(":backup", FileIo.GetBackupStatus() + " Toggle Backup", true);
+                WriteMenuItem(":password", "Reset password", true);
+                WriteMenuItem(":defaults", "Default settings", true);
+                WriteMenuItem(":restart", "Restart Marbles", true);
+                WriteMenuItem(":logout", "Logout", true);
+                WriteMenuItem(":q", "Exit", true);
             }
             else if (_manageModePage == 3)
             {
@@ -176,7 +174,7 @@ internal static class Menu
                 WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 //Console.WriteLine(" Change color scheme");
-                WriteMenuItem(Keyboard.CmpTrig() + "G", "Unlock color scheme ", false);
+                WriteMenuItem(":scheme", "Unlock color scheme ", false);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
                 Console.Write("[LOCKED]\n");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
@@ -202,6 +200,7 @@ internal static class Menu
                     ConsoleColors.ColorPreset.AttentionInverted, true, false);
                 WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample, "Warning",
                     ConsoleColors.ColorPreset.WarningInverted, true, false);
+                WriteMenuItem(new string(' ', 2) + "h j k l", "Select and change (as the arrow keys)", true);
                 WriteMenuItem(new string(' ', 2) + "T", "Toggle Text/Background", true);
                 //WriteMenuItem(new string(' ', 2) + "P", "Cycle color presets", true);
                 WriteMenuItem(new string(' ', 2) + "E", "Reset", true);
@@ -225,7 +224,7 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation("1/3"));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem("Enter", "Edit", true);
+                WriteMenuItem("Enter I", "Edit", true);
                 WriteMenuItem("T", "Title", true);
                 WriteExtendedMenuItem("F", GetFavoriteState(), "Favorite",
                     Actions.GetHighlightPresetFromCurrentType(Entries.CurrentEntry,
@@ -233,18 +232,18 @@ internal static class Menu
                     true, true);
                 //WriteMenuItem("F", "Favorite" + GetFavoriteState(), true);
                 WriteMenuItem("D", "Duplicate", true);
-                WriteMenuItem("S", "Content search", true);
+                WriteMenuItem("S /", "Content search", true);
             }
             else if (_viewModePage == 1)
             {
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation("2/3"));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem(Keyboard.CmpTrig() + "D", "Delete", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "R", "Revert", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "J", "Transfer " + Entries.GetTransferState(), true);
-                WriteMenuItem(Keyboard.CmpTrig() + "G", "Import", true);
-                WriteMenuItem(Keyboard.CmpTrig() + "E", "Export", true);
+                WriteMenuItem(":delete", "Delete", true);
+                WriteMenuItem(":revert", "Revert", true);
+                WriteMenuItem(":transfer", "Transfer " + Entries.GetTransferState(), true);
+                WriteMenuItem(":import", "Import", true);
+                WriteMenuItem(":export", "Export", true);
             }
             else if (_viewModePage == 2)
             {
@@ -252,9 +251,9 @@ internal static class Menu
                 WriteMenuExtension(GetMenuNavigation("3/3"));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 WriteMenuItem("N", "New", true);
-                WriteMenuItem("H", "Help", true);
+                WriteMenuItem("?", "Help", true);
                 WriteMenuItem("X", "Logout", true);
-                WriteMenuItem("Esc", "Return", true);
+                WriteMenuItem("Esc :q", "Return", true);
                 WriteMenuItem("", "", true);
             }
         }
@@ -266,18 +265,18 @@ internal static class Menu
         {
             if (Mode.CurrentRecallMode != Mode.RecallMode.Favorites)
             {
-                WriteMenuItem("Up/Down", "Select", true);
+                WriteMenuItem("j k", "Select", true);
             }
-            WriteMenuItem("G or 1-9+0", "Select by number", true);
-            WriteMenuItem(DialogText.CtrlPlus + Keyboard.GetTriggerAsString() + ", F", "Toggle favorite/pin", true);
+            WriteMenuItem("1-9+0 :12", "Select by number", true);
+            WriteMenuItem("P", "Toggle favorite/pin", true);
             if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites)
             {
-                WriteMenuItem(DialogText.CtrlPlus + Keyboard.GetTriggerAsString() + ", 1-3", "Pinned color", true);
+                WriteMenuItem(":pin 1-3", "Pinned color", true);
                 WriteMenuItem("Tab", "Arrange pinned", true);
             }
             else
             {
-                WriteMenuItem("Esc", "Return", true); 
+                WriteMenuItem(":title", "Change title (:delete Delete)", true);
             }
         }
         else
@@ -289,7 +288,7 @@ internal static class Menu
 
     private static string GetMenuNavigation(string pages)
     {
-        return "<- " + pages + " ->";
+        return "<- " + pages + " ->  h/l";
     }
 
     private static string GetFavoriteState()
@@ -788,6 +787,7 @@ internal static class Menu
         if (string.IsNullOrEmpty(extension)) return;
         Tools.CursorReturn();
         Console.Write(" " + extension);
+        Tools.CursorReturn();
         Tools.CursorDown();
     }
 

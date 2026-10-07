@@ -273,6 +273,11 @@ internal static class Tools
     {
         _pass = string.Empty;
         _exitLoop = false;
+        // Open the options menu again after a file or directory was selected from it
+        if (enableShortcuts && _reopenLoginOptions && !FileActions.IsLockedForMove())
+        {
+            ShowLoginOptions();
+        }
 
         do
         {
@@ -281,116 +286,10 @@ internal static class Tools
             HideCursor();
             var key = _keyInfo.Key;
 
-            // Handle all trigger keys first
-            if (!FileActions.IsLockedForMove() && Keyboard.IsPrimaryShortcutTrigger(_keyInfo, string.Empty))
+            // Esc in an empty password field opens the options menu
+            if (enableShortcuts && key == ConsoleKey.Escape && !FileActions.IsLockedForMove() && _pass.Length == 0)
             {
-                // Display options menu on login page
-                var tempShortcuts = new List<Shortcut>
-                {
-                    new("I", DialogText.FileInfo, false, 13),
-                    new("N", DialogText.NewFile, false, 13),
-                    new("X", DialogText.RenameFile, false, 13),
-                    new("C", DialogText.CopyFile, false, 13),
-                    new("D", DialogText.DeleteFile, false, 13),
-                    new("M", DialogText.MergeFiles, false, 13),
-                    new(string.Empty, "-", true, 13),
-                    new("R/Y", DialogText.Refresh + "/" + DialogText.Restart, false, 13),
-                    new("L/S", DialogText.Log + "/" + FileIo.SettingsFileName, false, 13),
-                    new("Q", DialogText.Exit, false, 13)
-                };
-                Menu.FloatingMenu(DialogText.CaptionsOptions, tempShortcuts, 11, 14, false);
-
-                // Get second key
-                _keyInfo = Console.ReadKey(true);
-                if (_keyInfo.Key == ConsoleKey.R)
-                {
-                    // Refresh
-                    LoginRoutine(true);
-                }
-                else if (_keyInfo.Key == ConsoleKey.Y)
-                {
-                    // Restart
-                    Restart();
-                }
-                else if (_keyInfo.Key == ConsoleKey.I)
-                {
-                    // File info
-                    FileActions.ShowDataFileInfo(false);
-                    LoginRoutine(true);
-                }
-                else if (_keyInfo.Key == ConsoleKey.N)
-                {
-                    // New data file
-                    if (FileActions.NewDataFilePrompt())
-                    {
-                        Init.Log("New file: " + FileIo.GetFileName(), false);
-                    }
-
-                    LoginRoutine(true);
-                }
-                else if (_keyInfo.Key == ConsoleKey.X)
-                {
-                    // Rename file
-                    FileActions.RenameCurrentDataFile();
-                    LoginRoutine(true);
-                }
-                else if (_keyInfo.Key == ConsoleKey.C)
-                {
-                    // Copy file
-                    FileActions.CopyCurrentDataFile();
-                    LoginRoutine(true);
-                }
-                else if (_keyInfo.Key == ConsoleKey.D)
-                {
-                    // Delete file
-                    FileActions.DeleteCurrentDataFile();
-                    LoginRoutine(true);
-                }
-                else if (_keyInfo.Key == ConsoleKey.M)
-                {
-                    // Merge files
-                    MergeTool merge = new MergeTool();
-                    merge.MergeExport();
-                    LoginRoutine(true);
-                }
-                else if (_keyInfo.Key == ConsoleKey.L)
-                {
-                    // Log
-                    Init.WriteLog();
-                    LoginRoutine(true);
-                }
-                else if (_keyInfo.Key == ConsoleKey.S)
-                {
-                    // Settings
-                    Mode.SetMode(Mode.SelectedMode.Edit);
-                    ClearScreen();
-                    Actions.DrawEditSettingsMenu();
-                    TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                        Init.LineCount - 5, FileIo.ReadSettingsFile(), 0, false, false, false, 1);
-                    // Cleanup
-                    textArea.ClearUndoRedoCache();
-                    // Restart if settings where saved to reload with new settings
-                    if (textArea.SaveWasInvoked)
-                    {
-                        ColdRestart();
-                    }
-                    else
-                    {
-                        LoginRoutine(true);
-                    }
-                }
-                else if (_keyInfo.Key == ConsoleKey.Q)
-                {
-                    // Exit directly
-                    ExitApplication();
-                }
-                else
-                {
-                    Keyboard.DisplayUnboundKey(_keyInfo);
-                    // Return to normal
-                    Keyboard.ClearTopIndicatorArea();
-                    LoginRoutine(true);
-                }
+                ShowLoginOptions();
             }
             else if (key == ConsoleKey.Enter)
             {
@@ -497,6 +396,147 @@ internal static class Tools
         } while (!_exitLoop);
 
         return _pass;
+    }
+
+    private static bool _reopenLoginOptions;
+
+    // The options of the login page: shown in a menu, where the next key selects an option
+    private static void ShowLoginOptions()
+    {
+        _reopenLoginOptions = false;
+        var tempShortcuts = new List<Shortcut>
+        {
+            new("I", DialogText.FileInfo, false, 13),
+            new("N", DialogText.NewFile, false, 13),
+            new("X", DialogText.RenameFile, false, 13),
+            new("C", DialogText.CopyFile, false, 13),
+            new("D", DialogText.DeleteFile, false, 13),
+            new("M", DialogText.MergeFiles, false, 13),
+            new(string.Empty, "-", true, 13),
+            new("h l / j k", DialogText.SelectFileDirectory, false, 13),
+            new("R/Y", DialogText.Refresh + "/" + DialogText.Restart, false, 13),
+            new("G/S", DialogText.Log + "/" + FileIo.SettingsFileName, false, 13),
+            new("Q", DialogText.Exit, false, 13)
+        };
+        Menu.FloatingMenu(DialogText.CaptionsOptions, tempShortcuts, 10, 14, false);
+
+        // Get second key
+        _keyInfo = Console.ReadKey(true);
+        if (_keyInfo.Key == ConsoleKey.R)
+        {
+            // Refresh
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.Y)
+        {
+            // Restart
+            Restart();
+        }
+        else if (_keyInfo.Key == ConsoleKey.I)
+        {
+            // File info
+            FileActions.ShowDataFileInfo(false);
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.N)
+        {
+            // New data file
+            if (FileActions.NewDataFilePrompt())
+            {
+                Init.Log("New file: " + FileIo.GetFileName(), false);
+            }
+
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.X)
+        {
+            // Rename file
+            FileActions.RenameCurrentDataFile();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.C)
+        {
+            // Copy file
+            FileActions.CopyCurrentDataFile();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.D)
+        {
+            // Delete file
+            FileActions.DeleteCurrentDataFile();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.M)
+        {
+            // Merge files
+            MergeTool merge = new MergeTool();
+            merge.MergeExport();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.G)
+        {
+            // Log
+            Init.WriteLog();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.S)
+        {
+            // Settings
+            Mode.SetMode(Mode.SelectedMode.Edit);
+            ClearScreen();
+            Actions.DrawEditSettingsMenu();
+            TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
+                Init.LineCount - 5, FileIo.ReadSettingsFile(), 0, false, false, false, 1);
+            // Cleanup
+            textArea.ClearUndoRedoCache();
+            // Restart if settings where saved to reload with new settings
+            if (textArea.SaveWasInvoked)
+            {
+                ColdRestart();
+            }
+            else
+            {
+                LoginRoutine(true);
+            }
+        }
+        else if (_keyInfo.Key == ConsoleKey.Q)
+        {
+            // Exit directly
+            ExitApplication();
+        }
+        else if (_keyInfo.Key == ConsoleKey.H)
+        {
+            // Previous datafile (and keep the options open)
+            _reopenLoginOptions = true;
+            FileBrowser.SelectPreviousDataFile();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.L)
+        {
+            // Next datafile
+            _reopenLoginOptions = true;
+            FileBrowser.SelectNextDataFile();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.K)
+        {
+            // Next sub directory
+            _reopenLoginOptions = true;
+            FileBrowser.NextSubfolder();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.J)
+        {
+            // Previous sub directory
+            _reopenLoginOptions = true;
+            FileBrowser.PreviousSubfolder();
+            LoginRoutine(true);
+        }
+        else
+        {
+            // Close the options
+            LoginRoutine(true);
+        }
     }
 
     internal static string ReadMaskedSimple(bool enableCancelCommand)
@@ -984,10 +1024,7 @@ internal static class Tools
                 // Additional menu items
                 if (!FileBrowser.HasSubFolders()) Menu.DimMenuItem = true;
                 Menu.WriteMenuItem(DialogText.Spacebar, DialogText.MoveFile, true);
-                Menu.WriteMenuItem(DialogText.Escape, DialogText.Clear, true);
-                // Divider
-                //Menu.WriteMenuItem(string.Empty,"-" , true);
-                Menu.WriteMenuItem(DialogText.CtrlPlus + Keyboard.GetTriggerKey(), DialogText.CaptionsMoreOptions, true);
+                Menu.WriteMenuItem(DialogText.Escape, DialogText.Clear + "/" + DialogText.CaptionsMoreOptions, true);
             }
 
             // Place cursor at login box
@@ -1325,7 +1362,19 @@ internal static class Tools
             _shortcutList = new List<Shortcut>();
             _shortcutListPages = new List<List<Shortcut>>();
             // Start by collecting all shortcuts
-            _shortcutList.Add(new Shortcut(string.Empty, "Editor Keyboard Functions", true));
+            _shortcutList.Add(new Shortcut(string.Empty, "Keyboard Functions", true));
+            _shortcutList.Add(new Shortcut(string.Empty, "Menus and lists", true));
+            _shortcutList.Add(new Shortcut("h l", "Previous/Next page (as Left/Right)", false));
+            _shortcutList.Add(new Shortcut("j k", "Select in lists/Scroll text (as Down/Up)", false));
+            _shortcutList.Add(new Shortcut("gg G", "First/Last (page, entry or text)", false));
+            _shortcutList.Add(new Shortcut("/", "Search", false));
+            _shortcutList.Add(new Shortcut("?", "Show this help", false));
+            _shortcutList.Add(new Shortcut(":", "Command line (commands are shown in the menus)", false));
+            _shortcutList.Add(new Shortcut(":q", "Close/Return (in the main menu: Exit Marbles)", false));
+            _shortcutList.Add(new Shortcut(":qa", "Exit Marbles", false));
+            _shortcutList.Add(new Shortcut(":logout", "Logout", false));
+            _shortcutList.Add(new Shortcut("Esc", "Return/Cancel (login page: Options)", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Editor", true));
             _shortcutList.Add(new Shortcut(string.Empty, "Modes", true));
             _shortcutList.Add(new Shortcut("Esc", "Normal mode (navigate and give commands)", false));
             _shortcutList.Add(new Shortcut("i a", "Insert mode before/after the cursor", false));

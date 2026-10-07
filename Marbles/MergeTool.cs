@@ -553,7 +553,7 @@ internal class MergeTool
             DisplaySelectedFile(_fileIndex, _filesList.Count);
             do
             {
-                var c = Console.ReadKey(intercept: true);
+                var c = Keyboard.ReadNavigationKey();
                 if (c.Key == ConsoleKey.LeftArrow || (c.Key == ConsoleKey.Tab && c.Modifiers == ConsoleModifiers.Shift))
                 {
                     // Previous file

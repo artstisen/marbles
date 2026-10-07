@@ -1,6 +1,5 @@
 ﻿using System.Xml;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Marbles;
 
@@ -893,18 +892,6 @@ internal static class FileIo
         _tempSettings += "linecount=" + Init.LineCount + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
-        _tempSettings += "; KEY MAPPING" + Entries.NewLineChar;
-        // Compound shortcut key
-        _tempSettings += "kbtrigger=" +Keyboard.GetTriggerAsString() + Entries.NewLineChar;
-        // Additional keys
-        _tempSettings += "kbsave=" + Keyboard.KbSave + Entries.NewLineChar;
-        _tempSettings += "kbsavexit=" + Keyboard.KbSaveExit + Entries.NewLineChar;
-        _tempSettings += "kbrepeat=" + Keyboard.KbRepeat + Entries.NewLineChar;
-        _tempSettings += "kbnxtword=" + Keyboard.KbNxtword + Entries.NewLineChar;
-        _tempSettings += "kbpreword=" + Keyboard.KbPreword + Entries.NewLineChar;
-        _tempSettings += "kbselect=" + Keyboard.KbSelect + Entries.NewLineChar;
-        // Comment
-        _tempSettings += Entries.NewLineChar;
         _tempSettings += "; OPTIONAL" + Entries.NewLineChar;
         // Vignette
         _tempSettings += "vignette=" + Vignette.GetVignetteState() + Entries.NewLineChar;
@@ -975,246 +962,32 @@ internal static class FileIo
 
 
     internal static string LoadSettingsErrorMessage = "";
-    private static List<string> _settingsList = new();
-    private static string _tempLoadSettingsStatus = string.Empty;
-    private static string[]? _tempLoadedSettings;
+    private const int ColorSettingsCount = 12; // color1 - color12 (the background color, 0, is not used)
 
+    /// <summary>
+    /// Load the settings file. The settings are read by name, so they can be in any order.
+    /// Missing or invalid settings get their default value and unknown settings (as those
+    /// of earlier versions) are ignored.
+    /// </summary>
+    /// <returns>False if the settings file could not be read</returns>
     internal static bool LoadSettings()
     {
         if (CheckDataDirectory())
         {
             try
             {
-                // Load the file into memory
-                _tempLoadSettingsStatus = ReadSettingsFile();
-                // Check for error codes
-                if (_tempLoadSettingsStatus != DialogText.ErrorReadingFile &&
-                    _tempLoadSettingsStatus != DialogText.FileNotFound)
+                var content = ReadSettingsFile();
+                if (content == DialogText.ErrorReadingFile)
                 {
-                    // Extract key/value pairs
-                    if (!string.IsNullOrEmpty(_tempLoadSettingsStatus))
-                    {
-                        _settingsList = new List<string>();
-                        _tempLoadedSettings = Tools.SplitStringOnNewLine(_tempLoadSettingsStatus, true);
-                        for (int i = 0; i < _tempLoadedSettings.Length; i++)
-                        {
-                            _tempLoadedSettings[i] = Tools.RemoveNewLineChars(_tempLoadedSettings[i]);
-                            // Only add lines that are not sections, comments and line breaks (at the beginning of lines)
-                            if (_tempLoadedSettings[i].Length > 0 && !Regex.IsMatch(_tempLoadedSettings[i], @"^\[|^\;|^\#", RegexOptions.Singleline))
-                            {
-                                // Split on the first "=" only, as values (paths, logo text) may contain the character
-                                _settingsList.Add(_tempLoadedSettings[i].Split("=", 2)[1]);
-                            }
-                        }
+                    LoadSettingsErrorMessage = content;
+                    return false;
+                }
 
-                        // Only continue if settings count equals 29
-                        if (_settingsList.Count == 29)
-                        {
-                            // Line width
-                            if (_settingsList[0].Length > 0 && Tools.IsNumeric(_settingsList[0]))
-                            {
-                                Init.SetLineWidth(Convert.ToByte(_settingsList[0]));
-                            }
-                            else
-                            {
-                                Init.SetLineWidth(Init.MinLineWidth);
-                            }
-
-                            // Line count
-                            if (_settingsList[1].Length > 0 && Tools.IsNumeric(_settingsList[1]))
-                            {
-                                Init.SetLineCount(Convert.ToByte(_settingsList[1]));
-                            }
-                            else
-                            {
-                                Init.SetLineCount(Init.MinLineCount);
-                            }
-
-                            // Compound trigger key
-                            if (_settingsList[2].Length > 0)
-                            {
-                                Keyboard.SetTriggerKeyFromString(_settingsList[2]);
-                            }
-                            else
-                            {
-                                Keyboard.ResetTriggerKey();
-                            }
-
-                            // Additional keys (Save key)
-                            if (_settingsList[3].Length > 0)
-                            {
-                                Keyboard.SetAdditionalKeyFromString(_settingsList[3], Keyboard.AdditionalKeys.SaveKey);
-                            }
-                            else
-                            {
-                                Keyboard.SetAdditionalKeyDefault(Keyboard.AdditionalKeys.SaveKey);
-                            }
-
-                            // Additional keys (Save exit key)
-                            if (_settingsList[4].Length > 0)
-                            {
-                                Keyboard.SetAdditionalKeyFromString(_settingsList[4],
-                                    Keyboard.AdditionalKeys.SaveExitKey);
-                            }
-                            else
-                            {
-                                Keyboard.SetAdditionalKeyDefault(Keyboard.AdditionalKeys.SaveExitKey);
-                            }
-
-                            // Additional keys (Repeat key)
-                            if (_settingsList[5].Length > 0)
-                            {
-                                Keyboard.SetAdditionalKeyFromString(_settingsList[5],
-                                    Keyboard.AdditionalKeys.RepeatKey);
-                            }
-                            else
-                            {
-                                Keyboard.SetAdditionalKeyDefault(Keyboard.AdditionalKeys.RepeatKey);
-                            }
-
-                            // Additional keys (Next word key)
-                            if (_settingsList[6].Length > 0)
-                            {
-                                Keyboard.SetAdditionalKeyFromString(_settingsList[6],
-                                    Keyboard.AdditionalKeys.NextWordKey);
-                            }
-                            else
-                            {
-                                Keyboard.SetAdditionalKeyDefault(Keyboard.AdditionalKeys.NextWordKey);
-                            }
-
-                            // Additional keys (Previous word key)
-                            if (_settingsList[7].Length > 0)
-                            {
-                                Keyboard.SetAdditionalKeyFromString(_settingsList[7],
-                                    Keyboard.AdditionalKeys.PreviousWordKey);
-                            }
-                            else
-                            {
-                                Keyboard.SetAdditionalKeyDefault(Keyboard.AdditionalKeys.PreviousWordKey);
-                            }
-
-                            // Additional keys (Select word key)
-                            if (_settingsList[8].Length > 0)
-                            {
-                                Keyboard.SetAdditionalKeyFromString(_settingsList[8],
-                                    Keyboard.AdditionalKeys.SelectWordKey);
-                            }
-                            else
-                            {
-                                Keyboard.SetAdditionalKeyDefault(Keyboard.AdditionalKeys.SelectWordKey);
-                            }
-
-                            // Vignettes
-                            if (_settingsList[9].Length > 0 &&
-                                (Tools.TrimToLower(_settingsList[9]) == DialogText.BTrue ||
-                                 Tools.TrimToLower(_settingsList[9]) == DialogText.BFalse))
-                            {
-                                Vignette.SetVignetteSate(Convert.ToBoolean(Tools.TrimToLower(_settingsList[9])));
-                            }
-                            else
-                            {
-                                Vignette.SetDefaultVignetteState();
-                            }
-
-                            // ASCII style
-                            if (_settingsList[10].Length > 0 && Tools.IsNumeric(_settingsList[10]))
-                            {
-                                AsciiStyles.SetAsciiStyle(Convert.ToInt32(_settingsList[10]));
-                            }
-                            else
-                            {
-                                AsciiStyles.ResetAsciiStyle();
-                            }
-
-                            // Logo
-                            if (_settingsList[11].Length > 0 && Tools.IsNumeric(_settingsList[11]))
-                            {
-                                Logo.SetLogoIndex(Convert.ToInt32(Tools.TrimToLower(_settingsList[11])));
-                            }
-                            else
-                            {
-                                Logo.ResetLogoIndex();
-                            }
-                            
-                            // Logo text
-                            if (_settingsList[12].Length > 0 && Tools.IsValid(_settingsList[12]))
-                            {
-                                Logo.SetLogoText(_settingsList[12]);
-                            }
-                            else
-                            {
-                                Logo.ResetLogoText();
-                            }
-
-                            // Color scheme preset
-                            if (_settingsList[13].Length > 0 && Tools.IsNumeric(_settingsList[13]))
-                            {
-                                ConsoleColors.SetColorPresetIndex(
-                                    Convert.ToInt32(Tools.TrimToLower(_settingsList[13])));
-                            }
-                            else
-                            {
-                                ConsoleColors.DefaultColorPresetIndex();
-                            }
-
-
-                            // Colors
-                            int settingsOffset = 14;
-                            for (int i = 1;
-                                 i < 13;
-                                 i++) // Start at 1 to match the text color (background is 0 and not used). Colors are 1-12
-                            {
-                                if (_settingsList[settingsOffset].Length > 0 &&
-                                    Tools.IsNumeric(_settingsList[settingsOffset]))
-                                {
-                                    ConsoleColors.SetColorFromIndex(i, Convert.ToInt32(_settingsList[settingsOffset]));
-                                }
-                                else
-                                {
-                                    ConsoleColors.SetColorFromIndex(i, 15);
-                                }
-
-                                settingsOffset += 1;
-                            }
-
-                            // Sub directory
-                            if (_settingsList[26].Length > 0 && Tools.IsValidPath(_settingsList[26]))
-                            {
-                                SetSubFolder(_settingsList[26]);
-                            }
-                            else
-                            {
-                                SetSubFolder(string.Empty);
-                            }
-
-                            // Data file
-                            if (_settingsList[27].Length > 0 && Tools.IsValidFileName(_settingsList[27]))
-                            {
-                                SetFileName(_settingsList[27]);
-                                if (!IsCurrentFileValid())
-                                {
-                                    SetDefaultFileName();
-                                }
-                            }
-                            else
-                            {
-                                SetDefaultFileName();
-                            }
-
-                            // Backup path
-                            if (_settingsList[28].Length > 0)
-                            {
-                                SetBackup(true, _settingsList[28], false);
-                            }
-                            else
-                            {
-                                SetBackup(false, String.Empty, false);
-                            }
-
-                            return true;
-                        }
-                    }
+                var settings = ParseSettings(content == DialogText.FileNotFound ? string.Empty : content);
+                if (settings.Count > 0)
+                {
+                    ApplySettings(settings);
+                    return true;
                 }
             }
             catch (Exception e)
@@ -1226,6 +999,136 @@ internal static class FileIo
 
         Init.UsingDefaultSettings = true;
         return true; // Must be true because a new settings file will be created if none exist
+    }
+
+    /// <summary>
+    /// Get the "name=value" pairs of a settings file. Sections, comments and blank lines are skipped.
+    /// </summary>
+    internal static Dictionary<string, string> ParseSettings(string content)
+    {
+        var settings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var rawLine in Tools.SplitStringOnNewLine(content, false))
+        {
+            var line = Tools.RemoveNewLineChars(rawLine).Trim();
+            if (line.Length == 0 || line[0] is '[' or ';' or '#') continue;
+            // Split on the first "=" only, as values (paths, logo text) may contain the character
+            var separator = line.IndexOf('=');
+            if (separator <= 0) continue;
+            settings[line[..separator].Trim()] = line[(separator + 1)..];
+        }
+
+        return settings;
+    }
+
+    private static void ApplySettings(Dictionary<string, string> settings)
+    {
+        string Get(string name) => settings.TryGetValue(name, out var value) ? value : string.Empty;
+        int? GetNumber(string name)
+        {
+            var value = Get(name).Trim();
+            return value.Length is > 0 and < 9 && Tools.IsNumeric(value) ? Convert.ToInt32(value) : null;
+        }
+
+        // Dimensions
+        Init.SetLineWidth((byte)Math.Clamp(GetNumber("linewidth") ?? Init.MinLineWidth, 0, byte.MaxValue));
+        Init.SetLineCount((byte)Math.Clamp(GetNumber("linecount") ?? Init.MinLineCount, 0, byte.MaxValue));
+
+        // Vignettes
+        var vignette = Tools.TrimToLower(Get("vignette"));
+        if (vignette == DialogText.BTrue || vignette == DialogText.BFalse)
+        {
+            Vignette.SetVignetteSate(Convert.ToBoolean(vignette));
+        }
+        else
+        {
+            Vignette.SetDefaultVignetteState();
+        }
+
+        // ASCII style
+        var asciiStyle = GetNumber("asciistyle");
+        if (asciiStyle.HasValue)
+        {
+            AsciiStyles.SetAsciiStyle(asciiStyle.Value);
+        }
+        else
+        {
+            AsciiStyles.ResetAsciiStyle();
+        }
+
+        // Logo
+        var logo = GetNumber("logo");
+        if (logo.HasValue)
+        {
+            Logo.SetLogoIndex(logo.Value);
+        }
+        else
+        {
+            Logo.ResetLogoIndex();
+        }
+
+        // Logo text
+        if (Tools.IsValid(Get("logotxt")))
+        {
+            Logo.SetLogoText(Get("logotxt"));
+        }
+        else
+        {
+            Logo.ResetLogoText();
+        }
+
+        // Color scheme preset
+        var colorPreset = GetNumber("(clpreset)");
+        if (colorPreset.HasValue)
+        {
+            ConsoleColors.SetColorPresetIndex(colorPreset.Value);
+        }
+        else
+        {
+            ConsoleColors.DefaultColorPresetIndex();
+        }
+
+        // Colors (starting at 1 to match the text color)
+        for (var i = 1; i <= ColorSettingsCount; i++)
+        {
+            ConsoleColors.SetColorFromIndex(i, GetNumber("color" + i) ?? 15);
+        }
+
+        // Sub directory
+        var subFolder = Get("subdir");
+        if (subFolder.Length > 0 && Tools.IsValidPath(subFolder))
+        {
+            SetSubFolder(subFolder);
+        }
+        else
+        {
+            SetSubFolder(string.Empty);
+        }
+
+        // Data file
+        var fileName = Get("file");
+        if (fileName.Length > 0 && Tools.IsValidFileName(fileName))
+        {
+            SetFileName(fileName);
+            if (!IsCurrentFileValid())
+            {
+                SetDefaultFileName();
+            }
+        }
+        else
+        {
+            SetDefaultFileName();
+        }
+
+        // Backup path
+        var backupPath = Get("backup");
+        if (backupPath.Length > 0)
+        {
+            SetBackup(true, backupPath, false);
+        }
+        else
+        {
+            SetBackup(false, string.Empty, false);
+        }
     }
 
     internal static string ReadSettingsFile()

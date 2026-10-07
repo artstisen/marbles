@@ -93,7 +93,7 @@ public static class IsoDateTime
             Console.Write("->");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             // Take input and act on Up/Down, Left/right, Esc and Enter
-            var c = Console.ReadKey(true);
+            var c = Keyboard.ReadNavigationKey();
             switch (c.Key)
             {
                 case ConsoleKey.Escape:
@@ -196,7 +196,7 @@ public static class IsoDateTime
             Console.Write(new string(' ', 3) + "<- " + _date.Year + " ->" + Entries.NewLineCharString);
             
             // Take input and act on Left/right, Esc and Enter
-            var c = Console.ReadKey(true);
+            var c = Keyboard.ReadNavigationKey();
             switch (c.Key)
             {
                 case ConsoleKey.Escape:// Exit
