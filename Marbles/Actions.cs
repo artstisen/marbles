@@ -361,7 +361,7 @@ internal static class Actions
     #region Preview on the main menu
 
     private const int PreviewCount = 5;
-    private const int PreviewTop = 14; // The row of the caption (below the menu items of the first page)
+    private const int PreviewTop = 15; // The row of the caption (below the menu items of the first page)
     private static List<Entry> _previewEntries = new();
     private static int _previewIndex;
 

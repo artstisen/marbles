@@ -23,6 +23,7 @@ The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`
 - `R` **Reselect**: Select the last edited entry again.
 - `F` **Favorites**: Show the entries added to the favorites list.
 - `P` **Preview**: Turn the preview on or off. The preview lists the 5 last edited entries below the menu: select one with `j` `k` and open it with `Enter`. The preview is off by default.
+- `:` **Command line**: Type a command. "COMMAND:" is shown on the bottom line while typing.
 - `X` **Logout**
 
 ### Page 2

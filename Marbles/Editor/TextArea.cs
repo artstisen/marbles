@@ -606,7 +606,7 @@ public class TextArea
         {
             // The whole line is highlighted while typing a command
             right = string.Empty;
-            text = _engine.CommandPrefix + _engine.CommandText;
+            text = CommandLinePrefix + _engine.CommandText;
             while (TextMetrics.WidthOf(text) > width - 1)
             {
                 text = text[..^TextMetrics.PreviousElementLength(text, text.Length)];
@@ -641,12 +641,17 @@ public class TextArea
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
+    // What is shown in front of the text on the command line: "COMMAND:" for a command, "/" or "?" for a search
+    private string CommandLinePrefix =>
+        _engine.CommandPrefix == ':' ? DialogText.CommandPrompt : _engine.CommandPrefix.ToString();
+
     private void PlaceCursor()
     {
         if (_engine.Mode is EditorMode.Command or EditorMode.Search)
         {
             // The cursor is on the command line
-            Tools.SetCursorEx(Init.LineCount - 1, TextMetrics.WidthOf(_engine.CommandPrefix + _engine.CommandText));
+            Tools.SetCursorEx(Init.LineCount - 1,
+                Math.Min(Init.LineWidth - 2, TextMetrics.WidthOf(CommandLinePrefix + _engine.CommandText)));
         }
         else
         {

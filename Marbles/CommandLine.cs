@@ -27,7 +27,8 @@ internal static class CommandLine
     {
         var command = string.Empty;
         // The whole line is highlighted while typing
-        WriteLine(prefix.ToString(), ConsoleColors.ColorPreset.HighlightInverted, true);
+        WriteLine(prefix == Prefix ? DialogText.CommandPrompt : prefix.ToString(),
+            ConsoleColors.ColorPreset.HighlightInverted, true);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
         Tools.ShowCursor();
         try
@@ -54,7 +55,7 @@ internal static class CommandLine
                     Console.Write(" ");
                     Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
                 }
-                else if (!char.IsControl(key.KeyChar) && key.KeyChar != '\0' && command.Length < Init.LineWidth - 4)
+                else if (!char.IsControl(key.KeyChar) && key.KeyChar != '\0' && command.Length < Init.LineWidth - DialogText.CommandPrompt.Length - 3)
                 {
                     command += key.KeyChar;
                     Console.Write(key.KeyChar);

@@ -272,7 +272,7 @@ internal static class DialogText
     public const string NotEncrypted = "[Not encrypted]";
     public const string FilePickKeys = "j/k Select | l/Enter Open/Select file | h Up | / Filter | Esc Cancel";
     public const string DirectoryPickKeys = "j/k Select | l/Enter Open | h Up | S Select this directory | Esc Cancel";
-    public const string PreviewCaption = "Last edited (j/k Select, Enter Open)";
+    public const string PreviewCaption = "Last edited (j/k, Enter: Open)";
     public const string FileTooLarge = "The file is too large to open (the limit is 10 MB)";
     public const string FileNotText = "This is not a text file";
     public const string DirectoryNotFound = "Directory not found";
@@ -286,6 +286,7 @@ internal static class DialogText
 
     // Command line
     public const string NotACommand = "Not a command: ";
+    public const string CommandPrompt = "COMMAND:"; // Shown in front of a command being typed
     public const string SelectFileDirectory = "File/Directory";
 
     // Editor status line
