@@ -27,6 +27,7 @@
 - In V-LINE mode `J` and `K` move the selected lines down and up.
 - Lines are wrapped at blank spaces, and wide characters and emoji are handled.
 - Pasting text is fast, and text copied from the terminal window no longer includes padding or the scroll marker.
+- Spell checking with the spell files of Vim/Neovim (`.spl`): `:spell da,en` marks the misspelled words, `]s` `[s` go to the next/previous, `z=` shows suggestions to pick from and `zg` adds the word to your word list. The spell files are placed in a directory named `spell`.
 - See the [guide to the editor](Guide-to-editor.md).
 
 ### Menus and lists

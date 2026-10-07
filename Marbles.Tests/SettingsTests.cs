@@ -106,7 +106,7 @@ backup=
         Assert.Equal("100", settings["linewidth"]);
         Assert.Equal("a=b text", settings["logotxt"]);
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(26, settings.Count);
+        Assert.Equal(27, settings.Count);
 
         Init.SetDefaultOutputDimensions();
         Assert.True(FileIo.LoadSettings());

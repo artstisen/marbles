@@ -1338,6 +1338,13 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("n N", "Next/Previous match", false));
             _shortcutList.Add(new Shortcut("*", "Search for the word under the cursor", false));
             _shortcutList.Add(new Shortcut("Esc :noh", "Remove search highlighting", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Spell checking", true));
+            _shortcutList.Add(new Shortcut(":spell", "Mark the misspelled words", false));
+            _shortcutList.Add(new Shortcut(":spell da,en", "As above, and set the languages", false));
+            _shortcutList.Add(new Shortcut(":nospell", "Remove the marks", false));
+            _shortcutList.Add(new Shortcut("]s [s", "Next/Previous misspelled word", false));
+            _shortcutList.Add(new Shortcut("z=", "Suggest spellings for the word", false));
+            _shortcutList.Add(new Shortcut("zg", "Add the word to the word list", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Replace (command line)", true));
             _shortcutList.Add(new Shortcut(":s/old/new/", "Replace first \"old\" on the line with \"new\"", false));
             _shortcutList.Add(new Shortcut(":s/old/new/g", "Replace all on the line", false));

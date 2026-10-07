@@ -284,6 +284,22 @@ internal static class DialogText
     public const string CopyDataFileYn = "Copy the data file to the data directory? " + YesNo;
     public const string CopyDataFileNote = "Data files are opened from the Marbles data directory.";
 
+    // Spell checking
+    public const string SpellFileInvalid = "Not a spell file that can be used (a UTF-8 .spl file is needed)";
+    public const string SpellFileNotFound = "Spell file not found: ";
+    public const string SpellNoLanguage = "No language given";
+    public const string SpellNoWord = "No word to add";
+    public const string SpellOff = "Spell checking is off (turn it on with :spell)";
+    public const string SpellOn = "Spell checking: ";
+    public const string SpellTurnedOff = "Spell checking off";
+    public const string SpellNoMore = "No misspelled words found";
+    public const string SpellNoSuggestions = "No suggestions for: ";
+    public const string SpellWordAdded = "Added to the word list: ";
+    public const string SpellSuggestions = "Spelling";
+    public const string SpellCount = " misspelled";
+    public const string SpellAddWord = "Add to word list";
+    public const string SpellStatus = "SPELL";
+
     // Command line
     public const string NotACommand = "Not a command: ";
     public const string CommandPrompt = "COMMAND:"; // Shown in front of a command being typed

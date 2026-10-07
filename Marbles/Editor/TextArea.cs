@@ -32,6 +32,7 @@ public class TextArea
     private const int StyleNormal = 0;
     private const int StyleSelection = 1;
     private const int StyleSearchMatch = 2;
+    private const int StyleMisspelled = 3;
 
     private readonly EditorEngine _engine;
     private readonly int _top;
@@ -296,7 +297,118 @@ public class TextArea
 
                 RedrawAll();
                 break;
+            case EditorRequest.SpellSuggest:
+                ShowSpellSuggestions();
+                break;
+            case EditorRequest.SaveSettings:
+                // Not while the settings file itself is being edited
+                if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
+                break;
         }
+    }
+
+    // Show suggestions for the word at the cursor in a box on top of the text. The word is replaced with the
+    // suggestion picked (with its number, or with j/k and Enter), or added to the word list with "a"
+    private void ShowSpellSuggestions()
+    {
+        Tools.HideCursor();
+        var word = _engine.SpellWord();
+        var suggestions = _engine.SpellSuggestions();
+        if (suggestions.Count > _height - 3) suggestions = suggestions.Take(Math.Max(0, _height - 3)).ToList();
+        var rows = new List<string>();
+        for (var i = 0; i < suggestions.Count; i++)
+        {
+            rows.Add((i + 1) + "  " + suggestions[i]);
+        }
+
+        if (rows.Count == 0) rows.Add("-  " + DialogText.SpellNoSuggestions.TrimEnd(' ', ':'));
+        rows.Add("a  " + DialogText.SpellAddWord);
+        var caption = " " + DialogText.SpellSuggestions + ": " + (word.Length > 24 ? word[..24] : word) + " ";
+        var inner = Math.Max(rows.Max(TextMetrics.WidthOf), TextMetrics.WidthOf(caption)) + 4;
+
+        // Below the word if there is room for it, else above
+        var cursor = _engine.Cursor;
+        var cursorRow = _engine.Layout.RowOf(cursor) - _engine.TopRow;
+        var boxHeight = rows.Count + 2;
+        var firstRow = cursorRow + 1;
+        if (firstRow + boxHeight > _height) firstRow = cursorRow - boxHeight;
+        firstRow = Math.Clamp(firstRow, 0, Math.Max(0, _height - boxHeight));
+        var left = Math.Max(0,
+            Math.Min(_leftMargin.Length + _engine.Layout.CellOf(cursor), Init.LineWidth - 1 - _left - inner - 2));
+        var selected = 0;
+        var picked = -1;
+        var add = false;
+        while (true)
+        {
+            DrawBox(firstRow, left, inner, caption, rows, selected);
+            var key = Console.ReadKey(true);
+            var c = key.KeyChar;
+            if (key.Key == ConsoleKey.Escape || c == 'q') break;
+            if (key.Key == ConsoleKey.DownArrow || c == 'j')
+            {
+                selected = (selected + 1) % rows.Count;
+            }
+            else if (key.Key == ConsoleKey.UpArrow || c == 'k')
+            {
+                selected = (selected + rows.Count - 1) % rows.Count;
+            }
+            else if (key.Key == ConsoleKey.Enter)
+            {
+                if (selected < suggestions.Count) picked = selected;
+                add = selected == rows.Count - 1;
+                if (picked >= 0 || add) break;
+            }
+            else if (c == 'a')
+            {
+                add = true;
+                break;
+            }
+            else if (c >= '1' && c - '1' < suggestions.Count)
+            {
+                picked = c - '1';
+                break;
+            }
+        }
+
+        if (picked >= 0) _engine.ReplaceSpellWord(suggestions[picked]);
+        if (add) _engine.AddSpellWord();
+
+        // Write the rows that were covered again
+        for (var r = firstRow; r < firstRow + boxHeight && r < _height; r++)
+        {
+            _shownRows[r] = null;
+            _shownCells[r] = Math.Max(_shownCells[r], left + inner + 2);
+        }
+
+        UpdateChangeIndicator();
+        Draw();
+    }
+
+    private void DrawBox(int firstRow, int left, int inner, string caption, List<string> rows, int selected)
+    {
+        var column = _left + left;
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(_top + firstRow, column);
+        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+        Tools.SetCursorEx(_top + firstRow, column + 2);
+        Console.Write(caption);
+        for (var i = 0; i < rows.Count; i++)
+        {
+            Tools.SetCursorEx(_top + firstRow + 1 + i, column);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+            ConsoleColors.SetColors(i == selected
+                ? ConsoleColors.ColorPreset.HighlightInverted
+                : ConsoleColors.ColorPreset.Normal);
+            Console.Write(" " + rows[i] + new string(' ', inner - 1 - TextMetrics.WidthOf(rows[i])));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+        }
+
+        Tools.SetCursorEx(_top + firstRow + 1 + rows.Count, column);
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
     // Close the editor, asking what to do with unsaved changes
@@ -471,13 +583,22 @@ public class TextArea
         }
 
         // The common case is a row in a single color
-        if (selection == null && !hasMatches)
+        var misspelled = _engine.Misspelled(line);
+        if (selection == null && !hasMatches && misspelled.Count == 0)
         {
             row.Append(TextMetrics.Printable(s, start, end));
             return cells;
         }
 
         var styles = new int[end - start];
+        foreach (var (wordStart, wordEnd) in misspelled)
+        {
+            for (var i = Math.Max(start, wordStart); i < Math.Min(end, wordEnd); i++)
+            {
+                styles[i - start] = StyleMisspelled;
+            }
+        }
+
         foreach (var (matchStart, matchEnd) in _engine.SearchMatches(line))
         {
             for (var i = Math.Max(start, matchStart); i < Math.Min(end, matchEnd); i++)
@@ -530,6 +651,7 @@ public class TextArea
                 {
                     StyleSelection => ConsoleColors.ColorPreset.HighlightInverted,
                     StyleSearchMatch => ConsoleColors.ColorPreset.AttentionInverted,
+                    StyleMisspelled => ConsoleColors.ColorPreset.WarningInverted,
                     _ => ConsoleColors.ColorPreset.Normal
                 });
                 Console.Write(run.AsSpan(1).ToString());
@@ -592,6 +714,7 @@ public class TextArea
         var right = " ";
         if (_engine.PendingKeys.Length > 0) right += _engine.PendingKeys + " | ";
         if (Tools.HasLineMemory()) right += DialogText.EditorMemory + " " + Tools.GetLineMemoryPosition() + " | ";
+        if (_engine.IsSpellOn) right += DialogText.SpellStatus + " " + _engine.SpellLanguages + " | ";
         right += (cursor.Line + 1) + ":" + column + " | " + percent + "% ";
 
         // Make it fit

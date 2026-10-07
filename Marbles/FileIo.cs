@@ -942,6 +942,11 @@ internal static class FileIo
         _tempSettings += "backup=" + _backupPath+ Entries.NewLineChar;
         // The directory last shown in the file browser:
         _tempSettings += "browsedir=" + FileExplorer.StartDirectory + Entries.NewLineChar;
+        // Comment
+        _tempSettings += Entries.NewLineChar;
+        _tempSettings += "; SPELL CHECKING" + Entries.NewLineChar;
+        // The languages used by the editor command :spell (spell files in the directory "spell"):
+        _tempSettings += "spelllang=" + SpellChecker.Languages + Entries.NewLineChar;
 
         // Write to file
         if (WriteSettingsFile(_tempSettings) != DialogText.Success)
@@ -1139,6 +1144,12 @@ internal static class FileIo
 
         // File browser directory
         FileExplorer.StartDirectory = Tools.IsValidPath(Get("browsedir")) ? Get("browsedir") : string.Empty;
+
+        // Spell checking languages
+        var spellLanguages = Get("spelllang").Replace(" ", string.Empty);
+        SpellChecker.Languages = spellLanguages.Length > 0 && spellLanguages.Split(',').All(Tools.IsValidFileName)
+            ? spellLanguages
+            : SpellChecker.DefaultLanguages;
 
         // Backup path
         var backupPath = Get("backup");

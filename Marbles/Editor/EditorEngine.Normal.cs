@@ -22,7 +22,7 @@ internal sealed partial class EditorEngine
     private string _count = string.Empty; // The count being typed
     private string _opCount = string.Empty; // The count typed before the operator
     private char _operator; // "d", "c", "y", ">", "<", or "u", "U" and "~" for "gu", "gU" and "g~"
-    private char _prefix; // A key waiting for a second key: "g", "z", "Z", "r", "f", "F", "t", "T", "i" or "a"
+    private char _prefix; // A key waiting for a second key: "g", "z", "Z", "r", "f", "F", "t", "T", "i", "a", "[", "]"
     private TextPos _visualAnchor; // Where the selection was started in Visual mode
 
     private bool HasPending => _count.Length > 0 || _opCount.Length > 0 || _operator != NoKey || _prefix != NoKey;
@@ -131,7 +131,8 @@ internal sealed partial class EditorEngine
         var operatorPending = _operator != NoKey;
         if (cmd is 'i' or 'a' && (operatorPending || IsVisual) ||
             cmd is 'f' or 'F' or 't' or 'T' or 'g' or 'z' ||
-            cmd is 'Z' or 'r' && !operatorPending && !IsVisual)
+            cmd is 'Z' or 'r' && !operatorPending && !IsVisual ||
+            cmd is '[' or ']' && !operatorPending)
         {
             _prefix = cmd;
             return;
@@ -267,6 +268,15 @@ internal sealed partial class EditorEngine
                     }
                 }
 
+                break;
+            case '[' or ']':
+                if (cmd == 's') JumpToMisspelled(prefix == ']', TakeCount() ?? 1);
+                break;
+            case 'z' when cmd == '=':
+                RequestSuggestions();
+                break;
+            case 'z' when cmd == 'g':
+                AddSpellWord();
                 break;
             case 'z':
             {

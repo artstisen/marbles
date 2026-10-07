@@ -28,7 +28,9 @@ internal enum EditorRequest
     Help,
     InsertCalendar,
     ClearAll,
-    ClearRegisters
+    ClearRegisters,
+    SpellSuggest, // Show suggestions for the word at the cursor
+    SaveSettings
 }
 
 /// <summary>
@@ -578,8 +580,22 @@ internal sealed partial class EditorEngine
             return;
         }
 
+        if (command.StartsWith("spell ", StringComparison.Ordinal))
+        {
+            TurnSpellOn(command[6..].Trim());
+            return;
+        }
+
         switch (command)
         {
+            case "spell":
+            case "set spell":
+                TurnSpellOn(string.Empty);
+                break;
+            case "nospell":
+            case "set nospell":
+                TurnSpellOff();
+                break;
             case "w":
             case "write":
                 _request = EditorRequest.Save;

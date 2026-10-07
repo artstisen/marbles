@@ -26,4 +26,4 @@ Thumbs.db
 publish/
 
 # Spelling dictionaries (supplied by the user, not part of the source)
-spell/
+/spell/

@@ -17,7 +17,7 @@ Ensure that you have the .NET 10 runtime installed on your system. If not you ca
 
 You can create an alias like "_mbls_" to run Marbles with less typing. See [this guide](Guide-to-windows-terminal-crt.md) for more information.
 
-Marbles keeps your notes and settings in a directory named "data", created in the directory you start Marbles from. Marbles needs a terminal window of at least 80 columns and 23 rows.
+Marbles keeps your notes and settings in a directory named "data", created in the directory you start Marbles from. To use spell checking in the editor, place spell files in a directory named "spell" next to it (see the [guide to the editor](Guide-to-editor.md#spell-checking)). Marbles needs a terminal window of at least 80 columns and 23 rows.
 
 ## Building from source
 With the .NET 10 SDK installed:

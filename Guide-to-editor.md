@@ -81,6 +81,23 @@ The text you search for is a regular expression: `/\d+` finds numbers and `/cat|
 
 `old` is a regular expression as when searching. In `new`, `&` is the matched text, `\1` the first group and `\n` a line break. Add `i` to ignore case or `I` to match case: `:%s/old/new/gi`.
 
+## Spell checking
+Spell checking is off until you ask for it. It uses the spell files of Vim and Neovim (see below).
+
+- `:spell` Check the text and mark the misspelled words. The bottom line tells how many were found
+- `:spell da,en` As above, with Danish and English. The languages are remembered (`spelllang` in the settings file)
+- `:nospell` Remove the marks
+- `]s` `[s` Go to the next/previous misspelled word
+- `z=` Show suggestions for the word under the cursor. Press the number of a suggestion (or select it with `j` `k` and press `Enter`) to replace the word, `a` to add the word to your word list, or `Esc` to close
+- `zg` Add the word under the cursor to your word list
+
+The marks follow the text while you edit, until you use `:nospell` or close the editor. The word you are writing is not marked until you leave it. Single letters, words with digits, and web and e-mail addresses are not checked.
+
+### Spell files
+Marbles reads spell files from a directory named `spell`, next to the `data` directory. A language needs one file, named like `en.utf-8.spl` or `da.utf-8.spl`. These are the files Vim and Neovim use, so you can copy them from there (the directory `spell` of the Vim runtime or of your Neovim configuration), or download them from the [Vim spell file archive](https://ftp.nluug.nl/pub/vim/runtime/spell/). Only UTF-8 files can be used.
+
+The words you add are saved as plain text, one word per line, in `spell/<language>.utf-8.add` (for the first of the languages). This is the format of Neovim's word list, so an existing list can be copied to the directory as well.
+
 ## String memory
 Text that is yanked, and lines that are deleted, are kept in the string memory (up to 64 strings). The memory is kept while you are logged in, so text can be copied from one entry to another.
 
