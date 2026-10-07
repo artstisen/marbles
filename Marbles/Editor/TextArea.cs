@@ -566,7 +566,13 @@ public class TextArea
         _shownStatus = status;
 
         Tools.SetCursorEx(Init.LineCount - 1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+        // The mode label has a color of its own for each mode
+        ConsoleColors.SetColors(_engine.Mode switch
+        {
+            EditorMode.Insert => ConsoleColors.ColorPreset.AttentionInverted,
+            EditorMode.Visual or EditorMode.VisualLine => ConsoleColors.ColorPreset.WarningInverted,
+            _ => ConsoleColors.ColorPreset.HighlightInverted
+        });
         Console.Write(label);
         ConsoleColors.SetColors(_engine.MessageIsError
             ? ConsoleColors.ColorPreset.AttentionInverted
