@@ -157,9 +157,10 @@ internal static class Menu
                 WriteMenuItem(":vignette", "Text vignette", true);
                 WriteMenuItem("", "-", true);
                 WriteMenuItem(":size", "Change dimensions " + Init.GetOutputDimensions(), true);
-                WriteMenuItem(":color",
-                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] Color preset", true);
-                WriteMenuItem(":logo", "[" + (Logo.GetLogoIndex() + 1) + "] Logo preset", true);
+                WriteMenuItem(":color 1-" + Actions.ColorPresetCount,
+                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] Color preset (no number: next)", true);
+                WriteMenuItem(":logo 1-" + Actions.LogoPresetCount,
+                    "[" + (Logo.GetLogoIndex() + 1) + "] Logo preset (no number: next)", true);
                 WriteMenuItem(":backup", FileIo.GetBackupStatus() + " Toggle Backup", true);
                 WriteMenuItem(":password", "Reset password", true);
                 WriteMenuItem(":defaults", "Default settings", true);

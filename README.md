@@ -7,13 +7,15 @@ A lightweight cross-platform text mode application for taking notes with encrypt
 ## About Marbles
 Marbles provides a simple interface for creating, editing, searching, copying, arranging, importing, exporting and deleting notes. Notes are stored as a searchable collection of entries contained in a single encrypted file for easy portability. Multiple files can be created and managed from within the program itself. Marbles will handle large text documents and data files with thousands of notes.
 
+A file browser on the login page lets you edit ordinary text files (.txt, .md, .html ...) with the same editor.
+
 Marbles is operated in the style of Vim: the editor has Normal, Insert and Visual modes, and the menus and lists use the same keys for moving around (`h` `j` `k` `l`), searching (`/`), help (`?`) and commands (`:`).
 
 > Check out my latest project: **Easy file encryption for Neovim** [https://github.com/artstisen/marbles.nvim](https://github.com/artstisen/marbles.nvim)
 
 ## Specifications
 - Supported platforms: Windows, Linux and macOS
-- Requirements: .NET 8 runtime
+- Requirements: .NET 10 runtime
 - Application type: Text mode
 - Box drawing: ASCII
 - Console I/O encoding: UTF-8
@@ -22,8 +24,8 @@ Marbles is operated in the style of Vim: the editor has Normal, Insert and Visua
 - Software license: MIT
 
 ## Tools used
-- Programming language: C# 12
-- Framework: .NET 8
+- Programming language: C# 14
+- Framework: .NET 10
 
 The interface of Marbles is drawn with standard 128-character ASCII only (no extended ASCII or ANSI character sets). This makes Marbles compatible with all standard monospaced fonts, regardless of the platform. Your notes can contain any Unicode text.
 

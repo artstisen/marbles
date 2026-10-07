@@ -1,4 +1,4 @@
-namespace Marbles.Tests;
+﻿namespace Marbles.Tests;
 
 [Collection("Static state")]
 public class SettingsTests : IDisposable
@@ -106,7 +106,7 @@ backup=
         Assert.Equal("100", settings["linewidth"]);
         Assert.Equal("a=b text", settings["logotxt"]);
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(22, settings.Count);
+        Assert.Equal(24, settings.Count);
 
         Init.SetDefaultOutputDimensions();
         Assert.True(FileIo.LoadSettings());

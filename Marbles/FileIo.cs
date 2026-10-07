@@ -465,7 +465,7 @@ internal static class FileIo
     /// Write the content to a temporary file and then replace the target file with it,
     /// so an interrupted save can never leave a half written data file behind.
     /// </summary>
-    private static void WriteAllBytesSafe(string path, byte[] content)
+    internal static void WriteAllBytesSafe(string path, byte[] content)
     {
         var tempPath = path + TempFileNameExtension;
         try
@@ -940,6 +940,8 @@ internal static class FileIo
         _tempSettings += "logo=" + Logo.GetLogoIndex() + Entries.NewLineChar;
         // Logo text
         _tempSettings += "logotxt=" + Logo.GetLogoText() + Entries.NewLineChar;
+        // Logo animation on the login page
+        _tempSettings += "logoanim=" + (Logo.AnimationEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Color scheme (for the color preset selector)
         _tempSettings += "(clpreset)=" + ConsoleColors.GetColorPresetIndex()+ Entries.NewLineChar;
         _tempSettings += "color1=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(1))+ Entries.NewLineChar;
@@ -963,6 +965,8 @@ internal static class FileIo
         _tempSettings += "file=" + GetFileName()+ Entries.NewLineChar;
         // Backup path:
         _tempSettings += "backup=" + _backupPath+ Entries.NewLineChar;
+        // The directory last shown in the file browser:
+        _tempSettings += "browsedir=" + FileExplorer.StartDirectory + Entries.NewLineChar;
 
         // Write to file
         if (WriteSettingsFile(_tempSettings) != DialogText.Success)
@@ -1108,6 +1112,9 @@ internal static class FileIo
             Logo.ResetLogoText();
         }
 
+        // Logo animation (on unless turned off)
+        Logo.AnimationEnabled = Tools.TrimToLower(Get("logoanim")) != DialogText.BFalse;
+
         // Color scheme preset
         var colorPreset = GetNumber("(clpreset)");
         if (colorPreset.HasValue)
@@ -1150,6 +1157,9 @@ internal static class FileIo
         {
             SetDefaultFileName();
         }
+
+        // File browser directory
+        FileExplorer.StartDirectory = Tools.IsValidPath(Get("browsedir")) ? Get("browsedir") : string.Empty;
 
         // Backup path
         var backupPath = Get("backup");

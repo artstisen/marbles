@@ -351,7 +351,17 @@ internal static class Actions
     private static void RunManageCommand(string command)
     {
         if (RunCommonCommand(command)) return;
-        switch (command)
+        // A number after the command selects a preset directly, like ":color 5"
+        var number = int.TryParse(CommandLine.Argument(command), out var parsedNumber) ? parsedNumber : 0;
+        if (CommandLine.Argument(command).Length > 0 &&
+            !(CommandLine.Name(command) is "color" or "logo" && number > 0))
+        {
+            CommandLine.ShowUnknown(command);
+            Menu.DrawTopMenu(false, true, false);
+            return;
+        }
+
+        switch (CommandLine.Name(command))
         {
             case "q":
             case "quit":
@@ -405,11 +415,23 @@ internal static class Actions
                 Tools.ResetPasswordRoutine();
                 break;
             case "logo":
+                if (number > LogoPresetCount)
+                {
+                    CommandLine.ShowUnknown(command);
+                    Menu.DrawTopMenu(false, true, false);
+                    break;
+                }
+
                 // Switch to settings page if on a different index
                 ChangeMenuFocus(2);
-                // Toggle logo
-                if (Logo.GetLogoIndex() < 7)
+                if (number > 0)
                 {
+                    // Select logo
+                    Logo.SetLogoIndex(number - 1);
+                }
+                else if (Logo.GetLogoIndex() < LogoPresetCount - 1)
+                {
+                    // Toggle logo
                     Logo.SetLogoIndex(Logo.GetLogoIndex() + 1);
                 }
                 else
@@ -421,9 +443,19 @@ internal static class Actions
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "color":
+                if (number > ColorPresets.Length)
+                {
+                    CommandLine.ShowUnknown(command);
+                    Menu.DrawTopMenu(false, true, false);
+                    break;
+                }
+
                 // Switch to settings page if on a different index
                 ChangeMenuFocus(2);
-                CycleColorPreset();
+                // Select the color preset, or use the next
+                SetColorPreset(number > 0
+                    ? number - 1
+                    : (ConsoleColors.GetColorPresetIndex() + 1) % ColorPresets.Length);
                 FileIo.SaveSettings();
                 Menu.DrawTopMenu(false, true, false);
                 break;
@@ -437,40 +469,27 @@ internal static class Actions
         }
     }
 
-    // Use the next color preset. The index is saved in the settings file to keep track of the next
-    private static void CycleColorPreset()
+    internal const int LogoPresetCount = 8;
+
+    // The color presets in the order they are numbered (the first is the default colors)
+    private static readonly ConsoleColors.ColorPreset[] ColorPresets =
     {
-        switch (ConsoleColors.GetColorPresetIndex())
-        {
-            case 0:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.MarblesQuest);
-                ConsoleColors.SetColorPresetIndex(1);
-                break;
-            case 1:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.NightWriter);
-                ConsoleColors.SetColorPresetIndex(2);
-                break;
-            case 2:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.YellowMonochrome);
-                ConsoleColors.SetColorPresetIndex(3);
-                break;
-            case 3:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.GreenMonochrome);
-                ConsoleColors.SetColorPresetIndex(4);
-                break;
-            case 4:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.IceWarp);
-                ConsoleColors.SetColorPresetIndex(5);
-                break;
-            case 5:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.WaterSport);
-                ConsoleColors.SetColorPresetIndex(6);
-                break;
-            default:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
-                ConsoleColors.SetColorPresetIndex(0);
-                break;
-        }
+        ConsoleColors.ColorPreset.Reset,
+        ConsoleColors.ColorPreset.MarblesQuest,
+        ConsoleColors.ColorPreset.NightWriter,
+        ConsoleColors.ColorPreset.YellowMonochrome,
+        ConsoleColors.ColorPreset.GreenMonochrome,
+        ConsoleColors.ColorPreset.IceWarp,
+        ConsoleColors.ColorPreset.WaterSport
+    };
+
+    internal static int ColorPresetCount => ColorPresets.Length;
+
+    // Use a color preset. The index is saved in the settings file
+    private static void SetColorPreset(int index)
+    {
+        ConsoleColors.SetColors(ColorPresets[index]);
+        ConsoleColors.SetColorPresetIndex(index);
     }
 
     // Commands when viewing an entry
@@ -1081,6 +1100,29 @@ internal static class Actions
         Tools.CursorDown(1);
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
         Menu.WriteTitleLabel(); // Insert title
+        Tools.CursorReturn();
+        Tools.CursorDown();
+        WriteHorizontalRule(true, DialogText.CaptionsEdit, true, ConsoleColors.ColorPreset.EditorTitle);
+        Tools.SaveCursorPosition(1);
+        Tools.CursorTopLeft();
+        Tools.CursorDown(Init.LineCount - 1); // Insert bottom line
+        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
+        Tools.LoadCursorPosition(1);
+    }
+
+    // The editor frame for a plain text file opened from the file browser
+    internal static void DrawEditFileMenu()
+    {
+        Menu.DrawTopMenu(false, false, false);
+        Menu.WriteNameInTopBar(false);
+        Tools.CursorTopLeft();
+        Tools.CursorDown(1);
+        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
+        Console.Write(" " + DialogText.FileColon + " " +
+                      Tools.TruncateString(FileExplorer.CurrentFileName, Init.LineWidth - 40, true) + " ");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(DialogText.NotEncrypted);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.CursorReturn();
         Tools.CursorDown();
         WriteHorizontalRule(true, DialogText.CaptionsEdit, true, ConsoleColors.ColorPreset.EditorTitle);

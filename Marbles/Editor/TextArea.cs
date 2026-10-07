@@ -40,7 +40,10 @@ public class TextArea
     private readonly int _height;
     private readonly bool _singleLine;
     private readonly bool _readOnly;
-    private readonly int _saveMode; // 0 = save as entry, 1 = save as settings
+    internal const int SaveAsEntry = 0;
+    internal const int SaveAsSettings = 1;
+    internal const int SaveAsFile = 2; // A plain text file opened from the file browser
+    private readonly int _saveMode;
     private readonly string _leftMargin;
     private bool _exit;
 
@@ -70,7 +73,14 @@ public class TextArea
     /// <param name="openSearchDialog">Automatically open the search prompt</param>
     /// <param name="saveMode">Set which save method to call</param>
     public TextArea(int left, int top, int width, int height, string text, int recallCursorIndex, bool scrollToEnd,
-        bool readOnly, bool openSearchDialog, int saveMode)
+        bool readOnly, bool openSearchDialog, int saveMode) : this(left, top, width, height, text,
+        recallCursorIndex, scrollToEnd, readOnly, openSearchDialog, saveMode, false)
+    {
+    }
+
+    /// <param name="modified">Treat the text as changed from the start (it can be saved without editing it)</param>
+    internal TextArea(int left, int top, int width, int height, string text, int recallCursorIndex, bool scrollToEnd,
+        bool readOnly, bool openSearchDialog, int saveMode, bool modified)
     {
         _top = top;
         _left = left;
@@ -110,6 +120,12 @@ public class TextArea
         if (_singleLine) Array.Fill(_shownCells, width - 1);
         DocumentInfo.HasChanged = false;
         Menu.InitializeSaveIndicator();
+        if (modified)
+        {
+            _engine.MarkModified();
+            UpdateChangeIndicator();
+        }
+
         if (openSearchDialog && !_engine.Buffer.IsEmpty)
         {
             _engine.OpenSearch();
@@ -219,21 +235,25 @@ public class TextArea
         switch (request)
         {
             case EditorRequest.Save:
-                if (Save())
+                if (!_engine.IsModified)
                 {
-                    _engine.SetMessage(DialogText.EditorSaved);
-                    RedrawAll();
+                    _engine.SetMessage(DialogText.EditorNoChanges, false);
                 }
-                else
+                else if (Save())
                 {
-                    _engine.SetMessage(DialogText.EditorNoChanges);
+                    _engine.SetMessage(DialogText.EditorSaved, false);
+                    RedrawAll();
                 }
 
                 break;
             case EditorRequest.SaveAndQuit:
-                Save();
-                Canceled = false;
-                _exit = true;
+                // Stay in the editor if the text could not be saved
+                if (!_engine.IsModified || Save())
+                {
+                    Canceled = false;
+                    _exit = true;
+                }
+
                 break;
             case EditorRequest.Quit:
                 Quit();
@@ -295,9 +315,16 @@ public class TextArea
         switch (result)
         {
             case 1: // Yes, save
-                Save();
-                Canceled = false;
-                _exit = true;
+                if (Save())
+                {
+                    Canceled = false;
+                    _exit = true;
+                }
+                else
+                {
+                    RedrawAll();
+                }
+
                 break;
             case 2: // No, dont save
                 Canceled = true;
@@ -313,17 +340,27 @@ public class TextArea
         }
     }
 
-    /// <returns>False if there were no changes to save</returns>
+    /// <returns>False if the text could not be saved (the reason is shown as a message)</returns>
     private bool Save()
     {
-        if (!_engine.IsModified) return false;
+        if (!_engine.IsModified) return true;
         Tools.HideCursor();
         DocumentInfo.HasChanged = true;
         SaveWasInvoked = true;
-        if (_saveMode == 1)
+        if (_saveMode == SaveAsSettings)
         {
             // Save as settings
             FileIo.WriteSettingsFile(GetText());
+        }
+        else if (_saveMode == SaveAsFile)
+        {
+            // Save as a plain text file
+            var status = FileExplorer.SaveCurrentFile(GetText());
+            if (status != DialogText.Success)
+            {
+                _engine.SetMessage(status, true);
+                return false;
+            }
         }
         else
         {
@@ -365,13 +402,17 @@ public class TextArea
         Tools.HideCursor();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.ClearScreen();
-        if (_saveMode == 1)
+        switch (_saveMode)
         {
-            Actions.DrawEditSettingsMenu();
-        }
-        else
-        {
-            Actions.DrawEditMenu();
+            case SaveAsSettings:
+                Actions.DrawEditSettingsMenu();
+                break;
+            case SaveAsFile:
+                Actions.DrawEditFileMenu();
+                break;
+            default:
+                Actions.DrawEditMenu();
+                break;
         }
 
         Menu.IndicateChanges(true);
@@ -560,7 +601,22 @@ public class TextArea
             text = text[..^TextMetrics.PreviousElementLength(text, text.Length)];
         }
 
-        var filler = new string('-', Math.Max(0, available - TextMetrics.WidthOf(text)));
+        var commandLine = _engine.Mode is EditorMode.Command or EditorMode.Search;
+        if (commandLine)
+        {
+            // The whole line is highlighted while typing a command
+            right = string.Empty;
+            text = _engine.CommandPrefix + _engine.CommandText;
+            while (TextMetrics.WidthOf(text) > width - 1)
+            {
+                text = text[..^TextMetrics.PreviousElementLength(text, text.Length)];
+            }
+
+            text += new string(' ', width - TextMetrics.WidthOf(text));
+            available = width;
+        }
+
+        var filler = new string(commandLine ? ' ' : '-', Math.Max(0, available - TextMetrics.WidthOf(text)));
         var status = label + StyleMarker + text + StyleMarker + filler + right + _engine.MessageIsError;
         if (status == _shownStatus) return;
         _shownStatus = status;
@@ -574,9 +630,11 @@ public class TextArea
             _ => ConsoleColors.ColorPreset.HighlightInverted
         });
         Console.Write(label);
-        ConsoleColors.SetColors(_engine.MessageIsError
-            ? ConsoleColors.ColorPreset.AttentionInverted
-            : ConsoleColors.ColorPreset.Normal);
+        ConsoleColors.SetColors(commandLine
+            ? ConsoleColors.ColorPreset.HighlightInverted
+            : _engine.MessageIsError
+                ? ConsoleColors.ColorPreset.AttentionInverted
+                : ConsoleColors.ColorPreset.Normal);
         Console.Write(text);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(filler + right);

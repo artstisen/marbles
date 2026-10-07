@@ -150,11 +150,16 @@ internal sealed partial class EditorEngine
     /// <summary>
     /// Set the message shown until the next key press
     /// </summary>
-    internal void SetMessage(string message)
+    internal void SetMessage(string message, bool isError)
     {
         Message = message;
-        MessageIsError = false;
+        MessageIsError = isError;
     }
+
+    /// <summary>
+    /// Treat the text as changed, also when it has not been edited
+    /// </summary>
+    internal void MarkModified() => Buffer.MarkModified();
 
     internal void CursorToEnd()
     {

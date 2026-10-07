@@ -374,13 +374,14 @@ internal static class Tools
             new("C", DialogText.CopyFile, false, 13),
             new("D", DialogText.DeleteFile, false, 13),
             new("M", DialogText.MergeFiles, false, 13),
+            new("F", DialogText.BrowseFiles, false, 13),
             new(string.Empty, "-", true, 13),
             new("h l / j k", DialogText.SelectFileDirectory, false, 13),
             new("R/Y", DialogText.Refresh + "/" + DialogText.Restart, false, 13),
             new("G/S", DialogText.Log + "/" + FileIo.SettingsFileName, false, 13),
             new("Q", DialogText.Exit, false, 13)
         };
-        Menu.FloatingMenu(DialogText.CaptionsOptions, tempShortcuts, 10, 14, false);
+        Menu.FloatingMenu(DialogText.CaptionsOptions, tempShortcuts, 9, 14, false);
 
         // Get second key
         _keyInfo = Console.ReadKey(true);
@@ -433,6 +434,12 @@ internal static class Tools
             // Merge files
             MergeTool merge = new MergeTool();
             merge.MergeExport();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.F)
+        {
+            // Browse and edit text files
+            FileExplorer.Run();
             LoginRoutine(true);
         }
         else if (_keyInfo.Key == ConsoleKey.G)
@@ -735,6 +742,8 @@ internal static class Tools
     internal static void LoginRoutine(bool fullRedraw)
     {
         Navigation.LoginFullRedraw = fullRedraw;
+        // Sweep the logo when arriving at the login page from elsewhere (logging out)
+        if (Mode.CurrentMode != Mode.SelectedMode.Login) Logo.AnimateNext();
         Mode.SetMode(Mode.SelectedMode.Login);
         Navigation.Wait();
     }
@@ -771,7 +780,7 @@ internal static class Tools
             if (fullRedraw)
             {
                 // Draw logo
-                Logo.DrawLogo(true);
+                Logo.DrawLogo(true, Logo.TakeAnimation());
                 CursorTopLeftDown(5);
                 // Draw login menu
                 CursorReturn();
@@ -1268,6 +1277,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":qa", "Exit Marbles", false));
             _shortcutList.Add(new Shortcut(":logout", "Logout", false));
             _shortcutList.Add(new Shortcut("Esc", "Return/Cancel (login page: Options)", false));
+            _shortcutList.Add(new Shortcut("Esc F", "Login page: Browse and edit text files", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Editor", true));
             _shortcutList.Add(new Shortcut(string.Empty, "Modes", true));
             _shortcutList.Add(new Shortcut("Esc", "Normal mode (navigate and give commands)", false));

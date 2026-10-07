@@ -1,4 +1,4 @@
-namespace Marbles;
+﻿namespace Marbles;
 
 /// <summary>
 /// The ":" command line used in the menus and lists (the editor has its own, see EditorEngine).
@@ -6,7 +6,6 @@ namespace Marbles;
 /// </summary>
 internal static class CommandLine
 {
-    private const int MaxLength = 40;
     private const char Prefix = ':';
 
     /// <summary>
@@ -15,8 +14,21 @@ internal static class CommandLine
     /// <returns>The command in lowercase without the ":", or null if canceled</returns>
     internal static string? Read()
     {
+        return Read(Prefix, true);
+    }
+
+    /// <summary>
+    /// Let the user type a text on the bottom line
+    /// </summary>
+    /// <param name="prefix">The character shown before the text</param>
+    /// <param name="isCommand">True to return the text trimmed and in lowercase</param>
+    /// <returns>The text, or null if canceled or empty</returns>
+    internal static string? Read(char prefix, bool isCommand)
+    {
         var command = string.Empty;
-        WriteLine(Prefix.ToString(), ConsoleColors.ColorPreset.Normal);
+        // The whole line is highlighted while typing
+        WriteLine(prefix.ToString(), ConsoleColors.ColorPreset.HighlightInverted, true);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
         Tools.ShowCursor();
         try
         {
@@ -30,7 +42,7 @@ internal static class CommandLine
 
                 if (key.Key == ConsoleKey.Enter)
                 {
-                    command = command.Trim().ToLowerInvariant();
+                    command = isCommand ? command.Trim().ToLowerInvariant() : command.Trim();
                     return command.Length > 0 ? command : null;
                 }
 
@@ -42,7 +54,7 @@ internal static class CommandLine
                     Console.Write(" ");
                     Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
                 }
-                else if (!char.IsControl(key.KeyChar) && key.KeyChar != '\0' && command.Length < MaxLength)
+                else if (!char.IsControl(key.KeyChar) && key.KeyChar != '\0' && command.Length < Init.LineWidth - 4)
                 {
                     command += key.KeyChar;
                     Console.Write(key.KeyChar);
@@ -52,6 +64,8 @@ internal static class CommandLine
         finally
         {
             Tools.HideCursor();
+            // Remove the highlighted line
+            WriteLine(string.Empty, ConsoleColors.ColorPreset.Normal, false);
         }
     }
 
@@ -60,7 +74,7 @@ internal static class CommandLine
     /// </summary>
     internal static void ShowUnknown(string command)
     {
-        WriteLine(" " + DialogText.NotACommand + command + " ", ConsoleColors.ColorPreset.AttentionInverted);
+        WriteLine(" " + DialogText.NotACommand + command + " ", ConsoleColors.ColorPreset.AttentionInverted, false);
         Console.Write(" ");
         Keyboard.AwaitAnyKey();
     }
@@ -83,11 +97,22 @@ internal static class CommandLine
         return space < 0 ? string.Empty : command[(space + 1)..].Trim();
     }
 
+    /// <summary>
+    /// Show a message on the bottom line and wait for a key press
+    /// </summary>
+    internal static void ShowMessage(string message)
+    {
+        WriteLine(" " + message + " ", ConsoleColors.ColorPreset.AttentionInverted, false);
+        Console.Write(" ");
+        Keyboard.AwaitAnyKey();
+        WriteLine(string.Empty, ConsoleColors.ColorPreset.Normal, false);
+    }
+
     // Clear the bottom line and write a text on it
-    private static void WriteLine(string text, ConsoleColors.ColorPreset preset)
+    private static void WriteLine(string text, ConsoleColors.ColorPreset preset, bool fillLine)
     {
         Tools.SetCursorEx(Init.LineCount - 1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        ConsoleColors.SetColors(fillLine ? preset : ConsoleColors.ColorPreset.Normal);
         Console.Write(new string(' ', Init.LineWidth - 1));
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         ConsoleColors.SetColors(preset);

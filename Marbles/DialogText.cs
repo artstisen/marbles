@@ -259,6 +259,25 @@ internal static class DialogText
     public const string Loading = "Loading...";
     public const string Reading = "Reading...";
 
+    // File browser
+    public const string CaptionsFiles = "Files";
+    public const string BrowseFiles = "Browse files";
+    public const string Drives = "Drives";
+    public const string DirectoryMark = "<DIR>";
+    public const string DataFileMark = "[Data file]";
+    public const string FileBrowserKeys = "j/k Select | l/Enter Open | h Up | / Filter | N New | ? Help | Esc Close";
+    public const string NotEncrypted = "[Not encrypted]";
+    public const string FileTooLarge = "The file is too large to open (the limit is 10 MB)";
+    public const string FileNotText = "This is not a text file";
+    public const string DirectoryNotFound = "Directory not found";
+    public const string NotUtf8 = "This file is not UTF-8. It is read as ";
+    public const string NotUtf8Note = "Files are saved as UTF-8.";
+    public const string ConvertReplace = "[A] Convert to UTF-8 and replace the file when saving";
+    public const string ConvertCopy = "[B] Convert to UTF-8 and save as a copy (the file is left as it is)";
+    public const string ConvertCancel = "[Esc] Cancel";
+    public const string CopyDataFileYn = "Copy the data file to the data directory? " + YesNo;
+    public const string CopyDataFileNote = "Data files are opened from the Marbles data directory.";
+
     // Command line
     public const string NotACommand = "Not a command: ";
     public const string SelectFileDirectory = "File/Directory";

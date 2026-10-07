@@ -211,6 +211,8 @@ internal static class Init
         Vignette.SetDefaultVignetteState();
         Logo.ResetLogoIndex();
         Logo.ResetLogoText();
+        Logo.AnimationEnabled = true;
+        Logo.AnimateNext(); // Sweep the logo when the login page is first shown
         WriteProgressBar(8); // progress
         // Set default colors
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);

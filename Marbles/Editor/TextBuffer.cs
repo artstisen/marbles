@@ -332,6 +332,11 @@ internal sealed class TextBuffer
         }
     }
 
+    internal void MarkModified()
+    {
+        _savedStateLost = true;
+    }
+
     internal void MarkSaved()
     {
         // Edits made before saving and after saving must not end up in the same step

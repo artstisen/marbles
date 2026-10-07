@@ -6,7 +6,7 @@
 - **Data files are converted, and the conversion is one-way.** The first time you log in to a data file from an earlier version, Marbles saves it in the new file format. Earlier versions of Marbles cannot open the converted file.
 - **A copy of the original is kept.** Before converting, Marbles copies the original file to `<name>.mbls.legacy` in the same directory. The copy is still encrypted the old, weaker way. Delete it when you have checked that your notes are in place.
 - **The keys have changed.** The `CTRL+W` shortcuts are gone. Marbles is now operated in the style of Vim (see below). Press `?` anywhere for the list of keys.
-- **.NET 8** is required instead of .NET 6.
+- **.NET 10** is required instead of .NET 6.
 - Your `settings.ini` is read as it is. The key mapping settings (`kbtrigger`, `kbsave` ...) no longer exist and are removed the next time Marbles saves the settings.
 
 ### Encryption
@@ -32,9 +32,18 @@
 - `h`/`l` change menu page, `j`/`k` select in lists and scroll the text of an entry, `gg`/`G` go to the first/last, `/` searches and `?` shows help.
 - A command line (`:`) replaces the `CTRL+W` shortcuts: `:delete`, `:transfer`, `:size`, `:color`, `:q` ... The commands are shown in the menus.
 - On the login page, `Esc` opens the options menu.
+- `:color 5` and `:logo 3` select a color or logo preset by number.
+- The command line is highlighted while typing.
 - See the guides to the [main menu](Guide-to-main-menu.md) and the [login page](Guide-to-login-menu.md).
 
+### File browser
+- From the options of the login page (`Esc`, `F`): browse directories and edit plain text files in the editor, without logging in to a data file. New files can be created.
+- Text files are saved as UTF-8 with their line endings kept. Files in other encodings can be converted, replacing the file or as a copy.
+- Opening a data file from the browser selects it on the login page.
+- See the [guide to the login page](Guide-to-login-menu.md#file-browser).
+
 ### Other
+- The logo is drawn with a sweep on the login page (`logoanim=false` in the settings file turns it off).
 - The settings file is read by setting name, so the order of the settings does not matter.
 - Sorting entries by title is by character order on all platforms.
 - Fixed: the application could crash after a very long session of key presses.

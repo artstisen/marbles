@@ -102,7 +102,39 @@ internal static class Logo
     private static int _logoMargin;
     private static int _versionMargin;
 
+    private const int AnimationColumnDelay = 6; // Milliseconds between the columns of the sweep
+
+    /// <summary>
+    /// Draw the logo with a sweep from left to right when arriving at the login page (setting "logoanim")
+    /// </summary>
+    internal static bool AnimationEnabled { get; set; } = true;
+
+    private static bool _animateNext;
+
+    /// <summary>
+    /// Ask for the logo to be animated the next time the login page is drawn
+    /// </summary>
+    internal static void AnimateNext()
+    {
+        _animateNext = true;
+    }
+
+    /// <summary>
+    /// True (once) if the logo is to be animated now
+    /// </summary>
+    internal static bool TakeAnimation()
+    {
+        var animate = _animateNext && AnimationEnabled;
+        _animateNext = false;
+        return animate;
+    }
+
     internal static void DrawLogo(bool showVersionNumber)
+    {
+        DrawLogo(showVersionNumber, false);
+    }
+
+    internal static void DrawLogo(bool showVersionNumber, bool animate)
     {
         // Resolve start index
         _startIndex = @_logoIndex switch
@@ -131,46 +163,32 @@ internal static class Logo
             _ => 0
         };
 
+        // The five lines of the logo (the third and fourth are replaced if using custom logo text)
+        var lines = new string[5];
+        for (var i = 0; i < lines.Length; i++)
+        {
+            lines[i] = LogoLines[_startIndex + i];
+        }
+
+        if (_logoIndex == 7 && HasLogoText())
+        {
+            lines[2] = GetLogoText();
+            lines[3] = " ";
+        }
+
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.CursorTopLeft();
-        Tools.CursorRight(_logoMargin);
-        // Write first line of logo
-        Console.Write(LogoLines[_startIndex]);
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        Tools.CursorRight(_logoMargin);
-        // Write second line of logo
-        Console.Write(LogoLines[_startIndex + 1]);
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        Tools.CursorRight(_logoMargin);
-        // Write third line of logo
-        // (if using custom logo text)
-        if (_logoIndex == 7 && HasLogoText())
+        if (animate)
         {
-            Console.Write(GetLogoText());
+            SweepLogo(lines);
         }
-        else
+
+        // Write the lines (after a sweep this makes sure the logo is complete)
+        for (var i = 0; i < lines.Length; i++)
         {
-            Console.Write(LogoLines[_startIndex + 2]);
+            Tools.SetCursorEx(i, _logoMargin);
+            Console.Write(lines[i]);
         }
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        Tools.CursorRight(_logoMargin);
-        // Write fourth line of logo
-        if (_logoIndex == 7 && HasLogoText())
-        {
-            Console.Write(" ");
-        }
-        else
-        {
-            Console.Write(LogoLines[_startIndex + 3]);
-        }
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        Tools.CursorRight(_logoMargin);
-        // Write fifth line of logo
-        Console.Write(LogoLines[_startIndex + 4]);
+
         // Write version number
         if (showVersionNumber)
         {
@@ -195,5 +213,32 @@ internal static class Logo
         }
 
         Menu.WriteDataFileName();
+    }
+
+    // Reveal the logo column by column from left to right. A key press ends the sweep
+    private static void SweepLogo(string[] lines)
+    {
+        try
+        {
+            var width = lines.Max(line => line.Length);
+            for (var column = 0; column < width; column++)
+            {
+                if (Console.KeyAvailable) return;
+                var drawn = false;
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    if (column >= lines[i].Length || lines[i][column] == ' ') continue;
+                    Tools.SetCursorEx(i, _logoMargin + column);
+                    Console.Write(lines[i][column]);
+                    drawn = true;
+                }
+
+                if (drawn) Thread.Sleep(AnimationColumnDelay);
+            }
+        }
+        catch
+        {
+            // The animation is only decoration: the logo is drawn in full afterwards
+        }
     }
 }
