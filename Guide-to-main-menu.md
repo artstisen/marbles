@@ -1,0 +1,90 @@
+# Guide to the main menu, lists and entries
+
+The same keys are used everywhere in Marbles:
+
+- `h` `l` (or `Left`/`Right`, `Tab`) Previous/Next menu page
+- `j` `k` (or `Down`/`Up`) Select in a list, or scroll the text of an entry
+- `gg` `G` First/Last (menu page, entry in a list, or top/end of a text)
+- `/` Search
+- `?` Help: the list of keys
+- `:` Command line: type a command and press `Enter`. The commands are shown in the menus
+- `:q` Close/Return. In the main menu: Exit Marbles
+- `:qa` Exit Marbles from anywhere
+- `:logout` (or `X`) Close the data file and return to the [login page](Guide-to-login-menu.md)
+- `Esc` Return/Cancel
+
+## Main menu
+The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`4`, and `Home`/`End` go to the first/last page.
+
+### Page 1
+- `N` **New**: Create a new entry (write a title and enter your notes).
+- `S` or `/` **Search**: Search the entries of the data file. All the words you type must be found in the title or text of an entry. The result can be sorted (press `Tab`) by _date changed_, _date created_ and alphabetically by _title_.
+- `R` **Reselect**: Select the last edited entry again.
+- `F` **Favorites**: Show the entries added to the favorites list.
+- `X` **Logout**
+
+### Page 2
+- `T` **Top 20**: The 20 most recently edited entries.
+- `M` **Session history**: The entries viewed since you logged in.
+- `A` **List all**: All entries, sorted by date created, date changed or title (press `Tab`).
+- `I` **File info**: The directory, name and size of the data file.
+- `D` **Display timestamp**: The current date, time and week number.
+- `?` **Help**
+- `:about` **About**: General information about Marbles.
+
+### Page 3 (commands)
+- `:undelete` **Undo deletion**: Undo the last deletion of an entry (since you logged in).
+- `:transfer` **Transfer**: Collect entries for transfer to another data file, protected by a key.
+- `:import` **Import .txt**: Import a plain text document (it must be named "import.txt" and placed in the data directory).
+- `:vignette` **Text vignette**: Create a text to be shown on the main menu.
+- `:size` **Change dimensions**: Set the number of rows and columns used by Marbles.
+- `:color` **Color preset**: Use the next of the color presets (see page 4 for making your own).
+- `:logo` **Logo preset**: Use the next of the logo presets (the last preset shows a text of your own, set as `logotxt` in the settings file).
+- `:backup` **Toggle backup**: Save a copy of the data file in another directory every time it is saved.
+- `:password` **Reset password**: Change the password of the data file. It is not possible to recover your notes if you forget your password.
+- `:defaults` **Default settings**: Reset all settings.
+- `:restart` **Restart Marbles**
+- `:logout` **Logout**
+- `:q` **Exit**
+
+### Page 4 (color scheme)
+- `:scheme` **Unlock color scheme**: Edit the colors of the selected color preset
+  - `j` `k` (or `Up`/`Down`) Select the color group to change
+  - `h` `l` (or `Left`/`Right`) Change the color
+  - `T` Switch between text and background colors
+  - `E` Reset to the default colors of the preset
+  - `Enter` Save and exit
+  - `Esc` Cancel
+
+## Lists of entries
+Search results, Top 20, Favorites, Session history and List all are shown as lists.
+
+- `j` `k` Select an entry, `gg` `G` Select the first/last entry on the page, `PgUp` `PgDn` Move 3 entries
+- `h` `l` Previous/Next page of the list
+- `Enter` or `Space` Open the selected entry
+- `1`-`9` and `0` Open entry 1-10 directly. `:12` opens entry 12
+- `P` Add the selected entry to (or remove it from) the favorites, or pin it to the top of the favorites list
+- `Tab` Change the sorting. In the favorites list: arrange the pinned entries
+- `:title` Change the title of the selected entry
+- `:delete` Delete the selected entry
+- `:pin 1`, `:pin 2`, `:pin 3` Set the color of a pinned entry
+- `:transfer` Add the selected entry to the transfer collection
+- `/` or `S` Search, `A` List all, `T` Top 20, `F` Favorites, `M` Session history, `N` New entry
+- `Esc` or `:q` Return to the main menu
+
+## Viewing an entry
+Opening an entry shows its text with a menu of 3 pages.
+
+- `Enter` or `I` Edit the text (see the [guide to the editor](Guide-to-editor.md))
+- `j` `k` Scroll the text one row, `Space` and `b` (or `PgDn`/`PgUp`) one page, `gg` `G` to the top/end
+- `T` Change the title
+- `F` Add to/remove from the favorites
+- `D` Duplicate the entry
+- `S` or `/` Open the editor and search the text
+- `N` New entry
+- `:delete` Delete the entry
+- `:revert` Revert to the text before the last edit (since you logged in)
+- `:transfer` Add the entry to the transfer collection
+- `:import` Import "import.txt" as a new entry
+- `:export` Export the text of the entry as a .txt file in the data directory. The exported file is not encrypted
+- `Esc` or `:q` Return to the list

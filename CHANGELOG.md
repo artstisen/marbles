@@ -1,0 +1,44 @@
+# Changes
+
+## v1.5.0
+
+### Upgrading from v1.0.x: read this first
+- **Data files are converted, and the conversion is one-way.** The first time you log in to a data file from an earlier version, Marbles saves it in the new file format. Earlier versions of Marbles cannot open the converted file.
+- **A copy of the original is kept.** Before converting, Marbles copies the original file to `<name>.mbls.legacy` in the same directory. The copy is still encrypted the old, weaker way. Delete it when you have checked that your notes are in place.
+- **The keys have changed.** The `CTRL+W` shortcuts are gone. Marbles is now operated in the style of Vim (see below). Press `?` anywhere for the list of keys.
+- **.NET 8** is required instead of .NET 6.
+- Your `settings.ini` is read as it is. The key mapping settings (`kbtrigger`, `kbsave` ...) no longer exist and are removed the next time Marbles saves the settings.
+
+### Encryption
+- The encryption key is derived from the password with PBKDF2-HMAC-SHA256 (600,000 iterations and a random salt). Earlier versions used the password itself as the key.
+- Data files are encrypted with AES-256-GCM, using a new random nonce for every save. A wrong password, a damaged file and a file that has been tampered with are all detected.
+- Passwords can be up to 128 characters, and all characters count (earlier versions treated all non-ASCII characters as the same character).
+- Generated passwords (`:pw` in the editor) come from a cryptographic random number generator.
+
+### Safer saving
+- Data files, backup files and the settings file are written to a temporary file that then replaces the original, so an interrupted save cannot leave a half written file.
+- A data file whose content cannot be read is no longer opened as an empty file (saving it would have overwritten the content). Characters that cannot be stored are removed when saving, and files from earlier versions containing such characters are recovered when loading.
+
+### New editor
+- Normal, Insert and Visual modes, with the mode shown on the bottom line together with the cursor position.
+- Vim movements, counts, operators and text objects (`dw`, `ciw`, `3dd`, `yy`, `p` ...), undo/redo in steps, and repeat (`.`).
+- Search with regular expressions (`/` `?` `n` `N` `*`) and find-and-replace (`:s/old/new/g`, `:%s/old/new/g`).
+- A command line (`:w`, `:q`, `:wq`, `:5`, `:help` ...).
+- Lines are wrapped at blank spaces, and wide characters and emoji are handled.
+- Pasting text is fast, and text copied from the terminal window no longer includes padding or the scroll marker.
+- See the [guide to the editor](Guide-to-editor.md).
+
+### Menus and lists
+- `h`/`l` change menu page, `j`/`k` select in lists and scroll the text of an entry, `gg`/`G` go to the first/last, `/` searches and `?` shows help.
+- A command line (`:`) replaces the `CTRL+W` shortcuts: `:delete`, `:transfer`, `:size`, `:color`, `:q` ... The commands are shown in the menus.
+- On the login page, `Esc` opens the options menu.
+- See the guides to the [main menu](Guide-to-main-menu.md) and the [login page](Guide-to-login-menu.md).
+
+### Other
+- The settings file is read by setting name, so the order of the settings does not matter.
+- Sorting entries by title is by character order on all platforms.
+- Fixed: the application could crash after a very long session of key presses.
+- Fixed: changing menu page while viewing an entry could erase part of the "Created" date.
+
+## v1.0.1.1
+- The last release of the first generation of Marbles (2022).
