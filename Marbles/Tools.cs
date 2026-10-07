@@ -1,0 +1,1809 @@
+﻿using System;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace marbles;
+
+internal static class Tools
+{
+    public static string TruncateString(string s, int length, bool dots)
+    {
+        if (!IsValid(s)) return string.Empty;
+        if (s.Length >= length)
+        {
+            return dots ? string.Concat(s.AsSpan(0, (length - 3)), "...") : s[..length];
+        }
+
+        return s;
+    }
+
+
+    public static string[] SplitStringOnNewLine(string input, bool trim)
+    {
+        if (IsValid(input))
+        {
+            if (trim)
+            {
+                input = input.Trim();
+            }
+
+            return input.Split(
+                new[] {Entries.ReturnNewLineCharString, Entries.ReturnCharString, Entries.NewLineCharString},
+                StringSplitOptions.None);
+        }
+        else
+        {
+            return Array.Empty<string>();
+        }
+    }
+
+    public static List<string> SplitStringOnNewLine(string input)
+    {
+        if (IsValid(input))
+        {
+            var tempList = new List<string>();
+            tempList.AddRange(input.Split(
+                new[] {Entries.ReturnNewLineCharString, Entries.ReturnCharString, Entries.NewLineCharString},
+                StringSplitOptions.None));
+
+            return tempList;
+        }
+        else
+        {
+            return new List<string>();
+        }
+    }
+
+    // This will split a string on several parameters and only fetch the first instance which will be limited to 256 chars
+    public static string ConstrainTitle(string input)
+    {
+        if (IsValid(input))
+        {
+            input = input.Trim();
+            input = input.Split(
+                new[] {Entries.ReturnNewLineCharString, Entries.ReturnCharString, Entries.NewLineCharString},
+                StringSplitOptions.None)[0];
+            if (input.Length > 256)
+            {
+                input = input[..255];
+            }
+
+            return input;
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
+    public static string RemoveNewLineChars(string input)
+    {
+        if (IsValid(input))
+        {
+            input = input.Replace("\n", string.Empty);
+            input = input.Replace("\r", string.Empty);
+            input = input.Replace("\r\n", string.Empty);
+        }
+
+        return input;
+    }
+
+    public static string TrimToLower(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return string.Empty;
+        input = input.Trim();
+        input = input.ToLower();
+        return input;
+    }
+
+    // Split long line
+    // private static string _tempLine = string.Empty;
+    // public static string SplitText(string text, int partLength, string margin)
+    // {
+    //     if (!string.IsNullOrEmpty(text) && partLength > 0)
+    //     {
+    //
+    //         _tempLine = "";
+    //         var partCount = Math.Ceiling((double)text.Length / partLength);
+    //         // Return text if one line
+    //         if (partCount < 2)
+    //         {
+    //             return text;
+    //         }
+    //
+    //         // Else split the string
+    //         for (int i = 0; i < partCount; i++)
+    //         {
+    //             var index = i * partLength;
+    //             var lengthLeft = Math.Min(partLength, text.Length - index);
+    //             if (i == partCount - 1) // Omit inserting new line on the last line
+    //             {
+    //                 _tempLine += string.Concat(margin, text.AsSpan(index, lengthLeft));
+    //             }
+    //             else
+    //             {
+    //                 _tempLine += string.Concat(margin, text.AsSpan(index, lengthLeft), Entries.NewLineCharString);
+    //             }
+    //
+    //         }
+    //         return _tempLine;
+    //     }
+    //     else
+    //     {
+    //         return text;
+    //     }
+    // }
+
+    // Not null or empty
+    public static bool IsValid(string input)
+    {
+        return !string.IsNullOrEmpty(input);
+    }
+
+    public static bool IsValidFileName(string input)
+    {
+        if (!IsValid(input)) return false;
+        var invalidChars = Path.GetInvalidFileNameChars();
+        return invalidChars.All(c => !input.Contains(c));
+    }
+
+    public static bool IsValidPath(string input)
+    {
+        if (!IsValid(input)) return false;
+        var invalidChars = Path.GetInvalidPathChars();
+        return invalidChars.All(c => !input.Contains(c));
+    }
+
+    public static bool IsValidXml(string input)
+    {
+        if (IsValid(input) && input.Contains(FileIo.XmlDoctype))
+        {
+            return true;
+        }
+        return false;
+    }
+
+
+    public static bool IsNumeric(string s)
+    {
+        return Regex.IsMatch(s, @"^\d+$");
+    }
+
+    public static bool IsAzChar(string s)
+    {
+        return Regex.IsMatch(s, @"^[a-zA-Z]+$");
+    }
+
+
+    internal static int WordCount(string text)
+    {
+        int wordCount = 0, index = 0;
+
+        // skip whitespace until first word
+        while (index < text.Length && char.IsWhiteSpace(text[index]))
+            index++;
+
+        while (index < text.Length)
+        {
+            // check if current char is part of a word
+            while (index < text.Length && !char.IsWhiteSpace(text[index]))
+                index++;
+
+            wordCount++;
+
+            // skip whitespace until next word
+            while (index < text.Length && char.IsWhiteSpace(text[index]))
+                index++;
+        }
+
+        return wordCount;
+    }
+
+    internal static int CharacterCount(string text)
+    {
+        int charCount = 0, index = 0;
+
+        // skip whitespace until first word
+        while (index < text.Length && char.IsWhiteSpace(text[index]))
+            index++;
+
+        while (index < text.Length)
+        {
+            //check if current char is part of a word
+            while (index < text.Length && !char.IsWhiteSpace(text[index]))
+            {
+                index++;
+                charCount++;
+            }
+
+            // skip whitespace until next word
+            while (index < text.Length && char.IsWhiteSpace(text[index]))
+                index++;
+        }
+
+        return charCount;
+    }
+
+    internal static int LineCount(string text)
+    {
+        if (!string.IsNullOrEmpty(text) && text.Contains(Entries.NewLineCharString))
+        {
+            return SplitStringOnNewLine(text, false).Length;
+        }
+
+        return 0;
+    }
+
+
+    private static string _tempCenterScreenText = string.Empty;
+
+    public static void WriteCenterScreen(string text)
+    {
+        _tempCenterScreenText = text;
+        Tools.CursorTopLeft();
+        Tools.CursorRight((Init.LineWidth / 2) - (_tempCenterScreenText.Length / 2));
+        Tools.CursorDown(Init.LineCount / 2);
+        Console.Write(_tempCenterScreenText);
+    }
+
+    public static void WriteCenterScreen(string[] text)
+    {
+        var lineWidth = Init.LineWidth / 2;
+        var lineCount = Init.LineCount / 2;
+        lineCount -= (text.Length / 2);
+        CursorTopLeft();
+        CursorDown(lineCount);
+        for (int i = 0; i < text.Length; i++)
+        {
+            CursorRight((lineWidth) - (text[i].Length / 2));
+            Console.Write(text[i]);
+            CursorTopLeft();
+            lineCount += 1;
+            CursorDown(lineCount);
+        }
+    }
+
+
+    // Mask password
+    private static ConsoleKeyInfo _keyInfo;
+    private static bool _exitLoop;
+    private static string _pass = string.Empty;
+
+    private static string ReadMasked(bool enableShortcuts)
+    {
+        _pass = string.Empty;
+        _exitLoop = false;
+
+        do
+        {
+            ShowCursor();
+            _keyInfo = Console.ReadKey(intercept: true);
+            HideCursor();
+            var key = _keyInfo.Key;
+
+            // Handle all trigger keys first
+            if (!FileActions.IsLockedForMove() && Keyboard.IsPrimaryShortcutTrigger(_keyInfo, string.Empty))
+            {
+                // Display options menu on login page
+                var tempShortcuts = new List<Shortcut>
+                {
+                    new("I", DialogText.FileInfo, false, 13),
+                    new("N", DialogText.NewFile, false, 13),
+                    new("X", DialogText.RenameFile, false, 13),
+                    new("C", DialogText.CopyFile, false, 13),
+                    new("D", DialogText.DeleteFile, false, 13),
+                    new("M", DialogText.MergeFiles, false, 13),
+                    new(string.Empty, "-", true, 13),
+                    new("R/Y", DialogText.Refresh + "/" + DialogText.Restart, false, 13),
+                    new("L/S", DialogText.Log + "/" + FileIo.SettingsFileName, false, 13),
+                    new("Q", DialogText.Exit, false, 13)
+                };
+                Menu.FloatingMenu(DialogText.CaptionsOptions, tempShortcuts, 11, 14, false);
+
+                // Get second key
+                _keyInfo = Console.ReadKey(true);
+                if (_keyInfo.Key == ConsoleKey.R)
+                {
+                    // Refresh
+                    LoginRoutine(true);
+                }
+                else if (_keyInfo.Key == ConsoleKey.Y)
+                {
+                    // Restart
+                    Restart();
+                }
+                else if (_keyInfo.Key == ConsoleKey.I)
+                {
+                    // File info
+                    FileActions.ShowDataFileInfo(false);
+                    LoginRoutine(true);
+                }
+                else if (_keyInfo.Key == ConsoleKey.N)
+                {
+                    // New data file
+                    if (FileActions.NewDataFilePrompt())
+                    {
+                        Init.Log("New file: " + FileIo.GetFileName(), false);
+                    }
+
+                    LoginRoutine(true);
+                }
+                else if (_keyInfo.Key == ConsoleKey.X)
+                {
+                    // Rename file
+                    FileActions.RenameCurrentDataFile();
+                    LoginRoutine(true);
+                }
+                else if (_keyInfo.Key == ConsoleKey.C)
+                {
+                    // Copy file
+                    FileActions.CopyCurrentDataFile();
+                    LoginRoutine(true);
+                }
+                else if (_keyInfo.Key == ConsoleKey.D)
+                {
+                    // Delete file
+                    FileActions.DeleteCurrentDataFile();
+                    LoginRoutine(true);
+                }
+                else if (_keyInfo.Key == ConsoleKey.M)
+                {
+                    // Merge files
+                    MergeTool merge = new MergeTool();
+                    merge.MergeExport();
+                    LoginRoutine(true);
+                }
+                else if (_keyInfo.Key == ConsoleKey.L)
+                {
+                    // Log
+                    Init.WriteLog();
+                    LoginRoutine(true);
+                }
+                else if (_keyInfo.Key == ConsoleKey.S)
+                {
+                    // Settings
+                    Mode.SetMode(Mode.SelectedMode.Edit);
+                    ClearScreen();
+                    Actions.DrawEditSettingsMenu();
+                    TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
+                        Init.LineCount - 5, FileIo.ReadSettingsFile(), 0, false, false, false, 1);
+                    // Cleanup
+                    textArea.ClearUndoRedoCache();
+                    // Restart if settings where saved to reload with new settings
+                    if (textArea.SaveWasInvoked)
+                    {
+                        ColdRestart();
+                    }
+                    else
+                    {
+                        LoginRoutine(true);
+                    }
+                }
+                else if (_keyInfo.Key == ConsoleKey.Q)
+                {
+                    // Exit directly
+                    ExitApplication();
+                }
+                else
+                {
+                    Keyboard.DisplayUnboundKey(_keyInfo);
+                    // Return to normal
+                    Keyboard.ClearTopIndicatorArea();
+                    LoginRoutine(true);
+                }
+            }
+            else if (key == ConsoleKey.Enter)
+            {
+                if (FileActions.IsLockedForMove())
+                {
+                    FileActions.MoveCurrentDataFile();
+                    LoginRoutine(true);
+                }
+                else
+                {
+                    _exitLoop = true;
+                }
+            }
+            else if (key == ConsoleKey.Tab && _keyInfo.Modifiers == ConsoleModifiers.Shift)
+            {
+                if (!FileActions.IsLockedForMove())
+                {
+                    // Previous datafile (SHIFT+TAB)
+                    FileBrowser.SelectPreviousDataFile();
+                }
+            }
+            else if (enableShortcuts && key == ConsoleKey.LeftArrow)
+            {
+                if (!FileActions.IsLockedForMove())
+                {
+                    // Previous datafile
+                    FileBrowser.SelectPreviousDataFile();
+                }
+            }
+            else if (enableShortcuts && key == ConsoleKey.RightArrow || key == ConsoleKey.Tab)
+            {
+                if (!FileActions.IsLockedForMove())
+                {
+                    // Next datafile
+                    FileBrowser.SelectNextDataFile();
+                }
+            }
+            else if (enableShortcuts && key == ConsoleKey.UpArrow)
+            {
+                // Next sub directory
+                FileBrowser.NextSubfolder();
+            }
+            else if (enableShortcuts && key == ConsoleKey.DownArrow)
+            {
+                // Previous sub directory
+                FileBrowser.PreviousSubfolder();
+            }
+            else if (enableShortcuts && key == ConsoleKey.Spacebar)
+            {
+                // Lock for move
+                if (IsValid(FileIo.GetFileName()) && FileBrowser.HasSubFolders() && !FileActions.IsLockedForMove())
+                {
+                    FileActions.SetLockForMove(true, false);
+                }
+                else if(FileActions.IsLockedForMove())
+                {
+                    FileActions.SetLockForMove(false, true);
+                }
+
+                LoginRoutine(false);
+            }
+            else if (enableShortcuts && key == ConsoleKey.Escape)
+            {
+                if (FileActions.IsLockedForMove())
+                {
+                    FileActions.SetLockForMove(false, true);
+                    LoginRoutine(false);
+                }
+                // Return to root/data directory
+                else if (FileIo.GetSubFolder().Length > 0)
+                {
+                    // Remove subfolder at select first file in the root/data directory
+                    FileBrowser.ResetSubfolderAndIndex();
+                    FileBrowser.ResolveDefaultDataFile();
+                    LoginRoutine(false);
+                }
+                else if(_pass.Length > 0)
+                {
+                    for (int i = 0; i < _pass.Length; i++)
+                    {
+                        // Go back, write blank, go back -same as "\b \b", but cross platform compatible
+                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                        Console.Write(" ");
+                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                    }
+                    // Clear password variable
+                    _pass = string.Empty;
+                }
+            }
+            else if (key == ConsoleKey.Backspace && _pass.Length > 0)
+            {
+                // Go back, write blank, go back -same as "\b \b", but cross platform compatible
+                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                Console.Write(" ");
+                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                _pass = _pass[0..^1];
+            }
+            else if (!FileActions.IsLockedForMove() && !char.IsControl(_keyInfo.KeyChar) && key != ConsoleKey.Spacebar &&
+                     _pass.Length < 32)
+            {
+                Console.Write("*");
+                _pass += _keyInfo.KeyChar;
+            }
+        } while (!_exitLoop);
+
+        return _pass;
+    }
+
+    internal static string ReadMaskedSimple(bool enableCancelCommand)
+    {
+        _pass = string.Empty;
+        _exitLoop = false;
+
+        do
+        {
+            ShowCursor();
+            _keyInfo = Console.ReadKey(intercept: true);
+            HideCursor();
+            var key = _keyInfo.Key;
+
+            // Handle all trigger keys first
+            if (key == ConsoleKey.Enter)
+            {
+                _exitLoop = true;
+            }
+            else if (enableCancelCommand && key == ConsoleKey.Escape)
+            {
+                // Indicate cancel
+                _pass = DialogText.CancelCommand;
+                _exitLoop = true;
+            }
+            else if (key == ConsoleKey.Backspace && _pass.Length > 0)
+            {
+                //Console.Write("\b \b");
+                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                Console.Write(" ");
+                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                _pass = _pass[0..^1];
+            }
+            else if (!char.IsControl(_keyInfo.KeyChar) && key != ConsoleKey.Spacebar && _pass.Length < 32)
+            {
+                Console.Write("*");
+                _pass += _keyInfo.KeyChar;
+            }
+        } while (!_exitLoop);
+
+        return _pass;
+    }
+
+
+    #region String memory (Internal clipboard)
+
+    private const int MaxLineMemoryCount = 64;
+    private static List<string> _stringMemory = new();
+    private static int _currentLineMemoryIndex;
+
+    internal static void NextLineMemoryIndex()
+    {
+        if (_stringMemory.Count <= 0) return;
+        if (_currentLineMemoryIndex + 1 < _stringMemory.Count)
+        {
+            _currentLineMemoryIndex += 1;
+        }
+        else
+        {
+            _currentLineMemoryIndex = 0;
+        }
+    }
+
+    internal static void PreviousLineMemoryIndex()
+    {
+        if (_stringMemory.Count > 0)
+        {
+            if (_currentLineMemoryIndex - 1 >= 0)
+            {
+                _currentLineMemoryIndex -= 1;
+            }
+            else
+            {
+                _currentLineMemoryIndex = _stringMemory.Count - 1;
+            }
+        }
+    }
+
+    internal static void FirstLineMemoryIndex()
+    {
+        _currentLineMemoryIndex = 0;
+    }
+
+    internal static void LastLineMemoryIndex()
+    {
+        if (_stringMemory.Count > 0)
+        {
+            _currentLineMemoryIndex = _stringMemory.Count - 1;
+        }
+    }
+
+    internal static void ClearLineMemory()
+    {
+        if (_stringMemory.Count > 0)
+        {
+            for (int i = 0; i < _stringMemory.Count; i++)
+            {
+                _stringMemory[i] = DialogText.Cleared;
+            }
+        }
+
+        _stringMemory.Clear();
+        _currentLineMemoryIndex = 0;
+    }
+
+    // Returns:
+    // 0 = OK
+    // 1 = String already in memory
+    // 2 = String invalid
+    internal static int AddToLineMemory(string text)
+    {
+        if (!string.IsNullOrEmpty(text))
+        {
+            if (!AlreadyInLineMemory(text)) // Only ad strings that are not currently added
+            {
+                _stringMemory.Add(text);
+                LimitLineMemory();
+                _currentLineMemoryIndex = _stringMemory.Count - 1;
+                return 0;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
+        return 2;
+    }
+
+    private static bool AlreadyInLineMemory(string text)
+    {
+        return _stringMemory.Count > 0 && _stringMemory.Any(t => t == text);
+    }
+
+    private static void LimitLineMemory()
+    {
+        if (_stringMemory.Count > MaxLineMemoryCount)
+        {
+            _stringMemory.RemoveAt(0);
+        }
+    }
+
+    internal static bool HasLineMemory()
+    {
+        if (_stringMemory.Count > 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    internal static string GetLineMemoryCount()
+    {
+        return DialogText.MemoryIndicatorLineCopy + " " + (_currentLineMemoryIndex + 1) + "/" + _stringMemory.Count;
+    }
+
+    internal static string GetTruncatedLineMemoryPreview()
+    {
+        if (_stringMemory.Count > 0)
+        {
+            return TruncateString(GetCurrentLineFromLineMemory(), 64, true);
+        }
+
+        return DialogText.NotAvailable;
+    }
+
+    internal static string GetCurrentLineFromLineMemory()
+    {
+        if (_stringMemory.Count > 0 && _currentLineMemoryIndex >= 0 && _currentLineMemoryIndex < _stringMemory.Count)
+        {
+            return _stringMemory[_currentLineMemoryIndex];
+        }
+        else
+        {
+            return string.Empty;
+        }
+    }
+
+    internal static List<string> GetAllLinesFromLineMemory()
+    {
+        return _stringMemory;
+    }
+
+    #endregion
+
+
+    internal static int GetTitleEditWidth()
+    {
+        return Init.LineWidth - 15;
+    }
+
+    internal static int GetTitlePreviewWidth()
+    {
+        return Init.LineWidth - 20;
+    }
+
+    internal static int GetTitleListWidth()
+    {
+        return Init.LineWidth - 30;
+    }
+
+
+    internal static void Restart()
+    {
+        if (Menu.YesNoPrompt(DialogText.Restart, DialogText.RestartYn, string.Empty, true))
+        {
+            Init.Log(" *** " + DialogText.Restart + " *** ", false);
+            RemovePrivileges(true);
+            ClearEditorHelpData();
+            // Clear transfer entry
+            Entries.ClearTransfer(false);
+            Init.RunInitialization();
+            Menu.DrawTopMenu(true, true, false);
+        }
+        else
+        {
+            Menu.DrawTopMenu(false, true, false);
+        }
+    }
+
+    internal static void ColdRestart()
+    {
+        Init.Log(" *** " + DialogText.Restart + " *** ", false);
+        RemovePrivileges(true);
+        ClearEditorHelpData();
+        // Clear transfer entry
+        Entries.ClearTransfer(false);
+        Init.RunInitialization();
+        Menu.DrawTopMenu(true, true, false);
+    }
+
+    internal static void FatalError(string errorMsg)
+    {
+        Console.Clear();
+        Console.WriteLine("");
+        Menu.WriteModeLabel(DialogText.CaptionsKeyError, DialogText.ErrorUnsupportedAction, 0);
+        Menu.WriteNameInTopBar(true);
+        CursorDown(2);
+        Keyboard.AwaitAnyKey();
+        // Start over
+        ColdRestart();
+    }
+
+    internal static void ActionUnsupported(string errorMsg)
+    {
+        Console.Clear();
+        Console.WriteLine("");
+        Menu.WriteModeLabel(DialogText.CaptionsKeyError, DialogText.ErrorUnsupportedAction, 0);
+        Menu.WriteNameInTopBar(true);
+        CursorDown(2);
+        Keyboard.AwaitAnyKey();
+    }
+
+
+    #region Login/Password
+
+    // There is only a "LoginRoutine" not a "logout" as this method provides both
+    private static LoadStatus _load = new();
+    internal static bool CreateNewDataFile;
+
+    internal static void LoginRoutine(bool fullRedraw)
+    {
+        if (fullRedraw)
+        {
+            ClearScreen();
+        }
+
+        Mode.SetMode(Mode.SelectedMode.Login);
+        RemovePrivileges(fullRedraw);
+
+        // Start by checking if the data file exists
+        // If the current file is not available try to select the next available
+        if (!FileActions.IsLockedForMove() && (CreateNewDataFile || !FileBrowser.ResolveDefaultDataFile()))
+        {
+            CreateNewDataFile = false;
+            // Calendar related
+            // Only display welcome text if normal filetype
+            if (FileActions.CurrentFileType == FileActions.FileType.Normal)
+            {
+                DisplayWelcomeText();
+            }
+
+            NewPasswordRoutine(false);
+        }
+        else
+        {
+            if (fullRedraw)
+            {
+                // Draw logo
+                Logo.DrawLogo(true);
+                CursorTopLeftDown(5);
+                // Draw login menu
+                CursorReturn();
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                CursorDown(1);
+                CursorRight(2);
+                Console.Write(AsciiStyles.GetTopCorner() + new string('-', 34) + AsciiStyles.GetTopCorner());
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+                CursorReturn();
+                CursorRight(4);
+                Console.Write(" " + DialogText.CaptionsLogin + " ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                CursorReturn();
+                CursorDown();
+                CursorRight(2);
+                Console.Write("|" + new string(' ', 34) + "|");
+                CursorReturn();
+                CursorDown();
+                CursorRight(2);
+                Console.Write(AsciiStyles.GetBottomCorner() + new string('-', 34) + AsciiStyles.GetBottomCorner());
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                CursorReturn();
+                CursorDown(2);
+            }
+            else
+            {
+                // Clear password field when browsing files
+                CursorTopLeftDown(7);
+                CursorRight(3);
+                Console.Write(new string(' ', 32));
+            }
+
+            // File browser
+            CursorTopLeftDown(10);
+            // Clear the bottom menu lines for file- and directory names if not a full redraw
+            if (!fullRedraw)
+            {
+                Menu.WriteDataFileName();
+                for (int i = 0; i < 6; i++)
+                {
+                    Console.Write(new string(' ', Init.LineWidth));
+                    if (i < 5)
+                    {
+                        CursorReturn();
+                        CursorDown();
+                    }
+                }
+
+                CursorReturn();
+                CursorUp(5);
+            }
+
+
+            // Write file name
+            if (FileActions.IsLockedForMove())
+            {
+                // Write file selection
+                Menu.WriteMenuItem(DialogText.PaginationLeftRight,
+                    DialogText.ExtSelectDataFile + " --> ", false);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                Console.Write(" " + TruncateString(FileIo.GetFileName(), 35, true) + " ");
+                // Write file size
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+                Console.Write(" Move ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Console.Write(" -->");
+            }
+            else
+            {
+                // Write file selection
+                Menu.WriteMenuItem(DialogText.PaginationLeftRight,
+                    DialogText.ExtSelectDataFile + " " + FileBrowser.GetDataFileCountForDisplay() + " ", false);
+                if (FileBrowser.FilesInDirectory() > 0)
+                {
+                    // Write file name
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                    Console.Write(" " + TruncateString(FileIo.GetFileName(), 35, true) + " ");
+                    // Write file size
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                    Console.Write(" (" + FileIo.GetFileSize(false) + ")");
+                }
+                else
+                {
+                    // Empty directory
+                    FileIo.SetNoFileName();
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                    Console.Write(" " + TruncateString(DialogText.NoDataFiles, 35, true) + " ");
+                }
+            }
+
+            // Ensure normal colors
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            CursorReturn();
+            CursorDown();
+
+            // Directory selection
+            FileBrowser.RefreshSubfoldersList();
+            if (!FileBrowser.HasSubFolders()) Menu.DimMenuItem = true;
+            Menu.WriteMenuItem(DialogText.BrowseUpDown,
+                DialogText.ExtSelectDirectory + ": ",
+                false); // Removed the GetSubfolderCount() as it clutters the scene
+            // Write directory name
+            // if (FileActions.IsLockedForMove())
+            // {
+            //     ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+            //     Console.Write(" ");
+            // }
+            // else
+            // {
+            //     ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+            // }
+            
+            if (!FileBrowser.HasSubFolders()) ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            else
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+            }
+            Console.Write(TruncateString(FileIo.GetDataAndSubFolderForDisplay(), 35, true));
+            if (FileBrowser.FilesInDirectory() == 0)
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Console.Write(" " + DialogText.EmptyDirectory);
+            }
+            // Move indicator
+            if (FileActions.IsLockedForMove())
+            {
+                if (!FileActions.IsMoveDirectoryValid())
+                {
+                    Console.Write(" ");
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.WarningInverted);
+                    Console.Write(" X ");
+                }
+                else if (FileActions.IsMoveDirectoryValid())
+                {
+                    Console.Write(" ");
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                    Console.Write(" <-- Enter ");
+                }
+            }
+
+            // if (FileBrowser.HasSubFolders())
+            // {
+            //     ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            //     Console.Write(" " + TruncateString(FileIo.GetDataAndSubFolderForDisplay(), 35, true) + " ");
+            // }
+            // else
+            // {
+            //     Console.Write(TruncateString(FileIo.GetDataAndSubFolderForDisplay(), 35, true));
+            // }
+            // Write file count
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            if (FileActions.IsLockedForMove())
+            {
+                // Options disabled
+                CursorReturn();
+                CursorDown(2);
+                Console.Write(new string(' ', 2) + DialogText.FileMoveInstructions);
+                CursorReturn();
+                CursorDown();
+                Console.Write(new string(' ', 2) + DialogText.PressEscSpaceToExit);
+            }
+            else
+            {
+                CursorReturn();
+                CursorDown();
+                
+                // Additional menu items
+                if (!FileBrowser.HasSubFolders()) Menu.DimMenuItem = true;
+                Menu.WriteMenuItem(DialogText.Spacebar, DialogText.MoveFile, true);
+                Menu.WriteMenuItem(DialogText.Escape, DialogText.Clear, true);
+                // Divider
+                //Menu.WriteMenuItem(string.Empty,"-" , true);
+                Menu.WriteMenuItem(DialogText.CtrlPlus + Keyboard.GetTriggerKey(), DialogText.CaptionsMoreOptions, true);
+            }
+
+            // Place cursor at login box
+            CursorTopLeft();
+            CursorDown(7);
+            CursorRight(4);
+            // Login
+            // Else ask for current password
+            Encryptor.SetKey(ReadMasked(true)); // Set password
+            _pass = string.Empty; // Clear password stored from the masked reader
+            ClearScreen();
+            // Indicate loading
+            // Try to load file
+            Console.WriteLine(DialogText.Loading);
+            //Menu.StatusMessage(, false, true, false, string.Empty, string.Empty, false); // Clear screen
+            _load = new LoadStatus();
+            _load = FileIo.LoadEntries();
+            if (_load.Success)
+            {
+                Init.Log("Login OK: " + FileIo.GetFolderAndFileNameWithSizeForDisplay(), false);
+                // Save settings to update the current loaded data file name
+                FileIo.SaveSettings();
+                Vignette.CheckVignette();
+                //Menu.StatusMessage(DialogText.LoadComplete, false, false, false, string.Empty, string.Empty, false);
+                Mode.SetMode(Mode.SelectedMode.Manage);
+                Menu.DisplayWelcomeMessage = true;
+                Menu.DrawTopMenu(true, true, false);
+            }
+            else if (!_load.Success)
+            {
+                Init.Log("Login FAILED: "  + FileIo.GetFolderAndFileNameWithSizeForDisplay(), false);
+                if (_load.StatusMessage == DialogText.FileNotFound)
+                {
+                    Menu.StatusMessage(_load.StatusMessage, true, true, true, DialogText.CaptionsLogin, string.Empty,
+                        false);
+                    LoginRoutine(true);
+                }
+                else
+                {
+                    if (_load.StatusMessage.Contains(DialogText.InvalidPasswordDot))
+                    {
+                        ClearScreen();
+                        Menu.WriteModeLabel(DialogText.CaptionsLogin, string.Empty, 0);
+                        CursorDown(2);
+                        Menu.StatusMessage(_load.StatusMessage, true, false, false, string.Empty, string.Empty, false);
+                        LoginRoutine(true);
+                    }
+                    else
+                    {
+                        Menu.StatusMessage(_load.StatusMessage, true, true, false, string.Empty, string.Empty, false);
+                        LoginRoutine(true);
+                    }
+                }
+            }
+        }
+
+        // If load successful
+        Mode.SetMode(Mode.SelectedMode.Manage);
+        Menu.DrawTopMenu(true, true, false);
+    }
+
+
+    internal static void ClearScreen()
+    {
+        Console.Clear();
+    }
+
+    // Remove privileges but keep transfer entry
+    internal static void RemovePrivileges(bool clearScreen)
+    {
+        if (clearScreen)
+        {
+            ClearScreen();
+        }
+
+        ClearLineMemory();
+        TextCopy = string.Empty;
+        Entries.ClearAllEntries(true);
+        Entries.ResetCurrentEntry();
+        Entries.ResetRecallId();
+        Entries.ResetBackupEntry();
+        Entries.ResetDeletedEntry();
+        Entries.ClearTempRankedEntries();
+        Entries.ClearSessionEntryIdList();
+        Encryptor.RemoveKey();
+        Actions.ClearSearchQuery();
+    }
+
+
+    public static void ExitApplicationQuestion()
+    {
+        if (Menu.YesNoPrompt(DialogText.Exit, DialogText.ExitYn, string.Empty, true))
+        {
+            ExitApplication();
+        }
+        else
+        {
+            // If NO return to the current mode
+            switch (Mode.CurrentMode)
+            {
+                case Mode.SelectedMode.Login:
+                    LoginRoutine(true);
+                    break;
+                case Mode.SelectedMode.Manage:
+                    Menu.DrawTopMenu(true, true, false);
+                    break;
+                case Mode.SelectedMode.View:
+                    Mode.SetMode(Mode.SelectedMode.Manage);
+                    Menu.DrawTopMenu(true, true, false);
+                    break;
+                case Mode.SelectedMode.Search:
+                    Mode.SetMode(Mode.SelectedMode.Manage);
+                    Menu.DrawTopMenu(true, true, false);
+                    break;
+                default:
+                    LoginRoutine(true);
+                    break;
+            }
+        }
+    }
+
+    private static void ExitApplication()
+    {
+        RemovePrivileges(false);
+        ShowCursor(); // Remember to show cursor again for continuous work in the console
+        // Exit the application reverting to the original console colors
+        Console.ResetColor();
+        ClearScreen();
+        Console.WriteLine("*** " + DialogText.ApplicationName + " " + DialogText.Exit.ToLower() + " ***");
+        Environment.Exit(0);
+    }
+
+
+    private static string _newPass = string.Empty;
+    private static string _newPassRepeat = string.Empty;
+
+    private static void NewPasswordRoutine(bool isPasswordReset)
+    {
+        ClearScreen();
+        Mode.SetMode(Mode.SelectedMode.Login);
+        _newPass = string.Empty;
+        _newPassRepeat = string.Empty;
+
+        // If not ask for a new password
+        Menu.WriteModeLabel(DialogText.NewPassword, string.Empty, 0);
+        CursorDown(2);
+        Console.Write(" " + DialogText.EnterNewPasswordColon + " ");
+        _newPass = ReadMasked(false);
+        if (!Encryptor.IsValidPasswordLength(_newPass))
+        {
+            Menu.StatusMessage(DialogText.PasswordLength, true, true, true, DialogText.CaptionsPassword, string.Empty,
+                false);
+            NewPasswordRoutine(isPasswordReset);
+        }
+        else
+        {
+            CursorReturn();
+            CursorDown();
+            Console.Write(" " + DialogText.RepeatNewPasswordColon + " ");
+            _newPassRepeat = ReadMasked(false);
+        }
+
+        // Compare and repeat process from the beginning if the two passwords doesnt match
+        if (_newPass != _newPassRepeat)
+        {
+            Menu.StatusMessage(DialogText.PasswordMismatch, true, true, true, DialogText.CaptionsPassword, string.Empty,
+                false);
+            NewPasswordRoutine(isPasswordReset);
+        }
+        else
+        {
+            // Submit new password
+            Encryptor.SetKey(_newPass);
+            // Create vignette entries
+            if (!isPasswordReset)
+            {
+                // Calendar related
+                if (FileActions.CurrentFileType == FileActions.FileType.Calendar)
+                {
+                    // Force create vignette to show calendar instructions
+                    Vignette.CreateVignette(true);
+                    // Assume that year was already set
+                    IsoDateTime.CreateYearCalendar();
+                }
+                else
+                {
+                    // Create vignette if enabled
+                    Vignette.CreateVignette(false);
+                }
+            }
+
+            // Return to normal filetype
+            FileActions.CurrentFileType = FileActions.FileType.Normal;
+            // Save data file
+            Entries.SaveEntriesToFile();
+            Menu.StatusMessage(DialogText.PasswordCreated, true, true, true, DialogText.CaptionsPassword, string.Empty,
+                false);
+            // Clear locals
+            _pass = string.Empty;
+            _newPass = string.Empty;
+            _newPassRepeat = string.Empty;
+            Mode.SetMode(Mode.SelectedMode.Login);
+            Menu.DrawTopMenu(true, true, false);
+        }
+    }
+
+
+    private static string _tempResetPassword = string.Empty;
+
+    internal static void ResetPasswordRoutine()
+    {
+        // Question: Reset password?
+        if (Menu.YesNoPrompt(DialogText.CaptionsPassword, DialogText.ResetPassword, string.Empty, false))
+        {
+            Tools.ClearScreen();
+            Mode.SetMode(Mode.SelectedMode.Login);
+            Menu.WriteModeLabel(DialogText.TitleResetPassword, string.Empty, 0);
+            Tools.CursorDown(2);
+            _tempResetPassword = string.Empty;
+            Console.Write(" " + DialogText.EnterCurrentPasswordColon + " ");
+            _tempResetPassword = ReadMasked(false);
+            // Compare passwords
+            if (_tempResetPassword == Encryptor.GetKey())
+            {
+                NewPasswordRoutine(true); // Continue to new password routine
+            }
+            else
+            {
+                Menu.StatusMessage(DialogText.InvalidPassword, true, true, true, DialogText.CaptionsPassword,
+                    string.Empty, false);
+                ResetPasswordRoutine();
+            }
+        }
+        else
+        {
+            Tools.ClearScreen();
+            Mode.SetMode(Mode.SelectedMode.Manage);
+            Menu.DrawTopMenu(false, true, false);
+        }
+    }
+
+    #endregion
+
+    // JaggedRule
+    private static bool _tempJagged;
+    private static StringBuilder _tempJaggedLine = new();
+
+    internal static string WriteJaggedLine(int length)
+    {
+        if (length > 1)
+        {
+            _tempJagged = false;
+            _tempJaggedLine = new StringBuilder();
+            for (int i = 0; i < length; i++)
+            {
+                if (_tempJagged)
+                {
+                    _tempJagged = false;
+                    _tempJaggedLine.Append("=");
+                }
+                else
+                {
+                    _tempJagged = true;
+                    _tempJaggedLine.Append("-");
+                }
+            }
+
+            return _tempJaggedLine.ToString();
+        }
+        else
+        {
+            return "-";
+        }
+    }
+
+
+    public static List<List<T>> SplitIntoChunks<T>(List<T> list, int chunkSize)
+    {
+        if (chunkSize <= 0) return new List<List<T>>();
+        var retVal = new List<List<T>>();
+        var index = 0;
+        while (index < list.Count)
+        {
+            var count = list.Count - index > chunkSize ? chunkSize : list.Count - index;
+            retVal.Add(list.GetRange(index, count));
+            index += chunkSize;
+        }
+
+        return retVal;
+    }
+
+    // Shortcuts
+    //private static string tempPageNumber = "Page 1/2";
+    private static List<Shortcut> _shortcutList = new();
+
+    private static List<List<Shortcut>> _shortcutListPages = new();
+
+    // Clear data to enable rewriting it with new values for shortcuts
+    public static void ClearEditorHelpData()
+    {
+        _shortcutList.Clear();
+    }
+
+    // Start by "collecting" shortcuts in a list
+    // and the print them out with pagination
+    public static void WriteEditorHelp(bool returnToEditorMenu)
+    {
+        // Only fill the lists once
+        if (_shortcutList.Count == 0)
+        {
+            _shortcutList = new List<Shortcut>();
+            _shortcutListPages = new List<List<Shortcut>>();
+            // Start by collecting all shortcuts
+            _shortcutList.Add(new Shortcut(string.Empty, "Editor Keyboard Functions", true));
+            _shortcutList.Add(new Shortcut(string.Empty, "Primary shortcuts", true));
+            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + Keyboard.KbSave, "Save", false));
+            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + Keyboard.KbSaveExit, "Save and close editor", false));
+            _shortcutList.Add(new Shortcut("Esc", "Deselect/Save/Cancel/Close editor", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Compound keyboard shortcuts", true));
+            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + Keyboard.KbRepeat, "Repeat last shortcut", false));
+            _shortcutList.Add(new Shortcut("CTRL+" + Keyboard.GetTriggerAsString(), "Shortcuts mode", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + Keyboard.GetTriggerAsString(),
+                "Sustain (lock) shortcuts mode", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Esc", "Exit shortcuts mode", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Z",
+                "Undo (" + (TextArea.UndoCacheSize / 3) + " steps)", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Y",
+                "Redo (" + (TextArea.RedoCacheSize / 3) + " steps)", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "S", "Content search", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "L", "Line delete", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "D", "Line duplicate", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "U", "Line/selection to UPPERCASE", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "G", "Line/selection to lowercase", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "B", "Trim blank space (line start/end)", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "T", "Insert ISO timestamp (YYYY-MM-DD HH:MM:SS)",
+                false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "F", "Insert calendar...", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "P", "Generate strong password", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "R", "Clear all", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "K", "Copy all", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "J", "Paste (copy all)", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "String Memory (limit: " + MaxLineMemoryCount + " strings)",
+                true));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "C", "Copy line/selection", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "X", "Cut line/selection", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "V", "Paste current memory string", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Left/Right", "Select from string memory", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Up", "First memory string", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Down", "Last memory string", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "Tab", "Insert all", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 5) + "E", "Clear string memory", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Standard shortcuts for document navigation", true));
+            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + "Left/" + Keyboard.KbPreword, "Move cursor to previous word", false));
+            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + "Right/" + Keyboard.KbNxtword, "Move cursor to next word", false));
+            _shortcutList.Add(new Shortcut(DialogText.CtrlShift + "Right", "Forward selection", false));
+            _shortcutList.Add(new Shortcut(DialogText.CtrlPlus + Keyboard.KbSelect, "Forward selection mode", false));
+            _shortcutList.Add(new Shortcut(DialogText.ShiftPlus + "Home/End", "Select line", false));
+            _shortcutList.Add(new Shortcut("Home | " + Keyboard.CmpTrig() + "N", "Move cursor to line start", false));
+            _shortcutList.Add(new Shortcut("End  | " + new string(' ', 8) + "M", "Move cursor to line end", false));
+            _shortcutList.Add(new Shortcut("PgUp | " + new string(' ', 8) + "I", "Move cursor up 1 page", false));
+            _shortcutList.Add(new Shortcut("PgDn | " + new string(' ', 8) + "O", "Move cursor down 1 page", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 15) + "Q", "Move cursor to document top", false));
+            _shortcutList.Add(new Shortcut(new string(' ', 15) + "A", "Move cursor to document end", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Basic editing", true));
+            _shortcutList.Add(new Shortcut("Backspace", "Delete left (1 character space/selection)", false));
+            _shortcutList.Add(new Shortcut("Delete", "Delete right (1 character space/selection)", false));
+            _shortcutList.Add(new Shortcut("Tab", "Insert blank space x 4", false));
+            _shortcutList.Add(new Shortcut("Enter", "Insert new line", false));
+            _shortcutList.Add(new Shortcut("Up/Down", "Move cursor", false));
+            _shortcutList.Add(new Shortcut("Left/Right", "Move cursor/Refine selection", false));
+            _shortcutList.Add(new Shortcut(Keyboard.CmpTrig() + "7", "Toggle scroll indicator On/Off (temporary)",
+                false));
+            _shortcutList.Add(new Shortcut(Keyboard.CmpTrig() + "8", "Toggle undo cache On/Off (temporary)", false));
+            _shortcutList.Add(new Shortcut(Keyboard.CmpTrig() + "9", "Toggle row/column display On/Off (temporary)", false));
+        }
+
+        // Get shortcuts as pages (must be done every time to compensate for changes in output dimensions)
+        _shortcutListPages = SplitIntoChunks(_shortcutList, (Init.LineCount - 1));
+
+        // Print pages
+        ClearScreen();
+
+        for (int i = 0; i < _shortcutListPages.Count; i++)
+        {
+            for (int j = 0; j < _shortcutListPages[i].Count; j++)
+            {
+                _shortcutListPages[i][j].WriteShortcut(true, true);
+            }
+
+            CursorTopLeft();
+            CursorDown(Init.LineCount - 1);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write(" Page " + (i + 1) + " of " + _shortcutListPages.Count + " ");
+            if (_shortcutListPages.Count == 1 || (i + 1) == _shortcutListPages.Count)
+            {
+                Keyboard.AwaitAnyKey();
+            }
+            else if (Keyboard.AwaitAnyKeyOrEscape())
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                ClearScreen();
+                break;
+            }
+
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            ClearScreen();
+        }
+
+
+        if (returnToEditorMenu)
+        {
+            Actions.DrawEditMenu();
+        }
+    }
+
+    private static void DisplayWelcomeText()
+    {
+        Tools.ClearScreen();
+        Logo.DrawLogo(true);
+        Tools.CursorTopLeftDown(6);
+        //  automatically). You can copy the data directory or the entire Marbles directory\n <- Max line length
+        // --------------------------------------------------------------------------------
+        string welcomeText = " Welcome to " + DialogText.ApplicationName + "\n\n" +
+                             " Your notes and settings are stored in the \"data\" directory, located alongside\n" +
+                             " the Marbles program files (the program automatically creates this directory).\n" +
+                             " You can copy the data directory or the entire Marbles directory to a backup,\n" +
+                             " portable or cloud media if necessary, or enable automatic backup to a\n" +
+                             " secondary location. Marbles uses AES-256 file encryption.\n\n" +
+                             " CAUTION: It is not possible to recover your notes if you forget your password.";
+
+        int tempPreviewLineCounter = 0;
+        string[] tempOutput = Tools.SplitStringOnNewLine(welcomeText, false);
+        for (int i = 0; i < tempOutput.Length; i++)
+        {
+            // count lines
+            tempPreviewLineCounter += Actions.GetPreviewLineCount(tempOutput[i]);
+            // Insert line of text
+            Console.WriteLine(tempOutput[i]);
+
+            // Write long document indicator and exit loop
+            if (tempPreviewLineCounter >= 13)
+            {
+                break;
+            }
+        }
+
+        CursorDown(2);
+        CursorRight();
+        Keyboard.AwaitAnyKey();
+    }
+
+    public static void DisplayDateTime()
+    {
+        string title = "Timestamp";
+        string output = " " + IsoDateTime.GetDateTimeNow() + " ";
+        string output2 = " " + IsoDateTime.GetDateTimeNowCompressed(string.Empty) + " ";
+        string output3 = " Week " + IsoDateTime.GetIso8601WeekNumber(DateTime.Now);
+        int boxHeight = 6;
+        int boxWidth = output.Length + 4;
+        SaveCursorPosition(5);
+        CursorTopLeft();
+        // Place cursor according to box size
+        CursorDown((Init.LineCount / 2) - (boxHeight / 2));
+        CursorRight((Init.LineWidth / 2) - (boxWidth / 2));
+        // Draw rectangle
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+        for (int i = 0; i < boxHeight; i++)
+        {
+            Console.Write(new string(' ', boxWidth));
+            CursorLeft(boxWidth);
+            CursorDown(); 
+        }
+        CursorUp(6);
+        CursorRight(1);
+        Console.Write(title);
+        CursorLeft(title.Length);
+        CursorDown(2);
+        Console.Write(output);
+        CursorLeft(output.Length);
+        CursorDown();
+        Console.Write(output2);
+        CursorLeft(output2.Length);
+        CursorDown();
+        Console.Write(output3);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        LoadCursorPosition(5);
+    }
+
+
+    #region Cursor
+
+    public static void ShowCursor()
+    {
+        try
+        {
+            Console.CursorVisible = true;
+        }
+        catch
+        {
+            // Do nothing
+        }
+    }
+
+    public static void HideCursor()
+    {
+        try
+        {
+            Console.CursorVisible = false;
+        }
+        catch
+        {
+            // Do nothing
+        }
+    }
+
+    private static int _rowPosition;
+    private static int _columnPosition;
+
+    private static void InitializeCursor()
+    {
+        _rowPosition = Console.CursorTop;
+        _columnPosition = Console.CursorLeft;
+    }
+
+    public static void CursorTopLeft()
+    {
+        _rowPosition = 0;
+        _columnPosition = 0;
+        Refresh();
+    }
+
+    public static void CursorTopLeftDown(int linesDown)
+    {
+        CursorTopLeft();
+        CursorDown(linesDown);
+    }
+
+    public static void SetCursorEx(int top, int left)
+    {
+        _rowPosition = top;
+        _columnPosition = left;
+        Refresh();
+    }
+
+    private static void Refresh()
+    {
+        try
+        {
+            Console.SetCursorPosition(_columnPosition, _rowPosition);
+        }
+        catch
+        {
+            Init.DimensionsExceptionCaught = true;
+            ClearScreen();
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+            Console.Write(" " + DialogText.AttentionColon);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.WriteLine(" " + DialogText.ErrorClientSize);
+            Console.WriteLine("(Dimensions must be at least " + Init.LineWidth + "x" + Init.LineCount + ")");
+            Console.WriteLine(DialogText.ResetOutputDimensions);
+            _keyInfo = Console.ReadKey(true);
+            if (_keyInfo.Key == ConsoleKey.Y)
+            {
+                Init.SetDefaultOutputDimensions();
+            }
+
+            ClearScreen();
+        }
+    }
+
+
+    public static void CursorHome()
+    {
+        InitializeCursor();
+
+        if (_columnPosition > 0)
+        {
+            _columnPosition = 0;
+        }
+
+        if (_rowPosition > 0)
+        {
+            _rowPosition = 0;
+        }
+
+        Refresh();
+    }
+
+    public static void CursorReturn()
+    {
+        InitializeCursor();
+
+        if (_columnPosition > 0)
+        {
+            _columnPosition = 0;
+            Refresh();
+        }
+    }
+
+
+    public static void CursorLeft()
+    {
+        InitializeCursor();
+
+        if (_columnPosition > 0)
+        {
+            _columnPosition--;
+            Refresh();
+        }
+        else
+        {
+            CursorUp(true);
+        }
+    }
+
+
+    public static void CursorLeft(int count)
+    {
+        if (count > 0)
+        {
+            InitializeCursor();
+
+            for (int i = 0; i < count; i++)
+            {
+                if (_columnPosition > 0)
+                {
+                    _columnPosition--;
+                    Refresh();
+                }
+                else
+                {
+                    CursorUp(true);
+                    return;
+                }
+            }
+        }
+    }
+
+    public static void CursorRight()
+    {
+        InitializeCursor();
+
+        if (_columnPosition < Init.LineWidth - 1)
+        {
+            _columnPosition++;
+            Refresh();
+        }
+        else
+        {
+            CursorDown(true);
+        }
+    }
+
+    public static void CursorRight(int count)
+    {
+        if (count > 0)
+        {
+            InitializeCursor();
+
+            for (int i = 0; i < count; i++)
+            {
+                if (_columnPosition < Init.LineWidth - 1)
+                {
+                    _columnPosition++;
+                    Refresh();
+                }
+                else
+                {
+                    CursorDown(true);
+                    return;
+                }
+            }
+        }
+    }
+
+    public static void CursorUp(int rows)
+    {
+        InitializeCursor();
+
+        if (_rowPosition > rows)
+        {
+            _rowPosition -= rows;
+            Refresh();
+        }
+    }
+
+    public static void CursorUp(bool returnCursor)
+    {
+        InitializeCursor();
+
+        if (_rowPosition > 0)
+        {
+            _rowPosition--;
+            Refresh();
+
+            if (returnCursor)
+                CursorReturn();
+            else if (_columnPosition > 0)
+            {
+                CursorLeft();
+            }
+        }
+    }
+
+    public static void CursorDown()
+    {
+        InitializeCursor();
+
+        if (_rowPosition < Init.LineCount - 1)
+        {
+            _rowPosition++;
+            Refresh();
+        }
+    }
+
+    public static void CursorDown(int rows)
+    {
+        InitializeCursor();
+
+        if (_rowPosition < Init.LineCount - 1)
+        {
+            _rowPosition += rows;
+            Refresh();
+        }
+    }
+
+    public static void CursorDown(bool returnCursor)
+    {
+        InitializeCursor();
+
+        if (_rowPosition < Init.LineCount - 1)
+        {
+            _rowPosition++;
+            Refresh();
+
+            if (returnCursor)
+                CursorReturn();
+            else if (_columnPosition > 0)
+            {
+                CursorLeft();
+            }
+        }
+    }
+
+    #endregion
+
+    #region Cursor memory
+
+    private static List<CursorMemory> _cursorMemory = new();
+
+    private static void InitializeCursorMemory()
+    {
+        if (_cursorMemory.Count != 0) return;
+        _cursorMemory = new List<CursorMemory>();
+        for (int i = 0; i < 10; i++)
+        {
+            _cursorMemory.Add(new CursorMemory(0, 0));
+        }
+    }
+
+    /// <summary>
+    /// This method has 10 memory banks for storing cursor positions
+    /// </summary>
+    /// <param name="memoryBank"></param>
+    public static void SaveCursorPosition(int memoryBank)
+    {
+        InitializeCursorMemory();
+        if (memoryBank >= 0 && memoryBank <= 9)
+        {
+            _cursorMemory[memoryBank].Left = Console.CursorLeft;
+            _cursorMemory[memoryBank].Top = Console.CursorTop;
+        }
+    }
+
+    /// <summary>
+    /// This method has 10 memory banks for storing cursor positions
+    /// </summary>
+    /// <param name="memoryBank"></param>
+    public static void LoadCursorPosition(int memoryBank)
+    {
+        InitializeCursorMemory();
+        if (memoryBank >= 0 && memoryBank <= 9)
+        {
+            SetCursorEx(_cursorMemory[memoryBank].Top, _cursorMemory[memoryBank].Left);
+        }
+    }
+
+    #endregion
+
+
+    #region Progress bar
+
+    private const decimal ProgressbarWidth = 40;
+    private const char ProgressBarChar = '#';
+
+    /// <summary>
+    /// Will return "[####################....................] 50%"
+    /// </summary>
+    /// <param name="currentValue"></param>
+    /// <param name="maximumValue"></param>
+    /// <returns></returns>
+    internal static string GetProgressBar(decimal currentValue, decimal maximumValue)
+    {
+        try
+        {
+            // Calculate progress bar and insert the value into the progressBarText
+            var progressBarProgress = new string(ProgressBarChar,
+                Convert.ToInt32(currentValue / (maximumValue / ProgressbarWidth)));
+            // Add the calculated content to the text output
+            var progressBarText = "[" + progressBarProgress +
+                                  new string('.', (int) ProgressbarWidth - progressBarProgress.Length) + "] " +
+                                  ((currentValue / maximumValue) * 100).ToString("0") + "%";
+            // Write the progress bar
+            return progressBarText;
+        }
+        catch
+        {
+            return DialogText.NotAvailable;
+        }
+    }
+
+    #endregion
+
+    #region Clipboard
+
+    internal static string TextCopy = string.Empty;
+
+    #endregion
+}
+
+internal class CursorMemory
+{
+    public int Left { get; set; }
+    public int Top { get; set; }
+
+    public CursorMemory(int left, int top)
+    {
+        Left = left;
+        Top = top;
+    }
+}
+
+
+#region Password Generator
+
+#endregion
