@@ -32,9 +32,11 @@ The file browser (`Esc`, `F`) is for editing single text files (.txt, .md, .html
 
 The browser starts in the Marbles data directory and remembers the directory you leave it in.
 
+The file browser can also be opened with the command `:browse` when you are logged in to a data file. You can look around and close the browser again without anything else happening, but opening a file logs you out of the data file, and the login page is shown when you close the browser.
+
 - `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down
 - `l` or `Enter` Open the selected directory or file
-- `h` or `Backspace` Go to the directory above (above the root of a drive on Windows: the list of drives)
+- `h`, `-` or `Backspace` Go to the directory above (above the root of a drive on Windows: the list of drives)
 - `/text` Only show the names containing "text". `Esc` shows all again
 - `N` Create a new file in the directory and open it
 - `R` Refresh

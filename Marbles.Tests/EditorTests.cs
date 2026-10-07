@@ -1,4 +1,4 @@
-namespace Marbles.Tests;
+﻿namespace Marbles.Tests;
 
 /// <summary>
 /// Drives the editor with key presses written like in Vim documentation: "dw", "ciwnew&lt;Esc&gt;", "&lt;C-r&gt;" ...
@@ -441,6 +441,39 @@ public class EditorTests
         editor.Type(keys);
         AssertState(editor, expected, line, col);
         Assert.Equal(EditorMode.Normal, editor.Mode);
+    }
+
+    [Theory]
+    [InlineData("jVJ", "one\nthree\ntwo\nfour\nfive", 2, 2)]
+    [InlineData("jVK", "two\none\nthree\nfour\nfive", 0, 0)]
+    [InlineData("jVjJ", "one\nfour\ntwo\nthree\nfive", 2, 3)]
+    [InlineData("jVjJJ", "one\nfour\nfive\ntwo\nthree", 3, 4)]
+    [InlineData("jVjJJJ", "one\nfour\nfive\ntwo\nthree", 3, 4)] // Stops at the end
+    [InlineData("jVj2J", "one\nfour\nfive\ntwo\nthree", 3, 4)]
+    [InlineData("jVjKK", "two\nthree\none\nfour\nfive", 0, 1)] // Stops at the top
+    [InlineData("GVkK", "one\ntwo\nfour\nfive\nthree", 2, 3)]
+    [InlineData("VJK", "one\ntwo\nthree\nfour\nfive", 0, 0)]
+    public void SelectedLines_AreMovedWithJAndK(string keys, string expected, int firstLine, int lastLine)
+    {
+        var editor = Editor("one\ntwo\nthree\nfour\nfive");
+        editor.Type(keys);
+        Assert.Equal(expected, editor.GetText());
+        // The lines stay selected
+        Assert.Equal(EditorMode.VisualLine, editor.Mode);
+        for (var line = 0; line < 5; line++)
+        {
+            Assert.Equal(line >= firstLine && line <= lastLine, editor.Selection(line) != null);
+        }
+    }
+
+    [Fact]
+    public void MovingSelectedLines_IsUndoneOneMoveAtATime()
+    {
+        var editor = Editor("one\ntwo\nthree");
+        editor.Type("VJJ<Esc>u");
+        Assert.Equal("two\none\nthree", editor.GetText());
+        editor.Type("u");
+        Assert.Equal("one\ntwo\nthree", editor.GetText());
     }
 
     [Fact]

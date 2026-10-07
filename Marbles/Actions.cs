@@ -452,6 +452,17 @@ internal static class Actions
         }
     }
 
+    // Open the file browser. Opening a file there logs out of the data file, and the login page is shown
+    // when the browser is closed. If no file is opened the caller redraws its screen
+    private static void BrowseFiles()
+    {
+        FileExplorer.Run();
+        if (FileExplorer.SessionEnded)
+        {
+            Tools.LoginRoutine(true);
+        }
+    }
+
     // Commands of the main menu
     private static void RunManageCommand(string command)
     {
@@ -480,6 +491,10 @@ internal static class Actions
                 break;
             case "about":
                 ShowAbout();
+                break;
+            case "browse":
+                BrowseFiles();
+                Menu.DrawTopMenu(false, true, false);
                 break;
             case "import":
                 ImportEntry();
@@ -625,6 +640,10 @@ internal static class Actions
             case "edit":
                 EditEntry(false);
                 break;
+            case "browse":
+                BrowseFiles();
+                DisplayEntry(false);
+                break;
             case "h":
             case "help":
                 Tools.WriteEditorHelp(false);
@@ -683,6 +702,9 @@ internal static class Actions
             case "h":
             case "help":
                 Tools.WriteEditorHelp(false);
+                break;
+            case "browse":
+                BrowseFiles();
                 break;
             case "title":
                 SelectResultFromIndex(pageNumber, _resultIndex, 1);

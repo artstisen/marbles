@@ -1249,7 +1249,6 @@ internal static class Tools
     //private static string tempPageNumber = "Page 1/2";
     private static List<Shortcut> _shortcutList = new();
 
-    private static List<List<Shortcut>> _shortcutListPages = new();
 
     // Clear data to enable rewriting it with new values for shortcuts
     public static void ClearEditorHelpData()
@@ -1259,13 +1258,12 @@ internal static class Tools
 
     // Start by "collecting" shortcuts in a list
     // and the print them out with pagination
-    public static void WriteEditorHelp(bool returnToEditorMenu)
+    public static void WriteEditorHelp(bool returnToEditorMenu, string section = "")
     {
         // Only fill the lists once
         if (_shortcutList.Count == 0)
         {
             _shortcutList = new List<Shortcut>();
-            _shortcutListPages = new List<List<Shortcut>>();
             // Start by collecting all shortcuts
             _shortcutList.Add(new Shortcut(string.Empty, "Keyboard Functions", true));
             _shortcutList.Add(new Shortcut(string.Empty, "Menus and lists", true));
@@ -1281,6 +1279,23 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":logout", "Logout", false));
             _shortcutList.Add(new Shortcut("Esc", "Return/Cancel (login page: Options)", false));
             _shortcutList.Add(new Shortcut("Esc F", "Login page: Browse and edit text files", false));
+            _shortcutList.Add(new Shortcut(":browse", "Browse files (opening a file logs out)", false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFiles, true));
+            _shortcutList.Add(new Shortcut("j k", "Select (as Down/Up)", false));
+            _shortcutList.Add(new Shortcut("gg G", "First/Last", false));
+            _shortcutList.Add(new Shortcut("PgUp PgDn", "One page up/down", false));
+            _shortcutList.Add(new Shortcut("l Enter", "Open the directory or file", false));
+            _shortcutList.Add(new Shortcut("h - Backspace", "Go to the directory above", false));
+            _shortcutList.Add(new Shortcut("/text", "Only show names containing \"text\" (Esc: all)", false));
+            _shortcutList.Add(new Shortcut("N", "Create a new file and open it", false));
+            _shortcutList.Add(new Shortcut("R", "Refresh", false));
+            _shortcutList.Add(new Shortcut(":cd path", "Go to a directory", false));
+            _shortcutList.Add(new Shortcut(":home", "Go to the Marbles data directory", false));
+            _shortcutList.Add(new Shortcut("Esc Q :q", "Close the file browser", false));
+            _shortcutList.Add(new Shortcut("  Text files", "Opened in the editor. They are NOT encrypted", false));
+            _shortcutList.Add(new Shortcut("  Saving", "As UTF-8, with the line endings of the file", false));
+            _shortcutList.Add(new Shortcut("  Not UTF-8", "Can be converted (replace file or save copy)", false));
+            _shortcutList.Add(new Shortcut("  Data files", "Opening one selects it on the login page", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Editor", true));
             _shortcutList.Add(new Shortcut(string.Empty, "Modes", true));
             _shortcutList.Add(new Shortcut("Esc", "Normal mode (navigate and give commands)", false));
@@ -1344,7 +1359,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("d y c", "Delete/Yank/Change selection", false));
             _shortcutList.Add(new Shortcut("p", "Replace selection with pasted text", false));
             _shortcutList.Add(new Shortcut("U u ~", "Selection to UPPERCASE/lowercase/switch", false));
-            _shortcutList.Add(new Shortcut("> < J", "Indent/Unindent/Join selected lines", false));
+            _shortcutList.Add(new Shortcut("> <", "Indent/Unindent the selected lines", false));
+            _shortcutList.Add(new Shortcut("J K", "V-LINE: Move the selected lines down/up", false));
+            _shortcutList.Add(new Shortcut("J", "VISUAL: Join the selected lines", false));
             _shortcutList.Add(new Shortcut("iw i\" i(", "Select word/text in quotes/in brackets", false));
             _shortcutList.Add(new Shortcut("o", "Move cursor to other end of selection", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Insert mode", true));
@@ -1367,43 +1384,145 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":clear", "Clear all", false));
         }
 
-        // Get shortcuts as pages (must be done every time to compensate for changes in output dimensions)
-        _shortcutListPages = SplitIntoChunks(_shortcutList, (Init.LineCount - 1));
-
-        // Print pages
-        ClearScreen();
-
-        for (int i = 0; i < _shortcutListPages.Count; i++)
-        {
-            for (int j = 0; j < _shortcutListPages[i].Count; j++)
-            {
-                _shortcutListPages[i][j].WriteShortcut(true, true);
-            }
-
-            CursorTopLeft();
-            CursorDown(Init.LineCount - 1);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(" Page " + (i + 1) + " of " + _shortcutListPages.Count + " ");
-            if (_shortcutListPages.Count == 1 || (i + 1) == _shortcutListPages.Count)
-            {
-                Keyboard.AwaitAnyKey();
-            }
-            else if (Keyboard.AwaitAnyKeyOrEscape())
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                ClearScreen();
-                break;
-            }
-
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            ClearScreen();
-        }
-
-
+        ShowHelp(section);
         if (returnToEditorMenu)
         {
             Actions.DrawEditMenu();
         }
+    }
+
+    // The help viewer: the list of keys shown in pages, which can be browsed both ways and searched
+    private static void ShowHelp(string section)
+    {
+        var top = 0;
+        var search = string.Empty;
+        var match = -1;
+        var message = string.Empty;
+        // Start at a section if asked for
+        if (section.Length > 0)
+        {
+            top = Math.Max(0, _shortcutList.FindIndex(s => s.IsHeadline && s.GetDescription() == section));
+        }
+
+        HideCursor();
+        while (true)
+        {
+            var pageSize = Init.LineCount - 1;
+            var maxTop = Math.Max(0, _shortcutList.Count - pageSize);
+            top = Math.Clamp(top, 0, maxTop);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            ClearScreen();
+            for (var row = 0; row < pageSize && top + row < _shortcutList.Count; row++)
+            {
+                var item = _shortcutList[top + row];
+                SetCursorEx(row, 0);
+                item.WriteShortcut(false, true);
+                // Mark the lines matching the search
+                if (search.Length > 0 && item.Text.Contains(search, StringComparison.OrdinalIgnoreCase))
+                {
+                    SetCursorEx(row, 0);
+                    ConsoleColors.SetColors(top + row == match
+                        ? ConsoleColors.ColorPreset.HighlightInverted
+                        : ConsoleColors.ColorPreset.Divider);
+                    Console.Write(">");
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                }
+            }
+
+            // Page number and keys
+            var pages = (_shortcutList.Count + pageSize - 1) / pageSize;
+            var page = top >= maxTop ? pages : top / pageSize + 1;
+            SetCursorEx(Init.LineCount - 1, 0);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write(" Page " + page + " of " + pages + " ");
+            if (message.Length > 0)
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+                Console.Write(" " + message + " ");
+            }
+            else
+            {
+                Console.Write(DialogText.HelpKeys);
+            }
+
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            message = string.Empty;
+
+            var key = Console.ReadKey(true);
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q)
+            {
+                break;
+            }
+
+            if (key.KeyChar == '/')
+            {
+                // Search: go to the first matching line from the top of the page
+                var text = CommandLine.Read('/', false);
+                if (text == null) continue;
+                search = text;
+                match = FindHelpLine(search, top - 1, true);
+                if (match < 0)
+                {
+                    message = DialogText.HelpNotFound + search;
+                    search = string.Empty;
+                }
+            }
+            else if (key.KeyChar is 'n' or 'N' && search.Length > 0)
+            {
+                match = FindHelpLine(search, match, key.KeyChar == 'n');
+            }
+            else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
+            {
+                top = maxTop;
+            }
+            else if (key.KeyChar == 'g')
+            {
+                if (Console.ReadKey(true).KeyChar == 'g') top = 0;
+            }
+            else if (key.Key == ConsoleKey.Home)
+            {
+                top = 0;
+            }
+            else if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
+            {
+                top++;
+            }
+            else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+            {
+                top--;
+            }
+            else if (key.Key is ConsoleKey.L or ConsoleKey.RightArrow or ConsoleKey.PageDown or ConsoleKey.Spacebar
+                     or ConsoleKey.Enter)
+            {
+                top += pageSize;
+            }
+            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow or ConsoleKey.PageUp or ConsoleKey.B)
+            {
+                top -= pageSize;
+            }
+
+            // Show the current match, with a few lines above it
+            if (match >= 0 && key.KeyChar is '/' or 'n' or 'N')
+            {
+                top = match - 2;
+            }
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        ClearScreen();
+    }
+
+    // The next (or previous) line of the help containing a text, wrapping around. -1 if there is none
+    private static int FindHelpLine(string search, int from, bool forward)
+    {
+        var count = _shortcutList.Count;
+        for (var i = 1; i <= count; i++)
+        {
+            var index = ((from + (forward ? i : -i)) % count + count) % count;
+            if (_shortcutList[index].Text.Contains(search, StringComparison.OrdinalIgnoreCase)) return index;
+        }
+
+        return -1;
     }
 
     private static void DisplayWelcomeText()

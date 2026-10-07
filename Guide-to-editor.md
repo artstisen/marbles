@@ -58,7 +58,9 @@ Press `v` (text) or `V` (whole lines) and select with the movement keys. Then:
 - `d` `y` `c` Delete/Yank/Change the selection
 - `p` Replace the selection with pasted text
 - `U` `u` `~` UPPERCASE/lowercase/Switch case
-- `>` `<` `J` Indent/Unindent/Join the selected lines
+- `>` `<` Indent/Unindent the selected lines
+- `J` `K` In V-LINE: move the selected lines down/up (`3J` moves them 3 lines). The lines stay selected
+- `J` In VISUAL: join the selected lines
 - `iw` `i"` `i(` Select the word/the text in quotes/the text in brackets
 - `o` Move the cursor to the other end of the selection
 - `Esc` Leave Visual mode

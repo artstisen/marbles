@@ -266,6 +266,9 @@ internal static class DialogText
     public const string DirectoryMark = "<DIR>";
     public const string DataFileMark = "[Data file]";
     public const string FileBrowserKeys = "j/k Select | l/Enter Open | h Up | / Filter | N New | ? Help | Esc Close";
+    public const string HelpSectionFiles = "File browser";
+    public const string HelpKeys = "| h/l Page | j/k Line | /text Search | n/N Next/Previous | Esc Close";
+    public const string HelpNotFound = "Not found: ";
     public const string NotEncrypted = "[Not encrypted]";
     public const string FilePickKeys = "j/k Select | l/Enter Open/Select file | h Up | / Filter | Esc Cancel";
     public const string DirectoryPickKeys = "j/k Select | l/Enter Open | h Up | S Select this directory | Esc Cancel";

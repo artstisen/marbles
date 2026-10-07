@@ -146,6 +146,7 @@ internal static class Menu
                 WriteMenuItem("M", "Session history " + Entries.GetSessionCountAsString(), true);
                 WriteMenuItem("A", "List all " + Entries.GetEntriesCountAsString(), true);
                 WriteMenuItem("I", "File info", true);
+                WriteMenuItem(":browse", "Browse files", true);
                 WriteMenuItem("D", "Display timestamp", true);
                 WriteMenuItem("?", "Help", true);
                 WriteMenuItem(":about", "About", true);

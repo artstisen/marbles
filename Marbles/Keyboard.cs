@@ -93,6 +93,13 @@ class Shortcut
         _isHeadline = isHeadline;
     }
 
+    public bool IsHeadline => _isHeadline;
+
+    /// <summary>
+    /// The key and description as one text (for searching)
+    /// </summary>
+    public string Text => _key + " " + _description;
+
     public int GetLength()
     {
         return _key.Length + _description.Length + _divider.Length;

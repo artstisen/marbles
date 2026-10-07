@@ -24,6 +24,7 @@
 - Vim movements, counts, operators and text objects (`dw`, `ciw`, `3dd`, `yy`, `p` ...), undo/redo in steps, and repeat (`.`).
 - Search with regular expressions (`/` `?` `n` `N` `*`) and find-and-replace (`:s/old/new/g`, `:%s/old/new/g`).
 - A command line (`:w`, `:q`, `:wq`, `:5`, `:help` ...).
+- In V-LINE mode `J` and `K` move the selected lines down and up.
 - Lines are wrapped at blank spaces, and wide characters and emoji are handled.
 - Pasting text is fast, and text copied from the terminal window no longer includes padding or the scroll marker.
 - See the [guide to the editor](Guide-to-editor.md).
@@ -37,12 +38,14 @@
 - `P` on the first page of the main menu shows a preview of the 5 last edited entries, where an entry can be selected and opened.
 - `:import` and `:backup` use the file browser to select the file to import and the backup directory. Any text file can be imported (earlier only "import.txt" in the data directory).
 - The command line is highlighted while typing.
+- The help (`?`) is shown in pages that can be browsed both ways and searched (`/text`, `n`, `N`). It also covers the file browser.
 - See the guides to the [main menu](Guide-to-main-menu.md) and the [login page](Guide-to-login-menu.md).
 
 ### File browser
 - From the options of the login page (`Esc`, `F`): browse directories and edit plain text files in the editor, without logging in to a data file. New files can be created.
 - Text files are saved as UTF-8 with their line endings kept. Files in other encodings can be converted, replacing the file or as a copy.
 - Opening a data file from the browser selects it on the login page.
+- `:browse` opens the browser when logged in to a data file. Opening a file from it logs out.
 - See the [guide to the login page](Guide-to-login-menu.md#file-browser).
 
 ### Other

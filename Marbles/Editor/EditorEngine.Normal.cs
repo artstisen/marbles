@@ -170,7 +170,7 @@ internal sealed partial class EditorEngine
         }
 
         // Everything else
-        if (!operatorPending && !(IsVisual && HandleVisualCommand(cmd)))
+        if (!operatorPending && !(IsVisual && HandleVisualCommand(cmd, count ?? 1)))
         {
             HandleCommand(cmd, count);
         }
@@ -651,7 +651,7 @@ internal sealed partial class EditorEngine
 
     #region Visual mode commands
 
-    private bool HandleVisualCommand(char cmd)
+    private bool HandleVisualCommand(char cmd, int count)
     {
         switch (cmd)
         {
@@ -687,6 +687,12 @@ internal sealed partial class EditorEngine
             case 'U':
             case '~':
                 ApplyOperatorToSelection(cmd, false);
+                return true;
+            case 'J' when Mode == EditorMode.VisualLine:
+                MoveSelectedLines(count);
+                return true;
+            case 'K' when Mode == EditorMode.VisualLine:
+                MoveSelectedLines(-count);
                 return true;
             case 'J':
             {
@@ -727,6 +733,36 @@ internal sealed partial class EditorEngine
                 return true; // Not available in Visual mode
             default:
                 return false;
+        }
+    }
+
+    // Move the selected lines down (or up for a negative number of lines), keeping them selected
+    private void MoveSelectedLines(int lines)
+    {
+        for (var i = 0; i < Math.Abs(lines); i++)
+        {
+            var first = Math.Min(_visualAnchor.Line, Cursor.Line);
+            var last = Math.Max(_visualAnchor.Line, Cursor.Line);
+            if (lines > 0)
+            {
+                // The line below the selection is moved above it
+                if (last >= Buffer.LineCount - 1) break;
+                var below = Buffer[last + 1];
+                Delete(new TextPos(last, Buffer.LineLength(last)), new TextPos(last + 1, below.Length));
+                Insert(new TextPos(first, 0), below + TextBuffer.NewLine);
+                _visualAnchor = _visualAnchor with { Line = _visualAnchor.Line + 1 };
+                Cursor = Cursor with { Line = Cursor.Line + 1 };
+            }
+            else
+            {
+                // The line above the selection is moved below it
+                if (first == 0) break;
+                var above = Buffer[first - 1];
+                Delete(new TextPos(first - 1, 0), new TextPos(first, 0));
+                Insert(new TextPos(last - 1, Buffer.LineLength(last - 1)), TextBuffer.NewLine + above);
+                _visualAnchor = _visualAnchor with { Line = _visualAnchor.Line - 1 };
+                Cursor = Cursor with { Line = Cursor.Line - 1 };
+            }
         }
     }
 

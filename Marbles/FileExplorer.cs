@@ -65,11 +65,27 @@ internal static class FileExplorer
         return Browse(BrowseMode.PickDirectory, caption);
     }
 
+    /// <summary>
+    /// True if the last run of the file browser logged out of the data file (a file was opened)
+    /// </summary>
+    internal static bool SessionEnded { get; private set; }
+
+    // Opening a file from the browser ends the session of the data file that is logged in to (if any),
+    // just like logging out before opening the browser from the login page
+    private static void EndSession()
+    {
+        if (Mode.CurrentMode == Mode.SelectedMode.Login) return;
+        Tools.RemovePrivileges(false);
+        Mode.SetMode(Mode.SelectedMode.Login);
+        SessionEnded = true;
+    }
+
     private static string? Browse(BrowseMode mode, string caption)
     {
         _mode = mode;
         _caption = caption;
         _picked = null;
+        SessionEnded = false;
         _filter = string.Empty;
         _message = string.Empty;
         ChangeDirectory(Directory.Exists(StartDirectory) ? StartDirectory : DataDirectory(), null);
@@ -94,7 +110,7 @@ internal static class FileExplorer
                 }
                 else if (name is "h" or "help")
                 {
-                    ShowHelp();
+                    Tools.WriteEditorHelp(false, DialogText.HelpSectionFiles);
                 }
                 else if (name == "cd" && command != null)
                 {
@@ -121,7 +137,7 @@ internal static class FileExplorer
             }
             else if (key.KeyChar == '?')
             {
-                ShowHelp();
+                Tools.WriteEditorHelp(false, DialogText.HelpSectionFiles);
             }
             else if (key.KeyChar == '/')
             {
@@ -176,7 +192,7 @@ internal static class FileExplorer
             {
                 _index = _items.Count - 1;
             }
-            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow or ConsoleKey.Backspace)
+            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow or ConsoleKey.Backspace || key.KeyChar == '-')
             {
                 GoToParent();
             }
@@ -388,6 +404,7 @@ internal static class FileExplorer
     // Open a text file in the editor
     private static void Edit(TextFile file, bool modified)
     {
+        EndSession();
         _file = file;
         Mode.SetMode(Mode.SelectedMode.Edit);
         try
@@ -501,6 +518,7 @@ internal static class FileExplorer
         }
 
         // Select the file for the login page
+        EndSession();
         FileIo.ResetSubFolder();
         FileIo.SetSubFolder(subFolder);
         FileIo.SetFileName(item.Name);
@@ -598,39 +616,6 @@ internal static class FileExplorer
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-    }
-
-    private static void ShowHelp()
-    {
-        Tools.ClearScreen();
-        var shortcuts = new List<Shortcut>
-        {
-            new(string.Empty, DialogText.CaptionsFiles, true),
-            new("j k", "Select (as Down/Up)", false),
-            new("gg G", "First/Last", false),
-            new("PgUp PgDn", "One page up/down", false),
-            new("l Enter", "Open the directory or file", false),
-            new("h Backspace", "Go to the directory above", false),
-            new("/text", "Only show names containing \"text\" (Esc: show all)", false),
-            new("N", "Create a new file and open it", false),
-            new("R", "Refresh", false),
-            new(":cd path", "Go to a directory", false),
-            new(":home", "Go to the Marbles data directory", false),
-            new("Esc Q :q", "Close the file browser", false)
-        };
-        foreach (var shortcut in shortcuts)
-        {
-            shortcut.WriteShortcut(true, true);
-        }
-
-        Console.WriteLine();
-        Console.WriteLine(" Text files are opened in the editor and saved as UTF-8, with their line");
-        Console.WriteLine(" endings kept. They are NOT encrypted. A file that is not UTF-8 can be");
-        Console.WriteLine(" converted when it is opened.");
-        Console.WriteLine(" Opening a data file (" + FileIo.GetFileNameExtension() + ") selects it on the login page.");
-        Tools.CursorDown(1);
-        Tools.CursorRight(1);
-        Keyboard.AwaitAnyKey();
     }
 
     #endregion
