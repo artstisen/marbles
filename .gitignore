@@ -21,3 +21,6 @@ data/
 # OS
 Thumbs.db
 .DS_Store
+
+# Published builds
+publish/
