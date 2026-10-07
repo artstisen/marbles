@@ -211,7 +211,8 @@ internal static class Menu
                 return;
             }
 
-            Actions.AwaitAction(false, _c);
+            // The menu is shown: wait for the next key
+            Navigation.Wait();
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.View)
         {

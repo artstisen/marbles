@@ -29,295 +29,301 @@ internal static class Actions
 
     private static ConsoleKeyInfo _c;
 
-    public static void AwaitAction(bool transferKey, ConsoleKeyInfo keyTransfer)
+    /// <summary>
+    /// Handle a key pressed in the main menu, when viewing an entry or in a list of entries.
+    /// Called by the main loop for every key (see Navigation).
+    /// </summary>
+    public static void HandleKey(ConsoleKeyInfo key)
     {
-        try
+        _c = key;
+        if (Mode.CurrentMode == Mode.SelectedMode.Manage)
         {
-            var keepLooping = true;
-            while (keepLooping)
+            #region Manage actions
+
+            if (_c.KeyChar == ':')
             {
-                if (Mode.CurrentMode == Mode.SelectedMode.Manage)
+                // Command line
+                var command = CommandLine.Read();
+                if (command != null)
                 {
-                    #region Manage actions
-
-                    _c = Console.ReadKey(true);
-
-                    if (_c.KeyChar == ':')
-                    {
-                        // Command line
-                        var command = CommandLine.Read();
-                        if (command != null)
-                        {
-                            RunManageCommand(command);
-                        }
-                    }
-                    else if (_c.KeyChar == '?')
-                    {
-                        // Help
-                        Tools.WriteEditorHelp(false);
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.KeyChar == 'G')
-                    {
-                        // Last menu page
-                        Menu.SetTopMenuManagePage(3);
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.KeyChar == 'g')
-                    {
-                        // "gg": First menu page
-                        if (Console.ReadKey(true).KeyChar == 'g')
-                        {
-                            Menu.SetTopMenuManagePage(0);
-                            Menu.DrawTopMenu(false, true, false);
-                        }
-                    }
-                    else if (_c.Key == ConsoleKey.X)
-                    {
-                        // Logout
-                        Tools.LoginRoutine(true);
-                    }
-                    else if (_c.Key == ConsoleKey.Escape)
-                    {
-                        // Clear screen
-                        ClearSearchQuery();
-                        if (EscAction())
-                        {
-                            Menu.DrawTopMenu(true, true, false);
-                        }
-                        else
-                        {
-                            Menu.DrawTopMenu(false, true, false);
-                        }
-                    }
-
-                    else if (_c.Key == ConsoleKey.N)
-                    {
-                        // New entry
-                        NewEntry();
-                    }
-                    else if (_c.Key == ConsoleKey.R)
-                    {
-                        // Recall
-                        RecallEntry();
-                    }
-                    else if (_c.Key == ConsoleKey.Tab && _c.Modifiers == ConsoleModifiers.Shift)
-                    {
-                        // Previous menuitem (SHIFT+TAB)
-                        Menu.PreviousTopMenuManagePage();
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.Tab or ConsoleKey.L)
-                    {
-                        // Next menuitem
-                        Menu.NextTopMenuManagePage();
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.Key is ConsoleKey.LeftArrow or ConsoleKey.H)
-                    {
-                        // Previous menuitem
-                        Menu.PreviousTopMenuManagePage();
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.Key == ConsoleKey.Home)
-                    {
-                        // First menu item
-                        Menu.SetTopMenuManagePage(0);
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.Key == ConsoleKey.End)
-                    {
-                        // Last menu item
-                        Menu.SetTopMenuManagePage(3);
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.Key == ConsoleKey.D1)
-                    {
-                        // Menuitem 1
-                        Menu.SetTopMenuManagePage(0);
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.Key == ConsoleKey.D2)
-                    {
-                        // Menuitem 2
-                        Menu.SetTopMenuManagePage(1);
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.Key == ConsoleKey.D3)
-                    {
-                        // Menuitem 3
-                        Menu.SetTopMenuManagePage(2);
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.Key == ConsoleKey.D4)
-                    {
-                        // Menuitem 4
-                        Menu.SetTopMenuManagePage(3);
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.Key == ConsoleKey.I)
-                    {
-                        // Data file info
-                        FileActions.ShowDataFileInfo(true);
-                        Menu.DrawTopMenu(false, true, false);
-                    }
-                    else if (_c.Key == ConsoleKey.D)
-                    {
-                        // Display timestamp
-                        Tools.DisplayDateTime();
-                    }
-                    else if (_c.Key == ConsoleKey.S || _c.KeyChar == '/')
-                    {
-                        // Search
-                        DefaultSearchSortOption();
-                        ClearSearchQuery();
-                        Search();
-                    }
-                    else if (_c.Key == ConsoleKey.A)
-                    {
-                        // List all
-                        DefaultListSortOption();
-                        FindAll(0, string.Empty, false, false);
-                    }
-                    else if (_c.Key is ConsoleKey.T or ConsoleKey.Enter)
-                    {
-                        // Top 20
-                        FindAll(1, string.Empty, false, false);
-                    }
-                    else if (_c.Key is ConsoleKey.F or ConsoleKey.Spacebar)
-                    {
-                        // Favorites
-                        FindAll(2, string.Empty, false, false);
-                    }
-                    else if (_c.Key is ConsoleKey.M)
-                    {
-                        // Session
-                        FindAll(3, string.Empty, false, false);
-                    }
-
-
-                    #endregion
+                    RunManageCommand(command);
                 }
-                else if (Mode.CurrentMode == Mode.SelectedMode.View)
-                {
-                    #region View actions
-
-                    _c = transferKey ? keyTransfer : Console.ReadKey(true);
-                    if (_c.KeyChar == ':')
-                    {
-                        // Command line
-                        var command = CommandLine.Read();
-                        if (command != null)
-                        {
-                            RunViewCommand(command);
-                        }
-                        else
-                        {
-                            DisplayEntry(false);
-                        }
-                    }
-                    else if (_c.KeyChar == '?')
-                    {
-                        // Help
-                        Tools.WriteEditorHelp(false);
-                        DisplayEntry(false);
-                    }
-                    else if (_c.Key == ConsoleKey.Escape) // Return to manage mode
-                    {
-                        RecallPreviousView();
-                    }
-                    else if (_c.Key == ConsoleKey.T)
-                    {
-                        // Edit title
-                        ChangeTitle();
-                    }
-                    else if (_c.Key is ConsoleKey.Enter or ConsoleKey.I)
-                    {
-                        // Edit content text
-                        EditEntry(false);
-                    }
-                    else if (_c.Key == ConsoleKey.S || _c.KeyChar == '/')
-                    {
-                        // Search entry content
-                        EditEntry(true);
-                    }
-                    else if (_c.Key == ConsoleKey.Tab && _c.Modifiers == ConsoleModifiers.Shift)
-                    {
-                        // Previous menuitem (SHIFT+TAB)
-                        Menu.PreviousTopMenuViewPage();
-                        Menu.DrawTopMenu(false, false, false);
-                    }
-                    else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.Tab or ConsoleKey.L)
-                    {
-                        // Next menuitem
-                        Menu.NextTopMenuViewPage();
-                        Menu.DrawTopMenu(false, false, false);
-                    }
-                    else if (_c.Key is ConsoleKey.LeftArrow or ConsoleKey.H)
-                    {
-                        // Previous menuitem
-                        Menu.PreviousTopMenuViewPage();
-                        Menu.DrawTopMenu(false, false, false);
-                    }
-                    else if (_c.Key == ConsoleKey.D1)
-                    {
-                        // Menuitem 1
-                        Menu.SetTopMenuViewPage(0);
-                        Menu.DrawTopMenu(false, false, false);
-                    }
-                    else if (_c.Key == ConsoleKey.D2)
-                    {
-                        // Menuitem 2
-                        Menu.SetTopMenuViewPage(1);
-                        Menu.DrawTopMenu(false, false, false);
-                    }
-                    else if (_c.Key == ConsoleKey.D3)
-                    {
-                        // Menuitem 3
-                        Menu.SetTopMenuViewPage(2);
-                        Menu.DrawTopMenu(false, false, false);
-                    }
-                    else if (_c.Key == ConsoleKey.X)
-                    {
-                        // Logout
-                        Tools.LoginRoutine(true);
-                    }
-                    else if (_c.Key is ConsoleKey.F or ConsoleKey.P)
-                    {
-                        // Favorite
-                        ToggleFavorite();
-                    }
-                    else if (_c.Key == ConsoleKey.N)
-                    {
-                        // New
-                        NewEntry();
-                    }
-                    else if (_c.Key == ConsoleKey.D)
-                    {
-                        // Duplicate
-                        DuplicateCurrentEntry();
-                    }
-
-                    #endregion
-                }
-                else if (Mode.CurrentMode == Mode.SelectedMode.Search)
-                {
-                    #region Search actions
-
-                    _c = Console.ReadKey(true);
-                    if (_c.Key != ConsoleKey.Escape) continue;
-                    Mode.SetMode(Mode.SelectedMode.Manage);
-                    Menu.DrawTopMenu(false, true, false);
-
-                    #endregion
-                }
-
-                AwaitAction(false, _c);
             }
+            else if (_c.KeyChar == '?')
+            {
+                // Help
+                Tools.WriteEditorHelp(false);
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.KeyChar == 'G')
+            {
+                // Last menu page
+                Menu.SetTopMenuManagePage(3);
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.KeyChar == 'g')
+            {
+                // "gg": First menu page
+                if (Console.ReadKey(true).KeyChar == 'g')
+                {
+                    Menu.SetTopMenuManagePage(0);
+                    Menu.DrawTopMenu(false, true, false);
+                }
+            }
+            else if (_c.Key == ConsoleKey.X)
+            {
+                // Logout
+                Tools.LoginRoutine(true);
+            }
+            else if (_c.Key == ConsoleKey.Escape)
+            {
+                // Clear screen
+                ClearSearchQuery();
+                if (EscAction())
+                {
+                    Menu.DrawTopMenu(true, true, false);
+                }
+                else
+                {
+                    Menu.DrawTopMenu(false, true, false);
+                }
+            }
+
+            else if (_c.Key == ConsoleKey.N)
+            {
+                // New entry
+                NewEntry();
+            }
+            else if (_c.Key == ConsoleKey.R)
+            {
+                // Recall
+                RecallEntry();
+            }
+            else if (_c.Key == ConsoleKey.Tab && _c.Modifiers == ConsoleModifiers.Shift)
+            {
+                // Previous menuitem (SHIFT+TAB)
+                Menu.PreviousTopMenuManagePage();
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.Tab or ConsoleKey.L)
+            {
+                // Next menuitem
+                Menu.NextTopMenuManagePage();
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.Key is ConsoleKey.LeftArrow or ConsoleKey.H)
+            {
+                // Previous menuitem
+                Menu.PreviousTopMenuManagePage();
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.Key == ConsoleKey.Home)
+            {
+                // First menu item
+                Menu.SetTopMenuManagePage(0);
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.Key == ConsoleKey.End)
+            {
+                // Last menu item
+                Menu.SetTopMenuManagePage(3);
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.Key == ConsoleKey.D1)
+            {
+                // Menuitem 1
+                Menu.SetTopMenuManagePage(0);
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.Key == ConsoleKey.D2)
+            {
+                // Menuitem 2
+                Menu.SetTopMenuManagePage(1);
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.Key == ConsoleKey.D3)
+            {
+                // Menuitem 3
+                Menu.SetTopMenuManagePage(2);
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.Key == ConsoleKey.D4)
+            {
+                // Menuitem 4
+                Menu.SetTopMenuManagePage(3);
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.Key == ConsoleKey.I)
+            {
+                // Data file info
+                FileActions.ShowDataFileInfo(true);
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.Key == ConsoleKey.D)
+            {
+                // Display timestamp
+                Tools.DisplayDateTime();
+            }
+            else if (_c.Key == ConsoleKey.S || _c.KeyChar == '/')
+            {
+                // Search
+                DefaultSearchSortOption();
+                ClearSearchQuery();
+                Search();
+            }
+            else if (_c.Key == ConsoleKey.A)
+            {
+                // List all
+                DefaultListSortOption();
+                FindAll(0, string.Empty, false, false);
+            }
+            else if (_c.Key is ConsoleKey.T or ConsoleKey.Enter)
+            {
+                // Top 20
+                FindAll(1, string.Empty, false, false);
+            }
+            else if (_c.Key is ConsoleKey.F or ConsoleKey.Spacebar)
+            {
+                // Favorites
+                FindAll(2, string.Empty, false, false);
+            }
+            else if (_c.Key is ConsoleKey.M)
+            {
+                // Session
+                FindAll(3, string.Empty, false, false);
+            }
+
+
+            #endregion
         }
-        catch (Exception ex)
+        else if (Mode.CurrentMode == Mode.SelectedMode.View)
         {
-            Tools.FatalError(ex.Message);
+            #region View actions
+
+            // Scrolling the text of the entry
+            if (HandlePreviewKey())
+            {
+                return;
+            }
+
+            if (_c.KeyChar == ':')
+            {
+                // Command line
+                var command = CommandLine.Read();
+                if (command != null)
+                {
+                    RunViewCommand(command);
+                }
+                else
+                {
+                    DisplayEntry(false);
+                }
+            }
+            else if (_c.KeyChar == '?')
+            {
+                // Help
+                Tools.WriteEditorHelp(false);
+                DisplayEntry(false);
+            }
+            else if (_c.Key == ConsoleKey.Escape) // Return to manage mode
+            {
+                RecallPreviousView();
+            }
+            else if (_c.Key == ConsoleKey.T)
+            {
+                // Edit title
+                ChangeTitle();
+            }
+            else if (_c.Key is ConsoleKey.Enter or ConsoleKey.I)
+            {
+                // Edit content text
+                EditEntry(false);
+            }
+            else if (_c.Key == ConsoleKey.S || _c.KeyChar == '/')
+            {
+                // Search entry content
+                EditEntry(true);
+            }
+            else if (_c.Key == ConsoleKey.Tab && _c.Modifiers == ConsoleModifiers.Shift)
+            {
+                // Previous menuitem (SHIFT+TAB)
+                Menu.PreviousTopMenuViewPage();
+                Menu.DrawTopMenu(false, false, false);
+            }
+            else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.Tab or ConsoleKey.L)
+            {
+                // Next menuitem
+                Menu.NextTopMenuViewPage();
+                Menu.DrawTopMenu(false, false, false);
+            }
+            else if (_c.Key is ConsoleKey.LeftArrow or ConsoleKey.H)
+            {
+                // Previous menuitem
+                Menu.PreviousTopMenuViewPage();
+                Menu.DrawTopMenu(false, false, false);
+            }
+            else if (_c.Key == ConsoleKey.D1)
+            {
+                // Menuitem 1
+                Menu.SetTopMenuViewPage(0);
+                Menu.DrawTopMenu(false, false, false);
+            }
+            else if (_c.Key == ConsoleKey.D2)
+            {
+                // Menuitem 2
+                Menu.SetTopMenuViewPage(1);
+                Menu.DrawTopMenu(false, false, false);
+            }
+            else if (_c.Key == ConsoleKey.D3)
+            {
+                // Menuitem 3
+                Menu.SetTopMenuViewPage(2);
+                Menu.DrawTopMenu(false, false, false);
+            }
+            else if (_c.Key == ConsoleKey.X)
+            {
+                // Logout
+                Tools.LoginRoutine(true);
+            }
+            else if (_c.Key is ConsoleKey.F or ConsoleKey.P)
+            {
+                // Favorite
+                ToggleFavorite();
+            }
+            else if (_c.Key == ConsoleKey.N)
+            {
+                // New
+                NewEntry();
+            }
+            else if (_c.Key == ConsoleKey.D)
+            {
+                // Duplicate
+                DuplicateCurrentEntry();
+            }
+
+            // Still viewing the entry: show the scroll instructions again
+            if (Mode.CurrentMode == Mode.SelectedMode.View)
+            {
+                UpdateDocumentScrollLabel();
+            }
+
+            #endregion
+        }
+        else if (Mode.CurrentMode == Mode.SelectedMode.Search)
+        {
+            #region Search actions
+
+            if (_isSelectingResult)
+            {
+                HandleListKey();
+            }
+            else if (_c.Key == ConsoleKey.Escape)
+            {
+                Mode.SetMode(Mode.SelectedMode.Manage);
+                Menu.DrawTopMenu(false, true, false);
+            }
+
+            #endregion
         }
     }
 
@@ -1265,58 +1271,71 @@ internal static class Actions
             // Convert text to lines and display them with top and left margin in the preview
             var textPreviewArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
                 Init.LineCount - 10, Entries.CurrentEntry.Text, Entries.CurrentEntry.CursorIndex, false, true, false, 0);
+            _previewArea = null;
             if (textPreviewArea.GetText().Length > 0)
             {
-                do
-                {
-                    if (textPreviewArea.CanScroll)
-                    {
-                        Menu.WriteDocumentScrollLabel();
-                    }
-                    else
-                    {
-                        RemoveDocumentScrollLabel();
-                    }
-
-                    _c = Console.ReadKey(true);
-                    if (_c.Modifiers == ConsoleModifiers.Shift && _c.Key == ConsoleKey.Spacebar ||
-                        _c.Key is ConsoleKey.PageUp or ConsoleKey.B || Keyboard.IsControl(_c, ConsoleKey.U))
-                    {
-                        textPreviewArea.PageUp();
-                    }
-                    else if (_c.Key is ConsoleKey.Spacebar or ConsoleKey.PageDown ||
-                             Keyboard.IsControl(_c, ConsoleKey.D) || Keyboard.IsControl(_c, ConsoleKey.F))
-                    {
-                        textPreviewArea.PageDown();
-                    }
-                    else if (_c.Key is ConsoleKey.J or ConsoleKey.DownArrow)
-                    {
-                        textPreviewArea.ScrollRows(1);
-                    }
-                    else if (_c.Key is ConsoleKey.K or ConsoleKey.UpArrow)
-                    {
-                        textPreviewArea.ScrollRows(-1);
-                    }
-                    else if (_c.KeyChar == 'G')
-                    {
-                        textPreviewArea.ScrollRows(int.MaxValue / 2);
-                    }
-                    else if (_c.KeyChar == 'g')
-                    {
-                        // "gg": Top
-                        if (Console.ReadKey(true).KeyChar == 'g') textPreviewArea.ScrollRows(int.MinValue / 2);
-                    }
-                    else
-                    {
-                        RemoveDocumentScrollLabel();
-                        AwaitAction(true, _c); // Return to AwaitAction with the pressed key
-                        break;
-                    }
-                } while (true);
+                _previewArea = textPreviewArea;
+                UpdateDocumentScrollLabel();
+                // The entry is shown: wait for the next key
+                Navigation.Wait();
             }
+        }
+    }
+
+    private static TextArea? _previewArea; // The text shown when viewing an entry (null if it has no text)
+
+    // Scroll the text of the entry being viewed
+    private static bool HandlePreviewKey()
+    {
+        if (_previewArea == null) return false;
+        if (_c.Modifiers == ConsoleModifiers.Shift && _c.Key == ConsoleKey.Spacebar ||
+            _c.Key is ConsoleKey.PageUp or ConsoleKey.B || Keyboard.IsControl(_c, ConsoleKey.U))
+        {
+            _previewArea.PageUp();
+        }
+        else if (_c.Key is ConsoleKey.Spacebar or ConsoleKey.PageDown ||
+                 Keyboard.IsControl(_c, ConsoleKey.D) || Keyboard.IsControl(_c, ConsoleKey.F))
+        {
+            _previewArea.PageDown();
+        }
+        else if (_c.Key is ConsoleKey.J or ConsoleKey.DownArrow)
+        {
+            _previewArea.ScrollRows(1);
+        }
+        else if (_c.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+        {
+            _previewArea.ScrollRows(-1);
+        }
+        else if (_c.KeyChar == 'G')
+        {
+            _previewArea.ScrollRows(int.MaxValue / 2);
+        }
+        else if (_c.KeyChar == 'g')
+        {
+            // "gg": Top
+            if (Console.ReadKey(true).KeyChar == 'g') _previewArea.ScrollRows(int.MinValue / 2);
         }
         else
         {
+            RemoveDocumentScrollLabel();
+            return false;
+        }
+
+        UpdateDocumentScrollLabel();
+        return true;
+    }
+
+    // Show how to scroll if the text of the entry being viewed is longer than the preview
+    private static void UpdateDocumentScrollLabel()
+    {
+        if (_previewArea == null) return;
+        if (_previewArea.CanScroll)
+        {
+            Menu.WriteDocumentScrollLabel();
+        }
+        else
+        {
+            RemoveDocumentScrollLabel();
         }
     }
 
@@ -1595,7 +1614,7 @@ internal static class Actions
                     Entries.ResetDeletedEntry();
                     DisplayEntry(false);
                 }
-                catch
+                catch (Exception e) when (e is not NavigationException)
                 {
                     Menu.StatusMessage(DialogText.UnableToCompleteRestore, true, true, true, DialogText.CaptionsRestore,
                         string.Empty, false);
@@ -2691,266 +2710,273 @@ internal static class Actions
             }
 
 
-            do
+            // The list is shown: wait for the next key
+            _selectionPage = pageNumber;
+            Navigation.Wait();
+        }
+    }
+
+    private static int _selectionPage; // The page of the list where an entry is being selected
+
+    // Handle a key pressed in a list of entries
+    private static void HandleListKey()
+    {
+        var pageNumber = _selectionPage;
+        SaveCursorPosition();
+        if (_c.KeyChar == ':')
+        {
+            // Command line
+            var command = CommandLine.Read();
+            if (command == null)
             {
-                _c = Console.ReadKey(true);
-                SaveCursorPosition();
-                if (_c.KeyChar == ':')
-                {
-                    // Command line
-                    var command = CommandLine.Read();
-                    if (command == null)
-                    {
-                        ExitNumericSelect(pageNumber, _resultIndex);
-                        return;
-                    }
+                ExitNumericSelect(pageNumber, _resultIndex);
+                return;
+            }
 
-                    RunListCommand(command, pageNumber);
-                    if (_isSelectingResult)
-                    {
-                        // The command did not lead anywhere else: show the list again
-                        ExitNumericSelect(pageNumber, _resultIndex);
-                    }
+            RunListCommand(command, pageNumber);
+            if (_isSelectingResult)
+            {
+                // The command did not lead anywhere else: show the list again
+                ExitNumericSelect(pageNumber, _resultIndex);
+            }
 
-                    return;
-                }
-                else if (_c.KeyChar == '?')
-                {
-                    // Help
-                    Tools.WriteEditorHelp(false);
-                    ExitNumericSelect(pageNumber, _resultIndex);
-                    return;
-                }
-                else if (_c.KeyChar == 'G')
-                {
-                    // Last entry on the page
-                    MoveSelection(_resultBottom);
-                }
-                else if (_c.KeyChar == 'g')
-                {
-                    // "gg": First entry on the page
-                    if (Console.ReadKey(true).KeyChar == 'g') MoveSelection(ResultTop);
-                }
-                else if (_c.Key == ConsoleKey.P)
-                {
-                    // Favorite/pin
-                    SelectResultFromIndex(pageNumber, _resultIndex, 7);
-                    LoadCursorPosition();
-                }
-                // Date time
-                else if (_c.Key == ConsoleKey.D)
-                {
-                    // Display timestamp
-                    Tools.DisplayDateTime();
-                }
-                // Search
-                else if (_c.Key == ConsoleKey.S || _c.KeyChar == '/')
-                {
-                    DefaultSearchSortOption();
-                    Search();
-                }
-                // List all
-                else if (_c.Key == ConsoleKey.A)
-                {
-                    DefaultListSortOption();
-                    FindAll(0, string.Empty, false, false);
-                }
-                else if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites && _c.Key == ConsoleKey.Tab)
-                {
+            return;
+        }
+        else if (_c.KeyChar == '?')
+        {
+            // Help
+            Tools.WriteEditorHelp(false);
+            ExitNumericSelect(pageNumber, _resultIndex);
+            return;
+        }
+        else if (_c.KeyChar == 'G')
+        {
+            // Last entry on the page
+            MoveSelection(_resultBottom);
+        }
+        else if (_c.KeyChar == 'g')
+        {
+            // "gg": First entry on the page
+            if (Console.ReadKey(true).KeyChar == 'g') MoveSelection(ResultTop);
+        }
+        else if (_c.Key == ConsoleKey.P)
+        {
+            // Favorite/pin
+            SelectResultFromIndex(pageNumber, _resultIndex, 7);
+            LoadCursorPosition();
+        }
+        // Date time
+        else if (_c.Key == ConsoleKey.D)
+        {
+            // Display timestamp
+            Tools.DisplayDateTime();
+        }
+        // Search
+        else if (_c.Key == ConsoleKey.S || _c.KeyChar == '/')
+        {
+            DefaultSearchSortOption();
+            Search();
+        }
+        // List all
+        else if (_c.Key == ConsoleKey.A)
+        {
+            DefaultListSortOption();
+            FindAll(0, string.Empty, false, false);
+        }
+        else if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites && _c.Key == ConsoleKey.Tab)
+        {
 
-                    // Rank pinned
-                    SelectResultFromIndex(pageNumber, _resultIndex, 8);
-                    LoadCursorPosition();
+            // Rank pinned
+            SelectResultFromIndex(pageNumber, _resultIndex, 8);
+            LoadCursorPosition();
 
-                }
-                // List all/Search (Sort)
-                else if (_c.Key == ConsoleKey.Tab)
+        }
+        // List all/Search (Sort)
+        else if (_c.Key == ConsoleKey.Tab)
+        {
+            // Only cycle sorting options if already in ListAll mode
+            if (Mode.CurrentRecallMode == Mode.RecallMode.ListAll)
+            {
+                NextSortOption();
+                FindAll(0, string.Empty, false, false);
+            }
+            else if (Mode.CurrentRecallMode == Mode.RecallMode.Search && Tools.IsValid(_searchQuery))
+            {
+                NextSortOption();
+                FindAll(0, _searchQuery, true, false);
+            }
+            // Else do nothing as the other lists do not have the option to toggle sort
+        }
+        // Top 20
+        else if (_c.Key == ConsoleKey.T)
+        {
+            FindAll(1, string.Empty, false, false);
+        }
+        // Favorites
+        else if (_c.Key == ConsoleKey.F)
+        {
+            FindAll(2, string.Empty, false, false);
+        }
+        // Session
+        else if (_c.Key == ConsoleKey.M)
+        {
+            FindAll(3, string.Empty, false, false);
+        }
+        // New entry
+        else if (_c.Key == ConsoleKey.N)
+        {
+            NewEntry();
+            // Return to main
+            _isSelectingResult = false;
+            Mode.SetMode(Mode.SelectedMode.Manage);
+            Menu.DrawTopMenu(true, true, false);
+        }
+        // Recall
+        else if (_c.Key == ConsoleKey.R)
+        {
+            RecallEntry();
+            // Return to main
+            _isSelectingResult = false;
+            Mode.SetMode(Mode.SelectedMode.Manage);
+            Menu.DrawTopMenu(true, true, false);
+        }
+        else if (_c.Key == ConsoleKey.I)
+        {
+            // Data file info
+            FileActions.ShowDataFileInfo(true);
+            // Return to main
+            _isSelectingResult = false;
+            Mode.SetMode(Mode.SelectedMode.Manage);
+            Menu.DrawTopMenu(true, true, false);
+        }
+        // Logout
+        else if (_c.Key == ConsoleKey.X)
+        {
+            Tools.LoginRoutine(true);
+        }
+        else if (_c.Key is ConsoleKey.UpArrow or ConsoleKey.K)
+        {
+            if (_resultIndex > ResultTop)
+            {
+                _resultIndex -= 1;
+                Menu.WriteSelectionPointer(true);
+                Tools.CursorUp(1);
+                Menu.WriteSelectionPointer(false);
+            }
+            else
+            {
+                // Else jump to last item
+                _resultIndex = _resultBottom;
+                Menu.WriteSelectionPointer(true);
+                Tools.CursorDown(_resultIndex);
+                Menu.WriteSelectionPointer(false);
+            }
+        }
+        else if (_c.Key is ConsoleKey.DownArrow or ConsoleKey.J)
+        {
+            if (_resultIndex < _resultBottom)
+            {
+                _resultIndex += 1;
+                Menu.WriteSelectionPointer(true);
+                Tools.CursorDown();
+                Menu.WriteSelectionPointer(false);
+            }
+            else
+            {
+                // Else jump to first item
+                _resultIndex = ResultTop;
+                Menu.WriteSelectionPointer(true);
+                Tools.CursorUp(_resultBottom);
+                Menu.WriteSelectionPointer(false);
+            }
+        }
+        else if (_c.Key == ConsoleKey.PageUp)
+        {
+            // Move by 3
+            if (_resultIndex >= 3 && ((_resultIndex - 3) >= ResultTop))
+            {
+                _resultIndex -= 3;
+                Menu.WriteSelectionPointer(true);
+                Tools.CursorUp(3);
+                Menu.WriteSelectionPointer(false);
+            }
+            else
+            {
+                if ((_resultIndex - 2) >= ResultTop)
                 {
-                    // Only cycle sorting options if already in ListAll mode
-                    if (Mode.CurrentRecallMode == Mode.RecallMode.ListAll)
-                    {
-                        NextSortOption();
-                        FindAll(0, string.Empty, false, false);
-                    }
-                    else if (Mode.CurrentRecallMode == Mode.RecallMode.Search && Tools.IsValid(_searchQuery))
-                    {
-                        NextSortOption();
-                        FindAll(0, _searchQuery, true, false);
-                    }
-                    // Else do nothing as the other lists do not have the option to toggle sort
+                    _resultIndex -= 2;
+                    Menu.WriteSelectionPointer(true);
+                    Tools.CursorUp(2);
+                    Menu.WriteSelectionPointer(false);
                 }
-                // Top 20
-                else if (_c.Key == ConsoleKey.T)
+                else if ((_resultIndex - 1) >= ResultTop)
                 {
-                    FindAll(1, string.Empty, false, false);
+                    _resultIndex -= 1;
+                    Menu.WriteSelectionPointer(true);
+                    Tools.CursorUp(1);
+                    Menu.WriteSelectionPointer(false);
                 }
-                // Favorites
-                else if (_c.Key == ConsoleKey.F)
+            }
+        }
+        else if (_c.Key == ConsoleKey.PageDown)
+        {
+            // Move by 3
+            if ((_resultIndex + 3) < _resultBottom)
+            {
+                _resultIndex += 3;
+                Menu.WriteSelectionPointer(true);
+                Tools.CursorDown(3);
+                Menu.WriteSelectionPointer(false);
+            }
+            else
+            {
+                if ((_resultIndex + 2) <= _resultBottom)
                 {
-                    FindAll(2, string.Empty, false, false);
+                    _resultIndex += 2;
+                    Menu.WriteSelectionPointer(true);
+                    Tools.CursorDown(2);
+                    Menu.WriteSelectionPointer(false);
                 }
-                // Session
-                else if (_c.Key == ConsoleKey.M)
+                else if ((_resultIndex + 1) <= _resultBottom)
                 {
-                    FindAll(3, string.Empty, false, false);
+                    _resultIndex += 1;
+                    Menu.WriteSelectionPointer(true);
+                    Tools.CursorDown(1);
+                    Menu.WriteSelectionPointer(false);
                 }
-                // New entry
-                else if (_c.Key == ConsoleKey.N)
-                {
-                    NewEntry();
-                    // Return to main
-                    _isSelectingResult = false;
-                    Mode.SetMode(Mode.SelectedMode.Manage);
-                    Menu.DrawTopMenu(true, true, false);
-                }
-                // Recall
-                else if (_c.Key == ConsoleKey.R)
-                {
-                    RecallEntry();
-                    // Return to main
-                    _isSelectingResult = false;
-                    Mode.SetMode(Mode.SelectedMode.Manage);
-                    Menu.DrawTopMenu(true, true, false);
-                }
-                else if (_c.Key == ConsoleKey.I)
-                {
-                    // Data file info
-                    FileActions.ShowDataFileInfo(true);
-                    // Return to main
-                    _isSelectingResult = false;
-                    Mode.SetMode(Mode.SelectedMode.Manage);
-                    Menu.DrawTopMenu(true, true, false);
-                }
-                // Logout
-                else if (_c.Key == ConsoleKey.X)
-                {
-                    Tools.LoginRoutine(true);
-                }
-                else if (_c.Key is ConsoleKey.UpArrow or ConsoleKey.K)
-                {
-                    if (_resultIndex > ResultTop)
-                    {
-                        _resultIndex -= 1;
-                        Menu.WriteSelectionPointer(true);
-                        Tools.CursorUp(1);
-                        Menu.WriteSelectionPointer(false);
-                    }
-                    else
-                    {
-                        // Else jump to last item
-                        _resultIndex = _resultBottom;
-                        Menu.WriteSelectionPointer(true);
-                        Tools.CursorDown(_resultIndex);
-                        Menu.WriteSelectionPointer(false);
-                    }
-                }
-                else if (_c.Key is ConsoleKey.DownArrow or ConsoleKey.J)
-                {
-                    if (_resultIndex < _resultBottom)
-                    {
-                        _resultIndex += 1;
-                        Menu.WriteSelectionPointer(true);
-                        Tools.CursorDown();
-                        Menu.WriteSelectionPointer(false);
-                    }
-                    else
-                    {
-                        // Else jump to first item
-                        _resultIndex = ResultTop;
-                        Menu.WriteSelectionPointer(true);
-                        Tools.CursorUp(_resultBottom);
-                        Menu.WriteSelectionPointer(false);
-                    }
-                }
-                else if (_c.Key == ConsoleKey.PageUp)
-                {
-                    // Move by 3
-                    if (_resultIndex >= 3 && ((_resultIndex - 3) >= ResultTop))
-                    {
-                        _resultIndex -= 3;
-                        Menu.WriteSelectionPointer(true);
-                        Tools.CursorUp(3);
-                        Menu.WriteSelectionPointer(false);
-                    }
-                    else
-                    {
-                        if ((_resultIndex - 2) >= ResultTop)
-                        {
-                            _resultIndex -= 2;
-                            Menu.WriteSelectionPointer(true);
-                            Tools.CursorUp(2);
-                            Menu.WriteSelectionPointer(false);
-                        }
-                        else if ((_resultIndex - 1) >= ResultTop)
-                        {
-                            _resultIndex -= 1;
-                            Menu.WriteSelectionPointer(true);
-                            Tools.CursorUp(1);
-                            Menu.WriteSelectionPointer(false);
-                        }
-                    }
-                }
-                else if (_c.Key == ConsoleKey.PageDown)
-                {
-                    // Move by 3
-                    if ((_resultIndex + 3) < _resultBottom)
-                    {
-                        _resultIndex += 3;
-                        Menu.WriteSelectionPointer(true);
-                        Tools.CursorDown(3);
-                        Menu.WriteSelectionPointer(false);
-                    }
-                    else
-                    {
-                        if ((_resultIndex + 2) <= _resultBottom)
-                        {
-                            _resultIndex += 2;
-                            Menu.WriteSelectionPointer(true);
-                            Tools.CursorDown(2);
-                            Menu.WriteSelectionPointer(false);
-                        }
-                        else if ((_resultIndex + 1) <= _resultBottom)
-                        {
-                            _resultIndex += 1;
-                            Menu.WriteSelectionPointer(true);
-                            Tools.CursorDown(1);
-                            Menu.WriteSelectionPointer(false);
-                        }
-                    }
-                }
-                else if (_c.Key is ConsoleKey.LeftArrow or ConsoleKey.H)
-                {
-                    DisplayResultPages(pageNumber - 1, false);
-                }
-                else if (_c.Key == ConsoleKey.Home)
-                {
-                    DisplayResultPages(0, false);
-                }
-                else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.L)
-                {
-                    DisplayResultPages(pageNumber + 1, false);
-                }
-                else if (_c.Key == ConsoleKey.End)
-                {
-                    DisplayResultPages(_resultPages.Count - 1, false);
-                }
-                else if (_c.Key == ConsoleKey.Escape)
-                {
-                    // Return to main
-                    _isSelectingResult = false;
-                    Mode.SetRecallMode(Mode.RecallMode.None);
-                    Mode.SetMode(Mode.SelectedMode.Manage);
-                    Menu.DrawTopMenu(true, true, false);
-                }
-                else if (_c.Key is ConsoleKey.Enter or ConsoleKey.Spacebar)
-                {
-                    SelectResultFromIndex(pageNumber, _resultIndex, 0);
-                }
-                else if (Tools.IsNumeric(_c.KeyChar.ToString())) // Select from 1-9
-                {
-                    SelectResultFromNumericValue(pageNumber, _c, false, 0);
-                }
-            } while (_isSelectingResult);
+            }
+        }
+        else if (_c.Key is ConsoleKey.LeftArrow or ConsoleKey.H)
+        {
+            DisplayResultPages(pageNumber - 1, false);
+        }
+        else if (_c.Key == ConsoleKey.Home)
+        {
+            DisplayResultPages(0, false);
+        }
+        else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.L)
+        {
+            DisplayResultPages(pageNumber + 1, false);
+        }
+        else if (_c.Key == ConsoleKey.End)
+        {
+            DisplayResultPages(_resultPages.Count - 1, false);
+        }
+        else if (_c.Key == ConsoleKey.Escape)
+        {
+            // Return to main
+            _isSelectingResult = false;
+            Mode.SetRecallMode(Mode.RecallMode.None);
+            Mode.SetMode(Mode.SelectedMode.Manage);
+            Menu.DrawTopMenu(true, true, false);
+        }
+        else if (_c.Key is ConsoleKey.Enter or ConsoleKey.Spacebar)
+        {
+            SelectResultFromIndex(pageNumber, _resultIndex, 0);
+        }
+        else if (Tools.IsNumeric(_c.KeyChar.ToString())) // Select from 1-9
+        {
+            SelectResultFromNumericValue(pageNumber, _c, false, 0);
         }
     }
 
@@ -3034,7 +3060,7 @@ internal static class Actions
                 }
             }
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not NavigationException)
         {
             Tools.ClearScreen();
             Console.WriteLine(e.Message);
@@ -3078,7 +3104,7 @@ internal static class Actions
                 }
             }
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not NavigationException)
         {
             Tools.ClearScreen();
             Console.WriteLine(e.Message);

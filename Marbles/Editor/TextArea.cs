@@ -184,7 +184,7 @@ public class TextArea
                 Draw();
             }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not NavigationException)
         {
             Tools.HideCursor();
             Tools.ActionUnsupported(ex.Message);

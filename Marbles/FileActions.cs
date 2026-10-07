@@ -188,7 +188,7 @@ public static class FileActions
                             return true;
                         }
                     }
-                    catch
+                    catch (Exception e) when (e is not NavigationException)
                     {
                         Menu.StatusMessage(DialogText.ErrorUnableToCompleteRequest, true, true, true,
                             DialogText.RenameFile, string.Empty, false);
@@ -262,7 +262,7 @@ public static class FileActions
                             return true;
                         }
                     }
-                    catch
+                    catch (Exception e) when (e is not NavigationException)
                     {
                         Menu.StatusMessage(DialogText.ErrorUnableToCompleteRequest, true, true, true,
                             DialogText.CopyFile, string.Empty, false);
@@ -432,7 +432,7 @@ public static class FileActions
                     MoveCurrentDataFile();
                 }
             }
-            catch
+            catch (Exception e) when (e is not NavigationException)
             {
                 Menu.StatusMessage(DialogText.ErrorUnableToCompleteRequest, true, true, true,
                     DialogText.MoveFile, string.Empty, false);
@@ -484,7 +484,7 @@ public static class FileActions
                             return true;
                         }
                     }
-                    catch
+                    catch (Exception e) when (e is not NavigationException)
                     {
                         Menu.StatusMessage(DialogText.ErrorUnableToCompleteRequest, true, true, true,
                             DialogText.DeleteFile, string.Empty, false);

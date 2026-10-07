@@ -728,7 +728,21 @@ internal static class Tools
     private static LoadStatus _load = new();
     internal static bool CreateNewDataFile;
 
+    /// <summary>
+    /// Go to the login page (this logs out of the current data file)
+    /// </summary>
+    /// <param name="fullRedraw">False to only refresh the file and directory selection</param>
     internal static void LoginRoutine(bool fullRedraw)
+    {
+        Navigation.LoginFullRedraw = fullRedraw;
+        Mode.SetMode(Mode.SelectedMode.Login);
+        Navigation.Wait();
+    }
+
+    /// <summary>
+    /// Show the login page and read the password. Called by the main loop when in Login mode.
+    /// </summary>
+    internal static void ShowLogin(bool fullRedraw)
     {
         if (fullRedraw)
         {

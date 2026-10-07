@@ -459,7 +459,7 @@ internal class MergeTool
                                     WriteStepAlert(DialogText.StatusUnableToSave);
                                 }
                             }
-                            catch (Exception e)
+                            catch (Exception e) when (e is not NavigationException)
                             {
                                 WriteStepAlert(e.Message);
                             }
