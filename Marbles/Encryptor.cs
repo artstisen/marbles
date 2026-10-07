@@ -37,7 +37,7 @@ class Encryptor
     private const int TagOffset = NonceOffset + NonceLength; // Also the length of the authenticated header
     private const int HeaderLength = TagOffset + TagLength;
 
-    private const int KeyMaxLength = 32;
+    internal const int KeyMaxLength = 128;
     private const int KeyMinLength = 8;
     private static string _key = string.Empty; // Secret key (password) supplied by the user
 
@@ -86,7 +86,7 @@ class Encryptor
     }
 
     /// <summary>
-    /// Validate password length is between 8 and 32 chars long
+    /// Validate password length is between 8 and 128 chars long
     /// </summary>
     /// <param name="password">The password string to test</param>
     /// <returns>true or false</returns>

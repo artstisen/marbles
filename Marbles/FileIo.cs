@@ -239,15 +239,25 @@ internal static class FileIo
         {
             // Decrypt
             _loadStatus.ProcessString = Encryptor.DecryptData(fileContent);
-            if (_loadStatus.ProcessString != DialogText.InvalidData && _loadStatus.ProcessString.Length > 0)
+            if (_loadStatus.ProcessString != DialogText.InvalidData &&
+                _loadStatus.ProcessString != DialogText.NoData && _loadStatus.ProcessString.Length > 0)
             {
                 // Get entries from XMl
-                _loadStatus.LoadedEntries = GetEntriesFromXml(_loadStatus.ProcessString);
-                // Only flag a legacy file for conversion if its content was fully understood
-                _loadStatus.IsLegacyFormat = Encryptor.LegacyFormatDetected &&
-                                             (_loadStatus.LoadedEntries.Count > 0 ||
-                                              _loadStatus.ProcessString == DialogText.NoData);
+                var entries = GetEntriesFromXml(_loadStatus.ProcessString);
+                if (entries == null)
+                {
+                    // The password is right but the content is damaged. Never continue with an empty
+                    // collection, as saving it would overwrite the content of the file
+                    _loadStatus.Success = false;
+                    _loadStatus.StatusMessage = DialogText.ErrorDataDamaged;
+                    _loadStatus.ProcessString = "";
+                    return _loadStatus;
+                }
+
+                _loadStatus.LoadedEntries = entries;
             }
+
+            _loadStatus.IsLegacyFormat = Encryptor.LegacyFormatDetected;
 
             // Validate load
             if (_loadStatus.ProcessString != DialogText.InvalidData && _loadStatus.LoadedEntries.Count >= 0)
@@ -626,12 +636,46 @@ internal static class FileIo
 
     private static string ReplaceCdataTag(string s)
     {
+        s = RemoveInvalidXmlChars(s);
         if (!string.IsNullOrEmpty(s) && s.Contains(XmlCdataTagToReplace))
         {
             s = s.Replace(XmlCdataTagToReplace, XmlCdataTagReplacer);
         }
 
         return s;
+    }
+
+    /// <summary>
+    /// Remove the characters that are not allowed in an XML document (most control characters and
+    /// incomplete surrogate pairs). A document containing them cannot be loaded again.
+    /// </summary>
+    internal static string RemoveInvalidXmlChars(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return s;
+        StringBuilder? cleaned = null;
+        for (var i = 0; i < s.Length; i++)
+        {
+            var valid = XmlConvert.IsXmlChar(s[i]);
+            if (!valid && i + 1 < s.Length && XmlConvert.IsXmlSurrogatePair(s[i + 1], s[i]))
+            {
+                // A complete surrogate pair is one valid character
+                cleaned?.Append(s[i]).Append(s[i + 1]);
+                i++;
+                continue;
+            }
+
+            if (valid)
+            {
+                cleaned?.Append(s[i]);
+            }
+            else
+            {
+                // First invalid character found: start building a cleaned copy
+                cleaned ??= new StringBuilder(s, 0, i, s.Length);
+            }
+        }
+
+        return cleaned?.ToString() ?? s;
     }
 
     private const string CdataStart = "<![CDATA[";
@@ -670,71 +714,63 @@ internal static class FileIo
 
     #region Convert from XML
 
-    private static List<Entry> _entriesFromXml = new();
-    private static Entry _entryFromXml = new(string.Empty, string.Empty);
-
-    private static List<Entry> GetEntriesFromXml(string xml)
+    /// <summary>
+    /// Read the entries of a decrypted document
+    /// </summary>
+    /// <returns>The entries, or null if the document cannot be read</returns>
+    private static List<Entry>? GetEntriesFromXml(string xml)
     {
         if (!Tools.IsValidXml(xml))
         {
-            return new List<Entry>();
+            return null;
         }
 
+        var doc = new XmlDocument();
         try
         {
-            _entriesFromXml = new List<Entry>();
-            var doc = new XmlDocument();
             doc.LoadXml(xml);
-            var root = doc.DocumentElement;
-            var nodes = root?.SelectNodes(XmlItem);
-            if (nodes is not {Count: > 0}) return _entriesFromXml;
-            foreach (XmlNode node in nodes)
-            {
-                _entryFromXml = new Entry("", "")
-                {
-                    Id = node.SelectSingleNode(XmlId)!.InnerText,
-                    DateCreated = node.SelectSingleNode(XmlCreated)!.InnerText,
-                    DateChanged = node.SelectSingleNode(XmlChanged)!.InnerText,
-                    Title = RestoreCdataTag(node.SelectSingleNode(XmlTitle)!.InnerText),
-                    Text = RestoreCdataTag(node.SelectSingleNode(XmlText)!.InnerText),
-                    CursorIndex = CheckNodeInt(node.SelectSingleNode(XmlCursorIndex)!, 0),
-                    //CursorIndex = 0, // Used for converting existing datafiles from before the CursorIndex
-                    Options = CheckNodeString(node.SelectSingleNode(XmlOptions)!, string.Empty)
-                };
-                // Add the entry to the collection
-                _entriesFromXml.Add(_entryFromXml);
-            }
-
-            return _entriesFromXml;
         }
-        catch
+        catch (XmlException)
         {
-            return new List<Entry>();
-        }
-    }
-
-    private static string CheckNodeString(XmlNode node, string output)
-    {
-        return !string.IsNullOrEmpty(node.InnerText) ? node.InnerText : output;
-    }
-
-    private static int _tempCheckNodeInt;
-    private static int CheckNodeInt(XmlNode node, int output)
-    {
-        _tempCheckNodeInt = 0;
-        if (Tools.IsValid(node.InnerText) && Tools.IsNumeric(node.InnerText))
-        {
+            // Documents saved by earlier versions can hold characters that are not allowed in XML.
+            // Try again without them
             try
             {
-                _tempCheckNodeInt = Convert.ToInt32(node.InnerText);
-                return _tempCheckNodeInt;
+                doc.LoadXml(RemoveInvalidXmlChars(xml));
             }
-            catch 
+            catch (XmlException)
             {
-                return output;
+                return null;
             }
         }
-        return output;
+
+        var entries = new List<Entry>();
+        var nodes = doc.DocumentElement?.SelectNodes(XmlItem);
+        if (nodes == null) return entries;
+        foreach (XmlNode node in nodes)
+        {
+            // Elements missing in files from earlier versions get their default value
+            var entry = new Entry(string.Empty, string.Empty);
+            var id = NodeText(node, XmlId);
+            if (id.Length > 0) entry.Id = id;
+            entry.DateCreated = NodeText(node, XmlCreated, entry.DateCreated);
+            entry.DateChanged = NodeText(node, XmlChanged, entry.DateCreated);
+            entry.Title = RestoreCdataTag(NodeText(node, XmlTitle));
+            entry.Text = RestoreCdataTag(NodeText(node, XmlText));
+            entry.CursorIndex = int.TryParse(NodeText(node, XmlCursorIndex), out var cursorIndex) && cursorIndex > 0
+                ? cursorIndex
+                : 0;
+            entry.Options = NodeText(node, XmlOptions);
+            entries.Add(entry);
+        }
+
+        return entries;
+    }
+
+    private static string NodeText(XmlNode entryNode, string name, string defaultValue = "")
+    {
+        var text = entryNode.SelectSingleNode(name)?.InnerText;
+        return string.IsNullOrEmpty(text) ? defaultValue : text;
     }
 
     private static string RestoreCdataTag(string s)
@@ -946,7 +982,7 @@ internal static class FileIo
         {
             if (CheckDataDirectory())
             {
-                File.WriteAllText(GetSettingsFolderAndFileName(), content);
+                WriteAllBytesSafe(GetSettingsFolderAndFileName(), new UTF8Encoding(false).GetBytes(content));
                 return DialogText.Success;
             }
             else

@@ -266,7 +266,6 @@ internal static class Entries
 
     internal static void SetAllEntries(List<Entry> loadedEntries)
     {
-        if (loadedEntries.Count <= 0) return;
         ClearAllEntries(true);
         foreach (var e in loadedEntries)
         {

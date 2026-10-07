@@ -265,7 +265,17 @@ internal static class Tools
 
 
     // Mask password
+    private const int MaxMaskedDisplay = 32; // The number of "*" shown (the width of the login field)
     private static ConsoleKeyInfo _keyInfo;
+
+    // Remove the last "*" from the password field
+    private static void EraseMaskedChar()
+    {
+        // Go back, write blank, go back -same as "\b \b", but cross platform compatible
+        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+        Console.Write(" ");
+        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+    }
     private static bool _exitLoop;
     private static string _pass = string.Empty;
 
@@ -368,12 +378,9 @@ internal static class Tools
                 }
                 else if(_pass.Length > 0)
                 {
-                    for (int i = 0; i < _pass.Length; i++)
+                    for (int i = 0; i < Math.Min(_pass.Length, MaxMaskedDisplay); i++)
                     {
-                        // Go back, write blank, go back -same as "\b \b", but cross platform compatible
-                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-                        Console.Write(" ");
-                        Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                        EraseMaskedChar();
                     }
                     // Clear password variable
                     _pass = string.Empty;
@@ -381,16 +388,14 @@ internal static class Tools
             }
             else if (key == ConsoleKey.Backspace && _pass.Length > 0)
             {
-                // Go back, write blank, go back -same as "\b \b", but cross platform compatible
-                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-                Console.Write(" ");
-                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                if (_pass.Length <= MaxMaskedDisplay) EraseMaskedChar();
                 _pass = _pass[0..^1];
             }
             else if (!FileActions.IsLockedForMove() && !char.IsControl(_keyInfo.KeyChar) && key != ConsoleKey.Spacebar &&
-                     _pass.Length < 32)
+                     _pass.Length < Encryptor.KeyMaxLength)
             {
-                Console.Write("*");
+                // A long password is not shown in its full length
+                if (_pass.Length < MaxMaskedDisplay) Console.Write("*");
                 _pass += _keyInfo.KeyChar;
             }
         } while (!_exitLoop);
@@ -564,15 +569,13 @@ internal static class Tools
             }
             else if (key == ConsoleKey.Backspace && _pass.Length > 0)
             {
-                //Console.Write("\b \b");
-                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-                Console.Write(" ");
-                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                if (_pass.Length <= MaxMaskedDisplay) EraseMaskedChar();
                 _pass = _pass[0..^1];
             }
-            else if (!char.IsControl(_keyInfo.KeyChar) && key != ConsoleKey.Spacebar && _pass.Length < 32)
+            else if (!char.IsControl(_keyInfo.KeyChar) && key != ConsoleKey.Spacebar &&
+                     _pass.Length < Encryptor.KeyMaxLength)
             {
-                Console.Write("*");
+                if (_pass.Length < MaxMaskedDisplay) Console.Write("*");
                 _pass += _keyInfo.KeyChar;
             }
         } while (!_exitLoop);

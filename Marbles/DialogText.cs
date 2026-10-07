@@ -250,7 +250,7 @@ internal static class DialogText
 
     // Status messages (styled)
     public const string NoEntrySelected = "No entry selected";
-    public const string PasswordLength = "Password must be between 8 and 32 characters long";
+    public const string PasswordLength = "Password must be between 8 and 128 characters long";
     public const string PasswordMismatch = "The two passwords do not match";
     public const string InvalidPasswordDot = "Invalid password."; // Must have period.
     public const string InvalidPassword = "Invalid password";
@@ -310,6 +310,7 @@ internal static class DialogText
     public const string EmptyDirectory = "(0)";
     public const string NoDataFiles = "[No data files]";
     public const string ErrorReadingFile = "Error reading file.";
+    public const string ErrorDataDamaged = "The content of the data file is damaged and cannot be read.";
     public const string ErrorSortingList = "Error sorting list...";
     public const string StatusUnableToSave = "Error: Unable to save changes.";
     public const string ErrorUnableToCompleteRequest = "Error: Unable to complete request.";

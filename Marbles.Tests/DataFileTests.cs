@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace Marbles.Tests;
@@ -346,12 +346,88 @@ public class FileIoTests : IDisposable
     }
 
     [Fact]
-    public void LegacyFile_WithUnreadableDocument_IsNotFlaggedForConversion()
+    public void File_WithUnreadableDocument_IsNotLoadedAsEmpty()
     {
-        // Decrypts fine but the XML is damaged: converting it would save an empty file
+        // Decrypts fine but the XML is damaged: continuing would save an empty file over it
         File.WriteAllBytes(DataFile, LegacyFileWriter.Create(FileIo.XmlDoctype + "<entries><entry>", Password));
         Login(Password);
-        Assert.False(FileIo.LoadEntries().IsLegacyFormat);
+        var load = FileIo.LoadEntries();
+        Assert.False(load.Success);
+        Assert.Equal(DialogText.ErrorDataDamaged, load.StatusMessage);
+    }
+
+    [Fact]
+    public void Entries_WithCharactersNotAllowedInXml_AreSavedWithoutThem()
+    {
+        Login(Password);
+        Entries.NewEntry("Title\u0001\u000B", "Form\ffeed, escape\u001b, tab\t, emoji \U0001F600, lone \uD83D surrogate");
+        Assert.Equal(DialogText.Success, FileIo.SaveEntries());
+
+        Login(Password);
+        Assert.True(FileIo.LoadEntries().Success);
+        Assert.Equal("Title", Entries.GetEntries()[0].Title);
+        Assert.Equal("Formfeed, escape, tab\t, emoji \U0001F600, lone  surrogate", Entries.GetEntries()[0].Text);
+    }
+
+    [Fact]
+    public void LegacyFile_WithCharactersNotAllowedInXml_IsRecovered()
+    {
+        // Earlier versions saved such characters, and then loaded the file as empty
+        var document = FileIo.XmlDoctype + "<entries><entry><id>1</id><created>2022-01-01 10:00:00</created>" +
+                       "<changed>2022-01-02 10:00:00</changed><title><![CDATA[Title]]></title>" +
+                       "<text><![CDATA[page 1\fpage 2]]></text><cindex>3</cindex><options>f</options></entry></entries>";
+        File.WriteAllBytes(DataFile, LegacyFileWriter.Create(document, Password));
+        Login(Password);
+        var load = FileIo.LoadEntries();
+        Assert.True(load.Success);
+        Assert.True(load.IsLegacyFormat);
+        Assert.Equal("page 1page 2", Entries.GetEntries()[0].Text);
+        // The reason: the XML reader refuses the document as it is
+        Assert.Throws<System.Xml.XmlException>(() => new System.Xml.XmlDocument().LoadXml(document));
+        Assert.Equal("f", Entries.GetEntries()[0].Options);
+    }
+
+    [Fact]
+    public void File_WithMissingElements_IsLoadedWithDefaults()
+    {
+        // The oldest files have no cursor index
+        var document = FileIo.XmlDoctype + "<entries><entry><id>42</id><created>2022-01-01 10:00:00</created>" +
+                       "<changed>2022-01-02 10:00:00</changed><title><![CDATA[Title]]></title>" +
+                       "<text><![CDATA[Text]]></text></entry><entry><title><![CDATA[Only a title]]></title></entry></entries>";
+        File.WriteAllBytes(DataFile, LegacyFileWriter.Create(document, Password));
+        Login(Password);
+        Assert.True(FileIo.LoadEntries().Success);
+        Assert.Equal(2, Entries.GetEntriesCount());
+        Assert.Equal("42", Entries.GetEntries()[0].Id);
+        Assert.Equal(0, Entries.GetEntries()[0].CursorIndex);
+        Assert.Equal("Only a title", Entries.GetEntries()[1].Title);
+        Assert.NotEmpty(Entries.GetEntries()[1].Id);
+    }
+
+    [Fact]
+    public void EmptyFile_LoadsWithoutEntries_AlsoAfterAnotherFileWasLoaded()
+    {
+        Login(Password);
+        Entries.NewEntry("Title", "Text");
+        File.WriteAllBytes(DataFile, LegacyFileWriter.Create(DialogText.NoData, Password));
+        Encryptor.SetKey(Password); // Without clearing the entries first
+        Assert.True(FileIo.LoadEntries().Success);
+        Assert.Equal(0, Entries.GetEntriesCount());
+    }
+
+    [Fact]
+    public void LongPasswords_AreAccepted()
+    {
+        var passphrase = string.Join(" ", Enumerable.Repeat("correct horse battery staple", 4));
+        Assert.True(Encryptor.IsValidPasswordLength(passphrase));
+        Assert.False(Encryptor.IsValidPasswordLength(new string('x', 129)));
+        Login(passphrase);
+        Entries.NewEntry("Title", "Text");
+        Assert.Equal(DialogText.Success, FileIo.SaveEntries());
+        Login(passphrase[..^1]);
+        Assert.False(FileIo.LoadEntries().Success);
+        Login(passphrase);
+        Assert.True(FileIo.LoadEntries().Success);
     }
 }
 
