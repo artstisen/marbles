@@ -349,7 +349,6 @@ public static class IsoDateTime
 
         // Calculate the number of days in the first and last week
         int daysInFirstWeek = 8 - (startWeekDayOfYear);
-        //int daysInLastWeek = 8 - (endWeekDayOfYear);
 
         // If the year either starts or ends on a thursday it will have a 53rd week
         if (startWeekDayOfYear == thursday || endWeekDayOfYear == thursday)

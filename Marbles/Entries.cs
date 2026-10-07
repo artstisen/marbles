@@ -14,7 +14,6 @@ internal static class Entries
     private static List<string> _sessionEntryIdList = new();
     
 
-    //private static string _compareChangesText = string.Empty;
     internal const string ReturnCharString = "\r"; // The return character used for program logic (DO NOT CHANGE)
     internal const string NewLineCharString = "\n"; // The newline character used for content text (DO NOT CHANGE)
 
@@ -22,7 +21,6 @@ internal static class Entries
         ReturnNewLineCharString = "\r\n"; // The return character used for program logic (DO NOT CHANGE)
 
     internal const char NewLineChar = '\n'; // The newline character used for content text (DO NOT CHANGE)
-    internal const char ReturnChar = '\r'; // The return character used for program logic (DO NOT CHANGE)
 
     internal static bool HasEntries()
     {
@@ -280,8 +278,6 @@ internal static class Entries
                 Options = e.Options
             };
 
-            //if (_translateOldOptions)
-              //  _newEntry.Options = TranslateOldOptions(_newEntry.Options); // TEMP TRANSFORM
             _entryList.Add(_newEntry);
         }
     }
@@ -289,16 +285,6 @@ internal static class Entries
     // TEMP translate old options characters
     // Works by: Load data file and save it. Dont. load it again with this option turned on
     //private static bool _translateOldOptions = false; // <--- Set to true to translate
-
-    // public static string TranslateOldOptions(string input)
-    // {
-    //     input = input.Replace("1", "f");
-    //     input = input.Replace("2", "p");
-    //     input = input.Replace("a", "h");
-    //     input = input.Replace("b", "i");
-    //     input = input.Replace("c", "j");
-    //     return input;
-    // }
 
     private static Entry _newEntry = new();
 

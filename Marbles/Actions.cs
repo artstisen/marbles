@@ -312,11 +312,6 @@ internal static class Actions
                     #endregion
                 }
 
-                // All in this mode is handled from within the TextEditor class:
-                // else if (Mode.CurrentMode == Mode.SelectedMode.Edit)
-                // {
-                //     
-                // }
                 AwaitAction(false, _c);
             }
         }
@@ -623,7 +618,6 @@ internal static class Actions
         // Overwrite the "[LOCKED]" label
         Tools.CursorDown(7);
         Tools.CursorRight(36);
-        //Console.Write(new String(' ', 8));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
         Console.Write("[EDITING]");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -750,22 +744,6 @@ internal static class Actions
     {
         if (presetToChange == 0) // Normal
         {
-            // Background color (0) is not used in this version
-            // to let special console backgrounds be used...
-            //if (ColorSettingsSecondaryColors)
-            //{
-            //    if (directionNext)
-            //        ConsoleColors.SetNextPreviewColor(1);
-            //    else
-            //        ConsoleColors.SetPreviousPreviewColor(1);
-            //}
-            //else
-            //{
-            //    if (directionNext)
-            //        ConsoleColors.SetNextPreviewColor(0);
-            //    else
-            //        ConsoleColors.SetPreviousPreviewColor(0);
-            //}
             if (directionNext)
                 ConsoleColors.SetNextPreviewColor(1);
             else
@@ -1132,7 +1110,6 @@ internal static class Actions
             // Add entry ID to session ID list
             Entries.RegisterSessionId((Entries.CurrentEntry.Id));
             
-            //Entries.RefreshCompareChangesText();
             Mode.SetMode(Mode.SelectedMode.Edit);
             Tools.ClearScreen();
             DrawEditMenu();
@@ -1162,7 +1139,6 @@ internal static class Actions
         Entries.CurrentEntry.Text = _tempText;
         Entries.CurrentEntry.CursorIndex = textArea.GetCursorIndex();
         Entries.UpdateEntry(Entries.CurrentEntry, true);
-        //Entries.RefreshCompareChangesText();
         Entries.SaveEntriesToFile();
         Vignette.CheckVignette();
     }
@@ -1282,7 +1258,6 @@ internal static class Actions
             // Add entry ID to session ID list
             Entries.RegisterSessionId(Entries.CurrentEntry.Id);
             
-            //tempPreviewLineCounter = 0;
             Mode.SetMode(Mode.SelectedMode.View);
             Tools.ClearScreen();
             DrawViewMenu(displayMenuFromPageOne);
@@ -1719,7 +1694,6 @@ internal static class Actions
                     SetOptionsTag(Entries.CurrentEntry, Entries.DefaultRank.ToString());
                     Entries.UpdateEntry(Entries.CurrentEntry, false); // Add the updates to the collection
                     Entries.SetRanking(Entries.CurrentEntry); // Ensure that the pinned entry is ranked topmost
-                    //SetOptionsTag(Entries.CurrentEntry, Entries.DefaultRank.ToString());
                 }
                 else // Else ad to favorites
                 {
@@ -1765,7 +1739,6 @@ internal static class Actions
                 Entries.UpdateEntry(Entries.CurrentEntry, false);
                 Entries.SaveEntriesToFile();
                 FindAll(2, string.Empty, false, false);
-                //DisplayEntry(false);
                 return;
             }
             if (result == 2) // Pin to highlight
@@ -2694,8 +2667,6 @@ internal static class Actions
     private static void LoadCursorPosition()
     {
         Tools.SetCursorEx(_tempCursorMemoryTop, _tempCursorMemoryLeft);
-        //Console.CursorTop = tempCursorMemoryTop;
-        //Console.CursorLeft = tempCursorMemoryLeft;
     }
 
     private static bool _isSelectingResult;
@@ -2786,15 +2757,6 @@ internal static class Actions
                 }
                 else if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites && _c.Key == ConsoleKey.Tab)
                 {
-                    // Enable ranking mode to avoid ranikng by accident
-                    //if (Menu.YesNoPrompt("Arrange pinned", DialogText.ToggleRanking, "Exit the current view [ESC] to disable ranking mode.", false))
-                    //{ 
-                    //    // Rank pinned
-                    //    SelectResultFromIndex(pageNumber, _resultIndex, 8);
-                    //    LoadCursorPosition();
-                    //}
-                    // Return to list
-                    //SelectFromSearchResult(0, true);
 
                     // Rank pinned
                     SelectResultFromIndex(pageNumber, _resultIndex, 8);

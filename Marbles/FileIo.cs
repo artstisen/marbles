@@ -942,10 +942,6 @@ internal static class FileIo
         _tempSettings += "logotxt=" + Logo.GetLogoText() + Entries.NewLineChar;
         // Color scheme (for the color preset selector)
         _tempSettings += "(clpreset)=" + ConsoleColors.GetColorPresetIndex()+ Entries.NewLineChar;
-        // Colors
-        //tempSettings += Environment.NewLine;
-        //tempSettings += "color0=";
-        //tempSettings += ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(0));
         _tempSettings += "color1=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(1))+ Entries.NewLineChar;
         _tempSettings += "color2=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(2))+ Entries.NewLineChar;
         _tempSettings += "color3=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(3))+ Entries.NewLineChar;

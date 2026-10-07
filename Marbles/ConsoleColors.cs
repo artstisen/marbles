@@ -470,7 +470,6 @@ class ConsoleColors
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = CurrentBackgroundColor;
             Console.ForegroundColor = CurrentForegroundColor;
         }
         else if (preset == ColorPreset.NormalInverted)
@@ -482,35 +481,30 @@ class ConsoleColors
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = CurrentBackgroundColor;
             Console.ForegroundColor = CurrentHeaderColor;
         }
         else if (preset == ColorPreset.Divider)
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = CurrentBackgroundColor;
             Console.ForegroundColor = CurrentDividerColor;
         }
         else if (preset == ColorPreset.Favorites)
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = CurrentBackgroundColor;
             Console.ForegroundColor = CurrentFavoritesColor;
         }
         else if (preset == ColorPreset.PreviewTitle)
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = CurrentBackgroundColor;
             Console.ForegroundColor = CurrentPreviewTitleColor;
         }
         else if (preset == ColorPreset.EditorTitle)
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = CurrentBackgroundColor;
             Console.ForegroundColor = CurrentEditorTitleColor;
         }
         else if (preset == ColorPreset.HighlightInverted)
@@ -541,7 +535,6 @@ class ConsoleColors
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = PreviewBackgroundColor;
             Console.ForegroundColor = PreviewForegroundColor;
         }
         else if (preset == ColorPreset.NormalInverted)
@@ -553,35 +546,30 @@ class ConsoleColors
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = PreviewBackgroundColor;
             Console.ForegroundColor = PreviewHeaderColor;
         }
         else if (preset == ColorPreset.Divider)
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = PreviewBackgroundColor;
             Console.ForegroundColor = PreviewDividerColor;
         }
         else if (preset == ColorPreset.Favorites)
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = PreviewBackgroundColor;
             Console.ForegroundColor = PreviewFavoritesColor;
         }
         else if (preset == ColorPreset.PreviewTitle)
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = PreviewBackgroundColor;
             Console.ForegroundColor = PreviewPreviewTitleColor;
         }
         else if (preset == ColorPreset.EditorTitle)
         {
             // TEST
             Console.ResetColor();
-            //Console.BackgroundColor = PreviewBackgroundColor;
             Console.ForegroundColor = PreviewEditorTitleColor;
         }
         else if (preset == ColorPreset.HighlightInverted)
@@ -605,34 +593,6 @@ class ConsoleColors
 
     #region Change color settings with preview and save
     private static int _previewColorIndex;
-
-    public static ConsoleColor GetCurrentPreviewColor(int propertyIndex)
-    {
-        // Get the index for the specified property
-        _previewColorIndex = GetIndexFromColor(GetCurrentColorFromIndex(propertyIndex));
-        // Set preview
-        SetPreviewColorFromIndex(propertyIndex, _previewColorIndex);
-        // Return the current color
-        return GetColorFromIndex(_previewColorIndex);
-    }
-
-    // public static ConsoleColor GetNextPreviewColor(int propertyIndex)
-    // {
-    //     // Get the index for the specified property
-    //     previewColorIndex = GetIndexFromColor(GetPreviewColorFromIndex(propertyIndex));
-    //     if (previewColorIndex < 15)
-    //     {
-    //         previewColorIndex += 1;
-    //     }
-    //     else
-    //     {
-    //         previewColorIndex = 0;
-    //     }
-    //     // Set preview
-    //     SetPreviewColorFromIndex(propertyIndex, previewColorIndex);
-    //     // Return the current color
-    //     return GetColorFromIndex(previewColorIndex);
-    // }
 
 
     public static void SetNextPreviewColor(int propertyIndex)
@@ -681,24 +641,6 @@ class ConsoleColors
         {
             return false;
         }
-    }
-
-    public static ConsoleColor GetPreviousPreviewColor(int propertyIndex)
-    {
-        // Get the index for the specified property
-        _previewColorIndex = GetIndexFromColor(GetPreviewColorFromIndex(propertyIndex));
-        if (_previewColorIndex > 0)
-        {
-            _previewColorIndex -= 1;
-        }
-        else
-        {
-            _previewColorIndex = 15;
-        }
-        // Set preview
-        SetPreviewColorFromIndex(propertyIndex, _previewColorIndex);
-        // Return the current color
-        return GetColorFromIndex(_previewColorIndex);
     }
 
     public static void SetPreviousPreviewColor(int propertyIndex)

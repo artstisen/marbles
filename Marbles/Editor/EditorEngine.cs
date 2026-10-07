@@ -84,7 +84,6 @@ internal sealed partial class EditorEngine
     /// </summary>
     internal bool HighlightSearch { get; private set; }
 
-    internal string SearchText => _lastSearch;
     private EditorRequest _request;
     private TextPos _stepCursor; // Where the cursor was before the current change
     private EditorMode _commandReturnMode;

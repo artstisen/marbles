@@ -61,8 +61,6 @@ internal static class DialogText
     public const string CaptionsFavorites = "FAVORITES";
     public const string CaptionsSession = "SESSION HISTORY";
     public const string CaptionsSearch = "Search";
-    public const string CaptionsContentSearch = "Content search";
-    public const string CaptionsEnterNumber = "Enter number";
     public const string CaptionsAll = "ALL";
     public const string EditTitle = "Edit title";
     public const string CaptionsDelete = "Delete";
@@ -95,7 +93,6 @@ internal static class DialogText
     public const string TabBrackets = "(Tab)";
     public const string SortOptionDateChanged = "Date changed";
     public const string FavoritesSortColumn = "Date changed/Custom";
-    public const string SessionSortColumn = "";
     public const string CaptionsKeyError = "Keyboard";
 
     // Mode texts
@@ -105,12 +102,7 @@ internal static class DialogText
     public const string EnterFileNameAndPressEnter = "Enter file name and press Enter";
     public const string ChangeFileNameAndPressEnter = "Change file name and press Enter";
     public const string EnterPathAndPressEnter = "Enter absolute directory path and press Enter";
-    public const string PressTheDesiredKey = "Press the desired key";
 
-    // Keyboard
-    public const string CtrlPlus = "CTRL+";
-    public const string ShiftPlus = "SHIFT+";
-    public const string CtrlShift = "CTRL+SHIFT+";
     public const string Escape = "Esc";
     public const string Spacebar = "Spacebar";
 
@@ -123,10 +115,6 @@ internal static class DialogText
     public const string NotAvailable = "N/A";
     public const string SavIndicator = "Unsaved";
 
-    public const string MemoryIndicatorLineCopy = "String memory:";
-
-    //public const string MemoryIndicatorRepeat = "Repeat:";
-    //public const string MemoryIndicatorRepeat = "CTRL+K:";
     public const string ExtExample = "[Example]";
     public const string PaginationLeftRight = "<- ->";
     public const string BrowseUpDown = "Up/Down";
@@ -136,8 +124,6 @@ internal static class DialogText
     public const string HitAnyKeyOrEscape = "[Press a key to continue/Esc to exit]";
     public const string PressEscToExitP = "(Press Esc to exit)";
     public const string PressEscToExitS = "[Press Esc to exit]";
-    public const string PressEscToExit = "Press Esc to exit";
-    public const string PressStoRetryEscToExit = "Press S to retry/Esc to exit";
     public const string PressEscSpaceToExit = "[Press Esc or Spacebar to cancel]";
 
     // Yes/No dialogs
@@ -154,14 +140,11 @@ internal static class DialogText
     public const string MoveFileYn = "Move selected file? " + YesNo;
     public const string DeleteFileYn = "Delete selected file? " + YesNo;
     public const string CreateTransfer = "Prepare transfer? " + YesNo;
-    //public const string ToggleRanking = "Enable ranking? " + YesNo;
 
-    //public const string SaveChangesYN = "Save changes? " + YesNo;
     public const string SaveChangesYnCancel = "Save changes? " + YesNoCancel;
     public const string SaveChangesYn = "Save changes? " + YesNo;
     public const string ExitYn = "Exit? " + YesNo;
     public const string RestartYn = "Restart Marbles? " + YesNo;
-    public const string EditorDisableUndoCache = "Disable undo cache? " + YesNo;
     public const string ExportYn = "Export as .txt? " + YesNo;
     public const string DeleteEntryYn = "Delete entry? " + YesNo;
     public const string DeleteEntryYnConfirm = "Confirm deletion: " + YesNo;
@@ -193,8 +176,6 @@ internal static class DialogText
     public const string TransferC = "[B] Discard transfer";
     public const string TransferD = "[Esc] Cancel";
 
-    // Additional dialog texts
-    public const string EditorDisableUndoCacheNote = "This operation will clear the current undo cache";
     public const string ImportYnNote = "Entry text is imported from ";
     public const string ExportYnNote = "Entry text is exported to ";
     public const string SelectOption = "Select option...";
@@ -222,7 +203,6 @@ internal static class DialogText
 
     public const string CurrentBackupPathColon = "Current path: ";
 
-    //public const string TotalCountColon = "Total count: ";
     public const string AttentionColon = "Attention: ";
 
     // Log
@@ -239,7 +219,6 @@ internal static class DialogText
     public const string InitUpdateDimensions = "Updating output variables...";
     public const string InitDirectoryCheckError = "Directory check failed: ";
 
-    //public const string InitClearingFields = "Clearing program memory...";
     public const string DirectoryCreated = "Directory created";
     public const string DefaultSettings = "Default settings";
 
@@ -267,7 +246,6 @@ internal static class DialogText
     public const string NoFavoritesFound = "No favorites found";
     public const string NoSessionData = "No session data";
     public const string NoEntriesSelected = "No entries selected";
-    public const string UnableToFind = "Unable to find";
     public const string EntryDeleted = "Entry deleted";
     public const string FileDeleted = "File deleted";
     public const string BackupDisabled = "Backup disabled";
@@ -275,10 +253,6 @@ internal static class DialogText
     public const string Saving = "Saving...";
     public const string FileNoEntries = "File contains no entries";
     public const string InvalidBackupPath = "Invalid backup path";
-    public const string EditorScrollIndicator = "Scroll indicator: ";
-    public const string EditorUndoCache = "Undo cache: ";
-    public const string StatusDisabled = "Disabled";
-    public const string StatusEnabled = "Enabled";
 
     // Un-styled status messages
     public const string LoadComplete = "Load complete.";

@@ -87,7 +87,6 @@ internal class MergeTool
             return;
         }
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        //Init.Log("File merging initiated...");
         _selectedFileName = string.Empty;
         _sourceFileName1 = string.Empty;
         _sourceFileName2 = string.Empty;
@@ -264,7 +263,6 @@ internal class MergeTool
                                             _targetEntries.Sort((x, y) =>
                                                 DateTime.Compare(Convert.ToDateTime(y.DateCreated),
                                                     Convert.ToDateTime(x.DateCreated)));
-                                            //_targetEntries.Sort(delegate (Entry x, Entry y) { return DateTime.Compare(Convert.ToDateTime(y.DateCreated), Convert.ToDateTime(x.DateCreated)); });
                                         }
                                         catch
                                         {

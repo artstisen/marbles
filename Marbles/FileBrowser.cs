@@ -81,20 +81,6 @@ public class FileBrowser
         return false;
     }
 
-    // internal static string GetSubfolderCount()
-    // {
-    //     // Refresh folders
-    //     CheckSubfolders();
-    //     if (_subFolderIndex >= 0)
-    //     {
-    //         return (_subFolderIndex + 1) + "/" + _subFolders.Count + " ";
-    //     }
-    //     else
-    //     {
-    //         return string.Empty;
-    //     }
-    // }
-
     private static int _subFolderIndex = -1;
 
     // Used from init: Match current subfolder to get the index (used when loading settings to match index for selection)

@@ -61,13 +61,6 @@ internal static class Keyboard
         }
     }
 
-    public static ConsoleKeyInfo AwaitAnyKeyCenterScreen()
-    {
-        Tools.WriteCenterScreen(DialogText.HitAnyKeyToContinue);
-        _c = Console.ReadKey(true);
-        return _c;
-    }
-    
     public static ConsoleKeyInfo AwaitAnyKeyWithInstructions(string[] text)
     {
         Tools.WriteCenterScreen(text);

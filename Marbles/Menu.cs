@@ -173,16 +173,13 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                //Console.WriteLine(" Change color scheme");
                 WriteMenuItem(":scheme", "Unlock color scheme ", false);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
                 Console.Write("[LOCKED]\n");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                //Console.WriteLine(" (Press Up/Down to select, Left/Right to change)");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample, "Text",
                     ConsoleColors.ColorPreset.Normal, true, false);
-                //WriteExtendedMenuItem("  <- ->", DialogText.ExtExample, "Text", ConsoleColors.ColorPreset.Normal, true);
                 WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample,
                     "Logo, login label, directory browser, editor repeat",
                     ConsoleColors.ColorPreset.HeaderColor, true, false);
@@ -202,7 +199,6 @@ internal static class Menu
                     ConsoleColors.ColorPreset.WarningInverted, true, false);
                 WriteMenuItem(new string(' ', 2) + "h j k l", "Select and change (as the arrow keys)", true);
                 WriteMenuItem(new string(' ', 2) + "T", "Toggle Text/Background", true);
-                //WriteMenuItem(new string(' ', 2) + "P", "Cycle color presets", true);
                 WriteMenuItem(new string(' ', 2) + "E", "Reset", true);
                 WriteMenuItem(new string(' ', 2) + "Enter", "Save and exit", true);
                 WriteMenuItem(new string(' ', 2) + "Esc", "Cancel (exit)", true);
@@ -230,7 +226,6 @@ internal static class Menu
                     Actions.GetHighlightPresetFromCurrentType(Entries.CurrentEntry,
                         ConsoleColors.ColorPreset.Favorites),
                     true, true);
-                //WriteMenuItem("F", "Favorite" + GetFavoriteState(), true);
                 WriteMenuItem("D", "Duplicate", true);
                 WriteMenuItem("S /", "Content search", true);
             }
@@ -619,24 +614,6 @@ internal static class Menu
         }
     }
 
-    // Secondary menu item used for inserting items at odd locations
-    // public static void WriteMenuItem(string key, string description, int leftMargin)
-    // {
-    //     Tools.CursorReturn();
-    //     if (leftMargin > 0)
-    //     {
-    //         Tools.CursorRight(leftMargin);
-    //     }
-    //     Console.Write(" " + key);
-    //     if (description.Length > 0)
-    //     {
-    //         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-    //         Console.Write(" " + new string('.', 13 - key.Length));
-    //         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-    //         Console.Write(" " + description);
-    //     }
-    // }
-
     private static void WriteExtendedMenuItem(string key, string example, string description,
         ConsoleColors.ColorPreset preset, bool newLine, bool flipExample)
     {
@@ -687,8 +664,6 @@ internal static class Menu
     private static void LoadCursorPosition()
     {
         Tools.SetCursorEx(_tempCursorMemoryTop, _tempCursorMemoryLeft);
-        //Console.CursorTop = tempCursorMemoryTop;
-        //Console.CursorLeft = tempCursorMemoryLeft;
     }
 
     public static void FloatingMenu(string caption, List<Shortcut> shortcuts, int top, int left, bool dockRight)
@@ -805,8 +780,6 @@ internal static class Menu
     private static void ModeLabelLoadCursor()
     {
         Tools.SetCursorEx(_tempModeLabelCursorMemoryTop, _tempModeLabelCursorMemoryLeft);
-        //Console.CursorTop = ;
-        //Console.CursorLeft = ;
     }
 
     private static string _modeTitleMemory = string.Empty;
@@ -939,44 +912,6 @@ internal static class Menu
         Console.Write(new string(' ', DialogText.SavIndicator.Length));
     }
 
-    internal static void WriteStringMemoryAction(string text1, string text2)
-    {
-        Tools.SaveCursorPosition(8);
-        Tools.CursorTopLeft();
-        Tools.CursorDown(3);
-        Tools.CursorRight(Init.LineWidth - (text1.Length + 5));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(text1);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Tools.LoadCursorPosition(8);
-
-        if (!string.IsNullOrEmpty(text2))
-        {
-            Tools.SaveCursorPosition(8);
-            Tools.CursorTopLeft();
-            Tools.CursorDown(4);
-            Tools.CursorRight(Init.LineWidth - (text2.Length + 2));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-            Console.Write(text2);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Tools.LoadCursorPosition(8);
-        }
-    }
-
-    internal static void WriteRepeatCommand(string text1, string text2)
-    {
-        Tools.SaveCursorPosition(8);
-        Tools.CursorTopLeft();
-        Tools.CursorDown(3);
-        Tools.CursorRight(5);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.Write(text1);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Console.Write(text2);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Tools.LoadCursorPosition(8);
-    }
-
     private static void WriteCenterText(string label)
     {
         Tools.SaveCursorPosition(0);
@@ -990,66 +925,6 @@ internal static class Menu
         }
 
         Tools.LoadCursorPosition(0);
-    }
-
-    internal static void WriteBottomText(string label, bool inverted)
-    {
-        Tools.SaveCursorPosition(0);
-        Tools.CursorTopLeft();
-        if (label.Length > 0)
-        {
-            Tools.CursorReturn();
-
-            Tools.CursorDown(Init.LineCount - 1);
-            Tools.CursorRight();
-            if (inverted)
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-            }
-
-            Console.Write(label);
-            if (inverted)
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            }
-        }
-
-        Tools.LoadCursorPosition(0);
-    }
-
-    /// <summary>
-    /// Creates a 1-line top prompt for text input (search, numeric input etc.)
-    /// </summary>
-    /// <param name="caption"></param>
-    /// <param name="additionalText"></param>
-    /// <param name="width"></param>
-    /// <param name="colorPreset"></param>
-    internal static void WriteInputPrompt(string caption, string additionalText, int width,
-        ConsoleColors.ColorPreset colorPreset)
-    {
-        Tools.CursorTopLeft();
-        ConsoleColors.SetColors(colorPreset);
-        Tools.CursorRight(1);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', width) + AsciiStyles.GetTopCorner());
-        Tools.CursorReturn();
-        Tools.CursorRight(3);
-        Console.Write(" " + caption + " ");
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        Tools.CursorRight(1);
-        Console.Write("|" + new string(' ', width) + "|");
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        Tools.CursorRight(1);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', width) + AsciiStyles.GetBottomCorner());
-        Tools.CursorReturn();
-        Tools.CursorRight((width - 1) - additionalText.Length);
-        Console.Write(" " + additionalText + " ");
-
-        // Place cursor
-        Tools.CursorTopLeft();
-        Tools.CursorDown();
-        Tools.CursorRight(3);
     }
 
     private static void DisplayFooterMessage(string msg)

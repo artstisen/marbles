@@ -29,27 +29,11 @@ internal static class Init
     {
         LineWidth = width is >= MinLineWidth and <= MaxLineWidth ? width : MinLineWidth;
 
-        // if (width >= DefaultLineWidth && width <= LineWidthPreset4)
-        // {
-        //     LineWidth = width;
-        // }
-        // else
-        // {
-        //     LineWidth = DefaultLineWidth;
-        // }
     }
 
     internal static void SetLineCount(byte count)
     {
         LineCount = count is >= MinLineCount and <= MaxLineCount ? count : MinLineCount;
-        // if (count >= DefaultLineCount && count <= LineCountPreset5)
-        // {
-        //     LineCount = count;
-        // }
-        // else
-        // {
-        //     LineCount = DefaultLineCount;
-        // }
     }
 
     internal static void IncreaseLineCount()
@@ -83,75 +67,6 @@ internal static class Init
             LineWidth -= 1;
         }
     }
-
-    // internal static void SetOutputLineWidthFromPreset(int presetIndex)
-    // {
-    //     switch (presetIndex)
-    //     {
-    //         // Set line width
-    //         case >= 1 and <= 5:
-    //             switch (presetIndex)
-    //             {
-    //                 case 1:
-    //                     SetLineWidth(DefaultLineWidth);
-    //                     break;
-    //                 case 2:
-    //                     SetLineWidth(LineWidthPreset1);
-    //                     break;
-    //                 case 3:
-    //                     SetLineWidth(LineWidthPreset2);
-    //                     break;
-    //                 case 4:
-    //                     SetLineWidth(LineWidthPreset3);
-    //                     break;
-    //                 case 5:
-    //                     SetLineWidth(LineWidthPreset4);
-    //                     break;
-    //             }
-    //
-    //             break;
-    //         // Reset dimensions
-    //         case 0:
-    //             SetDefaultOutputDimensions();
-    //             break;
-    //     }
-    // }
-
-    // internal static void SetOutputLineCountFromPreset(int presetIndex)
-    // {
-    //     switch (presetIndex)
-    //     {
-    //         // Set line count
-    //         case >= 1 and <= 6:
-    //             switch (presetIndex)
-    //             {
-    //                 case 1:
-    //                     SetLineCount(DefaultLineCount);
-    //                     break;
-    //                 case 2:
-    //                     SetLineCount(LineCountPreset1);
-    //                     break;
-    //                 case 3:
-    //                     SetLineCount(LineCountPreset2);
-    //                     break;
-    //                 case 4:
-    //                     SetLineCount(LineCountPreset3);
-    //                     break;
-    //                 case 5:
-    //                     SetLineCount(LineCountPreset4);
-    //                     break;
-    //                 case 6:
-    //                     SetLineCount(LineCountPreset5);
-    //                     break;
-    //             }
-    //
-    //             break;
-    //         // Reset dimensions
-    //         case 0:
-    //             SetDefaultOutputDimensions();
-    //             break;
-    //     }
-    // }
 
 
     private const char TempOutputCornerChar = '+';
@@ -331,7 +246,6 @@ internal static class Init
         // Load settings
         if (!FileIo.LoadSettings())
         {
-            //Log(FileIo.DirectoryCheckErrorMessage + ", " + FileIo.LoadSettingsErrorMessage);
             Log(DialogText.InitFailed, true);
             Log(DialogText.InitLoadingSettingsError, true);
             Log("(reverting to default)", true);

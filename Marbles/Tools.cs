@@ -96,44 +96,6 @@ internal static class Tools
         return input;
     }
 
-    // Split long line
-    // private static string _tempLine = string.Empty;
-    // public static string SplitText(string text, int partLength, string margin)
-    // {
-    //     if (!string.IsNullOrEmpty(text) && partLength > 0)
-    //     {
-    //
-    //         _tempLine = "";
-    //         var partCount = Math.Ceiling((double)text.Length / partLength);
-    //         // Return text if one line
-    //         if (partCount < 2)
-    //         {
-    //             return text;
-    //         }
-    //
-    //         // Else split the string
-    //         for (int i = 0; i < partCount; i++)
-    //         {
-    //             var index = i * partLength;
-    //             var lengthLeft = Math.Min(partLength, text.Length - index);
-    //             if (i == partCount - 1) // Omit inserting new line on the last line
-    //             {
-    //                 _tempLine += string.Concat(margin, text.AsSpan(index, lengthLeft));
-    //             }
-    //             else
-    //             {
-    //                 _tempLine += string.Concat(margin, text.AsSpan(index, lengthLeft), Entries.NewLineCharString);
-    //             }
-    //
-    //         }
-    //         return _tempLine;
-    //     }
-    //     else
-    //     {
-    //         return text;
-    //     }
-    // }
-
     // Not null or empty
     public static bool IsValid(string input)
     {
@@ -167,11 +129,6 @@ internal static class Tools
     public static bool IsNumeric(string s)
     {
         return Regex.IsMatch(s, @"^\d+$");
-    }
-
-    public static bool IsAzChar(string s)
-    {
-        return Regex.IsMatch(s, @"^[a-zA-Z]+$");
     }
 
 
@@ -618,19 +575,6 @@ internal static class Tools
         }
     }
 
-    internal static void FirstLineMemoryIndex()
-    {
-        _currentLineMemoryIndex = 0;
-    }
-
-    internal static void LastLineMemoryIndex()
-    {
-        if (_stringMemory.Count > 0)
-        {
-            _currentLineMemoryIndex = _stringMemory.Count - 1;
-        }
-    }
-
     internal static void ClearLineMemory()
     {
         if (_stringMemory.Count > 0)
@@ -643,30 +587,6 @@ internal static class Tools
 
         _stringMemory.Clear();
         _currentLineMemoryIndex = 0;
-    }
-
-    // Returns:
-    // 0 = OK
-    // 1 = String already in memory
-    // 2 = String invalid
-    internal static int AddToLineMemory(string text)
-    {
-        if (!string.IsNullOrEmpty(text))
-        {
-            if (!AlreadyInLineMemory(text)) // Only ad strings that are not currently added
-            {
-                _stringMemory.Add(text);
-                LimitLineMemory();
-                _currentLineMemoryIndex = _stringMemory.Count - 1;
-                return 0;
-            }
-            else
-            {
-                return 1;
-            }
-        }
-
-        return 2;
     }
 
     /// <summary>
@@ -696,11 +616,6 @@ internal static class Tools
         return (_currentLineMemoryIndex + 1) + "/" + _stringMemory.Count;
     }
 
-    private static bool AlreadyInLineMemory(string text)
-    {
-        return _stringMemory.Count > 0 && _stringMemory.Any(t => t == text);
-    }
-
     private static void LimitLineMemory()
     {
         if (_stringMemory.Count > MaxLineMemoryCount)
@@ -717,21 +632,6 @@ internal static class Tools
         }
 
         return false;
-    }
-
-    internal static string GetLineMemoryCount()
-    {
-        return DialogText.MemoryIndicatorLineCopy + " " + (_currentLineMemoryIndex + 1) + "/" + _stringMemory.Count;
-    }
-
-    internal static string GetTruncatedLineMemoryPreview()
-    {
-        if (_stringMemory.Count > 0)
-        {
-            return TruncateString(GetCurrentLineFromLineMemory(), 64, true);
-        }
-
-        return DialogText.NotAvailable;
     }
 
     internal static string GetCurrentLineFromLineMemory()
@@ -959,16 +859,6 @@ internal static class Tools
             Menu.WriteMenuItem(DialogText.BrowseUpDown,
                 DialogText.ExtSelectDirectory + ": ",
                 false); // Removed the GetSubfolderCount() as it clutters the scene
-            // Write directory name
-            // if (FileActions.IsLockedForMove())
-            // {
-            //     ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-            //     Console.Write(" ");
-            // }
-            // else
-            // {
-            //     ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-            // }
             
             if (!FileBrowser.HasSubFolders()) ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             else
@@ -998,16 +888,6 @@ internal static class Tools
                 }
             }
 
-            // if (FileBrowser.HasSubFolders())
-            // {
-            //     ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-            //     Console.Write(" " + TruncateString(FileIo.GetDataAndSubFolderForDisplay(), 35, true) + " ");
-            // }
-            // else
-            // {
-            //     Console.Write(TruncateString(FileIo.GetDataAndSubFolderForDisplay(), 35, true));
-            // }
-            // Write file count
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             if (FileActions.IsLockedForMove())
             {
@@ -1042,7 +922,6 @@ internal static class Tools
             // Indicate loading
             // Try to load file
             Console.WriteLine(DialogText.Loading);
-            //Menu.StatusMessage(, false, true, false, string.Empty, string.Empty, false); // Clear screen
             _load = new LoadStatus();
             _load = FileIo.LoadEntries();
             if (_load.Success)
@@ -1057,7 +936,6 @@ internal static class Tools
                 // Save settings to update the current loaded data file name
                 FileIo.SaveSettings();
                 Vignette.CheckVignette();
-                //Menu.StatusMessage(DialogText.LoadComplete, false, false, false, string.Empty, string.Empty, false);
                 Mode.SetMode(Mode.SelectedMode.Manage);
                 Menu.DisplayWelcomeMessage = true;
                 Menu.DrawTopMenu(true, true, false);
@@ -1110,7 +988,6 @@ internal static class Tools
         }
 
         ClearLineMemory();
-        TextCopy = string.Empty;
         Entries.ClearAllEntries(true);
         Entries.ResetCurrentEntry();
         Entries.ResetRecallId();
@@ -1658,23 +1535,6 @@ internal static class Tools
     }
 
 
-    public static void CursorHome()
-    {
-        InitializeCursor();
-
-        if (_columnPosition > 0)
-        {
-            _columnPosition = 0;
-        }
-
-        if (_rowPosition > 0)
-        {
-            _rowPosition = 0;
-        }
-
-        Refresh();
-    }
-
     public static void CursorReturn()
     {
         InitializeCursor();
@@ -1910,11 +1770,6 @@ internal static class Tools
 
     #endregion
 
-    #region Clipboard
-
-    internal static string TextCopy = string.Empty;
-
-    #endregion
 }
 
 internal class CursorMemory
