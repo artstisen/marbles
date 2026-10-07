@@ -24,3 +24,6 @@ Thumbs.db
 
 # Published builds
 publish/
+
+# Spelling dictionaries (supplied by the user, not part of the source)
+spell/
