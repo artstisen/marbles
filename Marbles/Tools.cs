@@ -1355,9 +1355,18 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("5j 3w ...", "A number repeats a movement or command", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Search", true));
             _shortcutList.Add(new Shortcut("/text ?text", "Search forwards/backwards", false));
+            _shortcutList.Add(new Shortcut("/\\d+", "Regular expressions can be used", false));
+            _shortcutList.Add(new Shortcut("/Text", "Uppercase letters make the search match case", false));
             _shortcutList.Add(new Shortcut("n N", "Next/Previous match", false));
             _shortcutList.Add(new Shortcut("*", "Search for the word under the cursor", false));
             _shortcutList.Add(new Shortcut("Esc :noh", "Remove search highlighting", false));
+            _shortcutList.Add(new Shortcut(string.Empty, "Replace (command line)", true));
+            _shortcutList.Add(new Shortcut(":s/old/new/", "Replace first \"old\" on the line with \"new\"", false));
+            _shortcutList.Add(new Shortcut(":s/old/new/g", "Replace all on the line", false));
+            _shortcutList.Add(new Shortcut(":%s/old/new/g", "Replace all in the document", false));
+            _shortcutList.Add(new Shortcut(":2,9s/old/new/g", "Replace all on line 2 to 9", false));
+            _shortcutList.Add(new Shortcut("V ... :s/old/new/g", "Replace all on the selected lines", false));
+            _shortcutList.Add(new Shortcut("  & \\1 \\n", "In \"new\": the match/group 1/line break", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Editing (Normal mode)", true));
             _shortcutList.Add(new Shortcut("x X", "Delete character under/before the cursor", false));
             _shortcutList.Add(new Shortcut("r.", "Replace character with \".\"", false));
@@ -1398,7 +1407,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":cal", "Insert calendar...", false));
             _shortcutList.Add(new Shortcut(":pw", "Insert generated strong password", false));
             _shortcutList.Add(new Shortcut(":trim", "Trim blank space (line start/end)", false));
-            _shortcutList.Add(new Shortcut(":%y :%d", "Yank all/Delete all", false));
+            _shortcutList.Add(new Shortcut(":%y :%d :2,9d", "Yank all/Delete all/Delete line 2 to 9", false));
             _shortcutList.Add(new Shortcut(":clear", "Clear all", false));
         }
 

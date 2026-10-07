@@ -1,4 +1,7 @@
-﻿namespace Marbles;
+﻿using System.Text;
+using System.Text.RegularExpressions;
+
+namespace Marbles;
 
 internal enum EditorMode
 {
@@ -87,6 +90,8 @@ internal sealed partial class EditorEngine
     private EditorMode _commandReturnMode;
     private string _lastSearch = string.Empty;
     private bool _searchForward = true;
+    private int _selectionFirstLine; // The lines of the last selection a command was started from ("'<" and "'>")
+    private int _selectionLastLine;
 
     // The cell the cursor tries to stay on when moving up and down (-1 = the cell it is on)
     private int _desiredCell = -1;
@@ -527,10 +532,45 @@ internal sealed partial class EditorEngine
     private void ExecuteCommand(string command)
     {
         if (command.Length == 0) return;
-        // A number is a line to go to
-        if (int.TryParse(command, out var lineNumber))
+        // Commands may start with the lines to work on, like ":%s/a/b/" or ":2,5d"
+        if (!ParseRange(ref command, out var range))
         {
-            GoToLine(lineNumber - 1);
+            SetError("Invalid range");
+            return;
+        }
+
+        if (range.HasValue)
+        {
+            var (first, last) = range.Value;
+            if (command.Length == 0)
+            {
+                // Only a line number: go to it
+                GoToLine(last);
+            }
+            else if (command[0] == 's' && command.Length > 1 && !char.IsLetterOrDigit(command[1]))
+            {
+                Substitute(command[1..], first, last);
+            }
+            else if (command is "d" or "delete")
+            {
+                Cursor = new TextPos(first, 0);
+                ApplyOperatorToLines('d', first, last);
+            }
+            else if (command is "y" or "yank")
+            {
+                ApplyOperatorToLines('y', first, last);
+            }
+            else
+            {
+                SetError("Not an editor command: " + command);
+            }
+
+            return;
+        }
+
+        if (command[0] == 's' && command.Length > 1 && !char.IsLetterOrDigit(command[1]))
+        {
+            Substitute(command[1..], Cursor.Line, Cursor.Line);
             return;
         }
 
@@ -560,9 +600,6 @@ internal sealed partial class EditorEngine
             case "noh":
             case "nohlsearch":
                 HighlightSearch = false;
-                break;
-            case "$":
-                GoToLine(Buffer.LineCount - 1);
                 break;
             case "u":
             case "undo":
@@ -600,18 +637,67 @@ internal sealed partial class EditorEngine
             case "putall":
                 PutAllRegisters();
                 break;
-            case "%y":
-                StoreRegister(Buffer.GetText(), true, false);
-                Message = Buffer.LineCount + " lines yanked";
-                break;
-            case "%d":
-                StoreRegister(Buffer.GetText(), true, false);
-                ClearAll();
-                break;
             default:
                 SetError("Not an editor command: " + command);
                 break;
         }
+    }
+
+    // Read the lines a command works on from the start of the command: "%" (all lines), a line ("5", "." for
+    // the current, "$" for the last, "'<" and "'>" for the last selection) or two lines separated by a comma
+    private bool ParseRange(ref string command, out (int First, int Last)? range)
+    {
+        range = null;
+        var last = Buffer.LineCount - 1;
+        var index = 0;
+        if (command[0] == '%')
+        {
+            range = (0, last);
+            command = command[1..].TrimStart();
+            return true;
+        }
+
+        int? ReadLine(string text)
+        {
+            if (index >= text.Length) return null;
+            if (char.IsAsciiDigit(text[index]))
+            {
+                var start = index;
+                while (index < text.Length && char.IsAsciiDigit(text[index])) index++;
+                return int.TryParse(text.AsSpan(start, index - start), out var number)
+                    ? Math.Clamp(number - 1, 0, last)
+                    : last;
+            }
+
+            switch (text[index])
+            {
+                case '.':
+                    index++;
+                    return Cursor.Line;
+                case '$':
+                    index++;
+                    return last;
+                case '\'' when index + 1 < text.Length && text[index + 1] is '<' or '>':
+                    index += 2;
+                    return Math.Min(last, text[index - 1] == '<' ? _selectionFirstLine : _selectionLastLine);
+                default:
+                    return null;
+            }
+        }
+
+        var first = ReadLine(command);
+        if (first == null) return true; // No range
+        var second = first;
+        if (index < command.Length && command[index] == ',')
+        {
+            index++;
+            second = ReadLine(command);
+            if (second == null) return false;
+        }
+
+        range = (Math.Min(first.Value, second.Value), Math.Max(first.Value, second.Value));
+        command = command[index..].TrimStart();
+        return true;
     }
 
     private void GoToLine(int line)
@@ -637,13 +723,40 @@ internal sealed partial class EditorEngine
 
     #endregion
 
-    #region Search
+    #region Search and replace
 
-    private void StartSearch(string text, bool forward)
+    private static readonly TimeSpan SearchTimeout = TimeSpan.FromSeconds(2);
+    private Regex? _searchRegex;
+
+    /// <summary>
+    /// Create the regular expression for a search pattern. Like Vim's "smartcase" the search ignores case
+    /// unless the pattern has uppercase letters. A pattern that is not a valid expression is searched for as text.
+    /// </summary>
+    private static Regex CreateRegex(string pattern, bool? ignoreCase = null)
     {
-        if (text.Length == 0) text = _lastSearch; // Repeat the last search
-        if (text.Length == 0) return;
-        _lastSearch = text;
+        var options = RegexOptions.CultureInvariant;
+        if (ignoreCase ?? !pattern.Any(char.IsUpper)) options |= RegexOptions.IgnoreCase;
+        try
+        {
+            return new Regex(pattern, options, SearchTimeout);
+        }
+        catch (ArgumentException)
+        {
+            return new Regex(Regex.Escape(pattern), options, SearchTimeout);
+        }
+    }
+
+    private void SetSearch(string pattern)
+    {
+        _lastSearch = pattern;
+        _searchRegex = CreateRegex(pattern);
+    }
+
+    private void StartSearch(string pattern, bool forward)
+    {
+        if (pattern.Length == 0) pattern = _lastSearch; // Repeat the last search
+        if (pattern.Length == 0) return;
+        SetSearch(pattern);
         _searchForward = forward;
         HighlightSearch = true;
         if (FindNext(Cursor, forward, out var found))
@@ -652,43 +765,58 @@ internal sealed partial class EditorEngine
         }
         else
         {
-            SetError("Pattern not found: " + text);
+            SetError("Pattern not found: " + pattern);
         }
     }
 
     /// <summary>
-    /// Find the next match of the last search (the search wraps around the document and ignores case)
+    /// Find the next match of the last search (the search wraps around the document)
     /// </summary>
     private bool FindNext(TextPos from, bool forward, out TextPos found)
     {
         found = from;
-        if (_lastSearch.Length == 0) return false;
-        const StringComparison comparison = StringComparison.OrdinalIgnoreCase;
+        if (_searchRegex == null) return false;
         var count = Buffer.LineCount;
-        // The line of the cursor is searched twice: first after the cursor and last before it
-        for (var i = 0; i <= count; i++)
+        try
         {
-            var lineIndex = ((forward ? from.Line + i : from.Line - i) % count + count) % count;
-            var line = Buffer[lineIndex];
-            int index;
-            if (forward)
+            // The line of the cursor is searched twice: first after the cursor and last before it
+            for (var i = 0; i <= count; i++)
             {
-                var start = i == 0 ? Math.Min(from.Col + 1, line.Length) : 0;
-                index = line.IndexOf(_lastSearch, start, comparison);
-                if (i == count && index > from.Col) index = -1;
-            }
-            else
-            {
-                var start = i == 0 ? from.Col - 1 + _lastSearch.Length - 1 : line.Length - 1;
-                start = Math.Min(start, line.Length - 1);
-                index = start < 0 ? -1 : line.LastIndexOf(_lastSearch, start, comparison);
-                if (i == 0 && index >= from.Col) index = -1;
-                if (i == count && index < from.Col) index = -1;
-            }
+                var lineIndex = ((forward ? from.Line + i : from.Line - i) % count + count) % count;
+                var line = Buffer[lineIndex];
+                var index = -1;
+                if (forward)
+                {
+                    // The first match on the line (after the cursor when on its line). A match that the cursor
+                    // is inside is passed over as a whole, like Vim does
+                    foreach (Match match in _searchRegex.Matches(line))
+                    {
+                        if (i == 0 && match.Index <= from.Col) continue;
+                        if (i == count && match.Index > from.Col) break;
+                        index = match.Index;
+                        break;
+                    }
+                }
+                else
+                {
+                    // The last match on the line (before the cursor when on its line)
+                    foreach (Match match in _searchRegex.Matches(line))
+                    {
+                        if (i == 0 && match.Index >= from.Col) break;
+                        index = match.Index;
+                    }
 
-            if (index < 0) continue;
-            found = new TextPos(lineIndex, index);
-            return true;
+                    if (i == count && index < from.Col) index = -1;
+                }
+
+                if (index < 0) continue;
+                found = new TextPos(lineIndex, Math.Min(index, line.Length));
+                return true;
+            }
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            SetError("Search took too long");
         }
 
         return false;
@@ -699,16 +827,155 @@ internal sealed partial class EditorEngine
     /// </summary>
     internal IEnumerable<(int Start, int End)> SearchMatches(int line)
     {
-        if (!HighlightSearch || _lastSearch.Length == 0) yield break;
-        var s = Buffer[line];
-        var index = 0;
-        while (index < s.Length)
+        if (!HighlightSearch || _searchRegex == null) yield break;
+        MatchCollection matches;
+        try
         {
-            index = s.IndexOf(_lastSearch, index, StringComparison.OrdinalIgnoreCase);
-            if (index < 0) yield break;
-            yield return (index, index + _lastSearch.Length);
-            index += _lastSearch.Length;
+            matches = _searchRegex.Matches(Buffer[line]);
+            _ = matches.Count; // The matches are found here, so a timeout is caught
         }
+        catch (RegexMatchTimeoutException)
+        {
+            yield break;
+        }
+
+        foreach (Match match in matches)
+        {
+            if (match.Length > 0) yield return (match.Index, match.Index + match.Length);
+        }
+    }
+
+    // The ":s" command: "/pattern/replacement/flags" where the separator can be any punctuation character.
+    // Flags: g = all matches on each line (else only the first), i = ignore case, I = match case
+    private void Substitute(string arguments, int firstLine, int lastLine)
+    {
+        var parts = SplitUnescaped(arguments[1..], arguments[0]);
+        var pattern = parts[0].Length > 0 ? parts[0] : _lastSearch;
+        var replacement = parts.Count > 1 ? parts[1] : string.Empty;
+        var flags = parts.Count > 2 ? parts[2].Trim() : string.Empty;
+        if (pattern.Length == 0)
+        {
+            SetError("No previous search");
+            return;
+        }
+
+        if (flags.Any(flag => flag is not ('g' or 'i' or 'I')))
+        {
+            SetError("Unknown flags: " + flags);
+            return;
+        }
+
+        bool? ignoreCase = flags.Contains('i') ? true : flags.Contains('I') ? false : null;
+        var regex = CreateRegex(pattern, ignoreCase);
+        var global = flags.Contains('g');
+        replacement = ConvertReplacement(replacement);
+        SetSearch(pattern);
+        var substitutions = 0;
+        var lines = 0;
+        var cursorLine = -1;
+        try
+        {
+            // From the bottom, as a replacement with a line break changes the numbers of the lines after it
+            for (var i = Math.Min(lastLine, Buffer.LineCount - 1); i >= firstLine; i--)
+            {
+                var line = Buffer[i];
+                var matches = regex.Matches(line).Count;
+                if (matches == 0) continue;
+                var changed = regex.Replace(line, replacement, global ? -1 : 1);
+                substitutions += global ? matches : 1;
+                lines++;
+                if (changed == line) continue;
+                Delete(new TextPos(i, 0), new TextPos(i, line.Length));
+                Insert(new TextPos(i, 0), changed);
+                if (cursorLine < 0) cursorLine = i + changed.Count(c => c == TextBuffer.NewLine);
+                else cursorLine += changed.Count(c => c == TextBuffer.NewLine);
+            }
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            SetError("Search took too long");
+            return;
+        }
+
+        if (substitutions == 0)
+        {
+            SetError("Pattern not found: " + pattern);
+            return;
+        }
+
+        if (cursorLine >= 0) GoToLine(cursorLine);
+        Message = substitutions + (substitutions == 1 ? " substitution on " : " substitutions on ") + lines +
+                  (lines == 1 ? " line" : " lines");
+    }
+
+    // Split a text at a separator character, except where it is escaped with a backslash
+    private static List<string> SplitUnescaped(string text, char separator)
+    {
+        var parts = new List<string>();
+        var part = new StringBuilder();
+        for (var i = 0; i < text.Length; i++)
+        {
+            if (text[i] == '\\' && i + 1 < text.Length && text[i + 1] == separator)
+            {
+                part.Append(separator);
+                i++;
+            }
+            else if (text[i] == separator && parts.Count < 2)
+            {
+                parts.Add(part.ToString());
+                part.Clear();
+            }
+            else
+            {
+                part.Append(text[i]);
+            }
+        }
+
+        parts.Add(part.ToString());
+        return parts;
+    }
+
+    // Convert a replacement written the Vim way ("&" or "\0" for the match, "\1" for the first group, "\n" or
+    // "\r" for a line break) to the form used by .NET regular expressions
+    private static string ConvertReplacement(string replacement)
+    {
+        var result = new StringBuilder();
+        for (var i = 0; i < replacement.Length; i++)
+        {
+            var c = replacement[i];
+            if (c == '\\' && i + 1 < replacement.Length)
+            {
+                var next = replacement[++i];
+                if (char.IsAsciiDigit(next))
+                {
+                    result.Append("${").Append(next).Append('}');
+                }
+                else
+                {
+                    result.Append(next switch
+                    {
+                        'n' or 'r' => "\n",
+                        't' => new string(' ', TabWidth),
+                        '$' => "$$",
+                        _ => next.ToString()
+                    });
+                }
+            }
+            else if (c == '&')
+            {
+                result.Append("$&");
+            }
+            else if (c == '$')
+            {
+                result.Append("$$");
+            }
+            else
+            {
+                result.Append(c);
+            }
+        }
+
+        return result.ToString();
     }
 
     #endregion

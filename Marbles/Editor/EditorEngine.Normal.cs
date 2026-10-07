@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Marbles;
 
@@ -832,7 +833,20 @@ internal sealed partial class EditorEngine
 
             // Command line and search
             case ':':
-                OpenCommandLine(':');
+                if (IsVisual)
+                {
+                    // The command will work on the selected lines
+                    _selectionFirstLine = Math.Min(_visualAnchor.Line, Cursor.Line);
+                    _selectionLastLine = Math.Max(_visualAnchor.Line, Cursor.Line);
+                    Mode = EditorMode.Normal;
+                    OpenCommandLine(':');
+                    CommandText = "'<,'>";
+                }
+                else
+                {
+                    OpenCommandLine(':');
+                }
+
                 break;
             case '/':
             case '?':
@@ -844,7 +858,10 @@ internal sealed partial class EditorEngine
                 {
                     if (IsVisual) Mode = EditorMode.Normal;
                     Cursor = from;
-                    StartSearch(Buffer.GetText(from, end), cmd == '*');
+                    // Search for the whole word
+                    var word = Buffer.GetText(from, end);
+                    var boundary = char.IsLetterOrDigit(word[0]) || word[0] == '_' ? @"\b" : string.Empty;
+                    StartSearch(boundary + Regex.Escape(word) + boundary, cmd == '*');
                 }
 
                 break;
