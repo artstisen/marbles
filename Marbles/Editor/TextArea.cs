@@ -2,7 +2,7 @@
 
 namespace Marbles;
 
-/* Console Text Editor: TextArea v2.0 (LBS, 2026) */
+/* Console Text Editor: TextArea v2.0 (Lars Brandt Stisen, 2026) */
 /* The text area control places an editor in a rectangle of the console window. It reads the keyboard,
    passes the keys to the EditorEngine (which holds the text, the cursor and the Normal/Insert/Visual modes)
    and draws the result. Only the rows that have changed are written to the console.
