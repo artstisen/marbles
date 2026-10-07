@@ -287,6 +287,11 @@ internal static class DialogText
     public const string Loading = "Loading...";
     public const string Reading = "Reading...";
 
+    // Legacy data file conversion
+    public const string LegacyFileConverted = "Data file converted to the current file format";
+    public const string LegacyFileCopyColon = "A copy of the original data file was kept as: ";
+    public const string LegacyFileNotConverted = "Unable to convert the data file to the current file format:";
+
     // Error messages
     public const string ErrorDuplicatingEntry = "Error: Unable to duplicate entry.";
     public const string FileNotFound = "File not found.";

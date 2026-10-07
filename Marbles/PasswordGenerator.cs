@@ -1,4 +1,6 @@
-﻿namespace Marbles;
+﻿using System.Security.Cryptography;
+
+namespace Marbles;
 
 internal class PasswordGenerator
 {
@@ -10,7 +12,6 @@ internal class PasswordGenerator
     // Set the password length here (should not be shorter than 8 characters to match the
     // criteria for a strong password)
     private  int NumberOfCharsInPassword { get; set; }
-    private static Random _ran = new();
     private List<int> _previousRandomNumbers = new();
     private  List<string> _numbers = new();
     private  List<string> _uppercase = new();
@@ -60,8 +61,8 @@ internal class PasswordGenerator
         _tempSymbol2 = "";
 
         // Induce symbols
-        _tempOutput = _tempOutput.Insert(_ran.Next(1, 5), GetRandomSymbol());
-        _tempOutput = _tempOutput.Insert(_ran.Next(7, 11), GetRandomSymbol());
+        _tempOutput = _tempOutput.Insert(RandomNumberGenerator.GetInt32(1, 5), GetRandomSymbol());
+        _tempOutput = _tempOutput.Insert(RandomNumberGenerator.GetInt32(7, 11), GetRandomSymbol());
 
         return _tempOutput;
     }
@@ -72,7 +73,7 @@ internal class PasswordGenerator
     {
         do
         {
-            _tempSymbol1 = _symbols[_ran.Next(0, _symbols.Count)];
+            _tempSymbol1 = _symbols[RandomNumberGenerator.GetInt32(0, _symbols.Count)];
         } while (_tempSymbol1 == _tempSymbol2);
 
         _tempSymbol2 = _tempSymbol1;
@@ -99,13 +100,13 @@ internal class PasswordGenerator
         {
             do
             {
-                _tempRandomNumber = _ran.Next(0, _strChars.Length);
+                _tempRandomNumber = RandomNumberGenerator.GetInt32(0, _strChars.Length);
             }
             while (DoesRandomNumberExist(_tempRandomNumber));
         }
         else
         {
-            _tempRandomNumber = _ran.Next(0, _strChars.Length);
+            _tempRandomNumber = RandomNumberGenerator.GetInt32(0, _strChars.Length);
         }
 
         _previousRandomNumbers.Add(_tempRandomNumber);

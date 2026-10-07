@@ -981,6 +981,12 @@ internal static class Tools
             if (_load.Success)
             {
                 Init.Log("Login OK: " + FileIo.GetFolderAndFileNameWithSizeForDisplay(), false);
+                // Convert data files from older versions
+                if (_load.IsLegacyFormat)
+                {
+                    ConvertLegacyDataFile();
+                }
+
                 // Save settings to update the current loaded data file name
                 FileIo.SaveSettings();
                 Vignette.CheckVignette();
@@ -1094,6 +1100,24 @@ internal static class Tools
     }
 
 
+    // Save a data file from an older version in the current file format (the entries are already loaded)
+    private static void ConvertLegacyDataFile()
+    {
+        var status = FileIo.ConvertLegacyFile();
+        if (status == DialogText.Success)
+        {
+            Init.Log("Converted: " + FileIo.GetFileName() + " (copy: " + FileIo.LegacyCopyFileName + ")", false);
+            Menu.StatusMessage(DialogText.LegacyFileConverted, true, true, true, DialogText.CaptionsLogin,
+                DialogText.LegacyFileCopyColon + FileIo.LegacyCopyFileName, false);
+        }
+        else
+        {
+            Init.Log("Convert FAILED: " + FileIo.GetFileName(), false);
+            Menu.StatusMessage(status, true, true, true, DialogText.CaptionsLogin,
+                DialogText.LegacyFileNotConverted, false);
+        }
+    }
+
     private static string _newPass = string.Empty;
     private static string _newPassRepeat = string.Empty;
 
@@ -1183,7 +1207,7 @@ internal static class Tools
             Console.Write(" " + DialogText.EnterCurrentPasswordColon + " ");
             _tempResetPassword = ReadMasked(false);
             // Compare passwords
-            if (_tempResetPassword == Encryptor.GetKey())
+            if (Encryptor.IsCurrentKey(_tempResetPassword))
             {
                 NewPasswordRoutine(true); // Continue to new password routine
             }

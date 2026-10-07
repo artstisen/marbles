@@ -1,0 +1,375 @@
+using System.Security.Cryptography;
+using System.Text;
+
+namespace Marbles.Tests;
+
+// The application keeps its state in static classes, so the tests must not run in parallel
+[CollectionDefinition("Static state", DisableParallelization = true)]
+public class StaticStateCollection
+{
+}
+
+[Collection("Static state")]
+public class EncryptorTests
+{
+    private const string Password = "correct-horse-battery";
+    private const string Document = FileIo.XmlDoctype + "<entries><entry>æøå 日本語 ]]> \n line 2</entry></entries>";
+
+    private static byte[] Encrypt(string password, string document)
+    {
+        Encryptor.SetKey(password);
+        var encrypted = Encryptor.EncryptData(document);
+        Assert.NotNull(encrypted);
+        return encrypted!;
+    }
+
+    [Fact]
+    public void RoundTrip_ReturnsOriginalDocument()
+    {
+        var encrypted = Encrypt(Password, Document);
+        Encryptor.SetKey(Password); // As when logging in again
+        Assert.Equal(Document, Encryptor.DecryptData(encrypted));
+        Assert.False(Encryptor.LegacyFormatDetected);
+    }
+
+    [Fact]
+    public void EncryptedFile_HasHeaderAndDoesNotContainPlainText()
+    {
+        var encrypted = Encrypt(Password, Document);
+        Assert.Equal("MBLS", Encoding.ASCII.GetString(encrypted, 0, 4));
+        Assert.Equal(2, encrypted[4]);
+        Assert.DoesNotContain("entries", Encoding.UTF8.GetString(encrypted));
+    }
+
+    [Fact]
+    public void WrongPassword_IsRejected()
+    {
+        var encrypted = Encrypt(Password, Document);
+        Encryptor.SetKey(Password + "x");
+        Assert.Equal(DialogText.InvalidData, Encryptor.DecryptData(encrypted));
+    }
+
+    [Fact]
+    public void NoPassword_NothingIsEncryptedOrDecrypted()
+    {
+        var encrypted = Encrypt(Password, Document);
+        Encryptor.RemoveKey();
+        Assert.Null(Encryptor.EncryptData(Document));
+        Assert.Equal(DialogText.InvalidData, Encryptor.DecryptData(encrypted));
+    }
+
+    [Theory]
+    [InlineData(4)] // Format version
+    [InlineData(9)] // Iterations
+    [InlineData(10)] // Salt
+    [InlineData(26)] // Nonce
+    [InlineData(38)] // Tag
+    [InlineData(54)] // First byte of content
+    [InlineData(-1)] // Last byte of content
+    public void AlteredFile_IsRejected(int position)
+    {
+        var encrypted = Encrypt(Password, Document);
+        encrypted[position < 0 ? encrypted.Length + position : position] ^= 0x01;
+        Encryptor.SetKey(Password);
+        Assert.Equal(DialogText.InvalidData, Encryptor.DecryptData(encrypted));
+    }
+
+    [Fact]
+    public void TruncatedFile_IsRejected()
+    {
+        var encrypted = Encrypt(Password, Document);
+        Encryptor.SetKey(Password);
+        Assert.Equal(DialogText.InvalidData, Encryptor.DecryptData(encrypted[..^1]));
+        Assert.Equal(DialogText.InvalidData, Encryptor.DecryptData(encrypted[..40]));
+        Assert.Equal(DialogText.InvalidData, Encryptor.DecryptData(Array.Empty<byte>()));
+    }
+
+    [Fact]
+    public void EverySave_UsesNewNonce_AndEveryPasswordChange_NewSalt()
+    {
+        var first = Encrypt(Password, Document);
+        var second = Encryptor.EncryptData(Document)!; // Same session
+        Assert.Equal(first[10..26], second[10..26]); // Salt is kept within the session
+        Assert.NotEqual(first[26..38], second[26..38]); // Nonce is not
+        Assert.NotEqual(first[54..], second[54..]);
+
+        var third = Encrypt(Password, Document); // Password set again
+        Assert.NotEqual(first[10..26], third[10..26]);
+    }
+
+    [Fact]
+    public void SaveAfterLogin_CanBeReadWithSamePassword()
+    {
+        var encrypted = Encrypt(Password, Document);
+        Encryptor.SetKey(Password);
+        Assert.Equal(Document, Encryptor.DecryptData(encrypted));
+        var savedAgain = Encryptor.EncryptData(Document + "more")!;
+        Encryptor.SetKey(Password);
+        Assert.Equal(Document + "more", Encryptor.DecryptData(savedAgain));
+    }
+
+    [Fact]
+    public void NonAsciiPasswords_AreDistinguished()
+    {
+        // The legacy format reduced all non-ASCII characters to "?"
+        var encrypted = Encrypt("pässwörd-æøå", Document);
+        Encryptor.SetKey("p?ssw?rd-???");
+        Assert.Equal(DialogText.InvalidData, Encryptor.DecryptData(encrypted));
+        Encryptor.SetKey("pässwörd-æøå");
+        Assert.Equal(Document, Encryptor.DecryptData(encrypted));
+    }
+
+    [Fact]
+    public void IsCurrentKey_OnlyMatchesTheCurrentPassword()
+    {
+        Encryptor.SetKey(Password);
+        Assert.True(Encryptor.IsCurrentKey(Password));
+        Assert.False(Encryptor.IsCurrentKey(Password + "x"));
+        Encryptor.RemoveKey();
+        Assert.False(Encryptor.IsCurrentKey(string.Empty));
+    }
+}
+
+/// <summary>
+/// Creates data files exactly like Marbles v1.0.1.3 and earlier did (copied from the original Encryptor)
+/// </summary>
+internal static class LegacyFileWriter
+{
+    internal static byte[] Create(string document, string password)
+    {
+        var key = password;
+        while (key.Length < 32)
+        {
+            key += key;
+        }
+
+        key = key[..32];
+        var textbytes = Encoding.UTF8.GetBytes(document);
+        var endec = Aes.Create();
+        endec.BlockSize = 128;
+        endec.KeySize = 256;
+        endec.IV = Encoding.ASCII.GetBytes("0pN-391xnqr2a5dv");
+        endec.Key = Encoding.ASCII.GetBytes(key);
+        endec.Padding = PaddingMode.PKCS7;
+        endec.Mode = CipherMode.CBC;
+        var icrypt = endec.CreateEncryptor(endec.Key, endec.IV);
+        var enc = icrypt.TransformFinalBlock(textbytes, 0, textbytes.Length);
+        // File.WriteAllText(path, base64) wrote UTF-8 without BOM
+        return Encoding.UTF8.GetBytes(Convert.ToBase64String(enc));
+    }
+}
+
+[Collection("Static state")]
+public class LegacyEncryptorTests
+{
+    private const string Password = "oldpassword";
+    private const string Document = FileIo.XmlDoctype + "<entries><entry><id>1</id></entry></entries>";
+
+    [Fact]
+    public void LegacyFile_IsDecryptedAndFlagged()
+    {
+        Encryptor.SetKey(Password);
+        Assert.Equal(Document, Encryptor.DecryptData(LegacyFileWriter.Create(Document, Password)));
+        Assert.True(Encryptor.LegacyFormatDetected);
+    }
+
+    [Fact]
+    public void EmptyLegacyFile_IsDecrypted()
+    {
+        Encryptor.SetKey(Password);
+        Assert.Equal(DialogText.NoData, Encryptor.DecryptData(LegacyFileWriter.Create(DialogText.NoData, Password)));
+        Assert.True(Encryptor.LegacyFormatDetected);
+    }
+
+    [Fact]
+    public void LegacyFile_WithWrongPassword_IsRejected()
+    {
+        Encryptor.SetKey("wrongpassword");
+        Assert.Equal(DialogText.InvalidData, Encryptor.DecryptData(LegacyFileWriter.Create(Document, Password)));
+        Assert.False(Encryptor.LegacyFormatDetected);
+    }
+
+    [Fact]
+    public void RandomContent_IsRejected()
+    {
+        Encryptor.SetKey(Password);
+        Assert.Equal(DialogText.InvalidData, Encryptor.DecryptData(Encoding.UTF8.GetBytes("not a data file")));
+        Assert.Equal(DialogText.InvalidData, Encryptor.DecryptData(RandomNumberGenerator.GetBytes(256)));
+    }
+}
+
+[Collection("Static state")]
+public class FileIoTests : IDisposable
+{
+    private const string Password = "oldpassword";
+    private readonly string _originalDirectory = Directory.GetCurrentDirectory();
+
+    private readonly string _workDirectory =
+        Path.Combine(Path.GetTempPath(), "marbles-tests-" + Guid.NewGuid().ToString("N"));
+
+    private string DataFile => Path.Combine(_workDirectory, "data", "data.mbls");
+
+    public FileIoTests()
+    {
+        // The data directory is always relative to the current directory
+        Directory.CreateDirectory(Path.Combine(_workDirectory, "data"));
+        Directory.SetCurrentDirectory(_workDirectory);
+        FileIo.ResetSubFolder();
+        FileIo.SetDefaultFileName();
+        FileIo.SetBackup(false, string.Empty, false);
+        Entries.ClearAllEntries(false);
+    }
+
+    public void Dispose()
+    {
+        Encryptor.RemoveKey();
+        Entries.ClearAllEntries(false);
+        Directory.SetCurrentDirectory(_originalDirectory);
+        Directory.Delete(_workDirectory, true);
+    }
+
+    private static void Login(string password)
+    {
+        Entries.ClearAllEntries(false);
+        Encryptor.SetKey(password);
+    }
+
+    private static List<(string, string, string, string, string, int, string)> Snapshot()
+    {
+        return Entries.GetEntries()
+            .Select(e => (e.Id, e.DateCreated, e.DateChanged, e.Title, e.Text, e.CursorIndex, e.Options)).ToList();
+    }
+
+    [Fact]
+    public void SaveAndLoad_RoundTripsEntries()
+    {
+        Login(Password);
+        Entries.NewEntry("Title æøå", "Line 1\nLine 2 ]]> <tag> & 日本語");
+        Entries.NewEntry("Second", string.Empty);
+        Assert.Equal(DialogText.Success, FileIo.SaveEntries());
+        Assert.False(File.Exists(DataFile + ".tmp"));
+
+        Login(Password);
+        var load = FileIo.LoadEntries();
+        Assert.True(load.Success);
+        Assert.False(load.IsLegacyFormat);
+        Assert.Equal(2, Entries.GetEntriesCount());
+        Assert.Equal("Title æøå", Entries.GetEntries()[0].Title);
+        Assert.Equal("Line 1\nLine 2 ]]> <tag> & 日本語", Entries.GetEntries()[0].Text);
+    }
+
+    [Fact]
+    public void Load_WithWrongPassword_Fails()
+    {
+        Login(Password);
+        Entries.NewEntry("Title", "Text");
+        FileIo.SaveEntries();
+
+        Login("wrongpassword");
+        var load = FileIo.LoadEntries();
+        Assert.False(load.Success);
+        Assert.Contains(DialogText.InvalidPasswordDot, load.StatusMessage);
+        Assert.Equal(0, Entries.GetEntriesCount());
+    }
+
+    [Fact]
+    public void Load_MissingFile_ReportsFileNotFound()
+    {
+        Login(Password);
+        var load = FileIo.LoadEntries();
+        Assert.False(load.Success);
+        Assert.Equal(DialogText.FileNotFound, load.StatusMessage);
+    }
+
+    [Fact]
+    public void Save_WithoutPassword_LeavesExistingFileUntouched()
+    {
+        Login(Password);
+        Entries.NewEntry("Title", "Text");
+        FileIo.SaveEntries();
+        var before = File.ReadAllBytes(DataFile);
+
+        Encryptor.RemoveKey();
+        Assert.Equal(DialogText.StatusUnableToSave, FileIo.SaveEntries());
+        Assert.Equal(before, File.ReadAllBytes(DataFile));
+    }
+
+    [Fact]
+    public void LegacyFile_IsConvertedAndOriginalIsKept()
+    {
+        // Create a legacy file from a document written by the current XML writer
+        Login(Password);
+        Entries.NewEntry("Old title", "Old text æøå\nline 2");
+        Entries.NewEntry("Old title 2", "More");
+        Entries.GetEntries()[1].Options = "fp1";
+        Entries.GetEntries()[1].CursorIndex = 3;
+        var expected = Snapshot();
+        FileIo.SaveEntries();
+        var document = Encryptor.DecryptData(File.ReadAllBytes(DataFile));
+        var legacyFile = LegacyFileWriter.Create(document, Password);
+        File.WriteAllBytes(DataFile, legacyFile);
+
+        // Log in to the legacy file
+        Login(Password);
+        var load = FileIo.LoadEntries();
+        Assert.True(load.Success);
+        Assert.True(load.IsLegacyFormat);
+        Assert.Equal(DialogText.Success, FileIo.ConvertLegacyFile());
+
+        // The original is kept as a copy and the data file is now in the current format
+        Assert.Equal("data.mbls.legacy", FileIo.LegacyCopyFileName);
+        Assert.Equal(legacyFile, File.ReadAllBytes(DataFile + ".legacy"));
+        Assert.Equal("MBLS", Encoding.ASCII.GetString(File.ReadAllBytes(DataFile), 0, 4));
+
+        // Log in again
+        Login(Password);
+        load = FileIo.LoadEntries();
+        Assert.True(load.Success);
+        Assert.False(load.IsLegacyFormat);
+        Assert.Equal(expected, Snapshot());
+    }
+
+    [Fact]
+    public void LegacyConversion_NeverOverwritesAnEarlierCopy()
+    {
+        File.WriteAllBytes(DataFile, LegacyFileWriter.Create(DialogText.NoData, Password));
+        File.WriteAllText(DataFile + ".legacy", "earlier copy");
+
+        Login(Password);
+        var load = FileIo.LoadEntries();
+        Assert.True(load.Success);
+        Assert.True(load.IsLegacyFormat);
+        Assert.Equal(DialogText.Success, FileIo.ConvertLegacyFile());
+        Assert.Equal("earlier copy", File.ReadAllText(DataFile + ".legacy"));
+        Assert.NotEqual("data.mbls.legacy", FileIo.LegacyCopyFileName);
+        Assert.True(File.Exists(Path.Combine(_workDirectory, "data", FileIo.LegacyCopyFileName)));
+    }
+
+    [Fact]
+    public void LegacyFile_WithUnreadableDocument_IsNotFlaggedForConversion()
+    {
+        // Decrypts fine but the XML is damaged: converting it would save an empty file
+        File.WriteAllBytes(DataFile, LegacyFileWriter.Create(FileIo.XmlDoctype + "<entries><entry>", Password));
+        Login(Password);
+        Assert.False(FileIo.LoadEntries().IsLegacyFormat);
+    }
+}
+
+public class PasswordGeneratorTests
+{
+    [Fact]
+    public void GeneratedPasswords_HaveExpectedShapeAndDiffer()
+    {
+        var generator = new PasswordGenerator();
+        var passwords = Enumerable.Range(0, 50).Select(_ => generator.GeneratePassword()).ToList();
+        Assert.All(passwords, p =>
+        {
+            Assert.Equal(14, p.Length);
+            Assert.Contains(p, char.IsDigit);
+            Assert.Contains(p, char.IsUpper);
+            Assert.Contains(p, char.IsLower);
+            Assert.Contains(p, c => ".-!+".Contains(c));
+        });
+        Assert.Equal(passwords.Count, passwords.Distinct().Count());
+    }
+}

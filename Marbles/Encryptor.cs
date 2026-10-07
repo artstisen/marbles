@@ -1,29 +1,88 @@
-﻿using System.Security.Cryptography;
+using System.Buffers.Binary;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Marbles;
 
 class Encryptor
 {
-    private const string Iv = "0pN-391xnqr2a5dv"; // Salt (hardcoded in application: DO NOT CHANGE)
+    // Data file format (version 2). All numbers are big-endian:
+    //
+    //   Offset  Length  Content
+    //   0       4       Magic "MBLS"
+    //   4       1       File format version (2)
+    //   5       1       Key derivation id (1 = PBKDF2-HMAC-SHA256)
+    //   6       4       Key derivation iterations
+    //   10      16      Salt (random, renewed whenever a key is derived for saving)
+    //   26      12      Nonce (random, renewed on every save)
+    //   38      16      Authentication tag
+    //   54      n       Ciphertext (AES-256-GCM of the UTF-8 encoded document)
+    //
+    // The first 38 bytes (everything before the tag) are authenticated as associated data,
+    // so neither the header nor the content can be altered without the load failing.
+    // Files written by earlier versions have no header and are handled by LegacyEncryptor.
+    private static readonly byte[] Magic = { (byte)'M', (byte)'B', (byte)'L', (byte)'S' }; // DO NOT CHANGE
+    private const byte FormatVersion = 2;
+    private const byte KdfPbkdf2Sha256 = 1;
+    private const int KdfIterations = 600000; // Used for new keys. Files keep working if this value is raised later
+    private const int KdfMinIterations = 100000; // Reject files claiming less (or absurdly more) than this
+    private const int KdfMaxIterations = 10000000;
+    private const int SaltLength = 16;
+    private const int NonceLength = 12;
+    private const int TagLength = 16;
+    private const int KeyLength = 32; // AES-256
+    private const int IterationsOffset = 6;
+    private const int SaltOffset = 10;
+    private const int NonceOffset = SaltOffset + SaltLength;
+    private const int TagOffset = NonceOffset + NonceLength; // Also the length of the authenticated header
+    private const int HeaderLength = TagOffset + TagLength;
+
     private const int KeyMaxLength = 32;
     private const int KeyMinLength = 8;
-    private static string _key = string.Empty; // Secret key supplied by the user
+    private static string _key = string.Empty; // Secret key (password) supplied by the user
+
+    // The derived key is cached together with the salt and iterations it belongs to. Deriving a key is slow
+    // by design, so it is only done when logging in or changing password and not on every save.
+    private static byte[]? _derivedKey;
+    private static byte[] _salt = Array.Empty<byte>();
+    private static int _iterations;
+
+    /// <summary>
+    /// True if the last call to DecryptData was given a data file from before file format version 2
+    /// </summary>
+    internal static bool LegacyFormatDetected { get; private set; }
 
     internal static void SetKey(string key)
     {
         _key = key;
+        ClearDerivedKey();
     }
 
-    internal static string GetKey()
+    /// <summary>
+    /// Compare a password to the one currently in use
+    /// </summary>
+    internal static bool IsCurrentKey(string key)
     {
-        return _key;
+        return Tools.IsValid(_key) && key == _key;
     }
 
     internal static void RemoveKey()
     {
         _key = DialogText.Cleared;
         _key = string.Empty;
+        ClearDerivedKey();
+    }
+
+    private static void ClearDerivedKey()
+    {
+        if (_derivedKey != null)
+        {
+            CryptographicOperations.ZeroMemory(_derivedKey);
+        }
+
+        _derivedKey = null;
+        _salt = Array.Empty<byte>();
+        _iterations = 0;
     }
 
     /// <summary>
@@ -38,103 +97,114 @@ class Encryptor
 
     #region Encrypt/decrypt data
 
-    // Private method used to "fill up" user password if under 32 chars
-    // The key will always be 32 chars long
-    private static string GenerateKey(string key)
+    private static byte[] DeriveKey(string password, byte[] salt, int iterations)
     {
-        switch (string.IsNullOrEmpty(key))
-        {
-            case false when key.Length < KeyMaxLength:
-            {
-                while (key.Length < KeyMaxLength)
-                {
-                    key += key;
-                }
-
-                if (key.Length >= KeyMaxLength)
-                {
-                    key = key[..KeyMaxLength];
-                }
-
-                return key;
-            }
-            case false when key.Length == KeyMaxLength:
-                return key;
-            default:
-                return string.Empty;
-        }
+        // The password is UTF-8 encoded, so all characters count (not only ASCII)
+        return Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA256, KeyLength);
     }
 
-
-    private static string _tempKey = string.Empty;
-
-    //private static string _tempMessage = string.Empty; // Debugging var
     /// <summary>
     /// Encrypt string
     /// </summary>
     /// <param name="decrypted">The input to encrypt</param>
-    /// <returns></returns>
-    internal static string EncryptData(string decrypted)
+    /// <returns>The complete data file content, or null if the input could not be encrypted</returns>
+    internal static byte[]? EncryptData(string decrypted)
     {
         try
         {
-            if (!string.IsNullOrEmpty(_key))
+            if (string.IsNullOrEmpty(_key))
             {
-                _tempKey = GenerateKey(_key);
-                var textbytes = Encoding.UTF8.GetBytes(decrypted);
-                var endec = Aes.Create();
-                endec.BlockSize = 128;
-                endec.KeySize = 256;
-                endec.IV = Encoding.ASCII.GetBytes(Iv);
-                endec.Key = Encoding.ASCII.GetBytes(_tempKey);
-                endec.Padding = PaddingMode.PKCS7;
-                endec.Mode = CipherMode.CBC;
-                var icrypt = endec.CreateEncryptor(endec.Key, endec.IV);
-                var enc = icrypt.TransformFinalBlock(textbytes, 0, textbytes.Length);
-                icrypt.Dispose();
-                return Convert.ToBase64String(enc);
+                return null;
             }
-            else
+
+            // Derive a key with a fresh salt if there is none, or if it was derived using outdated settings
+            if (_derivedKey == null || _iterations != KdfIterations)
             {
-                return DialogText.InvalidData;
+                var salt = RandomNumberGenerator.GetBytes(SaltLength);
+                var key = DeriveKey(_key, salt, KdfIterations);
+                ClearDerivedKey();
+                _derivedKey = key;
+                _salt = salt;
+                _iterations = KdfIterations;
             }
+
+            var textbytes = Encoding.UTF8.GetBytes(decrypted);
+            var output = new byte[HeaderLength + textbytes.Length];
+            // Header
+            Magic.CopyTo(output, 0);
+            output[4] = FormatVersion;
+            output[5] = KdfPbkdf2Sha256;
+            BinaryPrimitives.WriteInt32BigEndian(output.AsSpan(IterationsOffset), _iterations);
+            _salt.CopyTo(output, SaltOffset);
+            RandomNumberGenerator.Fill(output.AsSpan(NonceOffset, NonceLength)); // Never reuse a nonce with the same key
+            // Content
+            using var endec = new AesGcm(_derivedKey, TagLength);
+            endec.Encrypt(output.AsSpan(NonceOffset, NonceLength), textbytes, output.AsSpan(HeaderLength),
+                output.AsSpan(TagOffset, TagLength), output.AsSpan(0, TagOffset));
+            return output;
         }
-        catch // (Exception e)
+        catch
         {
-            //_tempMessage = e.Message;
-            return DialogText.InvalidData;
+            return null;
         }
     }
 
     /// <summary>
-    /// Decrypt string
+    /// Decrypt data file content
     /// </summary>
-    /// <param name="encrypted">The encrypted string</param>
-    /// <returns></returns>
-    internal static string DecryptData(string encrypted)
+    /// <param name="encrypted">The complete content of the data file</param>
+    /// <returns>The decrypted string, or DialogText.InvalidData if the password is wrong or the file is damaged</returns>
+    internal static string DecryptData(byte[] encrypted)
     {
+        LegacyFormatDetected = false;
         try
         {
-            if (!string.IsNullOrEmpty(_key) && _key.Length > 7)
+            if (string.IsNullOrEmpty(_key))
             {
-                _tempKey = GenerateKey(_key);
-                var textbytes = Convert.FromBase64String(encrypted);
-                var endec = Aes.Create();
-                endec.BlockSize = 128;
-                endec.KeySize = 256;
-                endec.IV = Encoding.ASCII.GetBytes(Iv);
-                endec.Key = Encoding.ASCII.GetBytes(_tempKey);
-                endec.Padding = PaddingMode.PKCS7;
-                endec.Mode = CipherMode.CBC;
-                var icrypt = endec.CreateDecryptor(endec.Key, endec.IV);
-                var enc = icrypt.TransformFinalBlock(textbytes, 0, textbytes.Length);
-                icrypt.Dispose();
-                if (ValidateDecryptedContent(Encoding.UTF8.GetString(enc)))
-                {
-                    return Encoding.UTF8.GetString(enc);
-                }
+                return DialogText.InvalidData;
             }
-            return DialogText.InvalidData;
+
+            // Files without the header are from before file format version 2
+            if (!HasHeader(encrypted))
+            {
+                var legacyContent = LegacyEncryptor.DecryptData(encrypted, _key);
+                LegacyFormatDetected = legacyContent != DialogText.InvalidData;
+                return legacyContent;
+            }
+
+            if (encrypted.Length < HeaderLength || encrypted[4] != FormatVersion || encrypted[5] != KdfPbkdf2Sha256)
+            {
+                return DialogText.InvalidData;
+            }
+
+            var iterations = BinaryPrimitives.ReadInt32BigEndian(encrypted.AsSpan(IterationsOffset));
+            if (iterations is < KdfMinIterations or > KdfMaxIterations)
+            {
+                return DialogText.InvalidData;
+            }
+
+            // Reuse the cached key if it belongs to this file, else derive it
+            var salt = encrypted.AsSpan(SaltOffset, SaltLength).ToArray();
+            var key = _derivedKey != null && iterations == _iterations && salt.AsSpan().SequenceEqual(_salt)
+                ? _derivedKey
+                : DeriveKey(_key, salt, iterations);
+
+            var textbytes = new byte[encrypted.Length - HeaderLength];
+            using var endec = new AesGcm(key, TagLength);
+            // Throws if the password is wrong or if any part of the file was altered
+            endec.Decrypt(encrypted.AsSpan(NonceOffset, NonceLength), encrypted.AsSpan(HeaderLength),
+                encrypted.AsSpan(TagOffset, TagLength), textbytes, encrypted.AsSpan(0, TagOffset));
+
+            // Keep the key for the following saves
+            if (!ReferenceEquals(key, _derivedKey))
+            {
+                ClearDerivedKey();
+                _derivedKey = key;
+                _salt = salt;
+                _iterations = iterations;
+            }
+
+            return Encoding.UTF8.GetString(textbytes);
         }
         catch
         {
@@ -142,14 +212,9 @@ class Encryptor
         }
     }
 
-    // Is valid if contains XML-doctype or "nodata" (as in new empty data file)
-    private static bool ValidateDecryptedContent(string s)
+    private static bool HasHeader(byte[] content)
     {
-        if (Tools.IsValid(s) && (s.Contains(FileIo.XmlDoctype) || s == DialogText.NoData))
-        {
-            return true;
-        }
-        return false;
+        return content.Length >= Magic.Length && content.AsSpan(0, Magic.Length).SequenceEqual(Magic);
     }
 
     #endregion

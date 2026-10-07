@@ -234,19 +234,20 @@ internal static class FileIo
 
     internal static LoadStatus LoadEntries()
     {
-        _loadStatus = new LoadStatus
-        {
-            ProcessString = ReadFile()
-        };
-        if (_loadStatus.ProcessString != DialogText.ErrorReadingFile &&
-            _loadStatus.ProcessString != DialogText.FileNotFound)
+        _loadStatus = new LoadStatus();
+        var fileContent = ReadFile(out var readStatus);
+        if (fileContent != null)
         {
             // Decrypt
-            _loadStatus.ProcessString = Encryptor.DecryptData(_loadStatus.ProcessString);
+            _loadStatus.ProcessString = Encryptor.DecryptData(fileContent);
             if (_loadStatus.ProcessString != DialogText.InvalidData && _loadStatus.ProcessString.Length > 0)
             {
                 // Get entries from XMl
                 _loadStatus.LoadedEntries = GetEntriesFromXml(_loadStatus.ProcessString);
+                // Only flag a legacy file for conversion if its content was fully understood
+                _loadStatus.IsLegacyFormat = Encryptor.LegacyFormatDetected &&
+                                             (_loadStatus.LoadedEntries.Count > 0 ||
+                                              _loadStatus.ProcessString == DialogText.NoData);
             }
 
             // Validate load
@@ -279,7 +280,7 @@ internal static class FileIo
         else
         {
             _loadStatus.Success = false;
-            _loadStatus.StatusMessage = _loadStatus.ProcessString;
+            _loadStatus.StatusMessage = readStatus;
             return _loadStatus;
         }
     }
@@ -288,17 +289,61 @@ internal static class FileIo
 
     #region Save entries
 
-    private static string _tempSaveProcess = string.Empty;
     private static string _tempSaveStatus = string.Empty;
 
     internal static string SaveEntries()
     {
-        _tempSaveProcess = "";
-        _tempSaveProcess = GetEntriesAsXml(Entries.GetEntries()).ToString();
-        _tempSaveProcess = Encryptor.EncryptData(_tempSaveProcess);
-        _tempSaveStatus = WriteFile(_tempSaveProcess);
-        _tempSaveStatus += WriteBackupFile(_tempSaveProcess);
+        var encrypted = Encryptor.EncryptData(GetEntriesAsXml(Entries.GetEntries()).ToString());
+        // Never touch the data file if the encryption failed
+        if (encrypted == null)
+        {
+            return DialogText.StatusUnableToSave;
+        }
+
+        _tempSaveStatus = WriteFile(encrypted);
+        _tempSaveStatus += WriteBackupFile(encrypted);
         return _tempSaveStatus;
+    }
+
+    #endregion
+
+    #region Legacy file conversion
+
+    private const string LegacyCopyFileNameExtension = ".legacy";
+
+    /// <summary>
+    /// The file name of the copy made of the original file by the last call to ConvertLegacyFile
+    /// </summary>
+    internal static string LegacyCopyFileName { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Save the current (just loaded) legacy data file in the current file format.
+    /// A copy of the original file is kept alongside it, with ".legacy" added to the file name.
+    /// </summary>
+    /// <returns>DialogText.Success or an error message</returns>
+    internal static string ConvertLegacyFile()
+    {
+        LegacyCopyFileName = string.Empty;
+        try
+        {
+            var original = GetCurrentFolderAndFileName();
+            var copy = original + LegacyCopyFileNameExtension;
+            // Never overwrite an earlier copy
+            if (File.Exists(copy))
+            {
+                copy = original + "-" + IsoDateTime.GetDateTimeNowCompressed("-") + LegacyCopyFileNameExtension;
+            }
+
+            File.Copy(original, copy, false);
+            LegacyCopyFileName = Path.GetFileName(copy);
+        }
+        catch (Exception e)
+        {
+            // Without the copy the original is left untouched
+            return e.Message;
+        }
+
+        return SaveEntries();
     }
 
     #endregion
@@ -351,27 +396,26 @@ internal static class FileIo
     /// <summary>
     /// Read file from default data directory
     /// </summary>
-    private static string ReadFile()
+    /// <param name="status">DialogText.Success or the reason why the file could not be read</param>
+    /// <returns>The file content or null if the file could not be read</returns>
+    private static byte[]? ReadFile(out string status)
     {
-        _tempContent = "";
         if (CheckCurrentDirectory() && IsCurrentFileValid())
         {
             try
             {
-                var lines = File.ReadAllLines(GetCurrentFolderAndFileName());
-                _tempContent = string.Join(Entries.NewLineCharString, lines);
+                status = DialogText.Success;
+                return File.ReadAllBytes(GetCurrentFolderAndFileName());
             }
             catch
             {
-                _tempContent = DialogText.ErrorReadingFile;
+                status = DialogText.ErrorReadingFile;
+                return null;
             }
         }
-        else
-        {
-            _tempContent = DialogText.FileNotFound;
-        }
 
-        return _tempContent;
+        status = DialogText.FileNotFound;
+        return null;
     }
 
     internal static string GetImportPathAndFile()
@@ -406,16 +450,50 @@ internal static class FileIo
 
     #region Write file
 
+    private const string TempFileNameExtension = ".tmp";
+
     /// <summary>
-    /// Write file to default data directory. When saving data file data text is BASE64 encoded which is ASCII characters.
+    /// Write the content to a temporary file and then replace the target file with it,
+    /// so an interrupted save can never leave a half written data file behind.
     /// </summary>
-    private static string WriteFile(string content)
+    private static void WriteAllBytesSafe(string path, byte[] content)
+    {
+        var tempPath = path + TempFileNameExtension;
+        try
+        {
+            using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                stream.Write(content, 0, content.Length);
+                stream.Flush(true); // Make sure the content is on the disk before replacing the target file
+            }
+
+            File.Move(tempPath, path, true);
+        }
+        catch
+        {
+            try
+            {
+                File.Delete(tempPath);
+            }
+            catch
+            {
+                // Nothing more to do. The original error is the one to report
+            }
+
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Write file to default data directory.
+    /// </summary>
+    private static string WriteFile(byte[] content)
     {
         try
         {
             if (CheckCurrentDirectory())
             {
-                File.WriteAllText(GetCurrentFolderAndFileName(), content);
+                WriteAllBytesSafe(GetCurrentFolderAndFileName(), content);
                 return DialogText.Success;
             }
             else
@@ -759,7 +837,7 @@ internal static class FileIo
 
     // Note regarding Create directory: If you give it a full path c:... it will create the last part as a folder which is nice.
 
-    private static string WriteBackupFile(string content)
+    private static string WriteBackupFile(byte[] content)
     {
         if (!_saveBackup)
         {
@@ -770,7 +848,7 @@ internal static class FileIo
         {
             if (CheckBackupDirectory(_backupPath))
             {
-                File.WriteAllText(GetBackupFolderAndFileName(), content);
+                WriteAllBytesSafe(GetBackupFolderAndFileName(), content);
                 return string.Empty;
             }
             else
@@ -924,7 +1002,8 @@ internal static class FileIo
                             // Only add lines that are not sections, comments and line breaks (at the beginning of lines)
                             if (_tempLoadedSettings[i].Length > 0 && !Regex.IsMatch(_tempLoadedSettings[i], @"^\[|^\;|^\#", RegexOptions.Singleline))
                             {
-                                _settingsList.Add(_tempLoadedSettings[i].Split("=")[1]);
+                                // Split on the first "=" only, as values (paths, logo text) may contain the character
+                                _settingsList.Add(_tempLoadedSettings[i].Split("=", 2)[1]);
                             }
                         }
 
@@ -1083,8 +1162,8 @@ internal static class FileIo
                             // Colors
                             int settingsOffset = 14;
                             for (int i = 1;
-                                 i < 14;
-                                 i++) // Start at 1 to match the text color (background is 0 and not used)
+                                 i < 13;
+                                 i++) // Start at 1 to match the text color (background is 0 and not used). Colors are 1-12
                             {
                                 if (_settingsList[settingsOffset].Length > 0 &&
                                     Tools.IsNumeric(_settingsList[settingsOffset]))
@@ -1183,6 +1262,7 @@ internal class LoadStatus
     internal string StatusMessage { get; set; }
     internal List<Entry> LoadedEntries { get; set; }
     internal string ProcessString { get; set; }
+    internal bool IsLegacyFormat { get; set; } // The file was written in an older file format and should be converted
 
     public LoadStatus()
     {
