@@ -379,7 +379,7 @@ internal static class Tools
             new("h l / j k", DialogText.SelectFileDirectory, false, 13),
             new("R/Y", DialogText.Refresh + "/" + DialogText.Restart, false, 13),
             new("G/S", DialogText.Log + "/" + FileIo.SettingsFileName, false, 13),
-            new("Q", DialogText.Exit, false, 13)
+            new("? / Q", "Help/" + DialogText.Exit, false, 13)
         };
         Menu.FloatingMenu(DialogText.CaptionsOptions, tempShortcuts, 9, 14, false);
 
@@ -472,6 +472,12 @@ internal static class Tools
         {
             // Exit directly
             ExitApplication();
+        }
+        else if (_keyInfo.KeyChar == '?')
+        {
+            // Help
+            WriteEditorHelp(false);
+            LoginRoutine(true);
         }
         else if (_keyInfo.Key == ConsoleKey.H)
         {
@@ -1278,6 +1284,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":qa", "Exit Marbles", false));
             _shortcutList.Add(new Shortcut(":logout", "Logout", false));
             _shortcutList.Add(new Shortcut("Esc", "Return/Cancel (login page: Options)", false));
+            _shortcutList.Add(new Shortcut("Esc ?", "Login page: Show this help", false));
             _shortcutList.Add(new Shortcut("Esc F", "Login page: Browse and edit text files", false));
             _shortcutList.Add(new Shortcut(":browse", "Browse files (opening a file logs out)", false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFiles, true));

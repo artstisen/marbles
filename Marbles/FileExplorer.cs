@@ -89,10 +89,13 @@ internal static class FileExplorer
         _filter = string.Empty;
         _message = string.Empty;
         ChangeDirectory(Directory.Exists(StartDirectory) ? StartDirectory : DataDirectory(), null);
-        Draw();
+        Draw(true);
         while (true)
         {
             var key = Console.ReadKey(true);
+            // Moving the selection only redraws the selection pointer (unless the list has to scroll)
+            var redraw = true;
+            var hadMessage = _message.Length > 0;
             _message = string.Empty;
             if (key.KeyChar == ':')
             {
@@ -148,10 +151,12 @@ internal static class FileExplorer
             else if (key.KeyChar == 'G')
             {
                 _index = _items.Count - 1;
+                redraw = false;
             }
             else if (key.KeyChar == 'g')
             {
                 if (Console.ReadKey(true).KeyChar == 'g') _index = 0;
+                redraw = false;
             }
             else if (key.Key is ConsoleKey.Escape or ConsoleKey.Q)
             {
@@ -169,28 +174,34 @@ internal static class FileExplorer
             else if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
             {
                 _index++;
+                redraw = false;
             }
             else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
             {
                 _index--;
+                redraw = false;
             }
             else if (key.Key == ConsoleKey.PageDown || Keyboard.IsControl(key, ConsoleKey.D) ||
                      Keyboard.IsControl(key, ConsoleKey.F))
             {
                 _index += PageSize;
+                redraw = false;
             }
             else if (key.Key == ConsoleKey.PageUp || Keyboard.IsControl(key, ConsoleKey.U) ||
                      Keyboard.IsControl(key, ConsoleKey.B))
             {
                 _index -= PageSize;
+                redraw = false;
             }
             else if (key.Key is ConsoleKey.Home)
             {
                 _index = 0;
+                redraw = false;
             }
             else if (key.Key is ConsoleKey.End)
             {
                 _index = _items.Count - 1;
+                redraw = false;
             }
             else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow or ConsoleKey.Backspace || key.KeyChar == '-')
             {
@@ -222,7 +233,7 @@ internal static class FileExplorer
                 LoadItems(_items.Count > 0 ? _items[_index].Name : null);
             }
 
-            Draw();
+            Draw(redraw || hadMessage);
         }
 
         // Remember the directory for next time
@@ -537,7 +548,15 @@ internal static class FileExplorer
 
     #region Drawing
 
-    private static void Draw()
+    private static int _shownTop = -1; // What is on screen: the first item shown and the item selected
+    private static int _shownIndex = -1;
+
+    /// <summary>
+    /// Draw the file browser
+    /// </summary>
+    /// <param name="all">False if only the selection has moved: then only the selection pointer and the
+    /// status are drawn (the whole screen is still drawn if the list has to scroll)</param>
+    private static void Draw(bool all)
     {
         // Keep the selection within the list and the view
         _index = Math.Clamp(_index, 0, Math.Max(0, _items.Count - 1));
@@ -545,6 +564,16 @@ internal static class FileExplorer
         if (_index >= _top + PageSize) _top = _index - PageSize + 1;
 
         Tools.HideCursor();
+        if (!all && _top == _shownTop)
+        {
+            // Move the selection pointer
+            DrawPointer(_shownIndex, false);
+            DrawPointer(_index, true);
+            _shownIndex = _index;
+            DrawStatus();
+            return;
+        }
+
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.ClearScreen();
         Menu.WriteModeLabel(_caption, string.Empty, 0);
@@ -564,18 +593,7 @@ internal static class FileExplorer
         for (var row = 0; row < PageSize && _top + row < _items.Count; row++)
         {
             var item = _items[_top + row];
-            var selected = _top + row == _index;
-            Tools.SetCursorEx(ListTop + row, 0);
-            if (selected)
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                Console.Write("->");
-            }
-            else
-            {
-                Console.Write("  ");
-            }
-
+            DrawPointer(_top + row, _top + row == _index);
             var isDataFile = !item.IsDirectory &&
                              item.Name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase);
             var info = item.IsDirectory ? DialogText.DirectoryMark :
@@ -591,7 +609,27 @@ internal static class FileExplorer
             Console.Write(info);
         }
 
-        // Status and keys
+        _shownTop = _top;
+        _shownIndex = _index;
+        DrawStatus();
+    }
+
+    // Draw (or remove) the selection pointer in front of an item, leaving the cursor after it
+    private static void DrawPointer(int index, bool selected)
+    {
+        var row = index - _top;
+        if (row < 0 || row >= PageSize || index >= _items.Count) return;
+        Tools.SetCursorEx(ListTop + row, 0);
+        ConsoleColors.SetColors(selected
+            ? ConsoleColors.ColorPreset.HighlightInverted
+            : ConsoleColors.ColorPreset.Normal);
+        Console.Write(selected ? "->" : "  ");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    // The two bottom lines: the number of the selected item, and a message or the keys
+    private static void DrawStatus()
+    {
         Tools.SetCursorEx(Init.LineCount - 2, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(new string('-', Init.LineWidth));

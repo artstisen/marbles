@@ -24,6 +24,7 @@ Press `Esc` and then one of the following keys:
 - `Y` Restart Marbles
 - `G` Show the log
 - `S` Edit the settings file _settings.ini_ (it can also be edited from the file system). Marbles restarts and loads the settings when the file is saved
+- `?` Show the help (the list of keys)
 - `Q` Exit Marbles
 - `Esc` Close the options
 
