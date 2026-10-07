@@ -753,6 +753,8 @@ internal static class Tools
     /// </summary>
     internal static void ShowLogin(bool fullRedraw)
     {
+        // Follow the size of the terminal window (if automatic dimensions are on)
+        if (Init.ApplyAutoSize()) fullRedraw = true;
         if (fullRedraw)
         {
             ClearScreen();
@@ -1269,6 +1271,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, "Menus and lists", true));
             _shortcutList.Add(new Shortcut("h l", "Previous/Next page (as Left/Right)", false));
             _shortcutList.Add(new Shortcut("j k", "Select in lists/Scroll text (as Down/Up)", false));
+            _shortcutList.Add(new Shortcut("P", "Main menu: Preview of the last edited entries", false));
             _shortcutList.Add(new Shortcut("gg G", "First/Last (page, entry or text)", false));
             _shortcutList.Add(new Shortcut("/", "Search", false));
             _shortcutList.Add(new Shortcut("?", "Show this help", false));

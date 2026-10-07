@@ -158,7 +158,7 @@ internal static class DialogText
     public const string RemoveFavoriteYn = "Remove from favorites? " + YesNo;
     public const string RemoveFavoriteOrPinYn = "Remove from favorites? " + YesNoPinned;
     public const string AddFavoriteYn = "Add to favorites? " + YesPinnedNo;
-    public const string ImportYn = "Import .txt? " + YesNo;
+    public const string ImportYn = "Import a text file as a new entry? " + YesNo;
     public const string BackupYn = "Set backup directory? " + YesNo;
     public const string BackupDisableYn = "Disable backup? " + YesNo;
     public const string DiscardTransferCollection = "Discard transfer? " + YesNo;
@@ -176,7 +176,7 @@ internal static class DialogText
     public const string TransferC = "[B] Discard transfer";
     public const string TransferD = "[Esc] Cancel";
 
-    public const string ImportYnNote = "Entry text is imported from ";
+    public const string ImportYnNote = "The file is selected in the file browser.";
     public const string ExportYnNote = "Entry text is exported to ";
     public const string SelectOption = "Select option...";
     public const string SelectFileOption = "Select file preset";
@@ -267,6 +267,9 @@ internal static class DialogText
     public const string DataFileMark = "[Data file]";
     public const string FileBrowserKeys = "j/k Select | l/Enter Open | h Up | / Filter | N New | ? Help | Esc Close";
     public const string NotEncrypted = "[Not encrypted]";
+    public const string FilePickKeys = "j/k Select | l/Enter Open/Select file | h Up | / Filter | Esc Cancel";
+    public const string DirectoryPickKeys = "j/k Select | l/Enter Open | h Up | S Select this directory | Esc Cancel";
+    public const string PreviewCaption = "Last edited (j/k Select, Enter Open)";
     public const string FileTooLarge = "The file is too large to open (the limit is 10 MB)";
     public const string FileNotText = "This is not a text file";
     public const string DirectoryNotFound = "Directory not found";

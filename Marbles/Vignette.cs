@@ -12,6 +12,16 @@ internal static class Vignette
     private static bool _vignetteEnabled = true;
     private static string _vignetteText = string.Empty;
                                     
+    /// <summary>
+    /// True if a vignette is shown on the main menu
+    /// </summary>
+    internal static bool IsShown => _vignetteEnabled && _vignetteText.Length > 0;
+
+    /// <summary>
+    /// The first column used by the vignette
+    /// </summary>
+    internal static int Left => Init.LineWidth - (VignetteWidth + 1);
+
     public static void DisplayVignette()
     {
         if (!_vignetteEnabled) return;

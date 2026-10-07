@@ -28,11 +28,48 @@ internal static class FileExplorer
 
     private static int PageSize => Init.LineCount - ListTop - 2;
 
+    private enum BrowseMode
+    {
+        Edit, // Open text files in the editor
+        PickFile, // Select a file for the caller
+        PickDirectory // Select a directory for the caller (files are not shown)
+    }
+
+    private static BrowseMode _mode;
+    private static string _caption = string.Empty;
+    private static string? _picked;
+
     /// <summary>
     /// Show the file browser. Returns when it is closed, or when a data file was selected
     /// </summary>
     internal static void Run()
     {
+        Browse(BrowseMode.Edit, DialogText.CaptionsFiles);
+    }
+
+    /// <summary>
+    /// Let the user select a file
+    /// </summary>
+    /// <returns>The path of the file, or null if canceled</returns>
+    internal static string? PickFile(string caption)
+    {
+        return Browse(BrowseMode.PickFile, caption);
+    }
+
+    /// <summary>
+    /// Let the user select a directory
+    /// </summary>
+    /// <returns>The path of the directory, or null if canceled</returns>
+    internal static string? PickDirectory(string caption)
+    {
+        return Browse(BrowseMode.PickDirectory, caption);
+    }
+
+    private static string? Browse(BrowseMode mode, string caption)
+    {
+        _mode = mode;
+        _caption = caption;
+        _picked = null;
         _filter = string.Empty;
         _message = string.Empty;
         ChangeDirectory(Directory.Exists(StartDirectory) ? StartDirectory : DataDirectory(), null);
@@ -147,11 +184,20 @@ internal static class FileExplorer
             {
                 if (_items.Count > 0 && Open(_items[_index]))
                 {
-                    // A data file was selected: continue on the login page
+                    // A file was picked, or a data file was selected: continue on the login page
                     break;
                 }
             }
-            else if (key.Key == ConsoleKey.N)
+            else if (_mode == BrowseMode.PickDirectory && key.Key is ConsoleKey.S or ConsoleKey.Spacebar)
+            {
+                // Select the directory shown
+                if (_directory.Length > 0)
+                {
+                    _picked = _directory;
+                    break;
+                }
+            }
+            else if (_mode == BrowseMode.Edit && key.Key == ConsoleKey.N)
             {
                 NewFile();
             }
@@ -166,6 +212,7 @@ internal static class FileExplorer
         // Remember the directory for next time
         if (_directory.Length > 0) StartDirectory = _directory;
         FileIo.SaveSettings();
+        return _picked;
     }
 
     private static string DataDirectory()
@@ -228,9 +275,12 @@ internal static class FileExplorer
                     if (IsShown(directory)) items.Add(new Item(directory.Name, directory.FullName, true, 0));
                 }
 
-                foreach (var file in info.EnumerateFiles().OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
+                if (_mode != BrowseMode.PickDirectory)
                 {
-                    if (IsShown(file)) items.Add(new Item(file.Name, file.FullName, false, file.Length));
+                    foreach (var file in info.EnumerateFiles().OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        if (IsShown(file)) items.Add(new Item(file.Name, file.FullName, false, file.Length));
+                    }
                 }
             }
         }
@@ -271,6 +321,12 @@ internal static class FileExplorer
             }
 
             return false;
+        }
+
+        if (_mode == BrowseMode.PickFile)
+        {
+            _picked = item.Path;
+            return true;
         }
 
         if (item.Name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase))
@@ -473,7 +529,7 @@ internal static class FileExplorer
         Tools.HideCursor();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.ClearScreen();
-        Menu.WriteModeLabel(DialogText.CaptionsFiles, string.Empty, 0);
+        Menu.WriteModeLabel(_caption, string.Empty, 0);
         Menu.WriteNameInTopBar(false);
 
         // The directory (the end of a long path is shown)
@@ -533,7 +589,12 @@ internal static class FileExplorer
         }
         else
         {
-            Console.Write(" " + DialogText.FileBrowserKeys);
+            Console.Write(" " + _mode switch
+            {
+                BrowseMode.PickFile => DialogText.FilePickKeys,
+                BrowseMode.PickDirectory => DialogText.DirectoryPickKeys,
+                _ => DialogText.FileBrowserKeys
+            });
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

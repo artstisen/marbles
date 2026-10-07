@@ -21,6 +21,7 @@ The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`
 - `S` or `/` **Search**: Search the entries of the data file. All the words you type must be found in the title or text of an entry. The result can be sorted (press `Tab`) by _date changed_, _date created_ and alphabetically by _title_.
 - `R` **Reselect**: Select the last edited entry again.
 - `F` **Favorites**: Show the entries added to the favorites list.
+- `P` **Preview**: Turn the preview on or off. The preview lists the 5 last edited entries below the menu: select one with `j` `k` and open it with `Enter`. The preview is off by default.
 - `X` **Logout**
 
 ### Page 2
@@ -35,12 +36,13 @@ The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`
 ### Page 3 (commands)
 - `:undelete` **Undo deletion**: Undo the last deletion of an entry (since you logged in).
 - `:transfer` **Transfer**: Collect entries for transfer to another data file, protected by a key.
-- `:import` **Import .txt**: Import a plain text document (it must be named "import.txt" and placed in the data directory).
+- `:import` **Import text file**: Import a text file as a new entry. The file is selected in the file browser, and the entry gets the name of the file as its title.
 - `:vignette` **Text vignette**: Create a text to be shown on the main menu.
 - `:size` **Change dimensions**: Set the number of rows and columns used by Marbles.
+- `:size auto` **Follow the size of the window**: Turn automatic dimensions on or off. When on, Marbles uses the size of the terminal window (leaving one row and one column unused), checked when the login page, a menu, a list or an entry is shown. A window resized while the editor is open is picked up when the editor is closed. Setting the dimensions yourself with `:size` turns automatic dimensions off.
 - `:color` **Color preset**: Use the next of the color presets, or select one by number: `:color 5` (see page 4 for making your own).
 - `:logo` **Logo preset**: Use the next of the logo presets, or select one by number: `:logo 3` (the last preset shows a text of your own, set as `logotxt` in the settings file).
-- `:backup` **Toggle backup**: Save a copy of the data file in another directory every time it is saved.
+- `:backup` **Toggle backup**: Save a copy of the data file in another directory every time it is saved. The directory is selected in the file browser: go to it and press `S`.
 - `:password` **Reset password**: Change the password of the data file. It is not possible to recover your notes if you forget your password.
 - `:defaults` **Default settings**: Reset all settings.
 - `:restart` **Restart Marbles**
@@ -85,6 +87,6 @@ Opening an entry shows its text with a menu of 3 pages.
 - `:delete` Delete the entry
 - `:revert` Revert to the text before the last edit (since you logged in)
 - `:transfer` Add the entry to the transfer collection
-- `:import` Import "import.txt" as a new entry
+- `:import` Import a text file as a new entry (selected in the file browser)
 - `:export` Export the text of the entry as a .txt file in the data directory. The exported file is not encrypted
 - `Esc` or `:q` Return to the list

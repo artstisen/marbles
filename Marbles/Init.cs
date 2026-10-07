@@ -25,6 +25,40 @@ internal static class Init
     }
 
   
+    /// <summary>
+    /// Use the size of the terminal window as the output dimensions (setting "autosize")
+    /// </summary>
+    internal static bool AutoSize { get; set; }
+
+    /// <summary>
+    /// Set the output dimensions from the size of the terminal window if AutoSize is on.
+    /// One row and one column are left unused, as writing in the last column of the window moves
+    /// the cursor to the next line (and in the bottom right corner makes some terminals scroll).
+    /// </summary>
+    /// <returns>True if the dimensions were changed</returns>
+    internal static bool ApplyAutoSize()
+    {
+        if (!AutoSize) return false;
+        int width, height;
+        try
+        {
+            width = Console.WindowWidth - 1;
+            height = Console.WindowHeight - 1;
+        }
+        catch
+        {
+            // The size of the window is not available: keep the dimensions
+            return false;
+        }
+
+        width = Math.Clamp(width, MinLineWidth, MaxLineWidth);
+        height = Math.Clamp(height, MinLineCount, MaxLineCount);
+        if (width == LineWidth && height == LineCount) return false;
+        LineWidth = (byte)width;
+        LineCount = (byte)height;
+        return true;
+    }
+
     internal static void SetLineWidth(byte width)
     {
         LineWidth = width is >= MinLineWidth and <= MaxLineWidth ? width : MinLineWidth;
@@ -212,6 +246,8 @@ internal static class Init
         Logo.ResetLogoIndex();
         Logo.ResetLogoText();
         Logo.AnimationEnabled = true;
+        AutoSize = false;
+        Actions.PreviewEnabled = false;
         Logo.AnimateNext(); // Sweep the logo when the login page is first shown
         WriteProgressBar(8); // progress
         // Set default colors
@@ -269,6 +305,7 @@ internal static class Init
         FileBrowser.ResolveSubFolderIndex(); // Update subfolder index for selection
         WriteProgressBar(15); // progress
         // Update output dimensions if set by user
+        ApplyAutoSize();
         Log(DialogText.InitUpdateDimensions, true);
         WriteProgressBar(16); // progress
         Log("Target: " + LineWidth + "x" + LineCount, true);

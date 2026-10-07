@@ -103,6 +103,7 @@ internal static class Menu
         Tools.CursorTopLeft();
         if (clearScreen)
         {
+            Init.ApplyAutoSize(); // Follow the size of the terminal window (if automatic dimensions are on)
             Tools.ClearScreen(); // Clear screen
         }
 
@@ -128,7 +129,11 @@ internal static class Menu
                 WriteMenuItem("S /", "Search", true);
                 WriteMenuItem("R", "Reselect", true);
                 WriteMenuItem("F", "Favorites " + Entries.GetFavoritesCount(), true);
+                WriteMenuItem("P",
+                    (Actions.PreviewEnabled ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) + " Preview",
+                    true);
                 WriteMenuItem("X", "Logout", true);
+                Actions.DrawPreview();
                 Vignette.DisplayVignette();
             }
             else if (_manageModePage == 1)
@@ -153,10 +158,13 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 WriteMenuItem(":undelete", "Undo deletion", true);
                 WriteMenuItem(":transfer", "Transfer " + Entries.GetTransferState(), true);
-                WriteMenuItem(":import", "Import .txt", true);
+                WriteMenuItem(":import", "Import text file", true);
                 WriteMenuItem(":vignette", "Text vignette", true);
                 WriteMenuItem("", "-", true);
                 WriteMenuItem(":size", "Change dimensions " + Init.GetOutputDimensions(), true);
+                WriteMenuItem(":size auto",
+                    (Init.AutoSize ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
+                    " Follow the size of the window", true);
                 WriteMenuItem(":color 1-" + Actions.ColorPresetCount,
                     "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] Color preset (no number: next)", true);
                 WriteMenuItem(":logo 1-" + Actions.LogoPresetCount,

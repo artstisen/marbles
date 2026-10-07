@@ -70,6 +70,37 @@ internal static class Actions
                     Menu.DrawTopMenu(false, true, false);
                 }
             }
+            else if (IsPreviewActive && _c.Key is ConsoleKey.J or ConsoleKey.DownArrow)
+            {
+                // Next entry in the preview
+                _previewIndex = _previewIndex < _previewEntries.Count - 1 ? _previewIndex + 1 : 0;
+                DrawPreview();
+            }
+            else if (IsPreviewActive && _c.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+            {
+                // Previous entry in the preview
+                _previewIndex = _previewIndex > 0 ? _previewIndex - 1 : _previewEntries.Count - 1;
+                DrawPreview();
+            }
+            else if (IsPreviewActive && _c.Key == ConsoleKey.Enter)
+            {
+                // Open the entry selected in the preview (Esc returns to the main menu)
+                if (Entries.SelectEntryById(_previewEntries[_previewIndex].Id))
+                {
+                    ResetLastSelectedIndex();
+                    Mode.SetRecallMode(Mode.RecallMode.None);
+                    DisplayEntry(true);
+                }
+            }
+            else if (_c.Key == ConsoleKey.P)
+            {
+                // Toggle the preview
+                PreviewEnabled = !PreviewEnabled;
+                _previewIndex = 0;
+                FileIo.SaveSettings();
+                Menu.SetTopMenuManagePage(0);
+                Menu.DrawTopMenu(false, true, false);
+            }
             else if (_c.Key == ConsoleKey.X)
             {
                 // Logout
@@ -327,6 +358,80 @@ internal static class Actions
         }
     }
 
+    #region Preview on the main menu
+
+    private const int PreviewCount = 5;
+    private const int PreviewTop = 14; // The row of the caption (below the menu items of the first page)
+    private static List<Entry> _previewEntries = new();
+    private static int _previewIndex;
+
+    /// <summary>
+    /// Show the last edited entries on the first page of the main menu (setting "preview")
+    /// </summary>
+    internal static bool PreviewEnabled { get; set; }
+
+    private static bool IsPreviewActive =>
+        PreviewEnabled && Menu.GetTopMenuManagePage() == 0 && _previewEntries.Count > 0;
+
+    /// <summary>
+    /// Draw the preview: the last edited entries, where one can be selected and opened
+    /// </summary>
+    internal static void DrawPreview()
+    {
+        _previewEntries.Clear();
+        if (!PreviewEnabled) return;
+        // The time stamps are in ISO format, so they sort as text
+        _previewEntries = Entries.GetEntries()
+            .OrderByDescending(e => e.DateChanged, StringComparer.Ordinal)
+            .Take(PreviewCount)
+            .ToList();
+        _previewIndex = Math.Clamp(_previewIndex, 0, Math.Max(0, _previewEntries.Count - 1));
+
+        // Stay to the left of the vignette if one is shown
+        var width = (Vignette.IsShown ? Vignette.Left : Init.LineWidth) - 2;
+        Tools.SaveCursorPosition(6);
+        Tools.SetCursorEx(PreviewTop, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(" " + Tools.TruncateString(DialogText.PreviewCaption, width, false));
+        for (var i = 0; i < _previewEntries.Count; i++)
+        {
+            var entry = _previewEntries[i];
+            Tools.SetCursorEx(PreviewTop + 1 + i, 0);
+            if (i == _previewIndex)
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                Console.Write("->");
+            }
+            else
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Console.Write("  ");
+            }
+
+            // Title, and the date changed (without seconds) if there is room for it
+            var date = entry.DateChanged.Length > 3 ? entry.DateChanged[..^3] : entry.DateChanged;
+            var showDate = width >= 60;
+            var titleWidth = width - 4 - (showDate ? date.Length + 3 : 0);
+            var title = Tools.TruncateString(entry.Title, titleWidth, true);
+            ConsoleColors.SetColors(IsFavorite(entry)
+                ? ConsoleColors.ColorPreset.Favorites
+                : ConsoleColors.ColorPreset.Normal);
+            Console.Write(" " + title);
+            if (showDate)
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                Console.Write(" " + new string('.', Math.Max(1, titleWidth - title.Length + 1)) + " ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Console.Write(date);
+            }
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Tools.LoadCursorPosition(6);
+    }
+
+    #endregion
+
     #region Command line commands
 
     // Commands available everywhere
@@ -354,7 +459,7 @@ internal static class Actions
         // A number after the command selects a preset directly, like ":color 5"
         var number = int.TryParse(CommandLine.Argument(command), out var parsedNumber) ? parsedNumber : 0;
         if (CommandLine.Argument(command).Length > 0 &&
-            !(CommandLine.Name(command) is "color" or "logo" && number > 0))
+            !(CommandLine.Name(command) is "color" or "logo" && number > 0) && command != "size auto")
         {
             CommandLine.ShowUnknown(command);
             Menu.DrawTopMenu(false, true, false);
@@ -408,7 +513,19 @@ internal static class Actions
                 EnableColorSettings();
                 break;
             case "size":
-                DisplayOutputDimensions();
+                if (command == "size auto")
+                {
+                    // Toggle automatic dimensions (following the size of the terminal window)
+                    ChangeMenuFocus(2);
+                    Init.AutoSize = !Init.AutoSize;
+                    Init.ApplyAutoSize();
+                    FileIo.SaveSettings();
+                }
+                else
+                {
+                    DisplayOutputDimensions();
+                }
+
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "password":
@@ -1009,6 +1126,8 @@ internal static class Actions
         }
         else if (tempC.Key == ConsoleKey.Enter)
         {
+            // Dimensions set by hand take over from the automatic
+            Init.AutoSize = false;
             FileIo.SaveSettings();
         }
         else if (tempC.Key == ConsoleKey.Escape)
@@ -1307,6 +1426,7 @@ internal static class Actions
             Entries.RegisterSessionId(Entries.CurrentEntry.Id);
             
             Mode.SetMode(Mode.SelectedMode.View);
+            Init.ApplyAutoSize();
             Tools.ClearScreen();
             DrawViewMenu(displayMenuFromPageOne);
             // Preview text content
@@ -1415,27 +1535,23 @@ internal static class Actions
         {
             if (Menu.YesNoPrompt(DialogText.CaptionsBackup, DialogText.BackupYn, string.Empty, false))
             {
-                Tools.ClearScreen();
-                Menu.WriteModeLabel(DialogText.CaptionsBackup, DialogText.EnterPathAndPressEnter, 0);
-                Menu.WriteNameInTopBar(true);
-                Tools.CursorDown(3);
-                Console.Write(" " + DialogText.PathColon);
-                Tools.ShowCursor();
-                var tempBackupPath = Console.ReadLine();
-                Tools.HideCursor();
-
-                if (Tools.IsValidPath(tempBackupPath!) && FileIo.CheckBackupDirectory(tempBackupPath!))
+                // Select the directory in the file browser
+                var backupPath = FileExplorer.PickDirectory(DialogText.CaptionsBackup);
+                if (backupPath == null)
                 {
-                    FileIo.SetBackup(true, tempBackupPath!, true);
+                    // Canceled
+                }
+                else if (Tools.IsValidPath(backupPath) && FileIo.CheckBackupDirectory(backupPath))
+                {
+                    FileIo.SetBackup(true, backupPath, true);
                     Entries.SaveEntriesToFile();
                     Menu.StatusMessage(DialogText.BackupEnabled, true, true, true, DialogText.CaptionsBackup,
-                        string.Empty, false);
+                        "Path: " + backupPath, false);
                 }
                 else
                 {
                     Menu.StatusMessage(DialogText.InvalidBackupPath, true, true, true, DialogText.CaptionsBackup,
-                        "Path: " + tempBackupPath, false);
-                    ToggleBackup();
+                        "Path: " + backupPath, false);
                 }
             }
         }
@@ -1455,34 +1571,42 @@ internal static class Actions
         Menu.DrawTopMenu(false, true, false);
     }
 
+    // Import a text file, selected in the file browser, as a new entry
     private static void ImportEntry()
     {
-        if (Menu.YesNoPrompt(DialogText.CaptionsImport, DialogText.ImportYn,
-                DialogText.ImportYnNote + FileIo.GetImportPathAndFile(), false))
+        if (Menu.YesNoPrompt(DialogText.CaptionsImport, DialogText.ImportYn, DialogText.ImportYnNote, false))
         {
-            // Clear screen and indicate activity while reading file...
-            Tools.ClearScreen();
-            Console.WriteLine(DialogText.Reading);
-            
-            var tempExportStatus = FileIo.ImportTxt();
-            if (tempExportStatus != DialogText.ErrorReadingFile && tempExportStatus != DialogText.FileNotFound)
+            var path = FileExplorer.PickFile(DialogText.CaptionsImport);
+            if (path != null)
             {
-                Entries.NewEntry(DialogText.CaptionsImport + " " + IsoDateTime.GetDateTimeNow(), tempExportStatus);
+                // Clear screen and indicate activity while reading file...
+                Tools.ClearScreen();
+                Console.WriteLine(DialogText.Reading);
+                string text;
+                try
+                {
+                    text = TextFile.Load(path).Text;
+                }
+                catch (Exception e)
+                {
+                    Menu.StatusMessage(e.Message, true, true, true, DialogText.CaptionsImport, string.Empty, false);
+                    Mode.SetMode(Mode.SelectedMode.Manage);
+                    Menu.DrawTopMenu(false, true, false);
+                    return;
+                }
+
+                // The entry gets the name of the file as its title
+                var title = Tools.ConstrainTitle(Path.GetFileNameWithoutExtension(path));
+                if (!Tools.IsValid(title)) title = DialogText.CaptionsImport + " " + IsoDateTime.GetDateTimeNow();
+                Entries.NewEntry(title, text);
                 Entries.SaveEntriesToFile();
                 DisplayEntry(false);
-            }
-            else
-            {
-                Menu.StatusMessage(tempExportStatus, true, true, true, DialogText.CaptionsImport, string.Empty, false);
-                Mode.SetMode(Mode.SelectedMode.Manage);
-                Menu.DrawTopMenu(false, true, false);
+                return;
             }
         }
-        else
-        {
-            Mode.SetMode(Mode.SelectedMode.Manage);
-            Menu.DrawTopMenu(false, true, false);
-        }
+
+        Mode.SetMode(Mode.SelectedMode.Manage);
+        Menu.DrawTopMenu(false, true, false);
     }
 
     private static void ResetSettings()
@@ -1499,6 +1623,9 @@ internal static class Actions
             Vignette.SetDefaultVignetteState();
             Logo.ResetLogoIndex();
             Logo.ResetLogoText();
+            Logo.AnimationEnabled = true;
+            PreviewEnabled = false;
+            Init.AutoSize = false;
             Init.SetDefaultOutputDimensions();
             FileIo.SaveSettings();
             Menu.DrawTopMenu(false, true, false);

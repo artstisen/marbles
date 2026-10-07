@@ -13,7 +13,6 @@ internal static class FileIo
     private const string
         DataDirectory = "data"; // Always use the data directory in the application folder -DO NOT CHANGE
 
-    private const string ImportFileName = "import.txt";
     internal const string SettingsFileName = "settings.ini";
     private static bool _saveBackup;
     private static string _backupPath = string.Empty;
@@ -425,34 +424,6 @@ internal static class FileIo
 
         status = DialogText.FileNotFound;
         return null;
-    }
-
-    internal static string GetImportPathAndFile()
-    {
-        return Path.Combine(DataDirectory, ImportFileName);
-    }
-
-    internal static string ImportTxt()
-    {
-        _tempContent = "";
-        if (CheckDataDirectory() && File.Exists(GetImportPathAndFile()))
-        {
-            try
-            {
-                var lines = File.ReadAllLines(GetImportPathAndFile());
-                _tempContent = string.Join(Entries.NewLineCharString, lines);
-            }
-            catch
-            {
-                _tempContent = DialogText.ErrorReadingFile;
-            }
-        }
-        else
-        {
-            _tempContent = DialogText.FileNotFound;
-        }
-
-        return _tempContent;
     }
 
     #endregion
@@ -926,11 +897,15 @@ internal static class FileIo
         _tempSettings += "linewidth=" + Init.LineWidth + Entries.NewLineChar;
         // Output line count (rows)
         _tempSettings += "linecount=" + Init.LineCount + Entries.NewLineChar;
+        // Follow the size of the terminal window
+        _tempSettings += "autosize=" + (Init.AutoSize ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; OPTIONAL" + Entries.NewLineChar;
         // Vignette
         _tempSettings += "vignette=" + Vignette.GetVignetteState() + Entries.NewLineChar;
+        // Preview of the last edited entries on the main menu
+        _tempSettings += "preview=" + (Actions.PreviewEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; STYLING" + Entries.NewLineChar;
@@ -1068,6 +1043,10 @@ internal static class FileIo
         // Dimensions
         Init.SetLineWidth((byte)Math.Clamp(GetNumber("linewidth") ?? Init.MinLineWidth, 0, byte.MaxValue));
         Init.SetLineCount((byte)Math.Clamp(GetNumber("linecount") ?? Init.MinLineCount, 0, byte.MaxValue));
+
+        // Automatic dimensions and preview (off unless turned on)
+        Init.AutoSize = Tools.TrimToLower(Get("autosize")) == DialogText.BTrue;
+        Actions.PreviewEnabled = Tools.TrimToLower(Get("preview")) == DialogText.BTrue;
 
         // Vignettes
         var vignette = Tools.TrimToLower(Get("vignette"));

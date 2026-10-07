@@ -33,6 +33,9 @@
 - A command line (`:`) replaces the `CTRL+W` shortcuts: `:delete`, `:transfer`, `:size`, `:color`, `:q` ... The commands are shown in the menus.
 - On the login page, `Esc` opens the options menu.
 - `:color 5` and `:logo 3` select a color or logo preset by number.
+- `:size auto` makes Marbles follow the size of the terminal window.
+- `P` on the first page of the main menu shows a preview of the 5 last edited entries, where an entry can be selected and opened.
+- `:import` and `:backup` use the file browser to select the file to import and the backup directory. Any text file can be imported (earlier only "import.txt" in the data directory).
 - The command line is highlighted while typing.
 - See the guides to the [main menu](Guide-to-main-menu.md) and the [login page](Guide-to-login-menu.md).
 
