@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace marbles;
+namespace Marbles;
 /* Console Text Editor: TextArea v1.3.1 (LBS, Mar 2024) */
 /* Originally based on the work by Haydend's TextArea control that was included with the ConsoleDraw project (github.com/Haydend/ConsoleDraw) */
 /* Extracted into a single class (for platform independent plug-and-play implementation), heavily reworked and refactored with major performance improvements,

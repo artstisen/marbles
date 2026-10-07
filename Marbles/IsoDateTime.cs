@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
 
-namespace marbles;
+namespace Marbles;
 
 public static class IsoDateTime
 {

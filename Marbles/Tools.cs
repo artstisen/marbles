@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace marbles;
+namespace Marbles;
 
 internal static class Tools
 {

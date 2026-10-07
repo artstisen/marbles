@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace marbles;
+namespace Marbles;
 
 internal static class Entries
 {

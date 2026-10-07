@@ -1,4 +1,4 @@
-﻿namespace marbles;
+﻿namespace Marbles;
 
 public class FileBrowser
 {

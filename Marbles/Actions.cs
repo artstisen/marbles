@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace marbles;
+namespace Marbles;
 
 internal static class Actions
 {

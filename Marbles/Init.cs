@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace marbles;
+namespace Marbles;
 
 internal static class Init
 {
