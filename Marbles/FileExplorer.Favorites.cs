@@ -129,7 +129,7 @@ internal static partial class FileExplorer
                         return FavoriteAction.Close;
                     case "h":
                     case "help":
-                        Tools.WriteEditorHelp(false, DialogText.HelpSectionFavorites);
+                        Tools.WriteEditorHelp(false, Tools.HelpTopic.Favorites);
                         break;
                     case "color":
                         PickFavoriteColor(selected);
@@ -151,7 +151,7 @@ internal static partial class FileExplorer
             }
             else if (key.KeyChar == '?')
             {
-                Tools.WriteEditorHelp(false, DialogText.HelpSectionFavorites);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Favorites);
             }
             else if (key.KeyChar == '/')
             {

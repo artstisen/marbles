@@ -359,6 +359,12 @@ internal static class DialogText
     public const string FavoriteMoveFiltered = "Remove the filter (Esc) to move favorites";
     public const string HelpSectionFiles = "File browser";
     public const string HelpKeys = "| h/l Page | j/k Line | /text Search | n/N Next/Previous | Esc Close";
+    public const string HelpKeysTopic = "| h/l Page | j/k Line | / Search | n/N Next | ? All keys | Esc Close";
+    public const string HelpKeysAll = "| h/l Page | j/k Line | / Search | n/N Next | ? This page | Esc Close";
+    public const string HelpSectionStart = "Start page";
+    public const string HelpSectionLogin = "Login page";
+    public const string HelpSectionMenus = "Menus and lists";
+    public const string HelpSectionEditor = "Editor";
     public const string HelpNotFound = "Not found: ";
     public const string NotEncrypted = "[Not encrypted]";
     public const string FilePickKeys = "j/k Select | l/Enter Open/Select file | h Up | / Filter | Esc Cancel";

@@ -52,7 +52,7 @@ internal static class Actions
             else if (_c.KeyChar == '?')
             {
                 // Help
-                Tools.WriteEditorHelp(false);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Menus);
                 Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.KeyChar == 'G')
@@ -253,7 +253,7 @@ internal static class Actions
             else if (_c.KeyChar == '?')
             {
                 // Help
-                Tools.WriteEditorHelp(false);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Menus);
                 DisplayEntry(false);
             }
             else if (_c.Key == ConsoleKey.Escape) // Return to manage mode
@@ -482,7 +482,7 @@ internal static class Actions
                 break;
             case "h":
             case "help":
-                Tools.WriteEditorHelp(false);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Menus);
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "about":
@@ -678,7 +678,7 @@ internal static class Actions
                 break;
             case "h":
             case "help":
-                Tools.WriteEditorHelp(false);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Menus);
                 DisplayEntry(false);
                 break;
             case "import":
@@ -733,7 +733,7 @@ internal static class Actions
                 break;
             case "h":
             case "help":
-                Tools.WriteEditorHelp(false);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Menus);
                 break;
             case "browse":
                 BrowseFiles();
@@ -2952,7 +2952,7 @@ internal static class Actions
         else if (_c.KeyChar == '?')
         {
             // Help
-            Tools.WriteEditorHelp(false);
+            Tools.WriteEditorHelp(false, Tools.HelpTopic.Menus);
             ExitNumericSelect(pageNumber, _resultIndex);
             return;
         }

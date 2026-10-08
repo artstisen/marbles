@@ -6,7 +6,7 @@ The same keys are used everywhere in Marbles:
 - `j` `k` (or `Down`/`Up`) Select in a list, or scroll the text of an entry
 - `gg` `G` First/Last (menu page, entry in a list, or top/end of a text)
 - `/` Search
-- `?` Help: the list of keys. The help is shown in pages (`h` `l` previous/next page, `j` `k` one line) and can be searched: `/text` goes to the first line containing "text", and `n` `N` to the next/previous
+- `?` Help: the list of keys. The help is shown in pages (`h` `l` previous/next page, `j` `k` one line) and can be searched: `/text` goes to the first line containing "text", and `n` `N` to the next/previous. The help shows the keys of the page you are on (start page, login page, menus and lists, file browser, favorites or editor); press `?` in the help to see all keys, and `?` again to return to the keys of the page
 - `:browse` Open the [file browser](Guide-to-login-menu.md#file-browser) to edit text files. Opening a file logs out of the data file
 - `:` Command line: type a command and press `Enter`. The commands are shown in the menus
 - `:q` Close/Return. In the main menu: Exit Marbles

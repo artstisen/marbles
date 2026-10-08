@@ -270,7 +270,7 @@ public class TextArea
                 break;
             case EditorRequest.Help:
                 Tools.HideCursor();
-                Tools.WriteEditorHelp(false);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Editor);
                 RedrawAll();
                 break;
             case EditorRequest.InsertCalendar:

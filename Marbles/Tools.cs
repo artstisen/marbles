@@ -482,7 +482,7 @@ internal static class Tools
         else if (_keyInfo.KeyChar == '?')
         {
             // Help
-            WriteEditorHelp(false);
+            WriteEditorHelp(false, HelpTopic.Login);
             LoginRoutine(true);
         }
         else if (_keyInfo.Key == ConsoleKey.H)
@@ -1277,7 +1277,24 @@ internal static class Tools
 
     // Start by "collecting" shortcuts in a list
     // and the print them out with pagination
-    public static void WriteEditorHelp(bool returnToEditorMenu, string section = "")
+    /// <summary>
+    /// The parts of the help: the keys of a page of Marbles
+    /// </summary>
+    internal enum HelpTopic
+    {
+        All,
+        Start, // The page shown at startup, and its configuration
+        Login,
+        Menus, // The main menu, the lists of entries and the entry view
+        Files, // The file browser
+        Favorites, // The favorites of the file browser
+        Editor
+    }
+
+    /// <summary>
+    /// Show the help: the keys of the page it is asked for from, with the option to see all keys
+    /// </summary>
+    public static void WriteEditorHelp(bool returnToEditorMenu, HelpTopic topic = HelpTopic.All)
     {
         // Only fill the lists once
         if (_shortcutList.Count == 0)
@@ -1285,7 +1302,34 @@ internal static class Tools
             _shortcutList = new List<Shortcut>();
             // Start by collecting all shortcuts
             _shortcutList.Add(new Shortcut(string.Empty, "Keyboard Functions", true));
-            _shortcutList.Add(new Shortcut(string.Empty, "Menus and lists", true));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionStart, true));
+            _shortcutList.Add(new Shortcut("j k 1-3", "Select", false));
+            _shortcutList.Add(new Shortcut("Enter", "Open the selected", false));
+            _shortcutList.Add(new Shortcut("  1", "Note Management: the login page", false));
+            _shortcutList.Add(new Shortcut("  2", "Text Editor/File Management: the file browser", false));
+            _shortcutList.Add(new Shortcut("  3", "Configuration: startup and basic settings", false));
+            _shortcutList.Add(new Shortcut("Q Esc", "Exit Marbles (Configuration: Back)", false));
+            _shortcutList.Add(new Shortcut("  Configuration", "j k or the number of the row: Select", false));
+            _shortcutList.Add(new Shortcut("Enter Space", "Change the selected setting", false));
+            _shortcutList.Add(new Shortcut("l h", "Next/Previous color scheme or logo", false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogin, true));
+            _shortcutList.Add(new Shortcut("Enter", "Log in with the password typed", false));
+            _shortcutList.Add(new Shortcut("Left Right Tab", "Select a data file", false));
+            _shortcutList.Add(new Shortcut("Up Down", "Select a directory", false));
+            _shortcutList.Add(new Shortcut("Space", "Move the data file to another directory", false));
+            _shortcutList.Add(new Shortcut("Esc", "Clear the password. When empty: Options", false));
+            _shortcutList.Add(new Shortcut("Esc I", "Information about the data file", false));
+            _shortcutList.Add(new Shortcut("Esc N", "New data file", false));
+            _shortcutList.Add(new Shortcut("Esc X C D", "Rename/Copy/Delete the data file", false));
+            _shortcutList.Add(new Shortcut("Esc M", "Merge two data files, or export one as XML", false));
+            _shortcutList.Add(new Shortcut("Esc F", "Browse and edit text files", false));
+            _shortcutList.Add(new Shortcut("Esc T", "Select mode (notes/text editor/startup)", false));
+            _shortcutList.Add(new Shortcut("Esc h l j k", "Select data file/directory", false));
+            _shortcutList.Add(new Shortcut("Esc R Y", "Refresh the page/Restart Marbles", false));
+            _shortcutList.Add(new Shortcut("Esc G S", "Show the log/Edit settings.ini", false));
+            _shortcutList.Add(new Shortcut("Esc ?", "Show this help", false));
+            _shortcutList.Add(new Shortcut("Esc Q", "Exit Marbles", false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
             _shortcutList.Add(new Shortcut("h l", "Previous/Next page (as Left/Right)", false));
             _shortcutList.Add(new Shortcut("j k", "Select in lists/Scroll text (as Down/Up)", false));
             _shortcutList.Add(new Shortcut("P", "Main menu: Preview of the last edited entries", false));
@@ -1299,10 +1343,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":logout", "Logout", false));
             _shortcutList.Add(new Shortcut("Tab V", "Favorites: Move the pinned entry (j k, then Esc)", false));
             _shortcutList.Add(new Shortcut(":pin", "Favorites: Pick the color of the pinned entry", false));
-            _shortcutList.Add(new Shortcut("Esc", "Return/Cancel (login page: Options)", false));
-            _shortcutList.Add(new Shortcut("Esc ?", "Login page: Show this help", false));
-            _shortcutList.Add(new Shortcut("Esc F", "Login page: Browse and edit text files", false));
-            _shortcutList.Add(new Shortcut("Esc T", "Login page: Select mode (notes/text editor/startup)", false));
+            _shortcutList.Add(new Shortcut("Esc", "Return/Cancel", false));
             _shortcutList.Add(new Shortcut(":browse", "Browse files (opening a file logs out)", false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFiles, true));
             _shortcutList.Add(new Shortcut("j k", "Select (as Down/Up)", false));
@@ -1340,7 +1381,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("/text", "Only show paths containing \"text\" (Esc: all)", false));
             _shortcutList.Add(new Shortcut("Esc Q F h", "Back to the file browser", false));
             _shortcutList.Add(new Shortcut("  The list", "Kept in favorites.txt in the data directory", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Editor", true));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionEditor, true));
             _shortcutList.Add(new Shortcut(string.Empty, "Modes", true));
             _shortcutList.Add(new Shortcut("Esc", "Normal mode (navigate and give commands)", false));
             _shortcutList.Add(new Shortcut("i a", "Insert mode before/after the cursor", false));
@@ -1437,37 +1478,57 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":clear", "Clear all", false));
         }
 
-        ShowHelp(section);
+        ShowHelp(topic);
         if (returnToEditorMenu)
         {
             Actions.DrawEditMenu();
         }
     }
 
-    // The help viewer: the list of keys shown in pages, which can be browsed both ways and searched
-    private static void ShowHelp(string section)
+    // The lines of the help that belong to a topic: from its headline to the next headline (the editor: the
+    // rest of the list, as it has several headlines)
+    private static (int First, int Count) HelpRange(HelpTopic topic)
     {
+        var headline = topic switch
+        {
+            HelpTopic.Start => DialogText.HelpSectionStart,
+            HelpTopic.Login => DialogText.HelpSectionLogin,
+            HelpTopic.Menus => DialogText.HelpSectionMenus,
+            HelpTopic.Files => DialogText.HelpSectionFiles,
+            HelpTopic.Favorites => DialogText.HelpSectionFavorites,
+            HelpTopic.Editor => DialogText.HelpSectionEditor,
+            _ => string.Empty
+        };
+        var first = _shortcutList.FindIndex(s => s.IsHeadline && s.GetDescription() == headline);
+        if (first < 0) return (0, _shortcutList.Count);
+        var end = topic == HelpTopic.Editor
+            ? -1
+            : _shortcutList.FindIndex(first + 1, s => s.IsHeadline);
+        return (first, (end < 0 ? _shortcutList.Count : end) - first);
+    }
+
+    // The help viewer: the list of keys shown in pages, which can be browsed both ways and searched.
+    // When asked for with a topic only the keys of the topic are shown, and "?" switches to all keys and back
+    private static void ShowHelp(HelpTopic topic)
+    {
+        var (topicFirst, topicCount) = HelpRange(topic);
+        var showAll = topic == HelpTopic.All;
+        var lines = showAll ? _shortcutList : _shortcutList.GetRange(topicFirst, topicCount);
         var top = 0;
         var search = string.Empty;
         var match = -1;
         var message = string.Empty;
-        // Start at a section if asked for
-        if (section.Length > 0)
-        {
-            top = Math.Max(0, _shortcutList.FindIndex(s => s.IsHeadline && s.GetDescription() == section));
-        }
-
         HideCursor();
         while (true)
         {
             var pageSize = Init.LineCount - 1;
-            var maxTop = Math.Max(0, _shortcutList.Count - pageSize);
+            var maxTop = Math.Max(0, lines.Count - pageSize);
             top = Math.Clamp(top, 0, maxTop);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             ClearScreen();
-            for (var row = 0; row < pageSize && top + row < _shortcutList.Count; row++)
+            for (var row = 0; row < pageSize && top + row < lines.Count; row++)
             {
-                var item = _shortcutList[top + row];
+                var item = lines[top + row];
                 SetCursorEx(row, 0);
                 item.WriteShortcut(false, true);
                 // Mark the lines matching the search
@@ -1483,7 +1544,7 @@ internal static class Tools
             }
 
             // Page number and keys
-            var pages = (_shortcutList.Count + pageSize - 1) / pageSize;
+            var pages = Math.Max(1, (lines.Count + pageSize - 1) / pageSize);
             var page = top >= maxTop ? pages : top / pageSize + 1;
             SetCursorEx(Init.LineCount - 1, 0);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
@@ -1495,7 +1556,8 @@ internal static class Tools
             }
             else
             {
-                Console.Write(DialogText.HelpKeys);
+                Console.Write(topic == HelpTopic.All ? DialogText.HelpKeys :
+                    showAll ? DialogText.HelpKeysAll : DialogText.HelpKeysTopic);
             }
 
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -1507,13 +1569,24 @@ internal static class Tools
                 break;
             }
 
+            if (key.KeyChar == '?' && topic != HelpTopic.All)
+            {
+                // Switch between the keys of the page and all keys (shown from where the page is found)
+                showAll = !showAll;
+                lines = showAll ? _shortcutList : _shortcutList.GetRange(topicFirst, topicCount);
+                top = showAll ? topicFirst : 0;
+                search = string.Empty;
+                match = -1;
+                continue;
+            }
+
             if (key.KeyChar == '/')
             {
                 // Search: go to the first matching line from the top of the page
                 var text = CommandLine.Read('/', false);
                 if (text == null) continue;
                 search = text;
-                match = FindHelpLine(search, top - 1, true);
+                match = FindHelpLine(lines, search, top - 1, true);
                 if (match < 0)
                 {
                     message = DialogText.HelpNotFound + search;
@@ -1522,7 +1595,7 @@ internal static class Tools
             }
             else if (key.KeyChar is 'n' or 'N' && search.Length > 0)
             {
-                match = FindHelpLine(search, match, key.KeyChar == 'n');
+                match = FindHelpLine(lines, search, match, key.KeyChar == 'n');
             }
             else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
             {
@@ -1566,13 +1639,13 @@ internal static class Tools
     }
 
     // The next (or previous) line of the help containing a text, wrapping around. -1 if there is none
-    private static int FindHelpLine(string search, int from, bool forward)
+    private static int FindHelpLine(List<Shortcut> lines, string search, int from, bool forward)
     {
-        var count = _shortcutList.Count;
+        var count = lines.Count;
         for (var i = 1; i <= count; i++)
         {
             var index = ((from + (forward ? i : -i)) % count + count) % count;
-            if (_shortcutList[index].Text.Contains(search, StringComparison.OrdinalIgnoreCase)) return index;
+            if (lines[index].Text.Contains(search, StringComparison.OrdinalIgnoreCase)) return index;
         }
 
         return -1;

@@ -231,7 +231,7 @@ internal static class StartMenu
             }
             else if (key.KeyChar == '?')
             {
-                Tools.WriteEditorHelp(false);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Start);
             }
             else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow)
             {
@@ -366,7 +366,7 @@ internal static class StartMenu
             }
             else if (key.KeyChar == '?')
             {
-                Tools.WriteEditorHelp(false);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Start);
                 return Result.Redraw;
             }
         }

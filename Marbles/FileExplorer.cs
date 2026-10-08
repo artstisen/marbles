@@ -121,7 +121,7 @@ internal static partial class FileExplorer
                 }
                 else if (name is "h" or "help")
                 {
-                    Tools.WriteEditorHelp(false, DialogText.HelpSectionFiles);
+                    Tools.WriteEditorHelp(false, Tools.HelpTopic.Files);
                 }
                 else if (name == "cd" && command != null)
                 {
@@ -152,7 +152,7 @@ internal static partial class FileExplorer
             }
             else if (key.KeyChar == '?')
             {
-                Tools.WriteEditorHelp(false, DialogText.HelpSectionFiles);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Files);
             }
             else if (key.KeyChar == '/')
             {
