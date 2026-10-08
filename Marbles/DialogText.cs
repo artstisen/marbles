@@ -309,7 +309,7 @@ internal static class DialogText
     public const string Drives = "Drives";
     public const string DirectoryMark = "<DIR>";
     public const string DataFileMark = "[Data file]";
-    public const string FileBrowserKeys = "j/k Select | l Open | h Up | / Filter | F Favorites | ? Help | Esc Close";
+    public const string FileBrowserKeys = "j/k Select | l Open | h Up | / Filter | F Faves | ? Help | Esc Close";
 
     // File management in the file browser
     public const string NewDirectory = "New directory";
@@ -358,7 +358,7 @@ internal static class DialogText
     public const string HelpSectionFavorites = "File browser favorites";
     public const string FavoritesHeader = "Files and directories marked as favorites (P in the file browser)";
     public const string FavoritesEmpty = "No favorites yet: press P on a file or directory in the file browser";
-    public const string FavoritesKeys = "Enter Open | B Show in browser | Tab/V Move | C Color | P Remove | Esc Close";
+    public const string FavoritesKeys = "Enter Open | B Show | Tab/V Move | C Color | P Remove | Esc Close";
     public const string FavoriteAdded = "Added to the favorites";
     public const string FavoriteRemoved = "Removed from the favorites";
     public const string FavoriteMissing = "(missing)";

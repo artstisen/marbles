@@ -901,6 +901,9 @@ internal static class Menu
 
     private static string _tempCurrentSaveIndicator = string.Empty;
 
+    // The descriptions of key hints are shown as blocks of the same width (longer descriptions get wider blocks)
+    private const int KeyHintWidth = 6;
+
     /// <summary>
     /// Write a line of keys and what they do ("j/k Select | Esc Close"), with the descriptions highlighted
     /// </summary>
@@ -912,9 +915,9 @@ internal static class Menu
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(" " + (space < 0 ? hint : hint[..space]));
             if (space < 0) continue;
-            Console.Write(" ");
+            // The block follows the key directly: its first cell is a blank space
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.NormalInverted);
-            Console.Write(" " + hint[(space + 1)..] + " ");
+            Console.Write(" " + hint[(space + 1)..].PadRight(KeyHintWidth) + " ");
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
