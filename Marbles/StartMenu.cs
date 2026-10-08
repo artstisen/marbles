@@ -185,7 +185,10 @@ internal static class StartMenu
             for (var i = 0; i < choices.Length; i++)
             {
                 Tools.SetCursorEx(FirstRow + i, Left);
+                // The pointer is highlighted as in the lists of entries
+                if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
                 Console.Write(i == selected ? "->" : "  ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             }
 
             var key = Console.ReadKey(true);
