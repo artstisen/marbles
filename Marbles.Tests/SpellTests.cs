@@ -532,6 +532,25 @@ public class SpellTests : IDisposable
     }
 
     [Fact]
+    public void Editor_SpellCommands_DoTheSameAsTheKeys()
+    {
+        var editor = Editor("hello wurld\nthe wird qwerty");
+        editor.Type(":spell xx<CR>");
+        editor.Type(":spellnext<CR>");
+        Assert.Equal(new TextPos(0, 6), editor.Cursor);
+        editor.Type(":spellnext<CR>");
+        Assert.Equal(new TextPos(1, 4), editor.Cursor);
+        editor.Type(":spellprev<CR>");
+        Assert.Equal(new TextPos(0, 6), editor.Cursor);
+        Assert.Equal(EditorRequest.SpellSuggest, editor.Type(":spellsuggest<CR>"));
+        Assert.Equal(EditorRequest.SpellSuggest, editor.Type(":suggest<CR>"));
+        editor.Type("G$:spelladd<CR>");
+        Assert.Equal(DialogText.SpellWordAdded + "qwerty", editor.Message);
+        editor.Type(":nospell<CR>:spellnext<CR>");
+        Assert.Equal(DialogText.SpellOff, editor.Message);
+    }
+
+    [Fact]
     public void Editor_ScrollCommandsStillWork()
     {
         var editor = Editor(string.Join("\n", Enumerable.Range(1, 50).Select(i => "line " + i)));

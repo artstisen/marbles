@@ -300,6 +300,9 @@ public class TextArea
             case EditorRequest.SpellSuggest:
                 ShowSpellSuggestions();
                 break;
+            case EditorRequest.ReplaceDialog:
+                ShowReplaceDialog();
+                break;
             case EditorRequest.SaveSettings:
                 // Not while the settings file itself is being edited
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
@@ -307,11 +310,43 @@ public class TextArea
         }
     }
 
+    // Show the find-and-replace box on top of the text, and replace as asked for
+    private void ShowReplaceDialog()
+    {
+        const int firstRow = 1;
+        DrawStatusLine(); // Remove the command from the bottom line
+        var left = Math.Max(0, (Init.LineWidth - ReplaceDialog.Width) / 2 - _left);
+        var lines = _engine.ReplaceLines;
+        if (ReplaceDialog.Show(_top + firstRow, _left + left, lines != null, out var scope))
+        {
+            var cursorLine = _engine.Cursor.Line;
+            var (first, last) = scope switch
+            {
+                ReplaceDialog.Scope.SelectedLines when lines != null => lines.Value,
+                ReplaceDialog.Scope.CurrentLine => (cursorLine, cursorLine),
+                _ => (0, _engine.Buffer.LineCount - 1)
+            };
+            _engine.Replace(ReplaceDialog.Find, ReplaceDialog.Replacement, ReplaceDialog.MatchCase,
+                ReplaceDialog.IsRegex, first, last);
+        }
+
+        // Write the rows that were covered again
+        for (var r = firstRow; r < firstRow + ReplaceDialog.Height && r < _height; r++)
+        {
+            _shownRows[r] = null;
+            _shownCells[r] = Math.Max(_shownCells[r], left + ReplaceDialog.Width);
+        }
+
+        UpdateChangeIndicator();
+        Draw();
+    }
+
     // Show suggestions for the word at the cursor in a box on top of the text. The word is replaced with the
     // suggestion picked (with its number, or with j/k and Enter), or added to the word list with "a"
     private void ShowSpellSuggestions()
     {
         Tools.HideCursor();
+        DrawStatusLine(); // Remove the command or pending key from the bottom line
         var word = _engine.SpellWord();
         var suggestions = _engine.SpellSuggestions();
         if (suggestions.Count > _height - 3) suggestions = suggestions.Take(Math.Max(0, _height - 3)).ToList();

@@ -7,6 +7,8 @@
 - **Esc closes the editor**: in Normal mode `Esc` works as `:q` (it asks what to do with unsaved changes). It still leaves Insert and Visual mode, cancels a half typed command and removes the search highlighting first.
 - **Deleting an entry** asks for confirmation once instead of twice (a deleted entry can be brought back with `:undelete`).
 - **Colors of pinned entries**: `:pin` in the favorites list shows a list of 16 text colors to pick from (`:pin 13` picks by number). Pinned entries are shown as colored text instead of with a highlighted background. The three highlight styles of earlier versions (`:pin 1-3`) are shown as cyan, yellow and red.
+- **Find-and-replace box**: `:replace` in the editor shows a box with the text to find, the replacement and options (match case, regular expression, whole text/current line/selected lines), as an alternative to writing a `:s` command.
+- **Spell checking commands**: `:spellnext`, `:spellprev`, `:suggest` and `:spelladd` do the same as `]s`, `[s`, `z=` and `zg`.
 - **Color scheme editor** (`:scheme`): colors are picked from the same list of 16 colors (`l` or `Space`, and `T` for the text color of the highlight styles) instead of stepping through them.
 - The version number on the login page is placed correctly next to the logo.
 - The color settings page says "Editor title" (the scroll indicator no longer exists).

@@ -139,4 +139,58 @@ public class EditorSearchTests
         Assert.Equal("'<,'>", editor.CommandText);
         Assert.Equal(EditorMode.Command, editor.Mode);
     }
+
+    #region The find-and-replace box (:replace)
+
+    [Fact]
+    public void ReplaceCommand_AsksForTheBox()
+    {
+        var editor = Editor("one\ntwo\nthree");
+        Assert.Equal(EditorRequest.ReplaceDialog, editor.Type(":replace<CR>"));
+        Assert.Null(editor.ReplaceLines);
+        // With lines selected
+        Assert.Equal(EditorRequest.ReplaceDialog, editor.Type("jVj:replace<CR>"));
+        Assert.Equal((1, 2), editor.ReplaceLines);
+    }
+
+    [Fact]
+    public void Replace_PlainText_IgnoringCase()
+    {
+        var editor = Editor("a.b A.B axb\na.b");
+        editor.Replace("a.b", "$1 & x", false, false, 0, 1);
+        // The text is not a regular expression, and the replacement is used as it is
+        Assert.Equal("$1 & x $1 & x axb\n$1 & x", editor.GetText());
+        Assert.Equal("3 substitutions on 2 lines", editor.Message);
+        // One step to undo
+        editor.Type("u");
+        Assert.Equal("a.b A.B axb\na.b", editor.GetText());
+    }
+
+    [Fact]
+    public void Replace_MatchCase_OnSomeLines()
+    {
+        var editor = Editor("cat Cat\ncat Cat\ncat Cat");
+        editor.Replace("Cat", "dog", true, false, 1, 1);
+        Assert.Equal("cat Cat\ncat dog\ncat Cat", editor.GetText());
+    }
+
+    [Fact]
+    public void Replace_RegularExpression()
+    {
+        var editor = Editor("x12 y345");
+        editor.Replace(@"([a-z])(\d+)", @"\2\1", false, true, 0, 0);
+        Assert.Equal("12x 345y", editor.GetText());
+    }
+
+    [Fact]
+    public void Replace_NotFound()
+    {
+        var editor = Editor("text");
+        editor.Replace("a(b", "x", false, false, 0, 0);
+        Assert.True(editor.MessageIsError);
+        Assert.Equal("Pattern not found: a(b", editor.Message);
+        Assert.Equal("text", editor.GetText());
+    }
+
+    #endregion
 }

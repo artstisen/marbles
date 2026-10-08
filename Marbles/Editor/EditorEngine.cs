@@ -30,6 +30,7 @@ internal enum EditorRequest
     ClearAll,
     ClearRegisters,
     SpellSuggest, // Show suggestions for the word at the cursor
+    ReplaceDialog, // Show the find-and-replace box
     SaveSettings
 }
 
@@ -566,6 +567,11 @@ internal sealed partial class EditorEngine
             {
                 ApplyOperatorToLines('y', first, last);
             }
+            else if (command is "replace" or "rep" && !SingleLine)
+            {
+                ReplaceLines = range;
+                _request = EditorRequest.ReplaceDialog;
+            }
             else
             {
                 SetError("Not an editor command: " + command);
@@ -595,6 +601,26 @@ internal sealed partial class EditorEngine
             case "nospell":
             case "set nospell":
                 TurnSpellOff();
+                break;
+            case "spellnext":
+                JumpToMisspelled(true, 1);
+                break;
+            case "spellprev":
+                JumpToMisspelled(false, 1);
+                break;
+            case "spellsuggest":
+            case "suggest":
+                RequestSuggestions();
+                break;
+            case "spellgood":
+            case "spelladd":
+                AddSpellWord();
+                break;
+            case "replace":
+            case "rep":
+                if (SingleLine) break;
+                ReplaceLines = null;
+                _request = EditorRequest.ReplaceDialog;
                 break;
             case "w":
             case "write":
@@ -886,9 +912,42 @@ internal sealed partial class EditorEngine
         }
 
         bool? ignoreCase = flags.Contains('i') ? true : flags.Contains('I') ? false : null;
+        Substitute(pattern, ConvertReplacement(replacement), ignoreCase, flags.Contains('g'), firstLine, lastLine,
+            pattern);
+    }
+
+    /// <summary>
+    /// The lines selected when the find-and-replace box was asked for (null if none were)
+    /// </summary>
+    internal (int First, int Last)? ReplaceLines { get; private set; }
+
+    /// <summary>
+    /// Replace all of a text on a range of lines (as one change that can be undone)
+    /// </summary>
+    /// <param name="find">The text to find</param>
+    /// <param name="replacement">The text to replace it with</param>
+    /// <param name="matchCase">False to ignore case</param>
+    /// <param name="isRegex">True if "find" is a regular expression (and "replacement" as in the ":s" command)</param>
+    /// <param name="firstLine">The first line</param>
+    /// <param name="lastLine">The last line</param>
+    internal void Replace(string find, string replacement, bool matchCase, bool isRegex, int firstLine,
+        int lastLine)
+    {
+        if (find.Length == 0) return;
+        _stepCursor = Cursor;
+        Substitute(isRegex ? find : Regex.Escape(find),
+            isRegex ? ConvertReplacement(replacement) : replacement.Replace("$", "$$"), !matchCase, true,
+            Math.Max(0, firstLine), lastLine, find);
+        if (Buffer.IsStepOpen) Buffer.EndStep(Cursor);
+        ClampCursor();
+        EnsureCursorVisible();
+    }
+
+    // Replace the matches of a pattern on a range of lines. The replacement is in the form of .NET
+    private void Substitute(string pattern, string replacement, bool? ignoreCase, bool global, int firstLine,
+        int lastLine, string shownPattern)
+    {
         var regex = CreateRegex(pattern, ignoreCase);
-        var global = flags.Contains('g');
-        replacement = ConvertReplacement(replacement);
         SetSearch(pattern);
         var substitutions = 0;
         var lines = 0;
@@ -919,7 +978,7 @@ internal sealed partial class EditorEngine
 
         if (substitutions == 0)
         {
-            SetError("Pattern not found: " + pattern);
+            SetError("Pattern not found: " + shownPattern);
             return;
         }
 

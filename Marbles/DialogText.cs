@@ -72,6 +72,19 @@ internal static class DialogText
     public const string CaptionsColorize = "Set color";
     public const string PinColorCaption = "Pinned color";
     public const string ColorDefault = "Default";
+
+    // The find-and-replace box of the editor
+    public const string ReplaceCaption = "Replace";
+    public const string ReplaceFind = "Find:";
+    public const string ReplaceWith = "Replace with:";
+    public const string ReplaceMatchCase = "Match case";
+    public const string ReplaceRegex = "Regular expression";
+    public const string ReplaceWhere = "Where:";
+    public const string ReplaceWholeText = "Whole text";
+    public const string ReplaceCurrentLine = "Current line";
+    public const string ReplaceSelectedLines = "Selected lines";
+    public const string ReplaceRun = "Replace all";
+    public const string ReplaceKeys = "Enter/Space Edit or change | j/k Select | Esc Cancel";
     public const string ColorCaption = "Color";
     public const string TextColorCaption = "Text color";
     public const string Favorites = "Favorites";

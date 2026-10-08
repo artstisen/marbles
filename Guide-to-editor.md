@@ -75,6 +75,18 @@ Press `v` (text) or `V` (whole lines) and select with the movement keys. Then:
 The text you search for is a regular expression: `/\d+` finds numbers and `/cat|dog` finds either word. A search in lowercase ignores case; with an uppercase letter in it the search matches case.
 
 ## Replace
+The easy way is `:replace`, which shows a box to fill in:
+
+- **Find** and **Replace with**: the box opens in the _Find_ field. Type the text and press `Enter` to continue to the next field
+- **Match case**: off by default, so `cat` also finds `Cat`
+- **Regular expression**: off by default, so the text is found exactly as written. When on, _Find_ is a regular expression and `&`, `\1` and `\n` can be used in _Replace with_ (see below)
+- **Where**: the whole text or the current line. With lines selected in V-LINE mode before typing `:replace`, also the selected lines
+- **Replace all**: press `Enter` here to replace
+
+`j` `k` select a row, `Enter` or `Space` edit a field or change an option, and `Esc` closes the box (in a field: leaves the text as it was). The box remembers what you entered. The replacement is one change: `u` undoes it.
+
+The same can be written as a command:
+
 - `:s/old/new/` Replace the first `old` on the line with `new`
 - `:s/old/new/g` Replace all on the line
 - `:%s/old/new/g` Replace all in the text
@@ -89,9 +101,9 @@ Spell checking is off until you ask for it. It uses the spell files of Vim and N
 - `:spell` Check the text and mark the misspelled words. The bottom line tells how many were found
 - `:spell da,en` As above, with Danish and English. The languages are remembered (`spelllang` in the settings file)
 - `:nospell` Remove the marks
-- `]s` `[s` Go to the next/previous misspelled word
-- `z=` Show suggestions for the word under the cursor. Press the number of a suggestion (or select it with `j` `k` and press `Enter`) to replace the word, `a` to add the word to your word list, or `Esc` to close
-- `zg` Add the word under the cursor to your word list
+- `]s` `[s` (or `:spellnext` `:spellprev`) Go to the next/previous misspelled word
+- `z=` (or `:suggest`) Show suggestions for the word under the cursor. Press the number of a suggestion (or select it with `j` `k` and press `Enter`) to replace the word, `a` to add the word to your word list, or `Esc` to close
+- `zg` (or `:spelladd`) Add the word under the cursor to your word list
 
 The marks follow the text while you edit, until you use `:nospell` or close the editor. The word you are writing is not marked until you leave it. Single letters, words with digits, and web and e-mail addresses are not checked.
 
