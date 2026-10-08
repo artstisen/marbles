@@ -889,12 +889,23 @@ internal sealed partial class EditorEngine
                     // The command will work on the selected lines
                     _selectionFirstLine = Math.Min(_visualAnchor.Line, Cursor.Line);
                     _selectionLastLine = Math.Max(_visualAnchor.Line, Cursor.Line);
+                    // Text selected within a line (a word) can be used by the command
+                    _selectionText = string.Empty;
+                    if (Mode == EditorMode.Visual && _visualAnchor.Line == Cursor.Line && CurrentLine.Length > 0)
+                    {
+                        var first = Math.Min(_visualAnchor.Col, Cursor.Col);
+                        var last = Math.Min(Math.Max(_visualAnchor.Col, Cursor.Col), CurrentLine.Length - 1);
+                        _selectionText = CurrentLine.Substring(first,
+                            last + TextMetrics.ElementLength(CurrentLine, last) - first);
+                    }
+
                     Mode = EditorMode.Normal;
                     OpenCommandLine(':');
                     CommandText = "'<,'>";
                 }
                 else
                 {
+                    _selectionText = string.Empty;
                     OpenCommandLine(':');
                 }
 

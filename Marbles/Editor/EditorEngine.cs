@@ -94,6 +94,7 @@ internal sealed partial class EditorEngine
     private bool _searchForward = true;
     private int _selectionFirstLine; // The lines of the last selection a command was started from ("'<" and "'>")
     private int _selectionLastLine;
+    private string _selectionText = string.Empty; // The text of that selection, if it was within a line
 
     // The cell the cursor tries to stay on when moving up and down (-1 = the cell it is on)
     private int _desiredCell = -1;
@@ -569,7 +570,9 @@ internal sealed partial class EditorEngine
             }
             else if (command is "replace" or "rep" && !SingleLine)
             {
-                ReplaceLines = range;
+                // Text selected within a line is what to find. Else the selected lines are where to replace
+                ReplaceFind = _selectionText;
+                ReplaceLines = _selectionText.Length > 0 ? null : range;
                 _request = EditorRequest.ReplaceDialog;
             }
             else
@@ -619,6 +622,7 @@ internal sealed partial class EditorEngine
             case "replace":
             case "rep":
                 if (SingleLine) break;
+                ReplaceFind = string.Empty;
                 ReplaceLines = null;
                 _request = EditorRequest.ReplaceDialog;
                 break;
@@ -920,6 +924,11 @@ internal sealed partial class EditorEngine
     /// The lines selected when the find-and-replace box was asked for (null if none were)
     /// </summary>
     internal (int First, int Last)? ReplaceLines { get; private set; }
+
+    /// <summary>
+    /// The text selected when the find-and-replace box was asked for: the text to find (empty if none was)
+    /// </summary>
+    internal string ReplaceFind { get; private set; } = string.Empty;
 
     /// <summary>
     /// Replace all of a text on a range of lines (as one change that can be undone)

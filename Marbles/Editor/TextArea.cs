@@ -317,7 +317,7 @@ public class TextArea
         DrawStatusLine(); // Remove the command from the bottom line
         var left = Math.Max(0, (Init.LineWidth - ReplaceDialog.Width) / 2 - _left);
         var lines = _engine.ReplaceLines;
-        if (ReplaceDialog.Show(_top + firstRow, _left + left, lines != null, out var scope))
+        if (ReplaceDialog.Show(_top + firstRow, _left + left, lines != null, _engine.ReplaceFind, out var scope))
         {
             var cursorLine = _engine.Cursor.Line;
             var (first, last) = scope switch

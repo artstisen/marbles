@@ -154,6 +154,29 @@ public class EditorSearchTests
     }
 
     [Fact]
+    public void ReplaceCommand_TakesTheSelectedWord()
+    {
+        var editor = Editor("one two three\nfour");
+        // A word selected within a line is the text to find (and not lines to replace on)
+        Assert.Equal(EditorRequest.ReplaceDialog, editor.Type("wviw:replace<CR>"));
+        Assert.Equal("two", editor.ReplaceFind);
+        Assert.Null(editor.ReplaceLines);
+        // Selected backwards
+        editor.Type("$vb:rep<CR>");
+        Assert.Equal("three", editor.ReplaceFind);
+        // Lines selected, or a selection over several lines: where to replace
+        editor.Type("ggV:replace<CR>");
+        Assert.Equal("", editor.ReplaceFind);
+        Assert.Equal((0, 0), editor.ReplaceLines);
+        editor.Type("ggvj:replace<CR>");
+        Assert.Equal("", editor.ReplaceFind);
+        Assert.Equal((0, 1), editor.ReplaceLines);
+        // No selection
+        editor.Type(":replace<CR>");
+        Assert.Equal("", editor.ReplaceFind);
+    }
+
+    [Fact]
     public void Replace_PlainText_IgnoringCase()
     {
         var editor = Editor("a.b A.B axb\na.b");

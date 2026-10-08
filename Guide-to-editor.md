@@ -78,6 +78,7 @@ The text you search for is a regular expression: `/\d+` finds numbers and `/cat|
 The easy way is `:replace`, which shows a box to fill in:
 
 - **Find** and **Replace with**: the box opens in the _Find_ field. Type the text and press `Enter` to continue to the next field
+- If a word (or other text within one line) is selected in VISUAL mode when you type `:replace`, it is filled in as the text to find, and the box opens in the _Replace with_ field
 - **Match case**: off by default, so `cat` also finds `Cat`
 - **Regular expression**: off by default, so the text is found exactly as written. When on, _Find_ is a regular expression and `&`, `\1` and `\n` can be used in _Replace with_ (see below)
 - **Where**: the whole text or the current line. With lines selected in V-LINE mode before typing `:replace`, also the selected lines

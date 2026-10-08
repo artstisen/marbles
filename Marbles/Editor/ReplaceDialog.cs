@@ -49,9 +49,10 @@ internal static class ReplaceDialog
     /// <param name="top">The row of the box</param>
     /// <param name="left">The column of the box</param>
     /// <param name="hasSelection">True if lines were selected when the box was asked for</param>
+    /// <param name="find">The text to find, if it is given by a selection in the text (else empty)</param>
     /// <param name="scope">Where to replace</param>
     /// <returns>True to replace, false if the box was closed</returns>
-    internal static bool Show(int top, int left, bool hasSelection, out Scope scope)
+    internal static bool Show(int top, int left, bool hasSelection, string find, out Scope scope)
     {
         _top = top;
         _left = left;
@@ -61,8 +62,14 @@ internal static class ReplaceDialog
         Tools.HideCursor();
         DrawFrame();
         var selected = RowFind;
-        // Start by writing what to find
+        // Start by writing what to find, or the replacement if a word was selected in the text
         var editNext = Find.Length == 0;
+        if (find.Length > 0 && find.Length <= MaxTextLength)
+        {
+            Find = find;
+            selected = RowReplacement;
+            editNext = true;
+        }
         while (true)
         {
             for (var row = 0; row < RowCount; row++)
