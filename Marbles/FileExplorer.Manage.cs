@@ -20,6 +20,9 @@ internal static partial class FileExplorer
             case ConsoleKey.A:
                 MakeDirectory(string.Empty);
                 break;
+            case ConsoleKey.I:
+                ShowInfo();
+                break;
             case ConsoleKey.X:
                 RenameSelected(string.Empty);
                 break;
@@ -52,6 +55,12 @@ internal static partial class FileExplorer
     {
         switch (name)
         {
+            case "new":
+                NewFile(argument);
+                break;
+            case "info":
+                ShowInfo();
+                break;
             case "mkdir":
                 MakeDirectory(argument);
                 break;
@@ -309,6 +318,88 @@ internal static partial class FileExplorer
         var result = FileOperations.Delete(item.Path);
         Finish(result, result == DialogText.Success ? null : item.Path, DialogText.FileItemDeleted + item.Name);
         if (result == DialogText.Success && FileFavorites.PathDeleted(item.Path)) SaveFavorites();
+    }
+
+    // Show information about the selected file or directory in a box on top of the list, until a key is pressed
+    private static void ShowInfo()
+    {
+        var item = SelectedItem();
+        if (item == null) return;
+        var rows = new List<(string Label, string Value)>();
+        try
+        {
+            FileSystemInfo info = item.IsDirectory ? new DirectoryInfo(item.Path) : new FileInfo(item.Path);
+            rows.Add((DialogText.InfoName, item.Name));
+            rows.Add((DialogText.InfoType, FileType(item, info)));
+            if (item.IsDirectory)
+            {
+                var (files, directories) = FileOperations.Count(item.Path);
+                rows.Add((DialogText.InfoContent, files + DialogText.InfoFiles + directories + DialogText.InfoDirectories));
+            }
+            else
+            {
+                rows.Add((DialogText.InfoSize, FileSizeFormatter.FormatSize(item.Size) +
+                                               (item.Size >= 1024 ? " (" + item.Size.ToString("N0") + " bytes)" : "")));
+            }
+
+            rows.Add((DialogText.InfoCreated, info.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")));
+            rows.Add((DialogText.InfoChanged, info.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")));
+            if (FileFavorites.Contains(item.Path)) rows.Add((DialogText.InfoFavorite, DialogText.InfoFavoriteYes));
+            // A long path continues on the next rows
+            var width = Init.LineWidth - 8 - InfoLabelWidth;
+            var path = item.Path;
+            for (var label = DialogText.InfoPath; path.Length > 0; label = string.Empty)
+            {
+                var part = path.Length <= width ? path : path[..width];
+                rows.Add((label, part));
+                path = path[part.Length..];
+            }
+        }
+        catch (Exception e)
+        {
+            _message = e.Message;
+            return;
+        }
+
+        var inner = Init.LineWidth - 6;
+        var top = Math.Max(ListTop, (Init.LineCount - rows.Count - 3) / 2);
+        const int left = 2;
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(top, left);
+        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
+        for (var i = 0; i < rows.Count; i++)
+        {
+            Tools.SetCursorEx(top + 1 + i, left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write("| " + rows[i].Label.PadRight(InfoLabelWidth));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(Tools.TruncateString(rows[i].Value, inner - InfoLabelWidth - 2, true)
+                .PadRight(inner - InfoLabelWidth - 1));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+        }
+
+        Tools.SetCursorEx(top + rows.Count + 1, left);
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+        Tools.SetCursorEx(top, left + 2);
+        Console.Write(" " + (item.IsDirectory ? DialogText.InfoCaptionDirectory : DialogText.InfoCaptionFile) + " ");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Console.ReadKey(true);
+    }
+
+    private const int InfoLabelWidth = 10;
+
+    // What kind of file it is, as far as the name tells
+    private static string FileType(Item item, FileSystemInfo info)
+    {
+        var type = item.IsDirectory ? DialogText.InfoTypeDirectory :
+            IsDataFile(item) ? DialogText.InfoTypeDataFile :
+            info.Extension.Length > 1 ? info.Extension[1..].ToUpperInvariant() + DialogText.InfoTypeFile :
+            DialogText.InfoTypeNoExtension;
+        if (info.LinkTarget != null) type += DialogText.InfoTypeLink + info.LinkTarget;
+        if ((info.Attributes & FileAttributes.ReadOnly) != 0 && !item.IsDirectory) type += DialogText.InfoTypeReadOnly;
+        return type;
     }
 
     private static void ToggleFavorite()

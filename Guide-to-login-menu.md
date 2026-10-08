@@ -60,7 +60,8 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `l` or `Enter` Open the selected directory or file
 - `h`, `-` or `Backspace` Go to the directory above (above the root of a drive on Windows: the list of drives)
 - `/text` Only show the names containing "text". `Esc` shows all again
-- `N` Create a new file in the directory and open it
+- `N` or `:new name` Create a new file in the directory and open it. Without a name (`N` or `:new`) you are asked for it
+- `I` or `:info` Show information about the selected file or directory: type, size (for a directory: the number of files and directories in it), when it was created and last changed, and the full path. Any key closes the box
 - See [Managing files](#managing-files) and [Favorites](#favorites) below for the other keys
 - `R` Refresh
 - `:cd path` Go to a directory. `:home` Go to the Marbles data directory

@@ -238,7 +238,7 @@ internal static partial class FileExplorer
             }
             else if (_mode == BrowseMode.Edit && key.Key == ConsoleKey.N)
             {
-                NewFile();
+                NewFile(string.Empty);
             }
             else if (key.Key == ConsoleKey.R)
             {
@@ -465,18 +465,18 @@ internal static partial class FileExplorer
         return _file == null ? DialogText.StatusUnableToSave : _file.Save(text);
     }
 
-    private static void NewFile()
+    // Create a file in the directory shown and open it in the editor. The name is asked for if it is not given
+    private static void NewFile(string name)
     {
         if (_directory.Length == 0) return;
-        Tools.ClearScreen();
-        Menu.WriteModeLabel(DialogText.NewFile, DialogText.EnterFileNameAndPressEnter + " " + DialogText.PressEscToExitP,
-            1);
-        Tools.CursorDown(3);
-        Console.Write(" " + DialogText.NameColon);
-        var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, 56, 1, string.Empty, 0, false, false,
-            false, 0);
-        var name = textArea.GetText().Trim();
-        if (textArea.Canceled || name.Length == 0) return;
+        name = name.Trim();
+        if (name.Length == 0)
+        {
+            var asked = AskName(DialogText.NewFile, string.Empty);
+            if (asked == null) return;
+            name = asked;
+        }
+
         var path = System.IO.Path.Combine(_directory, name);
         if (!Tools.IsValidFileName(name) || File.Exists(path) || Directory.Exists(path))
         {

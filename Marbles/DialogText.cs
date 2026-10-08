@@ -317,6 +317,27 @@ internal static class DialogText
     public const string FileAlreadyThere = "It is already in that directory";
     public const string FileUsedByMarbles = "Used by Marbles: it cannot be renamed, moved or deleted here";
 
+    // Information about a file in the file browser
+    public const string InfoCaptionFile = "File info";
+    public const string InfoCaptionDirectory = "Directory info";
+    public const string InfoName = "Name:";
+    public const string InfoType = "Type:";
+    public const string InfoSize = "Size:";
+    public const string InfoContent = "Content:";
+    public const string InfoFiles = " files, ";
+    public const string InfoDirectories = " directories";
+    public const string InfoCreated = "Created:";
+    public const string InfoChanged = "Changed:";
+    public const string InfoFavorite = "Favorite:";
+    public const string InfoFavoriteYes = "Yes";
+    public const string InfoPath = "Path:";
+    public const string InfoTypeDirectory = "Directory";
+    public const string InfoTypeDataFile = "Marbles data file (encrypted notes)";
+    public const string InfoTypeFile = " file";
+    public const string InfoTypeNoExtension = "File";
+    public const string InfoTypeLink = ", link to ";
+    public const string InfoTypeReadOnly = ", read-only";
+
     // The favorites of the file browser
     public const string CaptionsFileFavorites = "Favorite files";
     public const string HelpSectionFavorites = "File browser favorites";

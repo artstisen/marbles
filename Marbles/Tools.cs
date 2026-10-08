@@ -1311,7 +1311,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("l Enter", "Open the directory or file", false));
             _shortcutList.Add(new Shortcut("h - Backspace", "Go to the directory above", false));
             _shortcutList.Add(new Shortcut("/text", "Only show names containing \"text\" (Esc: all)", false));
-            _shortcutList.Add(new Shortcut("N", "Create a new file and open it", false));
+            _shortcutList.Add(new Shortcut("N :new name", "Create a new file and open it", false));
+            _shortcutList.Add(new Shortcut("I :info", "Show type, size, dates and path", false));
             _shortcutList.Add(new Shortcut("A :mkdir name", "Create a new directory", false));
             _shortcutList.Add(new Shortcut("X :rename name", "Rename the file or directory", false));
             _shortcutList.Add(new Shortcut("Y :duplicate", "Make a copy in the same directory", false));
