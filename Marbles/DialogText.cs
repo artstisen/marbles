@@ -294,7 +294,39 @@ internal static class DialogText
     public const string Drives = "Drives";
     public const string DirectoryMark = "<DIR>";
     public const string DataFileMark = "[Data file]";
-    public const string FileBrowserKeys = "j/k Select | l/Enter Open | h Up | / Filter | N New | ? Help | Esc Close";
+    public const string FileBrowserKeys = "j/k Select | l/Enter Open | h Up | / Filter | F Favorites | ? Help | Esc Close";
+
+    // File management in the file browser
+    public const string NewDirectory = "New directory";
+    public const string DeleteDirectory = "Delete directory";
+    public const string DeleteNamedYn = "Delete \"{0}\"? " + YesNo;
+    public const string DeleteFileNote = "The file cannot be recovered";
+    public const string DeleteDataFileNote = "A Marbles data file with your notes. It cannot be recovered";
+    public const string DeleteEmptyDirectoryNote = "The directory is empty";
+    public const string DeleteDirectoryNote = "With all its content: ";
+    public const string DeleteDirectoryFiles = " files and ";
+    public const string DeleteDirectoryDirectories = " directories. They cannot be recovered";
+    public const string FileItemDeleted = "Deleted: ";
+    public const string FileCopyTo = "Copy to: ";
+    public const string FileMoveTo = "Move to: ";
+    public const string FileCopied = "Copied to ";
+    public const string FileMoved = "Moved to ";
+    public const string FileCopying = "Copying (Esc: Cancel): ";
+    public const string FileCanceled = "Canceled";
+    public const string FileIntoItself = "A directory cannot be copied or moved into itself";
+    public const string FileAlreadyThere = "It is already in that directory";
+    public const string FileUsedByMarbles = "Used by Marbles: it cannot be renamed, moved or deleted here";
+
+    // The favorites of the file browser
+    public const string CaptionsFileFavorites = "Favorite files";
+    public const string HelpSectionFavorites = "File browser favorites";
+    public const string FavoritesHeader = "Files and directories marked as favorites (P in the file browser)";
+    public const string FavoritesEmpty = "No favorites yet: press P on a file or directory in the file browser";
+    public const string FavoritesKeys = "Enter Open | B Show in browser | Tab/V Move | C Color | P Remove | Esc Close";
+    public const string FavoriteAdded = "Added to the favorites";
+    public const string FavoriteRemoved = "Removed from the favorites";
+    public const string FavoriteMissing = "(missing)";
+    public const string FavoriteMoveFiltered = "Remove the filter (Esc) to move favorites";
     public const string HelpSectionFiles = "File browser";
     public const string HelpKeys = "| h/l Page | j/k Line | /text Search | n/N Next/Previous | Esc Close";
     public const string HelpNotFound = "Not found: ";

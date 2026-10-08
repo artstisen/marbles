@@ -4,8 +4,9 @@
 /// The file browser opened from the options of the login page. It lists the directories and files of a
 /// directory, and opens text files in the editor: for editing single files outside the encrypted data files.
 /// Selecting a Marbles data file returns to the login page with the file selected.
+/// File management is found in FileExplorer.Manage.cs and the list of favorites in FileExplorer.Favorites.cs.
 /// </summary>
-internal static class FileExplorer
+internal static partial class FileExplorer
 {
     private const int ListTop = 3; // The first row of the list
     private const string ParentName = "..";
@@ -94,6 +95,7 @@ internal static class FileExplorer
         DataFileSelected = false;
         _filter = string.Empty;
         _message = string.Empty;
+        if (mode == BrowseMode.Edit) FileFavorites.Load();
         ChangeDirectory(Directory.Exists(StartDirectory) ? StartDirectory : DataDirectory(), null);
         Draw(true);
         while (true)
@@ -141,7 +143,11 @@ internal static class FileExplorer
                 }
                 else if (command != null)
                 {
-                    CommandLine.ShowUnknown(command);
+                    var result = _mode == BrowseMode.Edit
+                        ? RunFileCommand(name, CommandLine.Argument(command))
+                        : KeyResult.NotHandled;
+                    if (result == KeyResult.Close) break;
+                    if (result == KeyResult.NotHandled) CommandLine.ShowUnknown(command);
                 }
             }
             else if (key.KeyChar == '?')
@@ -237,6 +243,11 @@ internal static class FileExplorer
             else if (key.Key == ConsoleKey.R)
             {
                 LoadItems(_items.Count > 0 ? _items[_index].Name : null);
+            }
+            else if (_mode == BrowseMode.Edit && HandleFileKey(key) == KeyResult.Close)
+            {
+                // A data file was selected from the favorites
+                break;
             }
 
             Draw(redraw || hadMessage);
@@ -607,10 +618,17 @@ internal static class FileExplorer
                 isDataFile ? DialogText.DataFileMark + " " + FileSizeFormatter.FormatSize(item.Size) :
                 FileSizeFormatter.FormatSize(item.Size);
             var name = Tools.TruncateString(item.Name + (item.IsDirectory && item.Name != ParentName ? "/" : ""),
-                Init.LineWidth - info.Length - 6, true);
+                Init.LineWidth - info.Length - 8, true);
             ConsoleColors.SetColors(item.IsDirectory ? ConsoleColors.ColorPreset.HeaderColor :
                 isDataFile ? ConsoleColors.ColorPreset.Favorites : ConsoleColors.ColorPreset.Normal);
             Console.Write(" " + name);
+            if (_mode == BrowseMode.Edit && item.Path.Length > 0 && FileFavorites.Contains(item.Path))
+            {
+                // A favorite
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Favorites);
+                Console.Write(" *");
+            }
+
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             Tools.SetCursorEx(ListTop + row, Init.LineWidth - info.Length - 1);
             Console.Write(info);

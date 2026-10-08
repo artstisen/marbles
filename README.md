@@ -7,7 +7,7 @@ A lightweight cross-platform text mode application for taking notes with encrypt
 ## About Marbles
 Marbles provides a simple interface for creating, editing, searching, copying, arranging, importing, exporting and deleting notes. Notes are stored as a searchable collection of entries contained in a single encrypted file for easy portability. Multiple files can be created and managed from within the program itself. Marbles will handle large text documents and data files with thousands of notes.
 
-Marbles also works as a text editor: when it starts you select between your encrypted notes and a file browser for editing ordinary text files (.txt, .md, .html ...) with the same editor. It can be set to start directly in either.
+Marbles also works as a text editor: when it starts you select between your encrypted notes and a file browser for editing ordinary text files (.txt, .md, .html ...) with the same editor. It can be set to start directly in either. The file browser can also manage files and directories (create, rename, copy, move, delete) and keeps a list of your favorite files.
 
 Marbles is operated in the style of Vim: the editor has Normal, Insert and Visual modes, and the menus and lists use the same keys for moving around (`h` `j` `k` `l`), searching (`/`), help (`?`) and commands (`:`).
 

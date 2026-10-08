@@ -61,6 +61,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `h`, `-` or `Backspace` Go to the directory above (above the root of a drive on Windows: the list of drives)
 - `/text` Only show the names containing "text". `Esc` shows all again
 - `N` Create a new file in the directory and open it
+- See [Managing files](#managing-files) and [Favorites](#favorites) below for the other keys
 - `R` Refresh
 - `:cd path` Go to a directory. `:home` Go to the Marbles data directory
 - `?` Help
@@ -71,6 +72,46 @@ A text file is opened in the [editor](Guide-to-editor.md), where `:w` saves it a
 **Files that are not UTF-8:** When opening a file in another encoding (UTF-16, or the Windows-1252/ISO-8859-1 used by older Western European text files), Marbles asks whether to convert it to UTF-8 and replace the file, or to save the converted text as a copy named with "-utf8" and leave the file as it is. Nothing is written before you save in the editor. Marbles cannot tell which 8-bit encoding a file uses: if the text looks wrong, close the editor without saving.
 
 **Data files:** Opening a Marbles data file (.mbls) closes the browser and selects the file on the login page. A data file outside the data directory can be copied to it first.
+
+### Managing files
+These work on the selected file or directory (one at a time):
+
+- `A` or `:mkdir name` Create a new directory
+- `X` or `:rename name` Rename. Without a name you are asked for it, starting from the current name
+- `Y` or `:duplicate` Make a copy in the same directory (named `name-copy`)
+- `C` or `:copy` Copy to another directory
+- `M` or `:move` Move to another directory
+- `D` or `:delete` Delete. You are asked first, and for a directory you are told how many files and directories it contains
+
+For copy and move the browser lets you select the target: go to the directory and press `S` (`Esc` cancels). While a directory is being copied the name of the current file is shown, and `Esc` cancels the copy (what was copied so far is removed).
+
+Things to know:
+
+- **Deleted files cannot be recovered.** They are not moved to a recycle bin.
+- Nothing is overwritten. An operation is refused if something with the same name is already in the target directory.
+- A directory cannot be copied or moved into itself.
+- What Marbles is using cannot be renamed, moved or deleted here: the data directory (and the directories it is in), `settings.ini`, the favorites list, and the data file you are logged in to.
+- Hidden files are not shown in the browser, but they are included when a directory is copied, moved or deleted.
+
+### Favorites
+Files and directories you use often can be marked as favorites:
+
+- `P` or `:fav` Add the selected file or directory to the favorites, or remove it. Favorites are marked with a `*`
+- `F` or `:favorites` Show the list of favorites
+
+In the list of favorites:
+
+- `j` `k` Select, `gg` `G` First/Last
+- `l` or `Enter` Open the file in the editor (closing the editor returns to the list). A directory: go to it in the browser
+- `B` or `:goto` Show the file in the browser: its directory is opened with the file selected, where it can be renamed, copied, moved or deleted
+- `Tab` or `V` Move the selected favorite: it is highlighted and follows `j` `k` up and down the list until you press `Esc`
+- `C` or `:color` Pick a text color for the favorite from the list of 16 colors
+- `P`, `D` or `:remove` Remove it from the favorites (the file itself stays where it is)
+- `/text` Only show the paths containing "text". `Esc` shows all again
+- `?` Help
+- `Esc`, `Q`, `F` or `h` Return to the browser
+
+The list is kept in the file `favorites.txt` in the data directory (one line per favorite: the color, a tab character and the path). Favorites follow when you rename or move a file or directory in the browser, and are removed when you delete it. A favorite whose file is gone is shown as _(missing)_.
 
 ## Logo animation
 The logo is drawn with a sweep when arriving at the login page. Any key ends the sweep. To turn it off, set `logoanim=false` in the settings file (`Esc`, `S`).
