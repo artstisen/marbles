@@ -1527,6 +1527,7 @@ internal static class Tools
         HideCursor();
         while (true)
         {
+            Init.ApplyAutoSize();
             var pageSize = Init.LineCount - 1;
             var maxTop = Math.Max(0, lines.Count - pageSize);
             top = Math.Clamp(top, 0, maxTop);
@@ -1794,22 +1795,59 @@ internal static class Tools
         }
         catch
         {
+            // The position is outside the terminal window: it has been made smaller than the dimensions in use.
+            // What is being drawn cannot be completed, so the page must be drawn again
             Init.DimensionsExceptionCaught = true;
+            _redrawRequested = true;
+            if (Init.AutoSize && Init.ApplyAutoSize())
+            {
+                // The dimensions follow the window: nothing to ask about
+                ClearScreen();
+                return;
+            }
+
             ClearScreen();
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
             Console.Write(" " + DialogText.AttentionColon);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.WriteLine(" " + DialogText.ErrorClientSize);
-            Console.WriteLine("(Dimensions must be at least " + Init.LineWidth + "x" + Init.LineCount + ")");
-            Console.WriteLine(DialogText.ResetOutputDimensions);
-            _keyInfo = Console.ReadKey(true);
-            if (_keyInfo.Key == ConsoleKey.Y)
+            if (Init.AutoSize)
             {
-                Init.SetDefaultOutputDimensions();
+                // The window is smaller than the smallest dimensions that can be used
+                Console.WriteLine("(Dimensions must be at least " + Init.MinLineWidth + "x" + Init.MinLineCount + ")");
+                Console.WriteLine(DialogText.EnlargeWindow);
+                Console.ReadKey(true);
+                Init.ApplyAutoSize();
+            }
+            else
+            {
+                Console.WriteLine("(Dimensions must be at least " + Init.LineWidth + "x" + Init.LineCount + ")");
+                Console.WriteLine(DialogText.FitOutputDimensions);
+                _keyInfo = Console.ReadKey(true);
+                if (_keyInfo.Key == ConsoleKey.Y)
+                {
+                    // Use the size of the window from now on (not smaller than the minimum)
+                    Init.AutoSize = true;
+                    if (!Init.ApplyAutoSize()) Init.SetDefaultOutputDimensions();
+                    FileIo.SaveSettings();
+                }
             }
 
             ClearScreen();
         }
+    }
+
+    private static bool _redrawRequested;
+
+    /// <summary>
+    /// True (once) if a page could not be drawn because the terminal window was made smaller, and must be
+    /// drawn again with the dimensions that are now in use
+    /// </summary>
+    internal static bool TakeRedrawRequest()
+    {
+        var requested = _redrawRequested;
+        _redrawRequested = false;
+        return requested;
     }
 
 

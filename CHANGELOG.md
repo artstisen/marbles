@@ -12,6 +12,7 @@
 - **File management in the file browser**: create directories (`A`), rename (`X`), duplicate (`Y`), copy (`C`) and move (`M`) to another directory, and delete (`D`) files and directories, also as commands (`:mkdir`, `:rename`, `:duplicate`, `:copy`, `:move`, `:delete`). Nothing is overwritten, and what Marbles is using is protected. Deleted files cannot be recovered.
 - **Editor**: the question about unsaved changes when closing is a box on top of the text instead of a page of its own, and "Unsaved" is highlighted. "[Not encrypted]" is only shown for text files opened while logged in to a data file.
 - The key hints at the bottom of the file browser and the favorites have highlighted keys.
+- **Terminal window made smaller**: the start page, the file browser, the favorites and the help follow the size of the window when automatic size is on. When the dimensions no longer fit the window, the page is drawn again afterwards, and with a fixed size you are offered to switch to automatic size.
 - **Help for the page you are on**: `?` (and `:help`) shows the keys of the current page: start page, login page, menus and lists, file browser, file favorites or editor. `?` in the help switches to all keys and back. The start page and the login page have their own help sections.
 - **Black and white**: a setting that shows everything in black and white without changing your color scheme (`:bw` on menu page 4, or the configuration page; `monochrome` in the settings file).
 - The start page has a fourth choice, _Exit_, that closes Marbles without asking.

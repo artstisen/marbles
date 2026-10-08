@@ -105,7 +105,10 @@ internal static partial class FileExplorer
         {
             FilterFavorites();
             _favoriteIndex = Math.Clamp(_favoriteIndex, 0, Math.Max(0, _favorites.Count - 1));
+            // Follow the size of the terminal window, and draw again if the page could not be drawn
+            if (Init.ApplyAutoSize()) redraw = true;
             DrawFavorites(redraw);
+            if (Tools.TakeRedrawRequest()) DrawFavorites(true);
             redraw = true;
             var hadMessage = _favoriteMessage.Length > 0;
             _favoriteMessage = string.Empty;

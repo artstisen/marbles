@@ -97,7 +97,9 @@ internal static partial class FileExplorer
         _message = string.Empty;
         if (mode == BrowseMode.Edit) FileFavorites.Load();
         ChangeDirectory(Directory.Exists(StartDirectory) ? StartDirectory : DataDirectory(), null);
+        Init.ApplyAutoSize();
         Draw(true);
+        if (Tools.TakeRedrawRequest()) Draw(true);
         while (true)
         {
             var key = Console.ReadKey(true);
@@ -250,7 +252,10 @@ internal static partial class FileExplorer
                 break;
             }
 
+            // Follow the size of the terminal window, and draw again if the page could not be drawn
+            if (Init.ApplyAutoSize()) redraw = true;
             Draw(redraw || hadMessage);
+            if (Tools.TakeRedrawRequest()) Draw(true);
         }
 
         // Remember the directory for next time

@@ -177,6 +177,8 @@ internal static class DialogText
     public const string RestoreDeletedYn = "Undo last deletion? " + YesNo;
     public const string ResetPassword = "Reset password? " + YesNo;
     public const string ResetOutputDimensions = "Reset " + ApplicationName + " output dimensions? " + YesNo;
+    public const string FitOutputDimensions = "Follow the size of the terminal window (automatic size)? " + YesNo;
+    public const string EnlargeWindow = "Make the terminal window larger and press a key";
     public const string ResetSettings = "Revert to default settings? " + YesNo;
     public const string RemoveFavoriteYn = "Remove from favorites? " + YesNo;
     public const string RemoveFavoriteOrPinYn = "Remove from favorites? " + YesNoPinned;

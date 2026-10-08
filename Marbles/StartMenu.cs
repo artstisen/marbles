@@ -231,8 +231,11 @@ internal static class StartMenu
             }
 
             redraw = true;
+            // The page is drawn again if it could not be drawn, or the terminal window has changed size
+            if (Tools.TakeRedrawRequest()) continue;
             var key = Console.ReadKey(true);
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return;
+            if (Init.AutoSize && Init.ApplyAutoSize()) continue;
             if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
             {
                 selected = (selected + 1) % settings.Count;
@@ -361,7 +364,10 @@ internal static class StartMenu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             }
 
+            // The page is drawn again if it could not be drawn, or the terminal window has changed size
+            if (Tools.TakeRedrawRequest()) return Result.Redraw;
             var key = Console.ReadKey(true);
+            if (Init.AutoSize && Init.ApplyAutoSize()) return Result.Redraw;
             if (key.Key is ConsoleKey.Enter or ConsoleKey.L or ConsoleKey.RightArrow ||
                 (showState && key.Key == ConsoleKey.Spacebar))
             {
