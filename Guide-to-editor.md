@@ -13,9 +13,11 @@ Typed on the command line: press `:`, type the command and press `Enter`.
 
 - `:w` Save
 - `:wq` or `:x` or `ZZ` Save and close the editor
-- `:q` Close the editor (asks what to do with unsaved changes)
+- `:q` or `Esc` in Normal mode: Close the editor (asks what to do with unsaved changes)
 - `:q!` or `ZQ` Close the editor without saving
 - `:help` Show the list of keys
+
+`Esc` first leaves what you are in the middle of: Insert or Visual mode, a command that is half typed, or the highlighting of search matches. When there is nothing to leave, it closes the editor.
 
 ## Entering Insert mode
 - `i` / `a` Insert before/after the cursor
@@ -68,7 +70,7 @@ Press `v` (text) or `V` (whole lines) and select with the movement keys. Then:
 ## Search
 - `/text` `?text` Search forwards/backwards, `n` `N` Next/Previous match
 - `*` Search for the word under the cursor
-- `Esc` or `:noh` Remove the highlighting of the matches
+- `Esc` or `:noh` Remove the highlighting of the matches (press `Esc` again to close the editor)
 
 The text you search for is a regular expression: `/\d+` finds numbers and `/cat|dog` finds either word. A search in lowercase ignores case; with an uppercase letter in it the search matches case.
 

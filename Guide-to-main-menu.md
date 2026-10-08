@@ -18,7 +18,7 @@ The same keys are used everywhere in Marbles:
 The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`4`, and `Home`/`End` go to the first/last page.
 
 ### Page 1
-- `N` **New**: Create a new entry (write a title and enter your notes).
+- `N` **New**: Create a new entry (write a title and enter your notes). With the command `:new My title` the entry is created with that title and opened in the editor; `:new` alone asks for the title. The command also works in lists and when viewing an entry.
 - `S` or `/` **Search**: Search the entries of the data file. All the words you type must be found in the title or text of an entry. The result can be sorted (press `Tab`) by _date changed_, _date created_ and alphabetically by _title_.
 - `R` **Reselect**: Select the last edited entry again.
 - `F` **Favorites**: Show the entries added to the favorites list.
@@ -86,10 +86,10 @@ Opening an entry shows its text with a menu of 3 pages.
 - `F` Add to/remove from the favorites
 - `D` Duplicate the entry
 - `S` or `/` Open the editor and search the text
-- `N` New entry
-- `:delete` Delete the entry
+- `N` or `:new` New entry (`:new My title` to give the title at once)
+- `:delete` Delete the entry. You are asked once; a deleted entry can be brought back with `:undelete` in the main menu
 - `:revert` Revert to the text before the last edit (since you logged in)
 - `:transfer` Add the entry to the transfer collection
 - `:import` Import a text file as a new entry (selected in the file browser)
-- `:export` Export the text of the entry as a .txt file in the data directory. The exported file is not encrypted
+- `:export` Export the text of the entry as a text file. Select the directory in the file browser (go to it and press `S`), then enter the file name (the title of the entry is suggested). The exported file is not encrypted
 - `Esc` or `:q` Return to the list

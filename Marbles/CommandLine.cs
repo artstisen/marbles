@@ -9,6 +9,11 @@ internal static class CommandLine
     private const char Prefix = ':';
 
     /// <summary>
+    /// The text after the first word of the last command, as it was typed (commands are returned in lowercase)
+    /// </summary>
+    internal static string LastArgument { get; private set; } = string.Empty;
+
+    /// <summary>
     /// Let the user type a command
     /// </summary>
     /// <returns>The command in lowercase without the ":", or null if canceled</returns>
@@ -43,6 +48,7 @@ internal static class CommandLine
 
                 if (key.Key == ConsoleKey.Enter)
                 {
+                    if (isCommand) LastArgument = Argument(command.Trim());
                     command = isCommand ? command.Trim().ToLowerInvariant() : command.Trim();
                     return command.Length > 0 ? command : null;
                 }

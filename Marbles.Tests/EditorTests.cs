@@ -621,7 +621,13 @@ public class EditorTests
     [InlineData(":cal<CR>", nameof(EditorRequest.InsertCalendar))]
     [InlineData(":clear<CR>", nameof(EditorRequest.ClearAll))]
     [InlineData(":w<Esc>", nameof(EditorRequest.None))]
-    [InlineData("<Esc>", nameof(EditorRequest.None))]
+    [InlineData("<Esc>", nameof(EditorRequest.Quit))] // Esc in Normal mode closes the editor
+    [InlineData("i<Esc>", nameof(EditorRequest.None))]
+    [InlineData("i<Esc><Esc>", nameof(EditorRequest.Quit))]
+    [InlineData("v<Esc>", nameof(EditorRequest.None))]
+    [InlineData("2d<Esc>", nameof(EditorRequest.None))]
+    [InlineData("/te<CR><Esc>", nameof(EditorRequest.None))] // Removes the search highlighting
+    [InlineData("/te<CR><Esc><Esc>", nameof(EditorRequest.Quit))]
     public void Commands_AskTheHost(string keys, string expected)
     {
         Assert.Equal(expected, Editor("text").Type(keys).ToString());

@@ -470,7 +470,8 @@ internal static class Actions
         // A number after the command selects a preset directly, like ":color 5"
         var number = int.TryParse(CommandLine.Argument(command), out var parsedNumber) ? parsedNumber : 0;
         if (CommandLine.Argument(command).Length > 0 &&
-            !(CommandLine.Name(command) is "color" or "logo" && number > 0) && command != "size auto")
+            !(CommandLine.Name(command) is "color" or "logo" && number > 0) && command != "size auto" &&
+            CommandLine.Name(command) != "new")
         {
             CommandLine.ShowUnknown(command);
             Menu.DrawTopMenu(false, true, false);
@@ -491,6 +492,9 @@ internal static class Actions
                 break;
             case "about":
                 ShowAbout();
+                break;
+            case "new":
+                NewEntry(CommandLine.LastArgument);
                 break;
             case "browse":
                 BrowseFiles();
@@ -628,6 +632,12 @@ internal static class Actions
     private static void RunViewCommand(string command)
     {
         if (RunCommonCommand(command)) return;
+        if (CommandLine.Name(command) == "new")
+        {
+            NewEntry(CommandLine.LastArgument);
+            return;
+        }
+
         switch (command)
         {
             case "q":
@@ -705,6 +715,13 @@ internal static class Actions
                 break;
             case "browse":
                 BrowseFiles();
+                break;
+            case "new":
+                NewEntry(CommandLine.LastArgument);
+                // Return to main
+                _isSelectingResult = false;
+                Mode.SetMode(Mode.SelectedMode.Manage);
+                Menu.DrawTopMenu(true, true, false);
                 break;
             case "title":
                 SelectResultFromIndex(pageNumber, _resultIndex, 1);
@@ -1203,8 +1220,16 @@ internal static class Actions
 
     private static string _tempText = string.Empty;
 
-    private static void NewEntry()
+    // Create an entry and open it in the editor. The title is asked for if it is not given
+    private static void NewEntry(string title = "")
     {
+        title = Tools.ConstrainTitle(title.Trim());
+        if (Tools.IsValid(title))
+        {
+            CreateEntry(title);
+            return;
+        }
+
         Tools.ClearScreen();
         Menu.WriteModeLabel(DialogText.New, DialogText.EnterTitleAndPressEnter + " " + DialogText.PressEscToExitP,
             1);
@@ -1224,12 +1249,17 @@ internal static class Actions
         _tempText = Tools.ConstrainTitle(_tempText);
         if (Tools.IsValid(_tempText))
         {
-            Mode.SetRecallMode(Mode.RecallMode.Top20); // Return to top20 on Esc
-            Entries.NewEntry(_tempText, string.Empty);
-            Entries.SaveEntriesToFile();
-            Vignette.CheckVignette();
-            EditEntry(false);
+            CreateEntry(_tempText);
         }
+    }
+
+    private static void CreateEntry(string title)
+    {
+        Mode.SetRecallMode(Mode.RecallMode.Top20); // Return to top20 on Esc
+        Entries.NewEntry(title, string.Empty);
+        Entries.SaveEntriesToFile();
+        Vignette.CheckVignette();
+        EditEntry(false);
     }
 
 
@@ -1531,20 +1561,46 @@ internal static class Actions
     }
 
 
+    // A label and a path on one line of the window: the start of a long path is left out
+    private static string FitPath(string label, string path)
+    {
+        var room = Init.LineWidth - 2 - label.Length;
+        return label + (path.Length <= room ? path : "..." + path[^Math.Max(1, room - 3)..]);
+    }
+
+    // Export the text of the current entry as a text file. The directory is selected in the file browser,
+    // and then the name of the file is entered
     private static void ExportCurrentEntry()
     {
-        if (Menu.YesNoPrompt(DialogText.CaptionsExport, DialogText.ExportYn,
-                DialogText.ExportYnNote + FileIo.GetExportPathAndFile(true), false))
+        if (!Entries.CurrentEntryExists()) return;
+        var directory = FileExplorer.PickDirectory(DialogText.CaptionsExport);
+        if (directory != null)
         {
-            string tempExportStatus = FileIo.ExportCurrentEntryAsTxt();
-            if (tempExportStatus != DialogText.Success)
+            Tools.ClearScreen();
+            Menu.WriteModeLabel(DialogText.CaptionsExport,
+                DialogText.EnterFileNameAndPressEnter + " " + DialogText.PressEscToExitP, 1);
+            Tools.CursorDown(3);
+            Console.Write(" " + DialogText.NameColon);
+            var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, 56, 1,
+                FileIo.GetExportFileName(Entries.CurrentEntry.Title), 0, true, false, false, 0);
+            var name = textArea.GetText().Trim();
+            if (!textArea.Canceled && name.Length > 0)
             {
-                Menu.StatusMessage(tempExportStatus, true, true, true, DialogText.CaptionsExport, string.Empty, false);
-            }
-            else
-            {
-                Menu.StatusMessage(DialogText.ExportCompleted, true, true, true, DialogText.CaptionsExport,
-                    string.Empty, false);
+                var path = Tools.IsValidFileName(name) ? Path.Combine(directory, name) : string.Empty;
+                if (path.Length == 0 || Directory.Exists(path))
+                {
+                    Menu.StatusMessage(DialogText.InvalidFileName, true, true, true, DialogText.CaptionsExport,
+                        string.Empty, false);
+                }
+                else if (!File.Exists(path) ||
+                         Menu.YesNoPrompt(DialogText.CaptionsExport, DialogText.ReplaceFileYn, FitPath(string.Empty, path),
+                             false))
+                {
+                    var status = FileIo.ExportCurrentEntryAsTxt(path);
+                    Menu.StatusMessage(status == DialogText.Success ? DialogText.ExportCompleted : status, true,
+                        true, true, DialogText.CaptionsExport,
+                        status == DialogText.Success ? FitPath(DialogText.ExportedTo, path) : string.Empty, false);
+                }
             }
         }
 
@@ -1667,28 +1723,19 @@ internal static class Actions
             if (Menu.YesNoPrompt(DialogText.CaptionsDelete, DialogText.DeleteEntryYn,
                     DialogText.TitleColon + " \"" + Entries.CurrentEntry.Title + "\"", true))
             {
-                // Reconfirm
-                if (Menu.YesNoPrompt(DialogText.CaptionsDelete, DialogText.DeleteEntryYnConfirm,
-                        DialogText.TitleColon + " \"" + Entries.CurrentEntry.Title + "\"", true))
+                // Save deletion backup for undo (the entry can be brought back with :undelete)
+                SaveDeletionBackup();
+                if (Entries.DeleteEntry(Entries.CurrentEntry))
                 {
-                    // Save deletion backup for undo
-                    SaveDeletionBackup();
-                    if (Entries.DeleteEntry(Entries.CurrentEntry))
-                    {
-                        ResetLastSelectedIndex();
-                        Menu.StatusMessage(DialogText.EntryDeleted, true, true, true, DialogText.CaptionsDelete,
-                            string.Empty, false);
-                        Entries.SaveEntriesToFile();
-                        Vignette.CheckVignette();
-                    }
+                    ResetLastSelectedIndex();
+                    Menu.StatusMessage(DialogText.EntryDeleted, true, true, true, DialogText.CaptionsDelete,
+                        string.Empty, false);
+                    Entries.SaveEntriesToFile();
+                    Vignette.CheckVignette();
+                }
 
-                    Mode.SetMode(Mode.SelectedMode.Manage);
-                    Menu.DrawTopMenu(false, true, false);
-                }
-                else
-                {
-                    DisplayEntry(false);
-                }
+                Mode.SetMode(Mode.SelectedMode.Manage);
+                Menu.DrawTopMenu(false, true, false);
             }
             else
             {

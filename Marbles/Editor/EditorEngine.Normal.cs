@@ -96,9 +96,14 @@ internal sealed partial class EditorEngine
             {
                 Mode = EditorMode.Normal;
             }
-            else
+            else if (HighlightSearch && _searchRegex != null)
             {
                 HighlightSearch = false;
+            }
+            else
+            {
+                // Nothing to leave or cancel: close the editor (as ":q")
+                _request = EditorRequest.Quit;
             }
 
             return;

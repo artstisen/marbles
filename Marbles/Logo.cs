@@ -195,12 +195,12 @@ internal static class Logo
             // Resolve margin for the version number
             _versionMargin = _logoIndex switch
             {
-                0 => 41,
-                1 => 29,
-                2 => 43,
-                3 => 30,
-                4 => 30,
-                5 => 29,
+                0 => 43,
+                1 => 31,
+                2 => 45,
+                3 => 32,
+                4 => 32,
+                5 => 31,
                 6 => 1,
                 7 => 1,
                 _ => 0

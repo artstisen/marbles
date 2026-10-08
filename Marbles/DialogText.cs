@@ -6,7 +6,7 @@ internal static class DialogText
     public const string ApplicationName = "Marbles";
     public const string ApplicationCopyright = "Copyright 2026 Lars Brandt Stisen";
     public const string ApplicationBy = "by Lars Brandt Stisen (c)2026";
-    public const string ApplicationVersion = "v1.5.0"; // For display. Right click the Marbles project icon to set assembly version
+    public const string ApplicationVersion = "v1.5.1"; // For display. Right click the Marbles project icon to set assembly version
 
     //                                                                                \n <- Max line length
     //-----------------------------------------------------------------------------
@@ -145,7 +145,7 @@ internal static class DialogText
     public const string SaveChangesYn = "Save changes? " + YesNo;
     public const string ExitYn = "Exit? " + YesNo;
     public const string RestartYn = "Restart Marbles? " + YesNo;
-    public const string ExportYn = "Export as .txt? " + YesNo;
+    public const string ReplaceFileYn = "The file exists. Replace it? " + YesNo;
     public const string DeleteEntryYn = "Delete entry? " + YesNo;
     public const string DeleteEntryYnConfirm = "Confirm deletion: " + YesNo;
     public const string DuplicateEntryYn = "Duplicate entry? " + YesNo;
@@ -177,7 +177,7 @@ internal static class DialogText
     public const string TransferD = "[Esc] Cancel";
 
     public const string ImportYnNote = "The file is selected in the file browser.";
-    public const string ExportYnNote = "Entry text is exported to ";
+    public const string ExportedTo = "Saved as ";
     public const string SelectOption = "Select option...";
     public const string SelectFileOption = "Select file preset";
     public const string SelectTransferOption = "Select transfer option";

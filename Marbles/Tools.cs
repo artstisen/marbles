@@ -1282,6 +1282,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":", "Command line (commands are shown in the menus)", false));
             _shortcutList.Add(new Shortcut(":q", "Close/Return (in the main menu: Exit Marbles)", false));
             _shortcutList.Add(new Shortcut(":qa", "Exit Marbles", false));
+            _shortcutList.Add(new Shortcut(":new :new Title", "New entry (asks for the title if not given)", false));
             _shortcutList.Add(new Shortcut(":logout", "Logout", false));
             _shortcutList.Add(new Shortcut("Esc", "Return/Cancel (login page: Options)", false));
             _shortcutList.Add(new Shortcut("Esc ?", "Login page: Show this help", false));
@@ -1314,7 +1315,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, "Save and close", true));
             _shortcutList.Add(new Shortcut(":w", "Save", false));
             _shortcutList.Add(new Shortcut(":wq :x ZZ", "Save and close editor", false));
-            _shortcutList.Add(new Shortcut(":q", "Close editor (asks to save changes)", false));
+            _shortcutList.Add(new Shortcut(":q Esc", "Close editor (asks to save changes)", false));
             _shortcutList.Add(new Shortcut(":q! ZQ", "Close editor without saving", false));
             _shortcutList.Add(new Shortcut(":help", "Show this help", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Moving the cursor (Normal and Visual mode)", true));
@@ -1337,7 +1338,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("/Text", "Uppercase letters make the search match case", false));
             _shortcutList.Add(new Shortcut("n N", "Next/Previous match", false));
             _shortcutList.Add(new Shortcut("*", "Search for the word under the cursor", false));
-            _shortcutList.Add(new Shortcut("Esc :noh", "Remove search highlighting", false));
+            _shortcutList.Add(new Shortcut("Esc :noh", "Remove search highlighting (Esc again closes)", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Spell checking", true));
             _shortcutList.Add(new Shortcut(":spell", "Mark the misspelled words", false));
             _shortcutList.Add(new Shortcut(":spell da,en", "As above, and set the languages", false));

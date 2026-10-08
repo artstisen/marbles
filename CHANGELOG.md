@@ -1,5 +1,12 @@
 # Changes
 
+## v1.5.1
+- **Export**: `:export` lets you select the directory in the file browser and enter the file name (the title of the entry is suggested), asks before replacing an existing file, and shows where the file was saved.
+- **New entry from the command line**: `:new My title` creates an entry with the title and opens it in the editor. `:new` alone asks for the title.
+- **Esc closes the editor**: in Normal mode `Esc` works as `:q` (it asks what to do with unsaved changes). It still leaves Insert and Visual mode, cancels a half typed command and removes the search highlighting first.
+- **Deleting an entry** asks for confirmation once instead of twice (a deleted entry can be brought back with `:undelete`).
+- The version number on the login page is placed correctly next to the logo.
+
 ## v1.5.0
 
 ### Upgrading from v1.0.x: read this first

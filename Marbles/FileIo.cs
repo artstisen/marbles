@@ -487,21 +487,26 @@ internal static class FileIo
         }
     }
 
-    internal static string GetExportPathAndFile(bool example)
+    /// <summary>
+    /// The file name suggested when exporting an entry: its title (without the characters that cannot be used
+    /// in file names) and ".txt"
+    /// </summary>
+    internal static string GetExportFileName(string title)
     {
-        return example
-            ? Path.Combine(GetDataAndSubFolder(), ExportFileName + "-timestamp" + ExportFileNameExt)
-            : Path.Combine(GetDataAndSubFolder(),
-                ExportFileName + "-" + IsoDateTime.GetDateTimeNowCompressed("-") + ExportFileNameExt);
+        const string invalid = "<>:\"/\\|?*";
+        var name = new string(title.Select(c => invalid.Contains(c) || char.IsControl(c) ? '_' : c).ToArray())
+            .Trim(' ', '.');
+        if (name.Length > 48) name = name[..48].TrimEnd(' ', '.');
+        return (name.Length > 0 ? name : ExportFileName) + ExportFileNameExt;
     }
 
-    internal static string ExportCurrentEntryAsTxt()
+    internal static string ExportCurrentEntryAsTxt(string path)
     {
         try
         {
-            if (CheckCurrentDirectory() && Entries.CurrentEntryExists())
+            if (Entries.CurrentEntryExists())
             {
-                File.WriteAllText(GetExportPathAndFile(false), Entries.CurrentEntry.Text, Encoding.UTF8);
+                File.WriteAllText(path, Entries.CurrentEntry.Text, Encoding.UTF8);
                 return DialogText.Success;
             }
             else
