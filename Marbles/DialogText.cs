@@ -307,6 +307,20 @@ internal static class DialogText
     public const string ConfigSize = "Size: ";
     public const string ConfigSizeNote = " (Enter: Change)";
     public const string ConfigReset = "Reset all settings";
+    public const string ConfigRestart = "Restart Marbles";
+    public const string ConfigViewLog = "View log";
+
+    // The log
+    public const string LogLines = " lines";
+    public const string LogLine = " line";
+    public const string LogOf = " of ";
+    public const string LogFiltered = " containing: ";
+    public const string LogRemoved = " older lines removed";
+    public const string LogKeys = "| h/l Page | j/k Line | gg G First/Last | /text Filter | Esc Close";
+    public const string LogCommand = "Command";
+    public const string LogEditorCommand = "Editor";
+    public const string LogFilesCommand = "Files";
+    public const string LogFile = "File: ";
     public const string MonochromeIsOn = "Black and white is on: turn it off (:bw) to use the color scheme";
     public const string Drives = "Drives";
     public const string DirectoryMark = "<DIR>";

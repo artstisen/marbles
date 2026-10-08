@@ -210,9 +210,11 @@ internal static class Init
     internal static bool DimensionsExceptionCaught { get; set; }
     internal static bool DataDirectoryCreated { get; set; }
     internal static bool UsingDefaultSettings { get; set; }
-    private static List<string> _initLog = new();
+    private static int _initLines; // The number of lines logged by the initialization that is running
+
     public static void RunInitialization()
     {
+        _initLines = 0;
         // Hide the cursor
         Tools.HideCursor();
         DimensionsExceptionCaught = false;
@@ -325,97 +327,37 @@ internal static class Init
         Log(DialogText.InitCompleted, true);
     }
 
-    private static void InitializeLog()
-    {
-        // Truncate log if more than 500 lines
-        if (_initLog.Count <= 500) return;
-        // Remove the first item
-        _initLog.RemoveAt(0);
-        // Indicate that the log was truncated
-        _initLog[0] = "(Truncated)";
-    }
-
+    /// <summary>
+    /// Add a line to the log
+    /// </summary>
+    /// <param name="text">The text</param>
+    /// <param name="writeOutput">True to write it on the screen too (during the initialization)</param>
     internal static void Log(string text, bool writeOutput)
     {
-        InitializeLog();
-        _initLog.Add( Tools.TruncateString(LogTs() + text, 75, true));
+        EventLog.Add(text);
+        _initLines++;
         if (writeOutput)
         {
             Console.WriteLine(Tools.TruncateString(text, 75, true));
         }
     }
-    private static string LogTs()
-    {
-        return "[" + DateTime.Now.ToString("HH:mm:ss") + "] ";
-    }
-    
 
+    // Show what the initialization has logged
     private static void WriteAllInitOutput()
     {
-        if (_initLog.Count > 0)
+        Tools.ClearScreen();
+        foreach (var line in EventLog.All.Skip(Math.Max(0, EventLog.Count - _initLines)))
         {
-            Tools.ClearScreen();
-            for (int i = 0; i < _initLog.Count; i++)
-            {
-                Console.WriteLine(_initLog[i]);
-            }
-        }
-        else
-        {
-            Tools.ClearScreen();
-            Console.WriteLine(DialogText.InitNoData);
-            Keyboard.AwaitAnyKey();
+            Console.WriteLine(Tools.TruncateString(line, 75, true));
         }
     }
 
-
-    private static List<List<string>> _logPages = new();
+    /// <summary>
+    /// Show the log
+    /// </summary>
     internal static void WriteLog()
     {
-        if (_initLog.Count > 0)
-        {
-            // Split log into pages to fit output line count
-            _logPages = Tools.SplitIntoChunks(_initLog, (LineCount - 3));
-
-            for (int i = 0; i < _logPages.Count; i++)
-            {
-                Tools.ClearScreen();
-                Menu.WriteModeLabel(DialogText.LogReview, string.Empty, 0);
-                Tools.CursorDown(2);
-                for (int j = 0; j < _logPages[i].Count; j++)
-                {
-                    if (_logPages[i][j].Contains(DialogText.ApplicationName + " " + DialogText.ApplicationVersion)) // DialogText.ApplicationName + " " + DialogText.ApplicationVersion
-                    {
-                        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                    }
-
-                    Console.WriteLine(_logPages[i][j]);
-                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                }
-                Tools.CursorTopLeft();
-                Tools.CursorDown(LineCount - 1);
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                Console.Write(" Page " + (i + 1) + " of " + _logPages.Count + " ");
-                if (_logPages.Count == 1 || (i + 1) == _logPages.Count)
-                {
-                    Keyboard.AwaitAnyKey();
-                }
-                else if (Keyboard.AwaitAnyKeyOrEscape())
-                {
-                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                    Tools.ClearScreen();
-                    break;
-                }
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                Tools.ClearScreen();
-            }
-        }
-        else
-        {
-            Tools.ClearScreen();
-            Console.WriteLine(DialogText.InitNoData);
-            Keyboard.AwaitAnyKey();
-        }
+        EventLog.Show();
     }
 
     private static void WriteProgressBar(int value)

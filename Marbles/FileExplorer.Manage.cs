@@ -222,6 +222,13 @@ internal static partial class FileExplorer
         return path.Length <= room ? path : "..." + path[^(room - 3)..];
     }
 
+    // Add a file operation to the log, with what went wrong if it failed
+    private static void LogOperation(string operation, string detail, string result)
+    {
+        EventLog.Add(DialogText.LogFile + operation + ": " + detail +
+                     (result == DialogText.Success ? string.Empty : " - FAILED: " + result));
+    }
+
     private static void SaveFavorites()
     {
         var result = FileFavorites.Save();
@@ -239,6 +246,7 @@ internal static partial class FileExplorer
         }
 
         var result = FileOperations.CreateDirectory(_directory, name, out var path);
+        LogOperation("New directory", System.IO.Path.Combine(_directory, name), result);
         Finish(result, result == DialogText.Success ? path : null, string.Empty);
     }
 
@@ -254,6 +262,7 @@ internal static partial class FileExplorer
         }
 
         var result = FileOperations.Rename(item.Path, name, out var path);
+        LogOperation("Rename", item.Path + " -> " + name, result);
         Finish(result, result == DialogText.Success ? path : item.Path, string.Empty);
         if (result == DialogText.Success && FileFavorites.PathChanged(item.Path, path)) SaveFavorites();
     }
@@ -266,6 +275,7 @@ internal static partial class FileExplorer
         if (target == null) return;
         Draw(true);
         var result = FileOperations.Copy(item.Path, target, out var path, ShowProgress);
+        LogOperation("Copy", item.Path + " -> " + target, result);
         // A copy in the same directory is selected. Else the original stays selected
         var inPlace = result == DialogText.Success && FileOperations.SamePath(target, _directory);
         Finish(result, inPlace ? path : item.Path, DialogText.FileCopied + ShortPath(target));
@@ -276,6 +286,8 @@ internal static partial class FileExplorer
         var item = SelectedItem();
         if (item == null) return;
         var result = FileOperations.Copy(item.Path, _directory, out var path, ShowProgress);
+        LogOperation("Duplicate", item.Path + (path.Length > 0 ? " -> " + System.IO.Path.GetFileName(path) : ""),
+            result);
         Finish(result, result == DialogText.Success ? path : item.Path, string.Empty);
     }
 
@@ -287,6 +299,7 @@ internal static partial class FileExplorer
         if (target == null) return;
         Draw(true);
         var result = FileOperations.Move(item.Path, target, out var path, ShowProgress);
+        LogOperation("Move", item.Path + " -> " + target, result);
         Finish(result, result == DialogText.Success ? null : item.Path, DialogText.FileMoved + ShortPath(target));
         if (result == DialogText.Success && FileFavorites.PathChanged(item.Path, path)) SaveFavorites();
     }
@@ -316,6 +329,7 @@ internal static partial class FileExplorer
         }
 
         var result = FileOperations.Delete(item.Path);
+        LogOperation(item.IsDirectory ? "Delete directory" : "Delete", item.Path, result);
         Finish(result, result == DialogText.Success ? null : item.Path, DialogText.FileItemDeleted + item.Name);
         if (result == DialogText.Success && FileFavorites.PathDeleted(item.Path)) SaveFavorites();
     }

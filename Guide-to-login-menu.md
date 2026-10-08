@@ -25,6 +25,8 @@ Below these are some basic settings, so they can be changed without logging in t
 - **Automatic size**: Follow the size of the terminal window
 - **Size**: Set the number of columns and rows by hand (shown when _Automatic size_ is off)
 - **Reset all settings**: Set all settings back to their defaults (you are asked first)
+- **Restart Marbles**: Start Marbles over: the settings are read again and the start page is shown as at startup (you are asked first)
+- **View log**: Show the [log](#the-log)
 
 Select a row with `j`/`k` or its number, and press `Enter` or `Space` to change it. For the color scheme and the logo, `l` and `h` select the next and the previous. `Esc` returns. Changes are saved at once.
 
@@ -55,7 +57,7 @@ Press `Esc` and then one of the following keys:
 - `h` `l` Select the previous/next data file, `j` `k` Select a directory. The options stay open
 - `R` Refresh the login page
 - `Y` Restart Marbles
-- `G` Show the log
+- `G` Show the [log](#the-log)
 - `S` Edit the settings file _settings.ini_ (it can also be edited from the file system). Marbles restarts and loads the settings when the file is saved
 - `?` Show the help (the list of keys)
 - `Q` Exit Marbles
@@ -139,6 +141,18 @@ In the list of favorites:
 While the list is filtered with `/text` the favorites found are shown without the folders, and nothing can be moved.
 
 The list is kept in the file `favorites.txt` in the data directory (one line per favorite: the color, a tab character and the path; a folder has its name in brackets instead of a path, and the favorites in it start with a blank space). Favorites follow when you rename or move a file or directory in the browser, and are removed when you delete it. A favorite whose file is gone is shown as _(missing)_.
+
+## The log
+The log lists what has happened since Marbles was started: the startup, logins, commands, and the file operations of the file browser (new, open, rename, copy, move and delete, with the reason if one failed). It is shown from the options of the login page (`Esc`, `G`) and from the Configuration page.
+
+- The log opens at the end, with the latest lines
+- `h` `l` Previous/Next page, `j` `k` One line, `gg` `G` First/Last
+- `/text` Only show the lines containing "text", for example `/failed` or `/file:`. `Esc` shows all again
+- `Esc` or `Q` Close the log
+
+The log is kept in memory only: nothing is written to disk, and it is empty when Marbles is started. It holds the latest 1000 lines.
+
+As the log can be read without a password, commands given in the menus and in the editor are logged by name only (`:new ...`, `:s ...`): titles, search texts and other text typed after a command are not in the log. Something typed on a command line that is not a command is logged as "(not a command)". File names and paths in the file browser are logged in full.
 
 ## Logo animation
 The logo is drawn with a sweep when arriving at the login page. Any key ends the sweep. To turn it off, set `logoanim=false` in the settings file (`Esc`, `S`).

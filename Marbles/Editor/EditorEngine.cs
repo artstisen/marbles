@@ -540,6 +540,8 @@ internal sealed partial class EditorEngine
     private void ExecuteCommand(string command)
     {
         if (command.Length == 0) return;
+        // Logged by name only: the text of the document (as in a replace command) is not
+        if (!SingleLine) EventLog.AddCommand(DialogText.LogEditorCommand, command);
         // Commands may start with the lines to work on, like ":%s/a/b/" or ":2,5d"
         if (!ParseRange(ref command, out var range))
         {

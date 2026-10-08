@@ -112,6 +112,16 @@ internal static partial class FileExplorer
                 // The command is read as typed, as paths can be case sensitive
                 var command = CommandLine.Read(':', false);
                 var name = command == null ? string.Empty : CommandLine.Name(command).ToLowerInvariant();
+                if (command != null)
+                {
+                    // File names and paths are logged, but not something typed that is not a command
+                    EventLog.Add(DialogText.LogFilesCommand + ": :" + (name is "q" or "quit" or "close" or "home"
+                        or "h" or "help" or "cd" or "new" or "info" or "mkdir" or "rename" or "copy" or "duplicate"
+                        or "move" or "delete" or "fav" or "favorite" or "favs" or "favorites"
+                        ? command
+                        : "(not a command)"));
+                }
+
                 if (name is "q" or "quit" or "close")
                 {
                     break;
@@ -440,6 +450,7 @@ internal static partial class FileExplorer
     {
         EndSession();
         _file = file;
+        EventLog.Add(DialogText.LogFile + "Open: " + file.Path);
         Mode.SetMode(Mode.SelectedMode.Edit);
         try
         {
@@ -486,6 +497,7 @@ internal static partial class FileExplorer
         if (!Tools.IsValidFileName(name) || File.Exists(path) || Directory.Exists(path))
         {
             _message = DialogText.InvalidFileName;
+            LogOperation("New file", path, _message);
             return;
         }
 
@@ -496,8 +508,11 @@ internal static partial class FileExplorer
         catch (Exception e)
         {
             _message = e.Message;
+            LogOperation("New file", path, _message);
             return;
         }
+
+        LogOperation("New file", path, DialogText.Success);
 
         if (name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase))
         {

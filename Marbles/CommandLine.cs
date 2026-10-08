@@ -48,7 +48,13 @@ internal static class CommandLine
 
                 if (key.Key == ConsoleKey.Enter)
                 {
-                    if (isCommand) LastArgument = Argument(command.Trim());
+                    if (isCommand)
+                    {
+                        LastArgument = Argument(command.Trim());
+                        // Only the name: a title or other text after it is not logged
+                        EventLog.AddCommand(DialogText.LogCommand, command);
+                    }
+
                     command = isCommand ? command.Trim().ToLowerInvariant() : command.Trim();
                     return command.Length > 0 ? command : null;
                 }

@@ -707,6 +707,20 @@ internal static class Tools
         }
     }
 
+    /// <summary>
+    /// Restart Marbles and continue as when it is started: with the start page (or what it is set to show)
+    /// </summary>
+    internal static void RestartFromStartPage()
+    {
+        Init.Log(" *** " + DialogText.Restart + " *** ", false);
+        RemovePrivileges(true);
+        ClearEditorHelpData();
+        Entries.ClearTransfer(false);
+        Init.RunInitialization();
+        StartMenu.Start();
+        LoginRoutine(true);
+    }
+
     internal static void ColdRestart()
     {
         Init.Log(" *** " + DialogText.Restart + " *** ", false);
@@ -1313,6 +1327,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  Configuration", "j k or the number of the row: Select", false));
             _shortcutList.Add(new Shortcut("Enter Space", "Change the selected setting", false));
             _shortcutList.Add(new Shortcut("l h", "Next/Previous color scheme or logo", false));
+            _shortcutList.Add(new Shortcut("  View log", "/text only shows lines containing \"text\"", false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogin, true));
             _shortcutList.Add(new Shortcut("Enter", "Log in with the password typed", false));
             _shortcutList.Add(new Shortcut("Left Right Tab", "Select a data file", false));

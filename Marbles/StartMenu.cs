@@ -147,7 +147,9 @@ internal static class StartMenu
         Logo,
         AutoSize,
         Size,
-        Reset
+        Reset,
+        Restart,
+        ViewLog
     }
 
     // The settings shown: some are only shown when they can be used
@@ -162,6 +164,8 @@ internal static class StartMenu
         settings.Add(Setting.AutoSize);
         if (!Init.AutoSize) settings.Add(Setting.Size);
         settings.Add(Setting.Reset);
+        settings.Add(Setting.Restart);
+        settings.Add(Setting.ViewLog);
         return settings;
     }
 
@@ -184,6 +188,8 @@ internal static class StartMenu
             Setting.AutoSize => Check(Init.AutoSize) + DialogText.ConfigAutoSize,
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
+            Setting.Restart => indent + DialogText.ConfigRestart,
+            Setting.ViewLog => indent + DialogText.ConfigViewLog,
             _ => indent + DialogText.ConfigReset
         };
     }
@@ -313,6 +319,17 @@ internal static class StartMenu
             case Setting.Size:
                 // Saves the settings itself
                 Actions.DisplayOutputDimensions();
+                return;
+            case Setting.ViewLog:
+                EventLog.Show();
+                return;
+            case Setting.Restart:
+                if (Menu.YesNoPrompt(DialogText.Restart, DialogText.RestartYn, string.Empty, true))
+                {
+                    // Marbles starts over: the settings are read again, and the start page is shown as at startup
+                    Tools.RestartFromStartPage();
+                }
+
                 return;
             default:
                 if (Menu.YesNoPrompt(DialogText.CaptionsSettings, DialogText.ResetSettings, string.Empty, true))
