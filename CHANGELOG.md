@@ -12,6 +12,7 @@
 - **File management in the file browser**: create directories (`A`), rename (`X`), duplicate (`Y`), copy (`C`) and move (`M`) to another directory, and delete (`D`) files and directories, also as commands (`:mkdir`, `:rename`, `:duplicate`, `:copy`, `:move`, `:delete`). Nothing is overwritten, and what Marbles is using is protected. Deleted files cannot be recovered.
 - **Help for the page you are on**: `?` (and `:help`) shows the keys of the current page: start page, login page, menus and lists, file browser, file favorites or editor. `?` in the help switches to all keys and back. The start page and the login page have their own help sections.
 - **Black and white**: a setting that shows everything in black and white without changing your color scheme (`:bw` on menu page 4, or the configuration page; `monochrome` in the settings file).
+- The start page has a fourth choice, _Exit_, that closes Marbles without asking.
 - **Configuration page** (start page): besides what to show at startup, it now has black and white, color scheme, logo, automatic or manual size, and reset of all settings.
 - The second choice on the start page is named "Text Editor/File Management", and the file info box (`I`) is also available in the list of favorites.
 - **File browser**: `:new name` creates a file (as `N`), and `I` or `:info` shows the type, size, dates and path of the selected file or directory.

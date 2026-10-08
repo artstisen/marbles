@@ -6,8 +6,9 @@ Marbles can be used for encrypted notes and as an editor for ordinary text files
 - `1` **Note Management (encrypted notes)**: Continue to the login page
 - `2` **Text Editor/File Management**: Open the [file browser](#file-browser) to edit plain text files and manage files. Closing the file browser returns here
 - `3` **Configuration**: Select what Marbles does when it starts, and change some basic settings
+- `4` **Exit**: Close Marbles at once
 
-Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help and `Q` exits Marbles.
+Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking.
 
 ### Configuration
 - **Show choices on startup** (the default)

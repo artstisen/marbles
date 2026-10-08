@@ -1303,12 +1303,13 @@ internal static class Tools
             // Start by collecting all shortcuts
             _shortcutList.Add(new Shortcut(string.Empty, "Keyboard Functions", true));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionStart, true));
-            _shortcutList.Add(new Shortcut("j k 1-3", "Select", false));
+            _shortcutList.Add(new Shortcut("j k 1-4", "Select", false));
             _shortcutList.Add(new Shortcut("Enter", "Open the selected", false));
             _shortcutList.Add(new Shortcut("  1", "Note Management: the login page", false));
             _shortcutList.Add(new Shortcut("  2", "Text Editor/File Management: the file browser", false));
             _shortcutList.Add(new Shortcut("  3", "Configuration: startup and basic settings", false));
-            _shortcutList.Add(new Shortcut("Q Esc", "Exit Marbles (Configuration: Back)", false));
+            _shortcutList.Add(new Shortcut("  4", "Exit Marbles (without asking)", false));
+            _shortcutList.Add(new Shortcut("Q Esc", "Exit Marbles, asking first (Configuration: Back)", false));
             _shortcutList.Add(new Shortcut("  Configuration", "j k or the number of the row: Select", false));
             _shortcutList.Add(new Shortcut("Enter Space", "Change the selected setting", false));
             _shortcutList.Add(new Shortcut("l h", "Next/Previous color scheme or logo", false));

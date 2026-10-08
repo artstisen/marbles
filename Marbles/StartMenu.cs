@@ -31,7 +31,7 @@ internal static class StartMenu
     private const int Left = 3;
 
     private static readonly string[] Choices =
-        { DialogText.StartNotes, DialogText.StartEditor, DialogText.StartConfiguration };
+        { DialogText.StartNotes, DialogText.StartEditor, DialogText.StartConfiguration, DialogText.StartExit };
 
     /// <summary>
     /// The name of a start mode in the settings file
@@ -119,8 +119,12 @@ internal static class StartMenu
                 case 1:
                     if (BrowseFiles()) return;
                     break;
-                default:
+                case 2:
                     Configure();
+                    break;
+                default:
+                    // Exit without asking
+                    Tools.ExitApplication();
                     break;
             }
         }
@@ -188,46 +192,61 @@ internal static class StartMenu
     private static void Configure()
     {
         var selected = 0;
+        // The page is drawn when something has changed. When the selection moves only the pointer is drawn
+        var redraw = true;
         while (true)
         {
             var settings = Settings();
             selected = Math.Clamp(selected, 0, settings.Count - 1);
-            Init.ApplyAutoSize();
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Tools.ClearScreen();
-            Logo.DrawLogo(true, false);
-            Tools.SetCursorEx(FirstRow - 2, 1);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-            Console.Write(DialogText.StartConfiguration + ":");
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            if (redraw)
+            {
+                Init.ApplyAutoSize();
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Tools.ClearScreen();
+                Logo.DrawLogo(true, false);
+                Tools.SetCursorEx(FirstRow - 2, 1);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+                Console.Write(DialogText.StartConfiguration + ":");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                for (var i = 0; i < settings.Count; i++)
+                {
+                    // The basic settings follow the ones of the start page after a blank row
+                    Tools.SetCursorEx(SettingRow(settings, i), Left + 2);
+                    Console.Write(" " + SettingText(settings[i]));
+                }
+
+                Tools.SetCursorEx(Init.LineCount - 1, 0);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                Console.Write(" " + DialogText.StartConfigKeys);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            }
+
+            Tools.HideCursor();
             for (var i = 0; i < settings.Count; i++)
             {
-                // The basic settings follow the ones of the start page after a blank row
                 Tools.SetCursorEx(SettingRow(settings, i), Left);
                 if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
                 Console.Write(i == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                Console.Write(" " + SettingText(settings[i]));
             }
 
-            Tools.SetCursorEx(Init.LineCount - 1, 0);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(" " + DialogText.StartConfigKeys);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-
+            redraw = true;
             var key = Console.ReadKey(true);
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return;
             if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
             {
                 selected = (selected + 1) % settings.Count;
+                redraw = false;
             }
             else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
             {
                 selected = (selected + settings.Count - 1) % settings.Count;
+                redraw = false;
             }
             else if (key.KeyChar >= '1' && key.KeyChar - '1' < settings.Count)
             {
                 selected = key.KeyChar - '1';
+                redraw = false;
             }
             else if (key.KeyChar == '?')
             {
@@ -237,13 +256,16 @@ internal static class StartMenu
             {
                 ChangeSetting(settings[selected], true);
             }
-            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow)
+            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow &&
+                     settings[selected] is Setting.ColorScheme or Setting.Logo)
             {
                 // The previous color scheme or logo
-                if (settings[selected] is Setting.ColorScheme or Setting.Logo)
-                {
-                    ChangeSetting(settings[selected], false);
-                }
+                ChangeSetting(settings[selected], false);
+            }
+            else
+            {
+                // Nothing has changed
+                redraw = false;
             }
         }
     }
