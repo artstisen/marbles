@@ -35,14 +35,14 @@ internal static class Logo
         @"\/ /  __/",
         @" \/__/_/ ",
         @" ",
-        @" ",
-        @"*** Temp/utility ***",
-        @" ",
+        @" +----------------+",
+        @" | --DEBUG/TEST-- |",
+        @" +----------------+",
         @" ",
         @" ",
         @" ",
         @"Your custom text from " + FileIo.SettingsFileName + "...",
-        @"(from login menu press Esc, S and set the ""logotxt"" property)",
+        @" ",
         @" "
     };
 

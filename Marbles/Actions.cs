@@ -408,23 +408,17 @@ internal static class Actions
                 Console.Write("  ");
             }
 
-            // Title, and the date changed (without seconds) if there is room for it
-            var date = entry.DateChanged.Length > 3 ? entry.DateChanged[..^3] : entry.DateChanged;
-            var showDate = width >= 60;
-            var titleWidth = width - 4 - (showDate ? date.Length + 3 : 0);
+            // Only the title is shown
+            var titleWidth = width - 4;
             var title = Tools.TruncateString(entry.Title, titleWidth, true);
             // Favorites have a color, and pinned entries can have a color of their own
             PinColors.Apply(entry, IsFavorite(entry)
                 ? ConsoleColors.ColorPreset.Favorites
                 : ConsoleColors.ColorPreset.Normal);
             Console.Write(" " + title);
-            if (showDate)
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                Console.Write(" " + new string('.', Math.Max(1, titleWidth - title.Length + 1)) + " ");
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                Console.Write(date);
-            }
+            // Remove what is left of a longer title shown before
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(new string(' ', Math.Max(0, titleWidth - title.Length)));
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
