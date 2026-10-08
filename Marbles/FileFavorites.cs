@@ -4,23 +4,32 @@ namespace Marbles;
 
 /// <summary>
 /// The favorites of the file browser: files and directories marked by the user, in an order and with text
-/// colors set by the user. The list is kept in the file "favorites.txt" in the data directory, with one
-/// favorite per line: the color (or nothing), a tab character and the path.
+/// colors set by the user. Favorites can be grouped in folders, which only exist in the list (not on disk).
+///
+/// The list is kept in the file "favorites.txt" in the data directory, with one line for each favorite:
+/// the color (or nothing), a tab character and the path. A folder has its name in brackets instead of a
+/// path ("[Work]", followed by a tab character and "collapsed" if it is closed), and the favorites in a
+/// folder are the lines after it that start with a blank space.
 /// </summary>
 internal static class FileFavorites
 {
     internal const string FileName = "favorites.txt";
+    private const string CollapsedMark = "collapsed";
 
     internal sealed class Favorite
     {
         internal string Path = string.Empty;
         internal ConsoleColor? Color;
+        internal bool IsFolder;
+        internal string Name = string.Empty; // The name of a folder
+        internal bool Collapsed; // A folder that is closed: the favorites in it are not shown
+        internal bool InFolder; // A favorite in the folder above it in the list
     }
 
     private static readonly List<Favorite> List = new();
 
     /// <summary>
-    /// The favorites in the order set by the user
+    /// The favorites and folders in the order set by the user. The favorites of a folder follow it
     /// </summary>
     internal static IReadOnlyList<Favorite> Items => List;
 
@@ -51,12 +60,15 @@ internal static class FileFavorites
     internal static void Parse(string text)
     {
         List.Clear();
+        var hasFolder = false;
         foreach (var rawLine in text.Split('\n'))
         {
             var line = rawLine.TrimEnd('\r');
+            var inFolder = hasFolder && line.StartsWith(' ');
+            line = line.TrimStart(' ');
             var tab = line.IndexOf('\t');
-            var path = (tab < 0 ? line : line[(tab + 1)..]).Trim();
-            if (path.Length == 0 || Contains(path)) continue;
+            var rest = (tab < 0 ? line : line[(tab + 1)..]).Trim();
+            if (rest.Length == 0) continue;
             ConsoleColor? color = null;
             if (tab > 0 && Enum.TryParse<ConsoleColor>(line[..tab].Trim(), true, out var parsed) &&
                 Enum.IsDefined(parsed))
@@ -64,7 +76,23 @@ internal static class FileFavorites
                 color = parsed;
             }
 
-            List.Add(new Favorite { Path = path, Color = color });
+            var close = rest.IndexOf(']');
+            if (rest[0] == '[' && close > 1)
+            {
+                // A folder
+                List.Add(new Favorite
+                {
+                    IsFolder = true, Name = rest[1..close].Trim(), Color = color,
+                    Collapsed = rest[(close + 1)..].Contains(CollapsedMark, StringComparison.OrdinalIgnoreCase)
+                });
+                hasFolder = true;
+                continue;
+            }
+
+            if (Contains(rest)) continue;
+            // The favorites of a folder follow it directly
+            if (!inFolder) hasFolder = false;
+            List.Add(new Favorite { Path = rest, Color = color, InFolder = inFolder });
         }
     }
 
@@ -73,7 +101,19 @@ internal static class FileFavorites
         var text = new StringBuilder();
         foreach (var favorite in List)
         {
-            text.Append(favorite.Color?.ToString() ?? string.Empty).Append('\t').Append(favorite.Path).Append('\n');
+            if (favorite.InFolder) text.Append(' ');
+            text.Append(favorite.Color?.ToString() ?? string.Empty).Append('\t');
+            if (favorite.IsFolder)
+            {
+                text.Append('[').Append(favorite.Name).Append(']');
+                if (favorite.Collapsed) text.Append('\t').Append(CollapsedMark);
+            }
+            else
+            {
+                text.Append(favorite.Path);
+            }
+
+            text.Append('\n');
         }
 
         return text.ToString();
@@ -100,7 +140,7 @@ internal static class FileFavorites
 
     private static int IndexOf(string path)
     {
-        return List.FindIndex(favorite => FileOperations.SamePath(favorite.Path, path));
+        return List.FindIndex(favorite => !favorite.IsFolder && FileOperations.SamePath(favorite.Path, path));
     }
 
     internal static bool Contains(string path) => IndexOf(path) >= 0;
@@ -122,26 +162,173 @@ internal static class FileFavorites
         return true;
     }
 
+    /// <summary>
+    /// Remove a favorite, or a folder with the favorites in it
+    /// </summary>
     internal static void RemoveAt(int index)
     {
-        if (index >= 0 && index < List.Count) List.RemoveAt(index);
-    }
-
-    /// <summary>
-    /// Move a favorite one place up or down in the list
-    /// </summary>
-    /// <returns>False if it is at the end of the list</returns>
-    internal static bool Move(int index, bool up)
-    {
-        var target = index + (up ? -1 : 1);
-        if (index < 0 || index >= List.Count || target < 0 || target >= List.Count) return false;
-        (List[index], List[target]) = (List[target], List[index]);
-        return true;
+        if (index < 0 || index >= List.Count) return;
+        List.RemoveRange(index, FolderEnd(index) - index + 1);
     }
 
     internal static void SetColor(int index, ConsoleColor? color)
     {
         if (index >= 0 && index < List.Count) List[index].Color = color;
+    }
+
+    #region Folders
+
+    /// <summary>
+    /// A name that can be used for a folder (the brackets mark a folder in the file)
+    /// </summary>
+    internal static bool IsValidFolderName(string name)
+    {
+        name = name.Trim();
+        return name.Length > 0 && name.IndexOfAny(new[] { '[', ']', '\t', '\n', '\r' }) < 0;
+    }
+
+    /// <summary>
+    /// Add a folder in front of an item of the list (in front of its folder, if it is in one)
+    /// </summary>
+    /// <returns>The place of the folder in the list, or -1 if the name cannot be used</returns>
+    internal static int AddFolder(string name, int before)
+    {
+        if (!IsValidFolderName(name)) return -1;
+        var index = before < 0 || before >= List.Count ? List.Count : FolderStart(before);
+        List.Insert(index, new Favorite { IsFolder = true, Name = name.Trim() });
+        return index;
+    }
+
+    internal static bool RenameFolder(int index, string name)
+    {
+        if (index < 0 || index >= List.Count || !List[index].IsFolder || !IsValidFolderName(name)) return false;
+        List[index].Name = name.Trim();
+        return true;
+    }
+
+    /// <summary>
+    /// The number of favorites in a folder
+    /// </summary>
+    internal static int FolderCount(int index)
+    {
+        return index >= 0 && index < List.Count && List[index].IsFolder ? FolderEnd(index) - index : 0;
+    }
+
+    // The last item of a folder (the folder itself if it is empty, or the item if it is not a folder)
+    private static int FolderEnd(int index)
+    {
+        if (!List[index].IsFolder) return index;
+        var end = index;
+        while (end + 1 < List.Count && List[end + 1].InFolder) end++;
+        return end;
+    }
+
+    // Where the folder of an item starts (the item itself if it is not in a folder)
+    private static int FolderStart(int index)
+    {
+        while (index > 0 && List[index].InFolder) index--;
+        return index;
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Move a favorite or a folder one place up or down in the list.
+    /// A favorite moved onto a folder goes into it, and one moved past the first or last favorite of its
+    /// folder leaves the folder. A folder is closed and moves with its favorites, past the favorite or
+    /// folder next to it.
+    /// </summary>
+    /// <returns>False if it is at the end of the list</returns>
+    internal static bool Move(int index, bool up)
+    {
+        if (index < 0 || index >= List.Count) return false;
+        var item = List[index];
+        if (item.IsFolder)
+        {
+            item.Collapsed = true;
+            var end = FolderEnd(index);
+            var count = end - index + 1;
+            int target;
+            if (up)
+            {
+                if (index == 0) return false;
+                target = FolderStart(index - 1);
+            }
+            else
+            {
+                if (end == List.Count - 1) return false;
+                // After the favorite or folder that follows
+                target = FolderEnd(end + 1) + 1 - count;
+            }
+
+            var block = List.GetRange(index, count);
+            List.RemoveRange(index, count);
+            List.InsertRange(target, block);
+            return true;
+        }
+
+        if (up)
+        {
+            if (index == 0) return false;
+            var previous = List[index - 1];
+            if (item.InFolder)
+            {
+                if (previous.IsFolder)
+                {
+                    // The first of the folder: out of it, above it
+                    Swap(index - 1, index);
+                    item.InFolder = false;
+                }
+                else
+                {
+                    Swap(index - 1, index);
+                }
+            }
+            else if (previous.IsFolder || previous.InFolder)
+            {
+                // Into the folder above, as the last in it
+                item.InFolder = true;
+                List[FolderStart(index - 1)].Collapsed = false;
+            }
+            else
+            {
+                Swap(index - 1, index);
+            }
+
+            return true;
+        }
+
+        if (item.InFolder)
+        {
+            if (index + 1 < List.Count && List[index + 1].InFolder)
+            {
+                Swap(index, index + 1);
+            }
+            else
+            {
+                // The last of the folder: out of it, below it
+                item.InFolder = false;
+            }
+
+            return true;
+        }
+
+        if (index + 1 >= List.Count) return false;
+        var next = List[index + 1];
+        Swap(index, index + 1);
+        if (next.IsFolder)
+        {
+            // Into the folder below, as the first in it
+            item.InFolder = true;
+            next.Collapsed = false;
+        }
+
+        return true;
+    }
+
+    private static void Swap(int a, int b)
+    {
+        (List[a], List[b]) = (List[b], List[a]);
     }
 
     /// <summary>
@@ -153,6 +340,7 @@ internal static class FileFavorites
         var changed = false;
         foreach (var favorite in List)
         {
+            if (favorite.IsFolder) continue;
             if (FileOperations.SamePath(favorite.Path, oldPath))
             {
                 favorite.Path = Path.GetFullPath(newPath);
@@ -175,7 +363,8 @@ internal static class FileFavorites
     /// <returns>True if the list was changed</returns>
     internal static bool PathDeleted(string path)
     {
-        return List.RemoveAll(favorite => FileOperations.SamePath(favorite.Path, path) ||
-                                          FileOperations.IsInside(favorite.Path, path)) > 0;
+        return List.RemoveAll(favorite => !favorite.IsFolder &&
+                                          (FileOperations.SamePath(favorite.Path, path) ||
+                                           FileOperations.IsInside(favorite.Path, path))) > 0;
     }
 }

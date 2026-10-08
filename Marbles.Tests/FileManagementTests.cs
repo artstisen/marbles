@@ -1,4 +1,4 @@
-namespace Marbles.Tests;
+﻿namespace Marbles.Tests;
 
 [Collection("Static state")]
 public class FileManagementTests : IDisposable
@@ -249,6 +249,121 @@ public class FileManagementTests : IDisposable
         Assert.True(FileFavorites.PathDeleted(In("new")));
         Assert.Equal(new[] { other }, FileFavorites.Items.Select(f => f.Path));
         Assert.False(FileFavorites.PathDeleted(In("new")));
+    }
+
+    #endregion
+
+    #region Folders of favorites
+
+    // The list as text: folders in brackets (with "+" when closed), favorites in a folder after a blank space
+    private static string Show()
+    {
+        return string.Join(" ", FileFavorites.Items.Select(item =>
+            item.IsFolder ? "[" + item.Name + (item.Collapsed ? "+" : "") + "]" :
+            (item.InFolder ? "." : "") + Path.GetFileName(item.Path)));
+    }
+
+    private static int Find(string name)
+    {
+        for (var i = 0; i < FileFavorites.Items.Count; i++)
+        {
+            var item = FileFavorites.Items[i];
+            if (item.IsFolder ? item.Name == name : Path.GetFileName(item.Path) == name) return i;
+        }
+
+        return -1;
+    }
+
+    private static void Move(string name, bool up, string expected)
+    {
+        Assert.True(FileFavorites.Move(Find(name), up));
+        Assert.Equal(expected, Show());
+    }
+
+    [Fact]
+    public void Folders_FileFormat()
+    {
+        FileFavorites.Parse("\t/x/a\nGreen\t[Work]\n Red\t/x/b\n \t/x/c\n\t[Closed]\tcollapsed\n \t/x/d\n\t/x/e\n \t/x/f\n");
+        // A line with a blank space in front that does not follow a folder is not in a folder
+        Assert.Equal("a [Work] .b .c [Closed+] .d e f", Show());
+        Assert.Equal(ConsoleColor.Green, FileFavorites.Items[1].Color);
+        Assert.Equal(ConsoleColor.Red, FileFavorites.Items[2].Color);
+        Assert.Equal(2, FileFavorites.FolderCount(1));
+        Assert.Equal("\t/x/a\nGreen\t[Work]\n Red\t/x/b\n \t/x/c\n\t[Closed]\tcollapsed\n \t/x/d\n\t/x/e\n\t/x/f\n",
+            FileFavorites.Serialize());
+    }
+
+    [Fact]
+    public void Folders_AddRenameRemove()
+    {
+        FileFavorites.Parse("\t/x/a\n\t[One]\n \t/x/b\n\t/x/c\n");
+        Assert.Equal(-1, FileFavorites.AddFolder("a[b", 0));
+        Assert.Equal(-1, FileFavorites.AddFolder("  ", 0));
+        // In front of the selected item. For an item in a folder: in front of the folder
+        Assert.Equal(1, FileFavorites.AddFolder("Two", Find("b")));
+        Assert.Equal("a [Two] [One] .b c", Show());
+        Assert.Equal(5, FileFavorites.AddFolder("Last", -1));
+        Assert.True(FileFavorites.RenameFolder(Find("Two"), " New "));
+        Assert.False(FileFavorites.RenameFolder(Find("New"), "]"));
+        Assert.False(FileFavorites.RenameFolder(Find("a"), "File"));
+        Assert.Equal("a [New] [One] .b c [Last]", Show());
+        // A folder is removed with the favorites in it
+        FileFavorites.RemoveAt(Find("One"));
+        Assert.Equal("a [New] c [Last]", Show());
+        // The files of the favorites are found whether they are in a folder or not
+        FileFavorites.Parse("\t[One]\n \t/x/b\n");
+        Assert.True(FileFavorites.Contains("/x/b"));
+        Assert.False(FileFavorites.Toggle("/x/b"));
+        Assert.Equal("[One]", Show());
+    }
+
+    [Fact]
+    public void Folders_AFavoriteMovesIntoAndOutOfAFolder()
+    {
+        FileFavorites.Parse("\t/x/a\n\t[F]\tcollapsed\n \t/x/b\n \t/x/c\n\t/x/d\n");
+        // Down onto the folder: the first in it (and the folder opens)
+        Move("a", false, "[F] .a .b .c d");
+        Move("a", false, "[F] .b .a .c d");
+        Move("a", false, "[F] .b .c .a d");
+        // Past the last: out of the folder, below it
+        Move("a", false, "[F] .b .c a d");
+        Move("a", false, "[F] .b .c d a");
+        Assert.False(FileFavorites.Move(Find("a"), false));
+        // And up again: into the folder as the last, and out above it
+        Move("a", true, "[F] .b .c a d");
+        Move("a", true, "[F] .b .c .a d");
+        Move("a", true, "[F] .b .a .c d");
+        Move("a", true, "[F] .a .b .c d");
+        Move("a", true, "a [F] .b .c d");
+        Assert.False(FileFavorites.Move(Find("a"), true));
+    }
+
+    [Fact]
+    public void Folders_EmptyAndClosedFolders()
+    {
+        FileFavorites.Parse("\t[Empty]\n\t/x/a\n\t[Closed]\tcollapsed\n \t/x/b\n\t/x/c\n");
+        // Up into the empty folder, and on above it
+        Move("a", true, "[Empty] .a [Closed+] .b c");
+        Move("a", true, "a [Empty] [Closed+] .b c");
+        // Up into a closed folder: it opens, so the favorite can be seen
+        Move("c", true, "a [Empty] [Closed] .b .c");
+    }
+
+    [Fact]
+    public void Folders_AFolderMovesWithItsFavorites()
+    {
+        FileFavorites.Parse("\t/x/a\n\t[F]\n \t/x/b\n \t/x/c\n\t/x/d\n\t[G]\n \t/x/e\n");
+        // It is closed, and moves past the favorite or the whole folder next to it
+        Move("F", false, "a d [F+] .b .c [G] .e");
+        Move("F", false, "a d [G] .e [F+] .b .c");
+        Assert.False(FileFavorites.Move(Find("F"), false));
+        Move("F", true, "a d [F+] .b .c [G] .e");
+        Move("F", true, "a [F+] .b .c d [G] .e");
+        Move("F", true, "[F+] .b .c a d [G] .e");
+        Assert.False(FileFavorites.Move(Find("F"), true));
+        Assert.Equal(DialogText.Success, FileFavorites.Save());
+        FileFavorites.Load();
+        Assert.Equal("[F+] .b .c a d [G] .e", Show());
     }
 
     #endregion

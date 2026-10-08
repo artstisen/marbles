@@ -1375,10 +1375,15 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("j k gg G", "Select", false));
             _shortcutList.Add(new Shortcut("l Enter", "Open the file (a directory: go to it)", false));
             _shortcutList.Add(new Shortcut("B :goto", "Show the file in the file browser", false));
-            _shortcutList.Add(new Shortcut("Tab V", "Move the favorite (j k, then Esc)", false));
+            _shortcutList.Add(new Shortcut("Tab V", "Move the favorite or folder (j k, then Esc)", false));
+            _shortcutList.Add(new Shortcut("A :folder name", "New folder (a group of favorites)", false));
+            _shortcutList.Add(new Shortcut("l Enter", "On a folder: Open/Close it", false));
+            _shortcutList.Add(new Shortcut("X :rename name", "Rename the folder", false));
+            _shortcutList.Add(new Shortcut("  Into a folder", "Move the favorite onto the folder", false));
+            _shortcutList.Add(new Shortcut("  Out of a folder", "Move it past the first or last in it", false));
             _shortcutList.Add(new Shortcut("C :color", "Pick the text color of the favorite", false));
             _shortcutList.Add(new Shortcut("I :info", "Show type, size, dates and path", false));
-            _shortcutList.Add(new Shortcut("P D :remove", "Remove from the favorites (the file stays)", false));
+            _shortcutList.Add(new Shortcut("P D :remove", "Remove the favorite or folder (files stay)", false));
             _shortcutList.Add(new Shortcut("/text", "Only show paths containing \"text\" (Esc: all)", false));
             _shortcutList.Add(new Shortcut("Esc Q F h", "Back to the file browser", false));
             _shortcutList.Add(new Shortcut("  The list", "Kept in favorites.txt in the data directory", false));

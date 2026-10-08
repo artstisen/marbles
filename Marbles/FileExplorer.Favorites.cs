@@ -1,7 +1,8 @@
 ﻿namespace Marbles;
 
 // The favorites of the file browser, shown as a list: the files and directories the user has marked, in the
-// order and with the colors set by the user. The list itself is kept by the class FileFavorites.
+// order and with the colors set by the user, and grouped in folders. The list itself is kept by the class
+// FileFavorites.
 internal static partial class FileExplorer
 {
     private enum FavoriteAction
@@ -69,10 +70,27 @@ internal static partial class FileExplorer
     private static void FilterFavorites()
     {
         _favorites = new List<int>();
+        var hidden = false; // In a folder that is closed
         for (var i = 0; i < FileFavorites.Items.Count; i++)
         {
-            if (_favoriteFilter.Length == 0 ||
-                FileFavorites.Items[i].Path.Contains(_favoriteFilter, StringComparison.OrdinalIgnoreCase))
+            var item = FileFavorites.Items[i];
+            if (_favoriteFilter.Length > 0)
+            {
+                // The favorites found are shown without the folders
+                if (!item.IsFolder && item.Path.Contains(_favoriteFilter, StringComparison.OrdinalIgnoreCase))
+                {
+                    _favorites.Add(i);
+                }
+
+                continue;
+            }
+
+            if (item.IsFolder)
+            {
+                hidden = item.Collapsed;
+                _favorites.Add(i);
+            }
+            else if (!item.InFolder || !hidden)
             {
                 _favorites.Add(i);
             }
@@ -101,9 +119,13 @@ internal static partial class FileExplorer
                 if (navigation is ConsoleKey.UpArrow or ConsoleKey.DownArrow or ConsoleKey.J or ConsoleKey.K)
                 {
                     var up = navigation is ConsoleKey.UpArrow or ConsoleKey.K;
+                    var moved = FileFavorites.Items[selected];
                     if (FileFavorites.Move(selected, up))
                     {
-                        _favoriteIndex += up ? -1 : 1;
+                        // The selection follows it (a folder it has moved into is opened)
+                        FilterFavorites();
+                        _favoriteIndex = Math.Max(0,
+                            _favorites.FindIndex(number => ReferenceEquals(FileFavorites.Items[number], moved)));
                         SaveFavoriteList();
                     }
                 }
@@ -119,6 +141,12 @@ internal static partial class FileExplorer
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read();
+                // A name can follow the command
+                if (command != null && CommandLine.Name(command) is "folder" or "rename")
+                {
+                    command = CommandLine.Name(command);
+                }
+
                 switch (command)
                 {
                     case null:
@@ -140,8 +168,14 @@ internal static partial class FileExplorer
                     case "remove":
                         RemoveFavorite(selected);
                         break;
+                    case "folder":
+                        NewFavoriteFolder(selected, CommandLine.LastArgument);
+                        break;
+                    case "rename":
+                        RenameFavoriteFolder(selected, CommandLine.LastArgument);
+                        break;
                     case "goto":
-                        if (selected < 0) break;
+                        if (selected < 0 || FileFavorites.Items[selected].IsFolder) break;
                         path = FileFavorites.Items[selected].Path;
                         return FavoriteAction.GoTo;
                     default:
@@ -212,17 +246,34 @@ internal static partial class FileExplorer
                 _favoriteIndex = _favorites.Count - 1;
                 redraw = hadMessage;
             }
+            else if (key.Key == ConsoleKey.A)
+            {
+                NewFavoriteFolder(selected, string.Empty);
+            }
             else if (selected < 0)
             {
                 // The other keys need a favorite to work on
             }
             else if (key.Key == ConsoleKey.Enter || navigation == ConsoleKey.RightArrow)
             {
+                if (FileFavorites.Items[selected].IsFolder)
+                {
+                    // Open or close the folder
+                    FileFavorites.Items[selected].Collapsed = !FileFavorites.Items[selected].Collapsed;
+                    SaveFavoriteList();
+                    continue;
+                }
+
                 path = FileFavorites.Items[selected].Path;
                 return FavoriteAction.Open;
             }
+            else if (key.Key == ConsoleKey.X)
+            {
+                RenameFavoriteFolder(selected, string.Empty);
+            }
             else if (key.Key == ConsoleKey.B)
             {
+                if (FileFavorites.Items[selected].IsFolder) continue;
                 path = FileFavorites.Items[selected].Path;
                 return FavoriteAction.GoTo;
             }
@@ -259,9 +310,83 @@ internal static partial class FileExplorer
         if (result != DialogText.Success) _favoriteMessage = result;
     }
 
+    // Ask for the name of a new folder (if it is not given) and add it in front of the selected item
+    private static void NewFavoriteFolder(int selected, string name)
+    {
+        if (_favoriteFilter.Length > 0)
+        {
+            _favoriteMessage = DialogText.FavoriteMoveFiltered;
+            return;
+        }
+
+        if (name.Length == 0)
+        {
+            var asked = AskName(DialogText.FavoriteNewFolder, string.Empty);
+            if (asked == null) return;
+            name = asked;
+        }
+
+        var index = FileFavorites.AddFolder(name, selected);
+        if (index < 0)
+        {
+            _favoriteMessage = DialogText.FavoriteFolderName;
+            return;
+        }
+
+        FilterFavorites();
+        _favoriteIndex = Math.Max(0, _favorites.IndexOf(index));
+        SaveFavoriteList();
+    }
+
+    private static void RenameFavoriteFolder(int number, string name)
+    {
+        if (number < 0) return;
+        if (!FileFavorites.Items[number].IsFolder)
+        {
+            // A file is renamed where it is
+            _favoriteMessage = DialogText.FavoriteRenameFile;
+            return;
+        }
+
+        if (name.Length == 0)
+        {
+            var asked = AskName(DialogText.FavoriteRenameFolder, FileFavorites.Items[number].Name);
+            if (asked == null) return;
+            name = asked;
+        }
+
+        if (FileFavorites.RenameFolder(number, name))
+        {
+            SaveFavoriteList();
+        }
+        else
+        {
+            _favoriteMessage = DialogText.FavoriteFolderName;
+        }
+    }
+
     private static void RemoveFavorite(int number)
     {
         if (number < 0) return;
+        var item = FileFavorites.Items[number];
+        if (item.IsFolder)
+        {
+            // The favorites in a folder are removed with it
+            var count = FileFavorites.FolderCount(number);
+            if (count > 0 && !Menu.YesNoPrompt(DialogText.FavoriteDeleteFolder,
+                    DialogText.DeleteNamedYn.Replace("{0}", Tools.TruncateString(item.Name, 40, true)),
+                    (count == 1 ? DialogText.FavoriteDeleteFolderNoteOne : DialogText.FavoriteDeleteFolderNote)
+                    .Replace("{0}", count.ToString()), true))
+            {
+                return;
+            }
+
+            FileFavorites.RemoveAt(number);
+            _favoriteMessage = DialogText.FavoriteFolderRemoved + item.Name;
+            SaveFavoriteList();
+            return;
+        }
+
         var name = System.IO.Path.GetFileName(FileFavorites.Items[number].Path);
         FileFavorites.RemoveAt(number);
         _favoriteMessage = DialogText.FavoriteRemoved + ": " + name;
@@ -271,7 +396,7 @@ internal static partial class FileExplorer
     // Show information about the file or directory of a favorite
     private static void ShowFavoriteInfo(int number)
     {
-        if (number < 0) return;
+        if (number < 0 || FileFavorites.Items[number].IsFolder) return;
         var path = FileFavorites.Items[number].Path;
         var isDirectory = Directory.Exists(path);
         if (!isDirectory && !File.Exists(path))
@@ -334,7 +459,7 @@ internal static partial class FileExplorer
         var nameWidth = 0;
         foreach (var number in _favorites)
         {
-            nameWidth = Math.Max(nameWidth, FavoriteName(FileFavorites.Items[number].Path).Length);
+            nameWidth = Math.Max(nameWidth, FavoriteLabel(number).Length);
         }
 
         nameWidth = Math.Min(nameWidth, Init.LineWidth / 2 - 6);
@@ -342,13 +467,15 @@ internal static partial class FileExplorer
         {
             var index = _favoriteTop + row;
             var favorite = FileFavorites.Items[_favorites[index]];
-            var isDirectory = Directory.Exists(favorite.Path);
-            var exists = isDirectory || File.Exists(favorite.Path);
-            var info = !exists ? DialogText.FavoriteMissing :
+            var isDirectory = !favorite.IsFolder && Directory.Exists(favorite.Path);
+            var exists = favorite.IsFolder || isDirectory || File.Exists(favorite.Path);
+            var count = favorite.IsFolder ? FileFavorites.FolderCount(_favorites[index]) : 0;
+            var info = favorite.IsFolder ? count + (count == 1 ? DialogText.FavoriteFolderOne : DialogText.FavoriteFolderCount) :
+                !exists ? DialogText.FavoriteMissing :
                 isDirectory ? DialogText.DirectoryMark : FileSizeFormatter.FormatSize(new FileInfo(favorite.Path).Length);
             DrawFavoritePointer(index, index == _favoriteIndex);
-            var name = Tools.TruncateString(FavoriteName(favorite.Path) + (isDirectory ? "/" : ""), nameWidth + 1,
-                true);
+            var name = Tools.TruncateString(FavoriteLabel(_favorites[index]) + (isDirectory ? "/" : ""),
+                nameWidth + 1, true);
             var moving = _favoriteMoving && index == _favoriteIndex;
             if (moving)
             {
@@ -360,7 +487,7 @@ internal static partial class FileExplorer
             }
             else
             {
-                ConsoleColors.SetColors(isDirectory
+                ConsoleColors.SetColors(isDirectory || favorite.IsFolder
                     ? ConsoleColors.ColorPreset.HeaderColor
                     : ConsoleColors.ColorPreset.Normal);
             }
@@ -368,7 +495,9 @@ internal static partial class FileExplorer
             Console.Write(" " + name);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             // The directory it is in (the end of a long path is shown)
-            var directory = System.IO.Path.GetDirectoryName(favorite.Path) ?? string.Empty;
+            var directory = favorite.IsFolder
+                ? string.Empty
+                : System.IO.Path.GetDirectoryName(favorite.Path) ?? string.Empty;
             var column = 3 + nameWidth + 3;
             var room = Init.LineWidth - column - info.Length - 3;
             if (room > 8)
@@ -387,6 +516,16 @@ internal static partial class FileExplorer
         _shownFavoriteTop = _favoriteTop;
         _shownFavoriteIndex = _favoriteIndex;
         DrawFavoriteStatus();
+    }
+
+    // What is shown for an item of the list: the name of the file, with a blank space in front if it is in a
+    // folder, or the name of a folder with a mark that tells if it is open
+    private static string FavoriteLabel(int number)
+    {
+        var item = FileFavorites.Items[number];
+        if (item.IsFolder) return (item.Collapsed ? "[+] " : "[-] ") + item.Name;
+        // The folders are not shown when the list is filtered
+        return (item.InFolder && _favoriteFilter.Length == 0 ? " " : string.Empty) + FavoriteName(item.Path);
     }
 
     private static string FavoriteName(string path)

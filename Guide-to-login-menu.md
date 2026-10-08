@@ -117,14 +117,28 @@ In the list of favorites:
 - `j` `k` Select, `gg` `G` First/Last
 - `l` or `Enter` Open the file in the editor (closing the editor returns to the list). A directory: go to it in the browser
 - `B` or `:goto` Show the file in the browser: its directory is opened with the file selected, where it can be renamed, copied, moved or deleted
-- `Tab` or `V` Move the selected favorite: it is highlighted and follows `j` `k` up and down the list until you press `Esc`
+- `Tab` or `V` Move the selected favorite or folder: it is highlighted and follows `j` `k` up and down the list until you press `Esc`
 - `C` or `:color` Pick a text color for the favorite from the list of 16 colors
 - `P`, `D` or `:remove` Remove it from the favorites (the file itself stays where it is)
+- `A` or `:folder name` Create a folder (see below)
 - `/text` Only show the paths containing "text". `Esc` shows all again
 - `?` Help
 - `Esc`, `Q`, `F` or `h` Return to the browser
 
-The list is kept in the file `favorites.txt` in the data directory (one line per favorite: the color, a tab character and the path). Favorites follow when you rename or move a file or directory in the browser, and are removed when you delete it. A favorite whose file is gone is shown as _(missing)_.
+**Folders:** Favorites can be grouped in folders. A folder only exists in the list of favorites; nothing is created on disk and no files are moved.
+
+- `A` or `:folder name` Create a folder in front of the selected item. It is shown as `[-] Name` when open and `[+] Name` when closed, with the number of favorites in it
+- `l` or `Enter` on a folder: Open or close it. The favorites in an open folder are shown below it, one space in
+- **Into a folder:** Move a favorite (`Tab` or `V`, then `j` `k`) onto the folder. Moving down onto a folder puts it first in the folder, moving up from below puts it last. A closed folder opens
+- **Out of a folder:** Move the favorite on, past the first or the last favorite in the folder
+- A folder is moved like a favorite. It is closed first, and moves with its favorites past the favorite or folder next to it
+- `X` or `:rename name` Rename the folder
+- `C` Pick a color for the folder
+- `P`, `D` or `:remove` Remove the folder. If there are favorites in it you are asked first, as they are removed from the list with it (the files stay)
+
+While the list is filtered with `/text` the favorites found are shown without the folders, and nothing can be moved.
+
+The list is kept in the file `favorites.txt` in the data directory (one line per favorite: the color, a tab character and the path; a folder has its name in brackets instead of a path, and the favorites in it start with a blank space). Favorites follow when you rename or move a file or directory in the browser, and are removed when you delete it. A favorite whose file is gone is shown as _(missing)_.
 
 ## Logo animation
 The logo is drawn with a sweep when arriving at the login page. Any key ends the sweep. To turn it off, set `logoanim=false` in the settings file (`Esc`, `S`).
