@@ -413,7 +413,8 @@ internal static class Actions
             var showDate = width >= 60;
             var titleWidth = width - 4 - (showDate ? date.Length + 3 : 0);
             var title = Tools.TruncateString(entry.Title, titleWidth, true);
-            ConsoleColors.SetColors(IsFavorite(entry)
+            // Favorites have a color, and pinned entries can have a color of their own
+            PinColors.Apply(entry, IsFavorite(entry)
                 ? ConsoleColors.ColorPreset.Favorites
                 : ConsoleColors.ColorPreset.Normal);
             Console.Write(" " + title);
