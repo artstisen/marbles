@@ -30,9 +30,6 @@ internal static class Entries
     // Options tags
     internal const char FavoritesTag = 'f';
     internal const char PinnedTag = 'p';
-    internal const char HighlightType1 = 'h';
-    internal const char HighlightType2 = 'i';
-    internal const char HighlightType3 = 'j';
     internal const char DefaultRank = '0';
     private const string DefaultEndRank = "99999";
 

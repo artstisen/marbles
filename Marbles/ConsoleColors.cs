@@ -436,6 +436,18 @@ class ConsoleColors
         return _selectedColorPreset;
     }
 
+    /// <summary>
+    /// Write text in a color on the normal background (the normal text color is used if the color is that
+    /// of the background)
+    /// </summary>
+    internal static void SetTextColor(ConsoleColor color)
+    {
+        SetColors(ColorPreset.Normal);
+        if (!IsBackgroundColor(color)) Console.ForegroundColor = color;
+    }
+
+    internal static bool IsBackgroundColor(ConsoleColor color) => color == CurrentBackgroundColor;
+
     public static void SetColors(ColorPreset preset)
     {
         if (preset == ColorPreset.Reset)

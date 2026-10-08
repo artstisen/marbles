@@ -730,10 +730,23 @@ internal static class Actions
                 SelectResultFromIndex(pageNumber, _resultIndex, 2);
                 break;
             case "pin":
-                // Set the color of a pinned favorite (1-3)
-                if (int.TryParse(CommandLine.Argument(command), out var color) && color is >= 1 and <= 3)
+                // Set the text color of a pinned favorite: picked from a list, or given by its number in the list
+                if (CommandLine.Argument(command).Length == 0)
                 {
-                    SelectResultFromIndex(pageNumber, _resultIndex, 2 + color);
+                    if (!ValidateNumericSelectionInput(pageNumber, _resultIndex)) break;
+                    var entry = _resultPages[pageNumber][_resultIndex];
+                    if (!IsPinned(entry) || PinColors.Pick(PinColors.Get(entry.Options), out _pinColor))
+                    {
+                        SelectResultFromIndex(pageNumber, _resultIndex, 3);
+                    }
+
+                    RecallPreviousView();
+                }
+                else if (int.TryParse(CommandLine.Argument(command), out var color) &&
+                         color >= 1 && color <= PinColors.Count)
+                {
+                    _pinColor = (ConsoleColor)(color - 1);
+                    SelectResultFromIndex(pageNumber, _resultIndex, 3);
                     RecallPreviousView();
                 }
                 else
@@ -1992,7 +2005,7 @@ internal static class Actions
                 Entries.RemovePinnedRanking(Entries.CurrentEntry);
                 RemoveOptionsTag(Entries.CurrentEntry, Entries.FavoritesTag.ToString());
                 RemoveOptionsTag(Entries.CurrentEntry, Entries.PinnedTag.ToString());
-                Entries.CurrentEntry.Options = RemoveAllFavoritesHighlightTypes(Entries.CurrentEntry.Options);
+                Entries.CurrentEntry.Options = PinColors.Set(Entries.CurrentEntry.Options, null);
                 // Update collection and write to file
                 Entries.UpdateEntry(Entries.CurrentEntry, false);
                 Entries.SaveEntriesToFile();
@@ -2023,7 +2036,7 @@ internal static class Actions
 
     // Info about options content
     // f, p (Favorites, Pinned)
-    // h, j, i (Highlight colors of pinned entries)
+    // A-P (Text color of pinned entries; h, i, j in files from earlier versions, see PinColors)
     // 0, 1, 2, 3 etc. (Pinned ranking (sorting))
     
     private static void RankPinned()
@@ -2054,85 +2067,22 @@ internal static class Actions
         e.Options = e.Options.Replace(value, string.Empty);
     }
 
-    internal static ConsoleColors.ColorPreset GetHighlightPresetFromCurrentType(Entry e,
-        ConsoleColors.ColorPreset elseReturn)
+    // The color to set by the action "set color" of SelectResultFromIndex (null = the default color)
+    private static ConsoleColor? _pinColor;
+
+    // Set the text color of the current entry (pinned entries only)
+    private static void SetPinColor(ConsoleColor? color)
     {
-        if (IsHighlightType(e, Entries.HighlightType1))
+        if (Entries.CurrentEntryExists() && IsPinned(Entries.CurrentEntry))
         {
-            return ConsoleColors.ColorPreset.HighlightInverted;
-        }
-
-        if (IsHighlightType(e, Entries.HighlightType2))
-        {
-            return ConsoleColors.ColorPreset.AttentionInverted;
-        }
-
-        if (IsHighlightType(e, Entries.HighlightType3))
-        {
-            return ConsoleColors.ColorPreset.WarningInverted;
-        }
-
-        if (IsPinned(e))
-        {
-            return ConsoleColors.ColorPreset.HighlightInverted;
-        }
-
-
-        return elseReturn;
-    }
-
-    private static bool IsHighlightType(Entry e, char type)
-    {
-        if (e.Options.Contains(type))
-        {
-            return true;
+            Entries.CurrentEntry.Options = PinColors.Set(Entries.CurrentEntry.Options, color);
+            Entries.UpdateEntry(Entries.CurrentEntry, false);
+            Entries.SaveEntriesToFile();
         }
         else
         {
-            return false;
-        }
-    }
-
-    private static void SetFavoritesHighlightType(char type)
-    {
-        if (IsValidFavoritesHighlightType(type))
-        {
-            if (Entries.CurrentEntryExists() && IsPinned(Entries.CurrentEntry))
-            {
-                Entries.CurrentEntry.Options = RemoveAllFavoritesHighlightTypes(Entries.CurrentEntry.Options);
-                Entries.CurrentEntry.Options += type;
-                Entries.UpdateEntry(Entries.CurrentEntry, false);
-                Entries.SaveEntriesToFile();
-            }
-            else
-            {
-                // Inform that only pinned entries can change color
-                Menu.StatusMessage(DialogText.PinnedEntryColors, true, true, true, DialogText.CaptionsColorize, string.Empty, false);
-            }
-        }
-    }
-
-    private static string RemoveAllFavoritesHighlightTypes(string options)
-    {
-        if (!string.IsNullOrEmpty(options))
-        {
-            options = options.Replace(Entries.HighlightType1.ToString(), string.Empty);
-            options = options.Replace(Entries.HighlightType2.ToString(), string.Empty);
-            options = options.Replace(Entries.HighlightType3.ToString(), string.Empty);
-        }
-
-        return options;
-    }
-
-    private static bool IsValidFavoritesHighlightType(char type)
-    {
-        if (type == Entries.HighlightType1 || type == Entries.HighlightType2 || type == Entries.HighlightType3)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
+            // Inform that only pinned entries can change color
+            Menu.StatusMessage(DialogText.PinnedEntryColors, true, true, true, DialogText.CaptionsColorize, string.Empty, false);
         }
     }
 
@@ -2746,8 +2696,7 @@ internal static class Actions
                     // This will ensure that highlights on the star (*) are only shown in other lists than the favourites list
                     if (Mode.CurrentSearchMode != Mode.SearchMode.Favorites && IsPinned(_resultPages[page][j]))
                     {
-                        ConsoleColors.SetColors(GetHighlightPresetFromCurrentType(_resultPages[page][j],
-                            ConsoleColors.ColorPreset.Favorites));
+                        PinColors.Apply(_resultPages[page][j], ConsoleColors.ColorPreset.Favorites);
                     }
                     else
                     {
@@ -2794,8 +2743,7 @@ internal static class Actions
                 // Title
                 if (Mode.CurrentSearchMode == Mode.SearchMode.Favorites && IsPinned(_resultPages[page][j]))
                 {
-                    ConsoleColors.SetColors(GetHighlightPresetFromCurrentType(_resultPages[page][j],
-                        ConsoleColors.ColorPreset.Favorites));
+                    PinColors.Apply(_resultPages[page][j], ConsoleColors.ColorPreset.Favorites);
                 }
                 else
                 {
@@ -3270,15 +3218,7 @@ internal static class Actions
                 }
                 else if (action == 3)
                 {
-                    SetFavoritesHighlightType(Entries.HighlightType1);
-                }
-                else if (action == 4)
-                {
-                    SetFavoritesHighlightType(Entries.HighlightType2);
-                }
-                else if (action == 5)
-                {
-                    SetFavoritesHighlightType(Entries.HighlightType3);
+                    SetPinColor(_pinColor);
                 }
                 else if (action == 6)
                 {

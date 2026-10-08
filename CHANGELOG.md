@@ -6,6 +6,7 @@
 - **New entry from the command line**: `:new My title` creates an entry with the title and opens it in the editor. `:new` alone asks for the title.
 - **Esc closes the editor**: in Normal mode `Esc` works as `:q` (it asks what to do with unsaved changes). It still leaves Insert and Visual mode, cancels a half typed command and removes the search highlighting first.
 - **Deleting an entry** asks for confirmation once instead of twice (a deleted entry can be brought back with `:undelete`).
+- **Colors of pinned entries**: `:pin` in the favorites list shows a list of 16 text colors to pick from (`:pin 13` picks by number). Pinned entries are shown as colored text instead of with a highlighted background. The three highlight styles of earlier versions (`:pin 1-3`) are shown as cyan, yellow and red.
 - The version number on the login page is placed correctly next to the logo.
 - The color settings page says "Editor title" (the scroll indicator no longer exists).
 

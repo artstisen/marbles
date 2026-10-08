@@ -72,7 +72,7 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 - `Tab` Change the sorting. In the favorites list: arrange the pinned entries
 - `:title` Change the title of the selected entry
 - `:delete` Delete the selected entry
-- `:pin 1`, `:pin 2`, `:pin 3` Set the color of a pinned entry
+- `:pin` Set the text color of a pinned entry (in the favorites list). The 16 colors are shown in a list, as they look with your color scheme: select with `j` `k` and press `Enter`, or `Esc` to cancel. _Default_ removes the color. `:pin 13` sets color 13 of the list directly
 - `:transfer` Add the selected entry to the transfer collection
 - `/` or `S` Search, `A` List all, `T` Top 20, `F` Favorites, `M` Session history, `N` New entry
 - `Esc` or `:q` Return to the main menu

@@ -234,10 +234,8 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 WriteMenuItem("Enter I", "Edit", true);
                 WriteMenuItem("T", "Title", true);
-                WriteExtendedMenuItem("F", GetFavoriteState(), "Favorite",
-                    Actions.GetHighlightPresetFromCurrentType(Entries.CurrentEntry,
-                        ConsoleColors.ColorPreset.Favorites),
-                    true, true);
+                WriteExtendedMenuItem("F", GetFavoriteState(), "Favorite", ConsoleColors.ColorPreset.Favorites,
+                    true, true, Entries.CurrentEntry);
                 WriteMenuItem("D", "Duplicate", true);
                 WriteMenuItem("S /", "Content search", true);
             }
@@ -278,7 +276,7 @@ internal static class Menu
             WriteMenuItem("P", "Toggle favorite/pin", true);
             if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites)
             {
-                WriteMenuItem(":pin 1-3", "Pinned color", true);
+                WriteMenuItem(":pin", "Pinned color", true);
                 WriteMenuItem("Tab", "Arrange pinned", true);
             }
             else
@@ -627,7 +625,7 @@ internal static class Menu
     }
 
     private static void WriteExtendedMenuItem(string key, string example, string description,
-        ConsoleColors.ColorPreset preset, bool newLine, bool flipExample)
+        ConsoleColors.ColorPreset preset, bool newLine, bool flipExample, Entry? colorOf = null)
     {
         // Clear line 40 chars
         Console.Write(new string(' ', 40));
@@ -643,7 +641,16 @@ internal static class Menu
             if (flipExample)
             {
                 Console.Write(description);
-                ConsoleColors.SetColors(preset);
+                // An entry can have a color of its own
+                if (colorOf != null)
+                {
+                    PinColors.Apply(colorOf, preset);
+                }
+                else
+                {
+                    ConsoleColors.SetColors(preset);
+                }
+
                 Console.Write(example);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             }

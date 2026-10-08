@@ -302,7 +302,7 @@ public static class IsoDateTime
             // Set the tags and sorting index
             newEntry.Options = Entries.FavoritesTag.ToString() + Entries.PinnedTag + i;
             if (i == 0)
-                newEntry.Options += Entries.HighlightType2;
+                newEntry.Options = PinColors.Set(newEntry.Options, ConsoleColor.Yellow);
             // Add the entry to the collection
             Entries.AddEntryToEntries(newEntry);
         }
