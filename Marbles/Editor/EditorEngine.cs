@@ -31,6 +31,7 @@ internal enum EditorRequest
     ClearRegisters,
     SpellSuggest, // Show suggestions for the word at the cursor
     ReplaceDialog, // Show the find-and-replace box
+    SyntaxChanged, // The Markdown colors were turned on or off
     SaveSettings
 }
 
@@ -588,6 +589,12 @@ internal sealed partial class EditorEngine
         if (command[0] == 's' && command.Length > 1 && !char.IsLetterOrDigit(command[1]))
         {
             Substitute(command[1..], Cursor.Line, Cursor.Line);
+            return;
+        }
+
+        if (command == "syntax" || command.StartsWith("syntax ", StringComparison.Ordinal))
+        {
+            SetMarkdown(command[6..].Trim());
             return;
         }
 

@@ -13,6 +13,7 @@
 - **Editor**: the question about unsaved changes when closing is a box on top of the text instead of a page of its own, and "Unsaved" is highlighted. "[Not encrypted]" is only shown for text files opened while logged in to a data file.
 - The key hints at the bottom of the file browser and the favorites have highlighted keys.
 - **Terminal window made smaller**: the start page, the file browser, the favorites and the help follow the size of the window when automatic size is on. When the dimensions no longer fit the window, the page is drawn again afterwards, and with a fixed size you are offered to switch to automatic size.
+- **Markdown colors** in the editor: headings, bold, italic, code, links, quotes, list markers and rules are colored. Markdown files (`.md`) are colored when opened from the file browser, and `:syntax` turns the colors on and off in any text.
 - **Log**: commands and the file operations of the file browser are logged, the log holds the latest 1000 lines, long lines continue on the next row, and `/text` only shows the lines containing a text. Commands in the menus and the editor are logged by name only, so no text from your notes is in the log.
 - The Configuration page has _Restart Marbles_ and _View log_.
 - **Help for the page you are on**: `?` (and `:help`) shows the keys of the current page: start page, login page, menus and lists, file browser, file favorites or editor. `?` in the help switches to all keys and back. The start page and the login page have their own help sections.

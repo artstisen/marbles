@@ -33,6 +33,7 @@ public class TextArea
     private const int StyleSelection = 1;
     private const int StyleSearchMatch = 2;
     private const int StyleMisspelled = 3;
+    private const int StyleMarkdown = 10; // The styles of Markdown follow from this number
 
     private readonly EditorEngine _engine;
     private readonly int _top;
@@ -100,6 +101,9 @@ public class TextArea
         {
             MaxCells = width - 3
         };
+        // Markdown files are colored (unless that is turned off)
+        _engine.Markdown = saveMode == SaveAsFile && !_singleLine && !readOnly && MarkdownHighlighter.ColorFiles &&
+                           MarkdownHighlighter.IsMarkdownFile(FileExplorer.CurrentFileName);
         if (scrollToEnd)
         {
             _engine.CursorToEnd();
@@ -302,6 +306,15 @@ public class TextArea
                 break;
             case EditorRequest.ReplaceDialog:
                 ShowReplaceDialog();
+                break;
+            case EditorRequest.SyntaxChanged:
+                // The choice is remembered for Markdown files
+                if (_saveMode == SaveAsFile && MarkdownHighlighter.IsMarkdownFile(FileExplorer.CurrentFileName))
+                {
+                    MarkdownHighlighter.ColorFiles = _engine.Markdown;
+                    FileIo.SaveSettings();
+                }
+
                 break;
             case EditorRequest.SaveSettings:
                 // Not while the settings file itself is being edited
@@ -697,13 +710,23 @@ public class TextArea
 
         // The common case is a row in a single color
         var misspelled = _engine.Misspelled(line);
-        if (selection == null && !hasMatches && misspelled.Count == 0)
+        var markdown = _engine.MarkdownStyles(line);
+        if (selection == null && !hasMatches && misspelled.Count == 0 && markdown == null)
         {
             row.Append(TextMetrics.Printable(s, start, end));
             return cells;
         }
 
         var styles = new int[end - start];
+        if (markdown != null)
+        {
+            // The colors of Markdown are below the marks: misspelled words, search matches and the selection
+            for (var i = start; i < end && i < markdown.Length; i++)
+            {
+                if (markdown[i] != MarkdownStyle.None) styles[i - start] = StyleMarkdown + (int)markdown[i];
+            }
+        }
+
         foreach (var (wordStart, wordEnd) in misspelled)
         {
             for (var i = Math.Max(start, wordStart); i < Math.Min(end, wordEnd); i++)
@@ -752,6 +775,63 @@ public class TextArea
         return cells;
     }
 
+    // The colors of a part of a row
+    private static void SetStyleColors(int style)
+    {
+        if (style < StyleMarkdown)
+        {
+            ConsoleColors.SetColors(style switch
+            {
+                StyleSelection => ConsoleColors.ColorPreset.HighlightInverted,
+                StyleSearchMatch => ConsoleColors.ColorPreset.AttentionInverted,
+                StyleMisspelled => ConsoleColors.ColorPreset.WarningInverted,
+                _ => ConsoleColors.ColorPreset.Normal
+            });
+            return;
+        }
+
+        // Markdown: the headings have colors of their own, and the rest use the colors of the color scheme
+        switch ((MarkdownStyle)(style - StyleMarkdown))
+        {
+            case MarkdownStyle.Heading1:
+                ConsoleColors.SetTextColor(ConsoleColor.Red);
+                break;
+            case MarkdownStyle.Heading2:
+                ConsoleColors.SetTextColor(ConsoleColor.Magenta);
+                break;
+            case MarkdownStyle.Heading3:
+                ConsoleColors.SetTextColor(ConsoleColor.Yellow);
+                break;
+            case MarkdownStyle.Heading4:
+                ConsoleColors.SetTextColor(ConsoleColor.Cyan);
+                break;
+            case MarkdownStyle.Heading5:
+                ConsoleColors.SetTextColor(ConsoleColor.Green);
+                break;
+            case MarkdownStyle.Heading6:
+                ConsoleColors.SetTextColor(ConsoleColor.Blue);
+                break;
+            case MarkdownStyle.Bold:
+            case MarkdownStyle.ListMarker:
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+                break;
+            case MarkdownStyle.Italic:
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.PreviewTitle);
+                break;
+            case MarkdownStyle.Code:
+            case MarkdownStyle.CodeBlock:
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Favorites);
+                break;
+            case MarkdownStyle.Link:
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
+                break;
+            default:
+                // Quotes, web addresses and rules
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                break;
+        }
+    }
+
     private void WriteRow(int r, string content, int cells)
     {
         Tools.SetCursorEx(_top + r, _left);
@@ -760,13 +840,7 @@ public class TextArea
         {
             foreach (var run in content.Split(StyleMarker, StringSplitOptions.RemoveEmptyEntries))
             {
-                ConsoleColors.SetColors((run[0] - '0') switch
-                {
-                    StyleSelection => ConsoleColors.ColorPreset.HighlightInverted,
-                    StyleSearchMatch => ConsoleColors.ColorPreset.AttentionInverted,
-                    StyleMisspelled => ConsoleColors.ColorPreset.WarningInverted,
-                    _ => ConsoleColors.ColorPreset.Normal
-                });
+                SetStyleColors(run[0] - '0');
                 Console.Write(run.AsSpan(1).ToString());
             }
 

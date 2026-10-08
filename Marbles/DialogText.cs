@@ -310,6 +310,9 @@ internal static class DialogText
     public const string ConfigRestart = "Restart Marbles";
     public const string ConfigViewLog = "View log";
 
+    public const string MarkdownOn = "Markdown colors on";
+    public const string MarkdownOff = "Markdown colors off";
+
     // The log
     public const string LogLines = " lines";
     public const string LogLine = " line";

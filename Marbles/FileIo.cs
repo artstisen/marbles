@@ -913,6 +913,8 @@ internal static class FileIo
         _tempSettings += "preview=" + (Actions.PreviewEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // What to show at startup: select (the choices), notes (the login page) or editor (the file browser)
         _tempSettings += "startmode=" + StartMenu.SettingName(StartMenu.Mode) + Entries.NewLineChar;
+        // Color Markdown files (.md) in the editor (the editor command :syntax turns the colors on and off)
+        _tempSettings += "mdcolors=" + (MarkdownHighlighter.ColorFiles ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; STYLING" + Entries.NewLineChar;
@@ -1062,6 +1064,8 @@ internal static class FileIo
         Init.AutoSize = Tools.TrimToLower(Get("autosize")) == DialogText.BTrue;
         Actions.PreviewEnabled = Tools.TrimToLower(Get("preview")) == DialogText.BTrue;
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
+        // On unless turned off
+        MarkdownHighlighter.ColorFiles = Tools.TrimToLower(Get("mdcolors")) != DialogText.BFalse;
         ConsoleColors.Monochrome = Tools.TrimToLower(Get("monochrome")) == DialogText.BTrue;
 
         // Vignettes

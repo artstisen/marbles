@@ -113,6 +113,28 @@ Marbles reads spell files from a directory named `spell`, next to the `data` dir
 
 The words you add are saved as plain text, one word per line, in `spell/<language>.utf-8.add` (for the first of the languages). This is the format of Neovim's word list, so an existing list can be copied to the directory as well.
 
+## Markdown colors
+The editor can color the parts of a Markdown text. The text itself is shown as it is written (the `#` and `**` are still there): it is coloring, not a preview.
+
+- `:syntax` Turn the colors on or off (`:syntax on` and `:syntax off` do one of the two)
+- Markdown files (`.md`, `.markdown`) opened from the file browser are colored from the start. If you turn the colors off in a Markdown file, that is remembered (`mdcolors` in the settings file)
+- In notes of a data file, and in other files, the colors are off until you turn them on, and that only lasts while the editor is open
+
+What is colored:
+
+| | |
+|---|---|
+| `# Heading 1` to `###### Heading 6` | Red, magenta, yellow, cyan, green and blue |
+| `**bold**` `__bold__` and list markers (`-` `*` `+` `1.` `[x]`) | The color of the logo and labels in your color scheme |
+| `*italic*` `_italic_` | The color of the preview title |
+| `` `code` `` and blocks of code between lines starting with ```` ``` ```` | The color of favorites |
+| `[link text]` | The color of the editor title |
+| `(address)` of a link, web addresses, `> quotes` and rules (`---`) | The color of dividers |
+
+Selected text, search matches and misspelled words are shown on top of the colors. With _Black and white_ on, headings and the other colored parts are shown brighter than the text.
+
+The reading of Markdown is simple: emphasis inside emphasis is shown as the outer one, emphasis that continues on the next line is not found, and tables are not colored.
+
 ## String memory
 Text that is yanked, and lines that are deleted, are kept in the string memory (up to 64 strings). The memory is kept while you are logged in, so text can be copied from one entry to another.
 
