@@ -28,7 +28,7 @@ dotnet build Marbles.sln -c Release
 
 The files to run are then found in _Marbles/bin/Release/net10.0_.
 
-To build executables that include the .NET runtime (so nothing has to be installed to run them), run ```./publish.ps1``` with PowerShell. It creates a single file for each platform in the directory _publish_. On Linux and macOS the file must be made executable before it is run: ```chmod +x Marbles```.
+To build executables that include the .NET runtime (so nothing has to be installed to run them), run ```./publish.ps1``` with PowerShell. It creates a single file for each platform in the directory _publish_, and the lightweight version for all platforms (which needs the .NET runtime, and is started with ```dotnet Marbles.dll```) in _publish/portable_. On Linux and macOS the file must be made executable before it is run: ```chmod +x Marbles```.
 
 ## Upgrading from Marbles v1.0.x
 Copy your "data" directory to the directory of the new version, or unzip the new version over the old.
