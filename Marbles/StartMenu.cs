@@ -257,6 +257,16 @@ internal static class StartMenu
                 selected = key.KeyChar - '1';
                 redraw = false;
             }
+            else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
+            {
+                selected = settings.Count - 1;
+                redraw = false;
+            }
+            else if (key.Key == ConsoleKey.Home || (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g'))
+            {
+                selected = 0;
+                redraw = false;
+            }
             else if (key.KeyChar == '?')
             {
                 Tools.WriteEditorHelp(false, Tools.HelpTopic.Start);
@@ -408,6 +418,14 @@ internal static class StartMenu
             else if (key.KeyChar >= '1' && key.KeyChar - '1' < choices.Length)
             {
                 selected = key.KeyChar - '1';
+            }
+            else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
+            {
+                selected = choices.Length - 1;
+            }
+            else if (key.Key == ConsoleKey.Home || (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g'))
+            {
+                selected = 0;
             }
             else if (key.KeyChar == '?')
             {

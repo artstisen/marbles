@@ -1318,6 +1318,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, "Keyboard Functions", true));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionStart, true));
             _shortcutList.Add(new Shortcut("j k 1-4", "Select", false));
+            _shortcutList.Add(new Shortcut("gg G", "First/Last (also in Configuration)", false));
             _shortcutList.Add(new Shortcut("Enter", "Open the selected", false));
             _shortcutList.Add(new Shortcut("  1", "Note Management: the login page", false));
             _shortcutList.Add(new Shortcut("  2", "Text Editor/File Management: the file browser", false));
