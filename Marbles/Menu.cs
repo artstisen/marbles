@@ -277,7 +277,7 @@ internal static class Menu
             if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites)
             {
                 WriteMenuItem(":pin", "Pinned color", true);
-                WriteMenuItem("Tab", "Arrange pinned", true);
+                WriteMenuItem("Tab V", "Move pinned (j/k, Esc)", true);
             }
             else
             {

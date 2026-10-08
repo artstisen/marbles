@@ -1297,6 +1297,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":qa", "Exit Marbles", false));
             _shortcutList.Add(new Shortcut(":new :new Title", "New entry (asks for the title if not given)", false));
             _shortcutList.Add(new Shortcut(":logout", "Logout", false));
+            _shortcutList.Add(new Shortcut("Tab V", "Favorites: Move the pinned entry (j k, then Esc)", false));
+            _shortcutList.Add(new Shortcut(":pin", "Favorites: Pick the color of the pinned entry", false));
             _shortcutList.Add(new Shortcut("Esc", "Return/Cancel (login page: Options)", false));
             _shortcutList.Add(new Shortcut("Esc ?", "Login page: Show this help", false));
             _shortcutList.Add(new Shortcut("Esc F", "Login page: Browse and edit text files", false));

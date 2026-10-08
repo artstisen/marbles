@@ -68,7 +68,8 @@ internal static class DialogText
     public const string CaptionsRevert = "Revert";
     public const string CaptionsRestore = "Restore";
     public const string CaptionsStringMemory = "String memory";
-    public const string CaptionsRanking = "Arrange pinned";
+    public const string CaptionsRanking = "Move pinned";
+    public const string MovePinnedKeys = "MOVE | j/k Move the entry up/down | Esc Done";
     public const string CaptionsColorize = "Set color";
     public const string PinColorCaption = "Pinned color";
     public const string ColorDefault = "Default";

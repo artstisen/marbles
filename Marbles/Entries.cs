@@ -101,6 +101,21 @@ internal static class Entries
 
     private static string _rankPattern = @"\d+";
 
+    /// <summary>
+    /// Set the order of the pinned entries
+    /// </summary>
+    /// <param name="ids">The IDs of the pinned entries in the new order</param>
+    internal static void SetPinnedOrder(List<string> ids)
+    {
+        for (var i = 0; i < ids.Count; i++)
+        {
+            var entry = _entryList.Find(e => e.Id == ids[i]);
+            if (entry == null) continue;
+            RemovePinnedRanking(entry);
+            entry.Options += (i + 1).ToString();
+        }
+    }
+
     internal static void RemovePinnedRanking(Entry e)
     {
         // If string matches the rank pattern (contains the numeric rank value)

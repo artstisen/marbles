@@ -1957,21 +1957,72 @@ internal static class Actions
     // A-P (Text color of pinned entries; h, i, j in files from earlier versions, see PinColors)
     // 0, 1, 2, 3 etc. (Pinned ranking (sorting))
     
-    private static void RankPinned()
+    #region Moving a pinned entry (favorites list)
+
+    // True while a pinned entry is being moved up and down among the pinned entries: the entry is highlighted
+    // and follows j/k until Esc is pressed (like moving selected lines in the editor)
+    private static bool _movingPinned;
+
+    private static void StartMovingPinned(int pageNumber)
     {
-        if (Entries.CurrentEntryExists() && IsPinned(Entries.CurrentEntry))
+        if (!ValidateNumericSelectionInput(pageNumber, _resultIndex)) return;
+        _lastSelectedPage = pageNumber;
+        _lastSelectedIndex = _resultIndex;
+        if (IsPinned(_resultPages[pageNumber][_resultIndex]))
         {
-            Entries.SetRanking(Entries.CurrentEntry);
-            // Update collection and write to file
-            Entries.UpdateEntry(Entries.CurrentEntry, false);
-            Entries.SaveEntriesToFile();
+            _movingPinned = true;
         }
         else
         {
-            // Inform that only pinned entries can be ranked...
-            Menu.StatusMessage(DialogText.PinnedEntryPosition, true, true, true, DialogText.CaptionsRanking, string.Empty, false);
+            // Inform that only pinned entries can be moved
+            Menu.StatusMessage(DialogText.PinnedEntryPosition, true, true, true, DialogText.CaptionsRanking,
+                string.Empty, false);
         }
+
+        // Show the favorites again with the entry selected
+        FindAll(2, string.Empty, false, true);
     }
+
+    // A key pressed while a pinned entry is being moved
+    private static void HandleMovePinnedKey(int pageNumber)
+    {
+        var key = Keyboard.ToNavigationKey(_c).Key;
+        if (key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.Tab or ConsoleKey.V or ConsoleKey.Q)
+        {
+            _movingPinned = false;
+        }
+        else if (key is ConsoleKey.UpArrow or ConsoleKey.K or ConsoleKey.DownArrow or ConsoleKey.J)
+        {
+            var up = key is ConsoleKey.UpArrow or ConsoleKey.K;
+            if (!MovePinned(pageNumber, _resultIndex, up)) return;
+            // The selection follows the entry (also to another page of the list)
+            var pageSize = _resultPages[0].Count;
+            var position = pageNumber * pageSize + _resultIndex + (up ? -1 : 1);
+            _lastSelectedPage = position / pageSize;
+            _lastSelectedIndex = position % pageSize;
+        }
+        else
+        {
+            return;
+        }
+
+        FindAll(2, string.Empty, false, true);
+    }
+
+    // Move a pinned entry one place up or down among the pinned entries, as they are shown in the list
+    private static bool MovePinned(int pageNumber, int index, bool up)
+    {
+        var pinned = _resultPages.SelectMany(page => page).Where(IsPinned).Select(e => e.Id).ToList();
+        var position = pinned.IndexOf(_resultPages[pageNumber][index].Id);
+        var target = position + (up ? -1 : 1);
+        if (position < 0 || target < 0 || target >= pinned.Count) return false;
+        (pinned[position], pinned[target]) = (pinned[target], pinned[position]);
+        Entries.SetPinnedOrder(pinned);
+        Entries.SaveEntriesToFile();
+        return true;
+    }
+
+    #endregion
 
     private static void SetOptionsTag(Entry e, string value)
     {
@@ -2659,7 +2710,12 @@ internal static class Actions
 
                 Console.Write(" ");
                 // Title
-                if (Mode.CurrentSearchMode == Mode.SearchMode.Favorites && IsPinned(_resultPages[page][j]))
+                var moving = _movingPinned && page == _lastSelectedPage && j == _lastSelectedIndex;
+                if (moving)
+                {
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                }
+                else if (Mode.CurrentSearchMode == Mode.SearchMode.Favorites && IsPinned(_resultPages[page][j]))
                 {
                     PinColors.Apply(_resultPages[page][j], ConsoleColors.ColorPreset.Favorites);
                 }
@@ -2678,7 +2734,9 @@ internal static class Actions
                 if (Mode.CurrentSearchMode == Mode.SearchMode.Favorites && IsPinned(_resultPages[page][j]))
                 {
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                    Console.Write(" [" + new string(' ', 4) + "PINNED" + new string(' ', 4) + "]");
+                    Console.Write(" ");
+                    if (moving) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                    Console.Write("[" + new string(' ', 4) + (moving ? "MOVING" : "PINNED") + new string(' ', 4) + "]");
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 }
                 else
@@ -2717,6 +2775,15 @@ internal static class Actions
             }
 
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            if (_movingPinned)
+            {
+                // The keys for moving the entry on the bottom line
+                Tools.SetCursorEx(Init.LineCount - 1, 0);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                Console.Write(" " + DialogText.MovePinnedKeys + " ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            }
+
             if (!usingRecall)
             {
                 SelectFromSearchResult(page, false);
@@ -2828,6 +2895,12 @@ internal static class Actions
     {
         var pageNumber = _selectionPage;
         SaveCursorPosition();
+        if (_movingPinned)
+        {
+            HandleMovePinnedKey(pageNumber);
+            return;
+        }
+
         if (_c.KeyChar == ':')
         {
             // Command line
@@ -2888,13 +2961,11 @@ internal static class Actions
             DefaultListSortOption();
             FindAll(0, string.Empty, false, false);
         }
-        else if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites && _c.Key == ConsoleKey.Tab)
+        else if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites &&
+                 (_c.Key == ConsoleKey.Tab || _c.KeyChar == 'V'))
         {
-
-            // Rank pinned
-            SelectResultFromIndex(pageNumber, _resultIndex, 8);
-            LoadCursorPosition();
-
+            // Move a pinned entry
+            StartMovingPinned(pageNumber);
         }
         // List all/Search (Sort)
         else if (_c.Key == ConsoleKey.Tab)
@@ -3145,13 +3216,6 @@ internal static class Actions
                 else if (action == 7)
                 {
                     ToggleFavorite();
-                    // Display favorites
-                    FindAll(2, string.Empty, false, false);
-                }
-                else if (action == 8)
-                {
-                    // Set pinned ranking
-                    RankPinned();
                     // Display favorites
                     FindAll(2, string.Empty, false, false);
                 }

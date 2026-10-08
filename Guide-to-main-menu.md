@@ -70,7 +70,8 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 - `Enter` or `Space` Open the selected entry
 - `1`-`9` and `0` Open entry 1-10 directly. `:12` opens entry 12
 - `P` Add the selected entry to (or remove it from) the favorites, or pin it to the top of the favorites list
-- `Tab` Change the sorting. In the favorites list: arrange the pinned entries
+- `Tab` Change the sorting
+- `Tab` or `V` In the favorites list: move the selected pinned entry. The entry is highlighted and follows `j` `k` up and down among the pinned entries (also to the next page) until you press `Esc` or `Enter`. The order is saved as you go
 - `:title` Change the title of the selected entry
 - `:delete` Delete the selected entry
 - `:pin` Set the text color of a pinned entry (in the favorites list). The 16 colors are shown in a list, as they look with your color scheme: select with `j` `k` and press `Enter`, or `Esc` to cancel. _Default_ removes the color. `:pin 13` sets color 13 of the list directly
