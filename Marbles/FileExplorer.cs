@@ -670,7 +670,7 @@ internal static partial class FileExplorer
         }
         else
         {
-            Console.Write(" " + _mode switch
+            Menu.WriteKeyHints(_mode switch
             {
                 BrowseMode.PickFile => DialogText.FilePickKeys,
                 BrowseMode.PickDirectory => DialogText.DirectoryPickKeys,

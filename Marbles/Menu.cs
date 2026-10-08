@@ -901,6 +901,25 @@ internal static class Menu
 
     private static string _tempCurrentSaveIndicator = string.Empty;
 
+    /// <summary>
+    /// Write a line of keys and what they do ("j/k Select | Esc Close"), with the descriptions highlighted
+    /// </summary>
+    internal static void WriteKeyHints(string hints)
+    {
+        foreach (var hint in hints.Split(" | "))
+        {
+            var space = hint.IndexOf(' ');
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(" " + (space < 0 ? hint : hint[..space]));
+            if (space < 0) continue;
+            Console.Write(" ");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.NormalInverted);
+            Console.Write(" " + hint[(space + 1)..] + " ");
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
     internal static void InitializeSaveIndicator()
     {
         _tempCurrentSaveIndicator = "";
@@ -914,7 +933,7 @@ internal static class Menu
             Tools.CursorDown(2);
             Tools.CursorRight(Init.LineWidth - (DialogText.SavIndicator.Length));
             _tempCurrentSaveIndicator = DialogText.SavIndicator;
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.PreviewTitle);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.NormalInverted);
             Console.Write(_tempCurrentSaveIndicator);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         }

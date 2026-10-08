@@ -457,8 +457,7 @@ public class TextArea
         }
 
         Tools.HideCursor();
-        var result = Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYnCancel, DialogText.YesContinue,
-            15, string.Empty, true);
+        var result = AskToSave();
         switch (result)
         {
             case 1: // Yes, save
@@ -481,10 +480,89 @@ public class TextArea
                 Save();
                 RedrawAll();
                 break;
-            default: // Cancel, return to edit
-                RedrawAll();
+            default: // Cancel, return to edit (the box is removed by writing the rows it covered again)
+                Draw();
                 break;
         }
+    }
+
+    // Ask what to do with unsaved changes, in a box on top of the text.
+    // Returns 1 (save and close), 2 (close without saving), 4 (save and continue) or 0 (cancel)
+    private int AskToSave()
+    {
+        string[] choices =
+        {
+            DialogText.SaveChoiceYes, DialogText.SaveChoiceNo, DialogText.SaveChoiceContinue,
+            DialogText.SaveChoiceCancel
+        };
+        int[] results = { 1, 2, 4, 0 };
+        var inner = choices.Max(choice => choice.Length) + 8;
+        var boxHeight = choices.Length + 4;
+        var firstRow = Math.Max(0, (_height - boxHeight) / 2);
+        var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2 - _left);
+        var column = _left + left;
+        DrawStatusLine(); // Remove the command from the bottom line
+
+        // The frame and the question
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(_top + firstRow, column);
+        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
+        for (var row = 1; row < boxHeight - 1; row++)
+        {
+            Tools.SetCursorEx(_top + firstRow + row, column);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(new string(' ', inner));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+        }
+
+        Tools.SetCursorEx(_top + firstRow + boxHeight - 1, column);
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+        Tools.SetCursorEx(_top + firstRow, column + 2);
+        Console.Write(" " + DialogText.Save + " ");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+        Tools.SetCursorEx(_top + firstRow + 1, column + 2);
+        Console.Write(" " + DialogText.SaveQuestion + " ");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+
+        var selected = 0;
+        var result = 0;
+        while (true)
+        {
+            for (var i = 0; i < choices.Length; i++)
+            {
+                Tools.SetCursorEx(_top + firstRow + 3 + i, column + 2);
+                if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                Console.Write(i == selected ? "->" : "  ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Console.Write(" " + choices[i]);
+            }
+
+            var key = Console.ReadKey(true);
+            if (key.Key == ConsoleKey.Escape) break;
+            if (key.Key == ConsoleKey.Y) result = 1;
+            if (key.Key == ConsoleKey.N) result = 2;
+            if (key.Key == ConsoleKey.E) result = 4;
+            if (key.Key == ConsoleKey.Enter) result = results[selected];
+            if (result != 0 || key.Key == ConsoleKey.Enter) break;
+            if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow) selected = (selected + 1) % choices.Length;
+            if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+            {
+                selected = (selected + choices.Length - 1) % choices.Length;
+            }
+        }
+
+        // The rows that were covered are written again when the editor is drawn
+        for (var r = firstRow; r < firstRow + boxHeight && r < _height; r++)
+        {
+            _shownRows[r] = null;
+            _shownCells[r] = Math.Max(_shownCells[r], left + inner + 2);
+        }
+
+        return result;
     }
 
     /// <returns>False if the text could not be saved (the reason is shown as a message)</returns>

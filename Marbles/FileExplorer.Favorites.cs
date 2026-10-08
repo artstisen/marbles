@@ -432,7 +432,7 @@ internal static partial class FileExplorer
         }
         else
         {
-            Console.Write(" " + DialogText.FavoritesKeys);
+            Menu.WriteKeyHints(DialogText.FavoritesKeys);
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

@@ -148,6 +148,11 @@ internal static class DialogText
     private const string YesNo = "[Y] Yes  [N] No";
     private const string YesNoCancel = "[Y] Yes  [N] No  [Esc] Cancel";
     public const string YesContinue = "[E] Yes (continue editing)";
+    public const string SaveQuestion = "Save changes?";
+    public const string SaveChoiceYes = "Y    Yes, save and close";
+    public const string SaveChoiceNo = "N    No, close without saving";
+    public const string SaveChoiceContinue = "E    Save and continue editing";
+    public const string SaveChoiceCancel = "Esc  Cancel (continue editing)";
     private const string YesPinnedNo = "[Y] Yes  [P] Pinned  [N] No";
     private const string YesNoPinned = "[Y] Yes  [N] No  [P] Pin";
 
@@ -304,7 +309,7 @@ internal static class DialogText
     public const string Drives = "Drives";
     public const string DirectoryMark = "<DIR>";
     public const string DataFileMark = "[Data file]";
-    public const string FileBrowserKeys = "j/k Select | l/Enter Open | h Up | / Filter | F Favorites | ? Help | Esc Close";
+    public const string FileBrowserKeys = "j/k Select | l Open | h Up | / Filter | F Favorites | ? Help | Esc Close";
 
     // File management in the file browser
     public const string NewDirectory = "New directory";

@@ -1243,8 +1243,13 @@ internal static class Actions
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
         Console.Write(" " + DialogText.FileColon + " " +
                       Tools.TruncateString(FileExplorer.CurrentFileName, Init.LineWidth - 40, true) + " ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(DialogText.NotEncrypted);
+        if (FileExplorer.SessionEnded)
+        {
+            // Coming from the encrypted notes of a data file: a reminder that this file is not
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write(DialogText.NotEncrypted);
+        }
+
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.CursorReturn();
         Tools.CursorDown();

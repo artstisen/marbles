@@ -10,6 +10,8 @@
 - **Find-and-replace box**: `:replace` in the editor shows a box with the text to find, the replacement and options (match case, regular expression, whole text/current line/selected lines), as an alternative to writing a `:s` command. A word selected in the text is filled in as the text to find.
 - **Spell checking commands**: `:spellnext`, `:spellprev`, `:suggest` and `:spelladd` do the same as `]s`, `[s`, `z=` and `zg`.
 - **File management in the file browser**: create directories (`A`), rename (`X`), duplicate (`Y`), copy (`C`) and move (`M`) to another directory, and delete (`D`) files and directories, also as commands (`:mkdir`, `:rename`, `:duplicate`, `:copy`, `:move`, `:delete`). Nothing is overwritten, and what Marbles is using is protected. Deleted files cannot be recovered.
+- **Editor**: the question about unsaved changes when closing is a box on top of the text instead of a page of its own, and "Unsaved" is highlighted. "[Not encrypted]" is only shown for text files opened while logged in to a data file.
+- The key hints at the bottom of the file browser and the favorites have highlighted descriptions.
 - **Help for the page you are on**: `?` (and `:help`) shows the keys of the current page: start page, login page, menus and lists, file browser, file favorites or editor. `?` in the help switches to all keys and back. The start page and the login page have their own help sections.
 - **Black and white**: a setting that shows everything in black and white without changing your color scheme (`:bw` on menu page 4, or the configuration page; `monochrome` in the settings file).
 - The start page has a fourth choice, _Exit_, that closes Marbles without asking.
