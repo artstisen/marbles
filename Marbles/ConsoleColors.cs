@@ -607,25 +607,29 @@ class ConsoleColors
     private static int _previewColorIndex;
 
 
-    public static void SetNextPreviewColor(int propertyIndex)
+    /// <summary>
+    /// The color of a property in the color scheme being edited
+    /// </summary>
+    internal static ConsoleColor GetPreviewColor(int propertyIndex)
     {
-        // Get the index for the specified property
-        _previewColorIndex = GetIndexFromColor(GetPreviewColorFromIndex(propertyIndex));
-        do
-        {
-            if (_previewColorIndex < 15)
-            {
-                _previewColorIndex += 1;
-            }
-            else
-            {
-                _previewColorIndex = 0;
-            }
-        }// Check for background/text color matches
-        while (IsBackgroundColorMatchingForegroundColor(propertyIndex));
+        return GetPreviewColorFromIndex(propertyIndex);
+    }
 
-        // Set preview
-        SetPreviewColorFromIndex(propertyIndex, _previewColorIndex);
+    /// <summary>
+    /// Set the color of a property in the color scheme being edited
+    /// </summary>
+    internal static void SetPreviewColor(int propertyIndex, ConsoleColor color)
+    {
+        SetPreviewColorFromIndex(propertyIndex, GetIndexFromColor(color));
+    }
+
+    /// <summary>
+    /// False if a color cannot be used for a property, as the text would not be visible on its background
+    /// </summary>
+    internal static bool IsPreviewColorAllowed(int propertyIndex, ConsoleColor color)
+    {
+        _previewColorIndex = GetIndexFromColor(color);
+        return !IsBackgroundColorMatchingForegroundColor(propertyIndex);
     }
 
     private static bool IsBackgroundColorMatchingForegroundColor(int propertyIndex)
@@ -654,30 +658,6 @@ class ConsoleColors
             return false;
         }
     }
-
-    public static void SetPreviousPreviewColor(int propertyIndex)
-    {
-        // Get the index for the specified property
-        _previewColorIndex = GetIndexFromColor(GetPreviewColorFromIndex(propertyIndex));
-
-        do
-        {
-            if (_previewColorIndex > 0)
-            {
-                _previewColorIndex -= 1;
-            }
-            else
-            {
-                _previewColorIndex = 15;
-            }
-        }// Check for background/text color matches
-        while (IsBackgroundColorMatchingForegroundColor(propertyIndex));
-
-
-        // Set preview
-        SetPreviewColorFromIndex(propertyIndex, _previewColorIndex);
-    }
-
 
     private static void SetPreviewColorFromIndex(int propertyIndex, int colorIndex)
     {

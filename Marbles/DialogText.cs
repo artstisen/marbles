@@ -71,7 +71,9 @@ internal static class DialogText
     public const string CaptionsRanking = "Arrange pinned";
     public const string CaptionsColorize = "Set color";
     public const string PinColorCaption = "Pinned color";
-    public const string PinColorDefault = "Default";
+    public const string ColorDefault = "Default";
+    public const string ColorCaption = "Color";
+    public const string TextColorCaption = "Text color";
     public const string Favorites = "Favorites";
     public const string Session = "Session";
     public const string New = "New";

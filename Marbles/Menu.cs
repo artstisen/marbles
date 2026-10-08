@@ -189,27 +189,27 @@ internal static class Menu
                 Console.Write("[LOCKED]\n");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample, "Text",
+                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, "Text",
                     ConsoleColors.ColorPreset.Normal, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample,
+                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
                     "Logo, login label, directory browser, editor repeat",
                     ConsoleColors.ColorPreset.HeaderColor, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample, "Dividers and captions",
+                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, "Dividers and captions",
                     ConsoleColors.ColorPreset.Divider, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample, "Favorites",
+                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, "Favorites",
                     ConsoleColors.ColorPreset.Favorites, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample,
+                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
                     "Preview title and save state indicator", ConsoleColors.ColorPreset.PreviewTitle, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample,
+                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
                     "Editor title", ConsoleColors.ColorPreset.EditorTitle, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample,
+                WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample,
                     "Highlight and selection indicators", ConsoleColors.ColorPreset.HighlightInverted, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample, "Attention",
+                WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample, "Attention",
                     ConsoleColors.ColorPreset.AttentionInverted, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample, "Warning",
+                WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample, "Warning",
                     ConsoleColors.ColorPreset.WarningInverted, true, false);
-                WriteMenuItem(new string(' ', 2) + "h j k l", "Select and change (as the arrow keys)", true);
-                WriteMenuItem(new string(' ', 2) + "T", "Toggle Text/Background", true);
+                WriteMenuItem(new string(' ', 2) + "j k / l", "Select/Pick color from a list", true);
+                WriteMenuItem(new string(' ', 2) + "T", "Pick text color (the last three)", true);
                 WriteMenuItem(new string(' ', 2) + "E", "Reset", true);
                 WriteMenuItem(new string(' ', 2) + "Enter", "Save and exit", true);
                 WriteMenuItem(new string(' ', 2) + "Esc", "Cancel (exit)", true);

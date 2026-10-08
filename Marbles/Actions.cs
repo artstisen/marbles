@@ -744,7 +744,7 @@ internal static class Actions
                     RecallPreviousView();
                 }
                 else if (int.TryParse(CommandLine.Argument(command), out var color) &&
-                         color >= 1 && color <= PinColors.Count)
+                         color >= 1 && color <= ColorPicker.Count)
                 {
                     _pinColor = (ConsoleColor)(color - 1);
                     SelectResultFromIndex(pageNumber, _resultIndex, 3);
@@ -799,8 +799,64 @@ internal static class Actions
         }
     }
 
-    // Enter a loop where color controls are the only responding options
-    private static bool _colorSettingsSecondaryColors;
+    // The column of the color picker on the color scheme page (the examples stay visible beside it)
+    private const int SchemePickerLeft = 52;
+
+    // The page is drawn again with the colors being edited, after the color picker was shown on top of it
+    private static void DrawColorSettings(int selectedProperty)
+    {
+        Menu.BypassAwaitAction = true; // Bypass the ReadKey function within the DrawTopMenu method
+        Menu.DrawTopMenu(false, true, false);
+        Tools.CursorTopLeft();
+        Menu.WriteModeLabel(DialogText.CaptionsColorScheme, string.Empty, 0);
+        // Overwrite the "[LOCKED]" label
+        Tools.CursorDown(7);
+        Tools.CursorRight(36);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+        Console.Write("[EDITING]");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        for (var property = 0; property <= 8; property++)
+        {
+            Tools.CursorTopLeft();
+            Tools.CursorDown(8 + property);
+            WriteColorExample(property);
+        }
+
+        // Place selector
+        Tools.CursorTopLeft();
+        Tools.CursorDown(8 + selectedProperty);
+        Menu.WriteSelectionPointer(false);
+    }
+
+    // Pick a color for a property of the color scheme: the text color of the first six, and the background
+    // (or the text, if "textColor" is set) of the three highlight styles
+    private static void PickSchemeColor(int selectedProperty, bool textColor)
+    {
+        var isHighlight = selectedProperty >= 6;
+        if (textColor && !isHighlight) return;
+        // The colors of the scheme are numbered: 1-6 the text colors, then background and text of each highlight
+        var background = 7 + (selectedProperty - 6) * 2;
+        var index = !isHighlight ? selectedProperty + 1 : textColor ? background + 1 : background;
+        Action<ConsoleColor>? sample = null;
+        if (isHighlight)
+        {
+            sample = color =>
+            {
+                Console.BackgroundColor = textColor ? ConsoleColors.GetPreviewColor(background) : color;
+                Console.ForegroundColor = textColor ? color : ConsoleColors.GetPreviewColor(background + 1);
+            };
+        }
+
+        if (ColorPicker.Pick(textColor ? DialogText.TextColorCaption : DialogText.ColorCaption, SchemePickerLeft,
+                false, ConsoleColors.GetPreviewColor(index),
+                color => ConsoleColors.IsPreviewColorAllowed(index, color), sample, out var picked) &&
+            picked != null)
+        {
+            ConsoleColors.SetPreviewColor(index, picked.Value);
+        }
+
+        DrawColorSettings(selectedProperty);
+    }
 
 
     private static void EnableColorSettings()
@@ -819,7 +875,6 @@ internal static class Actions
         Tools.CursorTopLeft();
         ConsoleColors.InitializePreviewColors();
         bool editingColorSettings = true;
-        _colorSettingsSecondaryColors = false;
         int propertySelectorIndex =
             0; // Used as both the selection pointer index and as reference to the ColorPreset we want to change
         // Place selector
@@ -847,41 +902,9 @@ internal static class Actions
                 editingColorSettings = false;
                 ResetColorSettings();
             }
-            else if (_c.Key == ConsoleKey.T) // Toggle secondary colors
+            else if (_c.Key == ConsoleKey.T) // Pick the text color of a highlight style
             {
-                _colorSettingsSecondaryColors = !_colorSettingsSecondaryColors;
-                if (_colorSettingsSecondaryColors)
-                {
-                    // Set dots at affected properties  <-.->
-                    Tools.SaveCursorPosition(0);
-                    Tools.CursorTopLeft();
-                    Tools.CursorDown(14);
-                    Tools.CursorRight(5);
-                    Console.Write("#");
-                    Tools.CursorLeft(1);
-                    Tools.CursorDown(1);
-                    Console.Write("#");
-                    Tools.CursorLeft(1);
-                    Tools.CursorDown(1);
-                    Console.Write("#");
-                    Tools.LoadCursorPosition(0);
-                }
-                else
-                {
-                    // Remove dots from affected properties <- ->
-                    Tools.SaveCursorPosition(0);
-                    Tools.CursorTopLeft();
-                    Tools.CursorDown(14);
-                    Tools.CursorRight(5);
-                    Console.Write(" ");
-                    Tools.CursorLeft(1);
-                    Tools.CursorDown(1);
-                    Console.Write(" ");
-                    Tools.CursorLeft(1);
-                    Tools.CursorDown(1);
-                    Console.Write(" ");
-                    Tools.LoadCursorPosition(0);
-                }
+                PickSchemeColor(propertySelectorIndex, true);
             }
             else if (_c.Key == ConsoleKey.UpArrow)
             {
@@ -917,120 +940,14 @@ internal static class Actions
                     propertySelectorIndex = 0;
                 }
             }
-            else if (_c.Key == ConsoleKey.LeftArrow)
+            else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.LeftArrow or ConsoleKey.Spacebar)
             {
-                // Change example preview color
-                ChangeColorPreset(propertySelectorIndex, false);
-                // Write example
-                WriteColorExample(propertySelectorIndex);
-            }
-            else if (_c.Key == ConsoleKey.RightArrow)
-            {
-                // Change example preview color
-                ChangeColorPreset(propertySelectorIndex, true);
-                // Write example
-                WriteColorExample(propertySelectorIndex);
+                // Pick the color from a list
+                PickSchemeColor(propertySelectorIndex, false);
             }
         } while (editingColorSettings);
     }
 
-
-    private static void ChangeColorPreset(int presetToChange, bool directionNext)
-    {
-        if (presetToChange == 0) // Normal
-        {
-            if (directionNext)
-                ConsoleColors.SetNextPreviewColor(1);
-            else
-                ConsoleColors.SetPreviousPreviewColor(1);
-        }
-        else if (presetToChange == 1) // HeaderColor
-        {
-            if (directionNext)
-                ConsoleColors.SetNextPreviewColor(2);
-            else
-                ConsoleColors.SetPreviousPreviewColor(2);
-        }
-        else if (presetToChange == 2) // Divider
-        {
-            if (directionNext)
-                ConsoleColors.SetNextPreviewColor(3);
-            else
-                ConsoleColors.SetPreviousPreviewColor(3);
-        }
-        else if (presetToChange == 3) // Favorites
-        {
-            if (directionNext)
-                ConsoleColors.SetNextPreviewColor(4);
-            else
-                ConsoleColors.SetPreviousPreviewColor(4);
-        }
-        else if (presetToChange == 4) // PreviewTitle
-        {
-            if (directionNext)
-                ConsoleColors.SetNextPreviewColor(5);
-            else
-                ConsoleColors.SetPreviousPreviewColor(5);
-        }
-        else if (presetToChange == 5) // EditorTitle
-        {
-            if (directionNext)
-                ConsoleColors.SetNextPreviewColor(6);
-            else
-                ConsoleColors.SetPreviousPreviewColor(6);
-        }
-        else if (presetToChange == 6) // HighlightInverted
-        {
-            if (_colorSettingsSecondaryColors)
-            {
-                if (directionNext)
-                    ConsoleColors.SetNextPreviewColor(8);
-                else
-                    ConsoleColors.SetPreviousPreviewColor(8);
-            }
-            else
-            {
-                if (directionNext)
-                    ConsoleColors.SetNextPreviewColor(7);
-                else
-                    ConsoleColors.SetPreviousPreviewColor(7);
-            }
-        }
-        else if (presetToChange == 7) // AttentionInverted
-        {
-            if (_colorSettingsSecondaryColors)
-            {
-                if (directionNext)
-                    ConsoleColors.SetNextPreviewColor(10);
-                else
-                    ConsoleColors.SetPreviousPreviewColor(10);
-            }
-            else
-            {
-                if (directionNext)
-                    ConsoleColors.SetNextPreviewColor(9);
-                else
-                    ConsoleColors.SetPreviousPreviewColor(9);
-            }
-        }
-        else if (presetToChange == 8) // WarningInverted
-        {
-            if (_colorSettingsSecondaryColors)
-            {
-                if (directionNext)
-                    ConsoleColors.SetNextPreviewColor(12);
-                else
-                    ConsoleColors.SetPreviousPreviewColor(12);
-            }
-            else
-            {
-                if (directionNext)
-                    ConsoleColors.SetNextPreviewColor(11);
-                else
-                    ConsoleColors.SetPreviousPreviewColor(11);
-            }
-        }
-    }
 
     private static void WriteColorExample(int propertySelectorIndex)
     {

@@ -14,11 +14,6 @@ internal static class PinColors
         { ConsoleColor.Cyan, ConsoleColor.Yellow, ConsoleColor.Red };
 
     /// <summary>
-    /// The number of colors to select from
-    /// </summary>
-    internal const int Count = 16;
-
-    /// <summary>
     /// The color set in the options of an entry, or null if none is set
     /// </summary>
     internal static ConsoleColor? Get(string? options)
@@ -53,15 +48,6 @@ internal static class PinColors
     }
 
     /// <summary>
-    /// The name of a color: "Dark Blue"
-    /// </summary>
-    internal static string Name(ConsoleColor color)
-    {
-        var name = color.ToString();
-        return name.StartsWith("Dark", StringComparison.Ordinal) && name.Length > 4 ? "Dark " + name[4..] : name;
-    }
-
-    /// <summary>
     /// Set the colors of the console for writing the title of an entry
     /// </summary>
     /// <param name="entry">The entry</param>
@@ -79,9 +65,7 @@ internal static class PinColors
         }
     }
 
-    private const int BoxTop = 2;
     private const int BoxLeft = 28;
-    private const int BoxWidth = 24; // Between the borders
 
     /// <summary>
     /// Let the user pick a color from a list shown on top of the page
@@ -91,84 +75,6 @@ internal static class PinColors
     /// <returns>False if the list was closed without picking</returns>
     internal static bool Pick(ConsoleColor? current, out ConsoleColor? picked)
     {
-        picked = current;
-        // The first row is the default color, then the colors follow
-        var selected = current == null ? 0 : (int)current.Value + 1;
-        Tools.HideCursor();
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(BoxTop, BoxLeft);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', BoxWidth) + AsciiStyles.GetTopCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(BoxTop, BoxLeft + 2);
-        Console.Write(" " + DialogText.PinColorCaption + " ");
-        for (var row = 0; row <= Count; row++)
-        {
-            Tools.SetCursorEx(BoxTop + 1 + row, BoxLeft);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write('|');
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            var number = row == 0 ? "  " : row.ToString().PadLeft(2);
-            Console.Write("    " + number + "  ");
-            var name = row == 0 ? DialogText.PinColorDefault : Name((ConsoleColor)(row - 1));
-            if (row == 0)
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Favorites);
-            }
-            else if (ConsoleColors.IsBackgroundColor((ConsoleColor)(row - 1)))
-            {
-                // The color of the background cannot be seen as text: it is shown inverted
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.NormalInverted);
-            }
-            else
-            {
-                Console.ForegroundColor = (ConsoleColor)(row - 1);
-            }
-
-            Console.Write(name);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(new string(' ', BoxWidth - 8 - name.Length));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write('|');
-        }
-
-        Tools.SetCursorEx(BoxTop + Count + 2, BoxLeft);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', BoxWidth) + AsciiStyles.GetBottomCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-
-        while (true)
-        {
-            for (var row = 0; row <= Count; row++)
-            {
-                Tools.SetCursorEx(BoxTop + 1 + row, BoxLeft + 2);
-                if (row == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                Console.Write(row == selected ? "->" : "  ");
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            }
-
-            var key = Console.ReadKey(true);
-            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return false;
-            if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar)
-            {
-                picked = selected == 0 ? null : (ConsoleColor)(selected - 1);
-                return true;
-            }
-
-            if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
-            {
-                selected = (selected + 1) % (Count + 1);
-            }
-            else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
-            {
-                selected = (selected + Count) % (Count + 1);
-            }
-            else if (key.Key == ConsoleKey.Home || key.KeyChar == 'g')
-            {
-                selected = 0;
-            }
-            else if (key.Key == ConsoleKey.End || key.KeyChar == 'G')
-            {
-                selected = Count;
-            }
-        }
+        return ColorPicker.Pick(DialogText.PinColorCaption, BoxLeft, true, current, null, null, out picked);
     }
 }

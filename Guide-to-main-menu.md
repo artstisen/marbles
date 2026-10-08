@@ -55,8 +55,9 @@ The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`
 ### Page 4 (color scheme)
 - `:scheme` **Unlock color scheme**: Edit the colors of the selected color preset
   - `j` `k` (or `Up`/`Down`) Select the color group to change
-  - `h` `l` (or `Left`/`Right`) Change the color
-  - `T` Switch between text and background colors
+  - `l` (or `Right`, `Space`) Pick the color from a list of the 16 colors: select with `j` `k` and press `Enter`, or `Esc` to cancel. For the last three groups (the highlight styles) this is the background color
+  - `T` Pick the text color of a highlight style (the last three groups)
+  - A color shown in brackets in the list cannot be picked, as the text would not be visible on its background
   - `E` Reset to the default colors of the preset
   - `Enter` Save and exit
   - `Esc` Cancel

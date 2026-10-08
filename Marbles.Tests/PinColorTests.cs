@@ -27,7 +27,7 @@ public class PinColorTests
     [Fact]
     public void AllColors_CanBeSet()
     {
-        Assert.Equal(PinColors.Count, Enum.GetValues<ConsoleColor>().Length);
+        Assert.Equal(ColorPicker.Count, Enum.GetValues<ConsoleColor>().Length);
         foreach (var color in Enum.GetValues<ConsoleColor>())
         {
             Assert.Equal(color, PinColors.Get(PinColors.Set("fp0", color)));
@@ -49,7 +49,7 @@ public class PinColorTests
     [Fact]
     public void Names()
     {
-        Assert.Equal("Dark Blue", PinColors.Name(ConsoleColor.DarkBlue));
-        Assert.Equal("Yellow", PinColors.Name(ConsoleColor.Yellow));
+        Assert.Equal("Dark Blue", ColorPicker.Name(ConsoleColor.DarkBlue));
+        Assert.Equal("Yellow", ColorPicker.Name(ConsoleColor.Yellow));
     }
 }
