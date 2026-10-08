@@ -248,6 +248,7 @@ internal static class Init
         Logo.AnimationEnabled = true;
         AutoSize = false;
         Actions.PreviewEnabled = false;
+        StartMenu.Mode = StartMenu.StartMode.Select;
         Logo.AnimateNext(); // Sweep the logo when the login page is first shown
         WriteProgressBar(8); // progress
         // Set default colors

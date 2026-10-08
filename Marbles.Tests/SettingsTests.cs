@@ -91,6 +91,29 @@ backup=
         Assert.False(FileIo.BackupEnabled());
     }
 
+    [Theory]
+    [InlineData("startmode=notes", "Notes")]
+    [InlineData("startmode= Editor ", "Editor")]
+    [InlineData("startmode=select", "Select")]
+    [InlineData("startmode=other", "Select")]
+    [InlineData("", "Select")]
+    public void StartMode_IsLoadedAndSaved(string setting, string expected)
+    {
+        File.WriteAllText(SettingsFile, LegacySettings + "\n" + setting + "\n");
+        File.WriteAllText(Path.Combine(_workDirectory, "data", "notes.mbls"), "x");
+        try
+        {
+            Assert.True(FileIo.LoadSettings());
+            Assert.Equal(expected, StartMenu.Mode.ToString());
+            FileIo.SaveSettings();
+            Assert.Equal(expected.ToLowerInvariant(), FileIo.ParseSettings(File.ReadAllText(SettingsFile))["startmode"]);
+        }
+        finally
+        {
+            StartMenu.Mode = StartMenu.StartMode.Select;
+        }
+    }
+
     [Fact]
     public void SavedSettings_HaveNoKeyMapping_AndLoadAgain()
     {
@@ -106,7 +129,8 @@ backup=
         Assert.Equal("100", settings["linewidth"]);
         Assert.Equal("a=b text", settings["logotxt"]);
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(27, settings.Count);
+        Assert.Equal(28, settings.Count);
+        Assert.Equal("select", settings["startmode"]);
 
         Init.SetDefaultOutputDimensions();
         Assert.True(FileIo.LoadSettings());

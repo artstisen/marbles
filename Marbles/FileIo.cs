@@ -911,6 +911,8 @@ internal static class FileIo
         _tempSettings += "vignette=" + Vignette.GetVignetteState() + Entries.NewLineChar;
         // Preview of the last edited entries on the main menu
         _tempSettings += "preview=" + (Actions.PreviewEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // What to show at startup: select (the choices), notes (the login page) or editor (the file browser)
+        _tempSettings += "startmode=" + StartMenu.SettingName(StartMenu.Mode) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; STYLING" + Entries.NewLineChar;
@@ -1057,6 +1059,7 @@ internal static class FileIo
         // Automatic dimensions and preview (off unless turned on)
         Init.AutoSize = Tools.TrimToLower(Get("autosize")) == DialogText.BTrue;
         Actions.PreviewEnabled = Tools.TrimToLower(Get("preview")) == DialogText.BTrue;
+        StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
 
         // Vignettes
         var vignette = Tools.TrimToLower(Get("vignette"));

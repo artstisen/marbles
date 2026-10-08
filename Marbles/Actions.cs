@@ -1703,6 +1703,7 @@ internal static class Actions
             Logo.ResetLogoText();
             Logo.AnimationEnabled = true;
             PreviewEnabled = false;
+            StartMenu.Mode = StartMenu.StartMode.Select;
             Init.AutoSize = false;
             Init.SetDefaultOutputDimensions();
             FileIo.SaveSettings();

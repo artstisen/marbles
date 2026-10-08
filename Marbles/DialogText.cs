@@ -261,7 +261,18 @@ internal static class DialogText
 
     // File browser
     public const string CaptionsFiles = "Files";
-    public const string BrowseFiles = "Browse files";
+    public const string BrowseFilesSelectMode = "Files/Select mode";
+
+    // The page shown at startup
+    public const string StartSelectMode = "Select mode";
+    public const string StartNotes = "Note Management (encrypted notes)";
+    public const string StartEditor = "Text Editor";
+    public const string StartConfiguration = "Configuration";
+    public const string StartConfigSelect = "Show choices on startup";
+    public const string StartConfigNotes = "Start in Note Management";
+    public const string StartConfigEditor = "Start in Text Editor (file browser)";
+    public const string StartKeys = "j/k 1-3 Select | Enter Open | ? Help | Q Exit";
+    public const string StartConfigKeys = "j/k 1-3 Select | Enter Set | Esc Back";
     public const string Drives = "Drives";
     public const string DirectoryMark = "<DIR>";
     public const string DataFileMark = "[Data file]";

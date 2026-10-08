@@ -201,7 +201,7 @@ internal static class Menu
                 WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample,
                     "Preview title and save state indicator", ConsoleColors.ColorPreset.PreviewTitle, true, false);
                 WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample,
-                    "Editor title and scroll indicator", ConsoleColors.ColorPreset.EditorTitle, true, false);
+                    "Editor title", ConsoleColors.ColorPreset.EditorTitle, true, false);
                 WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample,
                     "Highlight and selection indicators", ConsoleColors.ColorPreset.HighlightInverted, true, false);
                 WriteExtendedMenuItem(new string(' ', 2) + "<- ->", DialogText.ExtExample, "Attention",

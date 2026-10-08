@@ -70,6 +70,11 @@ internal static class FileExplorer
     /// </summary>
     internal static bool SessionEnded { get; private set; }
 
+    /// <summary>
+    /// True if the last run of the file browser was closed by selecting a data file (to log in to)
+    /// </summary>
+    internal static bool DataFileSelected { get; private set; }
+
     // Opening a file from the browser ends the session of the data file that is logged in to (if any),
     // just like logging out before opening the browser from the login page
     private static void EndSession()
@@ -86,6 +91,7 @@ internal static class FileExplorer
         _caption = caption;
         _picked = null;
         SessionEnded = false;
+        DataFileSelected = false;
         _filter = string.Empty;
         _message = string.Empty;
         ChangeDirectory(Directory.Exists(StartDirectory) ? StartDirectory : DataDirectory(), null);
@@ -358,7 +364,8 @@ internal static class FileExplorer
 
         if (item.Name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase))
         {
-            return SelectDataFile(item);
+            DataFileSelected = SelectDataFile(item);
+            return DataFileSelected;
         }
 
         TextFile file;

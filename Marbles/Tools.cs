@@ -374,7 +374,7 @@ internal static class Tools
             new("C", DialogText.CopyFile, false, 13),
             new("D", DialogText.DeleteFile, false, 13),
             new("M", DialogText.MergeFiles, false, 13),
-            new("F", DialogText.BrowseFiles, false, 13),
+            new("F/T", DialogText.BrowseFilesSelectMode, false, 13),
             new(string.Empty, "-", true, 13),
             new("h l / j k", DialogText.SelectFileDirectory, false, 13),
             new("R/Y", DialogText.Refresh + "/" + DialogText.Restart, false, 13),
@@ -440,6 +440,12 @@ internal static class Tools
         {
             // Browse and edit text files
             FileExplorer.Run();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.T)
+        {
+            // Select mode (notes, text editor or configuration)
+            StartMenu.Open();
             LoginRoutine(true);
         }
         else if (_keyInfo.Key == ConsoleKey.G)
@@ -759,6 +765,13 @@ internal static class Tools
     /// </summary>
     internal static void ShowLogin(bool fullRedraw)
     {
+        // The page where notes or text files are selected comes before the login page
+        if (StartMenu.Pending)
+        {
+            StartMenu.Run();
+            fullRedraw = true;
+        }
+
         // Follow the size of the terminal window (if automatic dimensions are on)
         if (Init.ApplyAutoSize()) fullRedraw = true;
         if (fullRedraw)
@@ -1063,7 +1076,7 @@ internal static class Tools
         }
     }
 
-    private static void ExitApplication()
+    internal static void ExitApplication()
     {
         RemovePrivileges(false);
         ShowCursor(); // Remember to show cursor again for continuous work in the console
@@ -1287,6 +1300,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc", "Return/Cancel (login page: Options)", false));
             _shortcutList.Add(new Shortcut("Esc ?", "Login page: Show this help", false));
             _shortcutList.Add(new Shortcut("Esc F", "Login page: Browse and edit text files", false));
+            _shortcutList.Add(new Shortcut("Esc T", "Login page: Select mode (notes/text editor/startup)", false));
             _shortcutList.Add(new Shortcut(":browse", "Browse files (opening a file logs out)", false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFiles, true));
             _shortcutList.Add(new Shortcut("j k", "Select (as Down/Up)", false));

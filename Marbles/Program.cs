@@ -5,6 +5,7 @@ class Program
     private static void Main(string[] args)
     {
         Init.RunInitialization();
+        StartMenu.Start();
         MainLoop();
     }
 

@@ -1,5 +1,25 @@
-# Guide to the login page
-Data files (your encrypted collections of notes) are managed from the login page shown when starting Marbles.
+# Guide to the start and login pages
+
+## Select mode
+Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts you select what to use it for:
+
+- `1` **Note Management (encrypted notes)**: Continue to the login page
+- `2` **Text Editor**: Open the [file browser](#file-browser) to edit plain text files. Closing the file browser returns here
+- `3` **Configuration**: Select what Marbles does when it starts
+
+Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help and `Q` exits Marbles.
+
+### Configuration
+- **Show choices on startup** (the default)
+- **Start in Note Management**: Go directly to the login page
+- **Start in Text Editor (file browser)**: Go directly to the file browser
+
+Select with `j`/`k` or `1`-`3` and press `Enter` to set it. `Esc` returns. The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to showing the choices.
+
+When Marbles starts directly in one of the two, the choices can still be reached: from the login page with `Esc`, `T`, and from the file browser by closing it.
+
+## Login page
+Data files (your encrypted collections of notes) are managed from the login page.
 A default data file "data.mbls" is created when first starting Marbles, where you are asked to create its password (8 to 128 characters). It is not possible to recover your notes if you forget your password.
 
 Log in to the selected data file by typing its password and pressing `Enter`.
@@ -19,6 +39,7 @@ Press `Esc` and then one of the following keys:
 - `D` Delete the selected data file
 - `M` Merge two data files into a new, or export a data file as XML (the exported file is not encrypted)
 - `F` Browse files: open the [file browser](#file-browser) to edit plain text files
+- `T` Go to the [Select mode](#select-mode) page
 - `h` `l` Select the previous/next data file, `j` `k` Select a directory. The options stay open
 - `R` Refresh the login page
 - `Y` Restart Marbles

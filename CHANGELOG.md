@@ -1,11 +1,13 @@
 # Changes
 
 ## v1.5.1
+- **Select mode at startup**: Marbles starts with a choice between _Note Management_ (the login page), _Text Editor_ (the file browser) and _Configuration_, where it can be set to start directly in one of the two (`startmode` in the settings file). From the login page the choices are reached with `Esc`, `T`.
 - **Export**: `:export` lets you select the directory in the file browser and enter the file name (the title of the entry is suggested), asks before replacing an existing file, and shows where the file was saved.
 - **New entry from the command line**: `:new My title` creates an entry with the title and opens it in the editor. `:new` alone asks for the title.
 - **Esc closes the editor**: in Normal mode `Esc` works as `:q` (it asks what to do with unsaved changes). It still leaves Insert and Visual mode, cancels a half typed command and removes the search highlighting first.
 - **Deleting an entry** asks for confirmation once instead of twice (a deleted entry can be brought back with `:undelete`).
 - The version number on the login page is placed correctly next to the logo.
+- The color settings page says "Editor title" (the scroll indicator no longer exists).
 
 ## v1.5.0
 
