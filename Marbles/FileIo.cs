@@ -926,6 +926,8 @@ internal static class FileIo
         _tempSettings += "logoanim=" + (Logo.AnimationEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Color scheme (for the color preset selector)
         _tempSettings += "(clpreset)=" + ConsoleColors.GetColorPresetIndex()+ Entries.NewLineChar;
+        // Black and white: the colors below are kept, but not used
+        _tempSettings += "monochrome=" + (ConsoleColors.Monochrome ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         _tempSettings += "color1=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(1))+ Entries.NewLineChar;
         _tempSettings += "color2=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(2))+ Entries.NewLineChar;
         _tempSettings += "color3=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(3))+ Entries.NewLineChar;
@@ -1060,6 +1062,7 @@ internal static class FileIo
         Init.AutoSize = Tools.TrimToLower(Get("autosize")) == DialogText.BTrue;
         Actions.PreviewEnabled = Tools.TrimToLower(Get("preview")) == DialogText.BTrue;
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
+        ConsoleColors.Monochrome = Tools.TrimToLower(Get("monochrome")) == DialogText.BTrue;
 
         // Vignettes
         var vignette = Tools.TrimToLower(Get("vignette"));

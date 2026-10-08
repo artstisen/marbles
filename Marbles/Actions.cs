@@ -524,7 +524,24 @@ internal static class Actions
                 ResetSettings();
                 break;
             case "scheme":
+                if (ConsoleColors.Monochrome)
+                {
+                    // The colors are not in use
+                    ChangeMenuFocus(3);
+                    CommandLine.ShowMessage(DialogText.MonochromeIsOn);
+                    Menu.DrawTopMenu(false, true, false);
+                    break;
+                }
+
                 EnableColorSettings();
+                break;
+            case "bw":
+                // Black and white on or off
+                ChangeMenuFocus(3);
+                ConsoleColors.Monochrome = !ConsoleColors.Monochrome;
+                FileIo.SaveSettings();
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Menu.DrawTopMenu(false, true, false);
                 break;
             case "size":
                 if (command == "size auto")
@@ -616,8 +633,18 @@ internal static class Actions
 
     internal static int ColorPresetCount => ColorPresets.Length;
 
+    private static readonly string[] ColorPresetNames =
+    {
+        "Default", "Marbles Quest", "Night Writer", "Yellow Monochrome", "Green Monochrome", "Ice Warp", "Water Sport"
+    };
+
+    /// <summary>
+    /// The name of a color preset
+    /// </summary>
+    internal static string ColorPresetName(int index) => ColorPresetNames[index];
+
     // Use a color preset. The index is saved in the settings file
-    private static void SetColorPreset(int index)
+    internal static void SetColorPreset(int index)
     {
         ConsoleColors.SetColors(ColorPresets[index]);
         ConsoleColors.SetColorPresetIndex(index);
@@ -990,7 +1017,7 @@ internal static class Actions
         return _changeOutputDimensionsAccelerated ? "x2" : "x1";
     }
 
-    private static void DisplayOutputDimensions()
+    internal static void DisplayOutputDimensions()
     {
         var originalLineCount = Init.LineCount;
         var originalLineWidth = Init.LineWidth;
@@ -1612,26 +1639,34 @@ internal static class Actions
         Menu.DrawTopMenu(false, true, false);
     }
 
+    /// <summary>
+    /// Set all settings back to their defaults and save them
+    /// </summary>
+    internal static void ApplyDefaultSettings()
+    {
+        Tools.ClearEditorHelpData();
+        AsciiStyles.ResetAsciiStyle();
+        FileIo.SetBackup(false, string.Empty, false);
+        FileBrowser.ResetSubfolderAndIndex();
+        ConsoleColors.Monochrome = false;
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
+        ConsoleColors.DefaultColorPresetIndex();
+        Vignette.SetDefaultVignetteState();
+        Logo.ResetLogoIndex();
+        Logo.ResetLogoText();
+        Logo.AnimationEnabled = true;
+        PreviewEnabled = false;
+        StartMenu.Mode = StartMenu.StartMode.Select;
+        Init.AutoSize = false;
+        Init.SetDefaultOutputDimensions();
+        FileIo.SaveSettings();
+    }
+
     private static void ResetSettings()
     {
         if (Menu.YesNoPrompt(DialogText.CaptionsSettings, DialogText.ResetSettings, string.Empty, true))
         {
-            // Reset settings
-            Tools.ClearEditorHelpData();
-            AsciiStyles.ResetAsciiStyle();
-            FileIo.SetBackup(false, string.Empty, false);
-            FileBrowser.ResetSubfolderAndIndex();
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
-            ConsoleColors.DefaultColorPresetIndex();
-            Vignette.SetDefaultVignetteState();
-            Logo.ResetLogoIndex();
-            Logo.ResetLogoText();
-            Logo.AnimationEnabled = true;
-            PreviewEnabled = false;
-            StartMenu.Mode = StartMenu.StartMode.Select;
-            Init.AutoSize = false;
-            Init.SetDefaultOutputDimensions();
-            FileIo.SaveSettings();
+            ApplyDefaultSettings();
             Menu.DrawTopMenu(false, true, false);
         }
         else

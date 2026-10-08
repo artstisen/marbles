@@ -59,6 +59,7 @@ The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`
   - `T` Pick the text color of a highlight style (the last three groups)
   - A color shown in brackets in the list cannot be picked, as the text would not be visible on its background
   - `E` Reset to the default colors of the preset
+- `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the color scheme cannot be edited
   - `Enter` Save and exit
   - `Esc` Cancel
 

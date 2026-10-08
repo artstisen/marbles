@@ -1335,6 +1335,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("B :goto", "Show the file in the file browser", false));
             _shortcutList.Add(new Shortcut("Tab V", "Move the favorite (j k, then Esc)", false));
             _shortcutList.Add(new Shortcut("C :color", "Pick the text color of the favorite", false));
+            _shortcutList.Add(new Shortcut("I :info", "Show type, size, dates and path", false));
             _shortcutList.Add(new Shortcut("P D :remove", "Remove from the favorites (the file stays)", false));
             _shortcutList.Add(new Shortcut("/text", "Only show paths containing \"text\" (Esc: all)", false));
             _shortcutList.Add(new Shortcut("Esc Q F h", "Back to the file browser", false));

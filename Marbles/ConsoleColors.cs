@@ -443,13 +443,58 @@ class ConsoleColors
     internal static void SetTextColor(ConsoleColor color)
     {
         SetColors(ColorPreset.Normal);
-        if (!IsBackgroundColor(color)) Console.ForegroundColor = color;
+        if (Monochrome)
+        {
+            // No colors: text with a color of its own is shown brighter
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+        else if (!IsBackgroundColor(color))
+        {
+            Console.ForegroundColor = color;
+        }
     }
 
     internal static bool IsBackgroundColor(ConsoleColor color) => color == CurrentBackgroundColor;
 
+    /// <summary>
+    /// True to show everything in black and white, whatever the colors of the color scheme are
+    /// (setting "monochrome"). The color scheme is kept, and is used again when this is turned off
+    /// </summary>
+    internal static bool Monochrome { get; set; }
+
+    // The colors used when everything is shown in black and white
+    private static bool SetMonochromeColors(ColorPreset preset)
+    {
+        switch (preset)
+        {
+            case ColorPreset.Normal:
+            case ColorPreset.Divider:
+                Console.ResetColor();
+                Console.ForegroundColor = ConsoleColor.Gray;
+                return true;
+            case ColorPreset.HeaderColor:
+            case ColorPreset.Favorites:
+            case ColorPreset.PreviewTitle:
+            case ColorPreset.EditorTitle:
+                Console.ResetColor();
+                Console.ForegroundColor = ConsoleColor.White;
+                return true;
+            case ColorPreset.NormalInverted:
+            case ColorPreset.HighlightInverted:
+            case ColorPreset.AttentionInverted:
+            case ColorPreset.WarningInverted:
+                Console.BackgroundColor = ConsoleColor.Gray;
+                Console.ForegroundColor = ConsoleColor.Black;
+                return true;
+            default:
+                // The color presets set the colors of the scheme
+                return false;
+        }
+    }
+
     public static void SetColors(ColorPreset preset)
     {
+        if (Monochrome && SetMonochromeColors(preset)) return;
         if (preset == ColorPreset.Reset)
         {
             ResetColors();

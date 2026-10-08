@@ -211,8 +211,10 @@ internal static class Menu
                 WriteMenuItem(new string(' ', 2) + "j k / l", "Select/Pick color from a list", true);
                 WriteMenuItem(new string(' ', 2) + "T", "Pick text color (the last three)", true);
                 WriteMenuItem(new string(' ', 2) + "E", "Reset", true);
-                WriteMenuItem(new string(' ', 2) + "Enter", "Save and exit", true);
-                WriteMenuItem(new string(' ', 2) + "Esc", "Cancel (exit)", true);
+                WriteMenuItem(new string(' ', 2) + "Enter/Esc", "Save and exit/Cancel", true);
+                WriteMenuItem(":bw",
+                    (ConsoleColors.Monochrome ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
+                    " Black and white (no colors)", true);
             }
 
 

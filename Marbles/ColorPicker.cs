@@ -74,6 +74,10 @@ internal static class ColorPicker
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                     name = "(" + name + ")";
                 }
+                else if (ConsoleColors.Monochrome)
+                {
+                    // The colors are not shown in black and white
+                }
                 else if (setSampleColors != null)
                 {
                     setSampleColors(color);

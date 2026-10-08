@@ -134,6 +134,9 @@ internal static partial class FileExplorer
                     case "color":
                         PickFavoriteColor(selected);
                         break;
+                    case "info":
+                        ShowFavoriteInfo(selected);
+                        break;
                     case "remove":
                         RemoveFavorite(selected);
                         break;
@@ -243,6 +246,10 @@ internal static partial class FileExplorer
             {
                 PickFavoriteColor(selected);
             }
+            else if (key.Key == ConsoleKey.I)
+            {
+                ShowFavoriteInfo(selected);
+            }
         }
     }
 
@@ -259,6 +266,24 @@ internal static partial class FileExplorer
         FileFavorites.RemoveAt(number);
         _favoriteMessage = DialogText.FavoriteRemoved + ": " + name;
         SaveFavoriteList();
+    }
+
+    // Show information about the file or directory of a favorite
+    private static void ShowFavoriteInfo(int number)
+    {
+        if (number < 0) return;
+        var path = FileFavorites.Items[number].Path;
+        var isDirectory = Directory.Exists(path);
+        if (!isDirectory && !File.Exists(path))
+        {
+            _favoriteMessage = DialogText.FileNotFound;
+            return;
+        }
+
+        _message = string.Empty;
+        ShowInfo(new Item(FavoriteName(path), path, isDirectory, isDirectory ? 0 : new FileInfo(path).Length));
+        _favoriteMessage = _message;
+        _message = string.Empty;
     }
 
     private static void PickFavoriteColor(int number)

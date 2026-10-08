@@ -33,9 +33,6 @@ internal static class StartMenu
     private static readonly string[] Choices =
         { DialogText.StartNotes, DialogText.StartEditor, DialogText.StartConfiguration };
 
-    private static readonly string[] ConfigurationChoices =
-        { DialogText.StartConfigSelect, DialogText.StartConfigNotes, DialogText.StartConfigEditor };
-
     /// <summary>
     /// The name of a start mode in the settings file
     /// </summary>
@@ -136,21 +133,172 @@ internal static class StartMenu
         return FileExplorer.DataFileSelected;
     }
 
-    // Select what happens at startup. The choice is saved in the settings file
+    private enum Setting
+    {
+        StartSelect,
+        StartNotes,
+        StartEditor,
+        Monochrome,
+        ColorScheme,
+        Logo,
+        AutoSize,
+        Size,
+        Reset
+    }
+
+    // The settings shown: some are only shown when they can be used
+    private static List<Setting> Settings()
+    {
+        var settings = new List<Setting>
+        {
+            Setting.StartSelect, Setting.StartNotes, Setting.StartEditor, Setting.Monochrome
+        };
+        if (!ConsoleColors.Monochrome) settings.Add(Setting.ColorScheme);
+        settings.Add(Setting.Logo);
+        settings.Add(Setting.AutoSize);
+        if (!Init.AutoSize) settings.Add(Setting.Size);
+        settings.Add(Setting.Reset);
+        return settings;
+    }
+
+    private static string Check(bool isChecked) => isChecked ? "[x] " : "[ ] ";
+
+    private static string SettingText(Setting setting)
+    {
+        const string indent = "    ";
+        return setting switch
+        {
+            Setting.StartSelect => Check(Mode == StartMode.Select) + DialogText.StartConfigSelect,
+            Setting.StartNotes => Check(Mode == StartMode.Notes) + DialogText.StartConfigNotes,
+            Setting.StartEditor => Check(Mode == StartMode.Editor) + DialogText.StartConfigEditor,
+            Setting.Monochrome => Check(ConsoleColors.Monochrome) + DialogText.ConfigMonochrome,
+            Setting.ColorScheme => indent + DialogText.ConfigColorScheme + (ConsoleColors.GetColorPresetIndex() + 1) +
+                                   DialogText.ConfigOf + Actions.ColorPresetCount + " (" +
+                                   Actions.ColorPresetName(ConsoleColors.GetColorPresetIndex()) + ")",
+            Setting.Logo => indent + DialogText.ConfigLogo + (Logo.GetLogoIndex() + 1) + DialogText.ConfigOf +
+                            Actions.LogoPresetCount,
+            Setting.AutoSize => Check(Init.AutoSize) + DialogText.ConfigAutoSize,
+            Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
+                            DialogText.ConfigSizeNote,
+            _ => indent + DialogText.ConfigReset
+        };
+    }
+
+    // The settings of the start page and some basic settings. A change is saved in the settings file at once
     private static void Configure()
     {
-        var selected = (int)Mode;
+        var selected = 0;
         while (true)
         {
+            var settings = Settings();
+            selected = Math.Clamp(selected, 0, settings.Count - 1);
+            Init.ApplyAutoSize();
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Tools.ClearScreen();
             Logo.DrawLogo(true, false);
-            var result = Select(DialogText.StartConfiguration, ConfigurationChoices, ref selected, true,
-                DialogText.StartConfigKeys);
-            if (result == Result.Close) return;
-            if (result == Result.Redraw || Mode == (StartMode)selected) continue;
-            Mode = (StartMode)selected;
-            FileIo.SaveSettings();
+            Tools.SetCursorEx(FirstRow - 2, 1);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+            Console.Write(DialogText.StartConfiguration + ":");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            for (var i = 0; i < settings.Count; i++)
+            {
+                // The basic settings follow the ones of the start page after a blank row
+                Tools.SetCursorEx(SettingRow(settings, i), Left);
+                if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                Console.Write(i == selected ? "->" : "  ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Console.Write(" " + SettingText(settings[i]));
+            }
+
+            Tools.SetCursorEx(Init.LineCount - 1, 0);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write(" " + DialogText.StartConfigKeys);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+
+            var key = Console.ReadKey(true);
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return;
+            if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
+            {
+                selected = (selected + 1) % settings.Count;
+            }
+            else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+            {
+                selected = (selected + settings.Count - 1) % settings.Count;
+            }
+            else if (key.KeyChar >= '1' && key.KeyChar - '1' < settings.Count)
+            {
+                selected = key.KeyChar - '1';
+            }
+            else if (key.KeyChar == '?')
+            {
+                Tools.WriteEditorHelp(false);
+            }
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow)
+            {
+                ChangeSetting(settings[selected], true);
+            }
+            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow)
+            {
+                // The previous color scheme or logo
+                if (settings[selected] is Setting.ColorScheme or Setting.Logo)
+                {
+                    ChangeSetting(settings[selected], false);
+                }
+            }
         }
+    }
+
+    private static int SettingRow(List<Setting> settings, int index)
+    {
+        return FirstRow + index + (settings[index] >= Setting.Monochrome ? 1 : 0);
+    }
+
+    private static void ChangeSetting(Setting setting, bool next)
+    {
+        switch (setting)
+        {
+            case Setting.StartSelect:
+                Mode = StartMode.Select;
+                break;
+            case Setting.StartNotes:
+                Mode = StartMode.Notes;
+                break;
+            case Setting.StartEditor:
+                Mode = StartMode.Editor;
+                break;
+            case Setting.Monochrome:
+                ConsoleColors.Monochrome = !ConsoleColors.Monochrome;
+                break;
+            case Setting.ColorScheme:
+            {
+                var count = Actions.ColorPresetCount;
+                Actions.SetColorPreset((ConsoleColors.GetColorPresetIndex() + (next ? 1 : count - 1)) % count);
+                break;
+            }
+            case Setting.Logo:
+            {
+                var count = Actions.LogoPresetCount;
+                Logo.SetLogoIndex((Logo.GetLogoIndex() + (next ? 1 : count - 1)) % count);
+                break;
+            }
+            case Setting.AutoSize:
+                Init.AutoSize = !Init.AutoSize;
+                Init.ApplyAutoSize();
+                break;
+            case Setting.Size:
+                // Saves the settings itself
+                Actions.DisplayOutputDimensions();
+                return;
+            default:
+                if (Menu.YesNoPrompt(DialogText.CaptionsSettings, DialogText.ResetSettings, string.Empty, true))
+                {
+                    Actions.ApplyDefaultSettings();
+                }
+
+                return;
+        }
+
+        FileIo.SaveSettings();
     }
 
     // Show a list of choices, and let the user move the selection (j/k or a number) and accept it (Enter)

@@ -4,8 +4,8 @@
 Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts you select what to use it for:
 
 - `1` **Note Management (encrypted notes)**: Continue to the login page
-- `2` **Text Editor**: Open the [file browser](#file-browser) to edit plain text files. Closing the file browser returns here
-- `3` **Configuration**: Select what Marbles does when it starts
+- `2` **Text Editor/File Management**: Open the [file browser](#file-browser) to edit plain text files and manage files. Closing the file browser returns here
+- `3` **Configuration**: Select what Marbles does when it starts, and change some basic settings
 
 Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help and `Q` exits Marbles.
 
@@ -14,7 +14,18 @@ Move the selection with `j`/`k` (or the arrow keys) or the number, and press `En
 - **Start in Note Management**: Go directly to the login page
 - **Start in Text Editor (file browser)**: Go directly to the file browser
 
-Select with `j`/`k` or `1`-`3` and press `Enter` to set it. `Esc` returns. The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to showing the choices.
+The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to showing the choices.
+
+Below these are some basic settings, so they can be changed without logging in to a data file:
+
+- **Black and white (no colors)**: Show everything in black and white. Your color scheme is kept and is used again when this is turned off
+- **Color scheme**: Select one of the color presets (not shown when _Black and white_ is on)
+- **Logo**: Select one of the logo presets
+- **Automatic size**: Follow the size of the terminal window
+- **Size**: Set the number of columns and rows by hand (shown when _Automatic size_ is off)
+- **Reset all settings**: Set all settings back to their defaults (you are asked first)
+
+Select a row with `j`/`k` or its number, and press `Enter` or `Space` to change it. For the color scheme and the logo, `l` and `h` select the next and the previous. `Esc` returns. Changes are saved at once.
 
 When Marbles starts directly in one of the two, the choices can still be reached: from the login page with `Esc`, `T`, and from the file browser by closing it.
 
@@ -61,7 +72,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `h`, `-` or `Backspace` Go to the directory above (above the root of a drive on Windows: the list of drives)
 - `/text` Only show the names containing "text". `Esc` shows all again
 - `N` or `:new name` Create a new file in the directory and open it. Without a name (`N` or `:new`) you are asked for it
-- `I` or `:info` Show information about the selected file or directory: type, size (for a directory: the number of files and directories in it), when it was created and last changed, and the full path. Any key closes the box
+- `I` or `:info` (also in the list of favorites) Show information about the selected file or directory: type, size (for a directory: the number of files and directories in it), when it was created and last changed, and the full path. Any key closes the box
 - See [Managing files](#managing-files) and [Favorites](#favorites) below for the other keys
 - `R` Refresh
 - `:cd path` Go to a directory. `:home` Go to the Marbles data directory

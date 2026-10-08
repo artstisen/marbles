@@ -324,7 +324,11 @@ internal static partial class FileExplorer
     private static void ShowInfo()
     {
         var item = SelectedItem();
-        if (item == null) return;
+        if (item != null) ShowInfo(item);
+    }
+
+    private static void ShowInfo(Item item)
+    {
         var rows = new List<(string Label, string Value)>();
         try
         {
