@@ -51,6 +51,11 @@ internal static class QuickGuide
         (Kind.Item, "dd  yy  p", "Delete a line / Copy a line / Paste"),
         (Kind.Item, "/text", "Search (n: the next match)"),
         (Kind.Text, "", ""),
+        (Kind.Heading, "", "Commands"),
+        (Kind.Item, ":guide  :w  ...", "A word with a colon in front is a command: press : and"),
+        (Kind.Item, "", "type the word, then Enter (Esc cancels). Commands can be"),
+        (Kind.Item, "", "given on most pages. The menus and the help show them."),
+        (Kind.Text, "", ""),
         (Kind.Text, "", "There is much more. Press ? on any page, or type :help in the editor,"),
         (Kind.Text, "", "to see the keys that can be used there.")
     };
