@@ -148,6 +148,9 @@ internal static class Menu
                 WriteMenuItem("A", "List all " + Entries.GetEntriesCountAsString(), true);
                 WriteMenuItem("I", "File info", true);
                 WriteMenuItem(":browse", "Browse files", true);
+                WriteMenuItem(":number",
+                    (TextArea.LineNumbers ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
+                    " Line numbers in the editor", true);
                 WriteMenuItem("D", "Display timestamp", true);
                 WriteMenuItem("?", "Help", true);
                 WriteMenuItem(":about", "About", true);

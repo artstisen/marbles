@@ -147,6 +147,7 @@ internal static class StartMenu
         Logo,
         AutoSize,
         Size,
+        LineNumbers,
         Reset,
         Restart,
         ViewLog
@@ -163,6 +164,7 @@ internal static class StartMenu
         settings.Add(Setting.Logo);
         settings.Add(Setting.AutoSize);
         if (!Init.AutoSize) settings.Add(Setting.Size);
+        settings.Add(Setting.LineNumbers);
         settings.Add(Setting.Reset);
         settings.Add(Setting.Restart);
         settings.Add(Setting.ViewLog);
@@ -188,6 +190,7 @@ internal static class StartMenu
             Setting.AutoSize => Check(Init.AutoSize) + DialogText.ConfigAutoSize,
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
+            Setting.LineNumbers => Check(TextArea.LineNumbers) + DialogText.ConfigLineNumbers,
             Setting.Restart => indent + DialogText.ConfigRestart,
             Setting.ViewLog => indent + DialogText.ConfigViewLog,
             _ => indent + DialogText.ConfigReset
@@ -330,6 +333,9 @@ internal static class StartMenu
                 // Saves the settings itself
                 Actions.DisplayOutputDimensions();
                 return;
+            case Setting.LineNumbers:
+                TextArea.LineNumbers = !TextArea.LineNumbers;
+                break;
             case Setting.ViewLog:
                 EventLog.Show();
                 return;

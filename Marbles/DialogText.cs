@@ -306,6 +306,7 @@ internal static class DialogText
     public const string ConfigAutoSize = "Automatic size (follow the terminal window)";
     public const string ConfigSize = "Size: ";
     public const string ConfigSizeNote = " (Enter: Change)";
+    public const string ConfigLineNumbers = "Line numbers in the editor";
     public const string ConfigReset = "Reset all settings";
     public const string ConfigRestart = "Restart Marbles";
     public const string ConfigViewLog = "View log";

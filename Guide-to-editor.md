@@ -117,7 +117,7 @@ The words you add are saved as plain text, one word per line, in `spell/<languag
 ## Line numbers
 - `:number` (or `:nu`) Show or hide line numbers. `:set number` and `:set nonumber` do one of the two
 
-The numbers are shown to the left of the text, with a small gap. A long line that continues on the next row has its number on the first row only, so the numbers are the ones used by `:5` and shown as `line:column` on the bottom line. The number of the line the cursor is on stands out. The choice is remembered (`linenumbers` in the settings file) and is used for notes and text files alike.
+The numbers are shown to the left of the text, with a small gap. A long line that continues on the next row has its number on the first row only, so the numbers are the ones used by `:5` and shown as `line:column` on the bottom line. The number of the line the cursor is on stands out. Line numbers are on from the start. The choice is remembered (`linenumbers` in the settings file) and is used for notes and text files alike. It can also be set on the Configuration page of the start page, and with `:number` on page 2 of the main menu.
 
 When text is copied from the terminal window with the mouse, the line numbers are copied too: turn them off first (`:nu`). Text yanked in the editor never has them.
 

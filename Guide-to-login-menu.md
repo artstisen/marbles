@@ -24,6 +24,7 @@ Below these are some basic settings, so they can be changed without logging in t
 - **Logo**: Select one of the logo presets
 - **Automatic size**: Follow the size of the terminal window
 - **Size**: Set the number of columns and rows by hand (shown when _Automatic size_ is off)
+- **Line numbers in the editor**: Show line numbers to the left of the text (on from the start)
 - **Reset all settings**: Set all settings back to their defaults (you are asked first)
 - **Restart Marbles**: Start Marbles over: the settings are read again and the start page is shown as at startup (you are asked first)
 - **View log**: Show the [log](#the-log)

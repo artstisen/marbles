@@ -32,6 +32,7 @@ The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`
 - `A` **List all**: All entries, sorted by date created, date changed or title (press `Tab`).
 - `I` **File info**: The directory, name and size of the data file.
 - `:browse` **Browse files**: Open the file browser.
+- `:number` **Line numbers in the editor**: Show or hide line numbers in the editor (the same as `:number` in the editor itself).
 - `D` **Display timestamp**: The current date, time and week number.
 - `?` **Help**
 - `:about` **About**: General information about Marbles.

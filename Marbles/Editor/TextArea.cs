@@ -40,7 +40,7 @@ public class TextArea
     /// <summary>
     /// True to show line numbers in the editor (setting "linenumbers")
     /// </summary>
-    internal static bool LineNumbers { get; set; }
+    internal static bool LineNumbers { get; set; } = true;
 
     private const int GutterGap = 2; // The blank columns between the line numbers and the text
     private const int MinNumberWidth = 2;

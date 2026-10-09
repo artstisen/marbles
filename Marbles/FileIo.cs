@@ -1075,7 +1075,8 @@ internal static class FileIo
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
         // On unless turned off
         MarkdownHighlighter.ColorFiles = Tools.TrimToLower(Get("mdcolors")) != DialogText.BFalse;
-        TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) == DialogText.BTrue;
+        // On unless turned off
+        TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) != DialogText.BFalse;
         ConsoleColors.Monochrome = Tools.TrimToLower(Get("monochrome")) == DialogText.BTrue;
 
         // Vignettes

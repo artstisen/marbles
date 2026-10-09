@@ -495,6 +495,14 @@ internal static class Actions
                 BrowseFiles();
                 Menu.DrawTopMenu(false, true, false);
                 break;
+            case "number":
+            case "nu":
+                // Line numbers in the editor on or off
+                ChangeMenuFocus(1);
+                TextArea.LineNumbers = !TextArea.LineNumbers;
+                FileIo.SaveSettings();
+                Menu.DrawTopMenu(false, true, false);
+                break;
             case "import":
                 ImportEntry();
                 break;
@@ -1656,7 +1664,7 @@ internal static class Actions
         ConsoleColors.Monochrome = false;
         MarkdownHighlighter.ColorFiles = true;
         FileExplorer.DualPane = true;
-        TextArea.LineNumbers = false;
+        TextArea.LineNumbers = true;
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
         ConsoleColors.DefaultColorPresetIndex();
         Vignette.SetDefaultVignetteState();
