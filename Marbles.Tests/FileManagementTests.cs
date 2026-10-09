@@ -330,6 +330,26 @@ public class FileManagementTests : IDisposable
     }
 
     [Fact]
+    public void Folders_OpenAndCloseAll()
+    {
+        FileFavorites.Parse("\t/x/a\n\t[One]\n \t/x/b\n\t[Two]\tcollapsed\n \t/x/c\n\t[Empty]\n");
+        Assert.Equal("a [One] .b [Two+] .c [Empty]", Show());
+        Assert.Equal(3, FileFavorites.SetAllCollapsed(true));
+        Assert.Equal("a [One+] .b [Two+] .c [Empty+]", Show());
+        Assert.Contains("[One]\tcollapsed", FileFavorites.Serialize());
+        Assert.Equal(3, FileFavorites.SetAllCollapsed(false));
+        Assert.Equal("a [One] .b [Two] .c [Empty]", Show());
+        Assert.DoesNotContain("collapsed", FileFavorites.Serialize());
+        // The folder a favorite is in
+        Assert.Equal(Find("One"), FileFavorites.FolderOf(Find("b")));
+        Assert.Equal(Find("a"), FileFavorites.FolderOf(Find("a")));
+        Assert.Equal(Find("Two"), FileFavorites.FolderOf(Find("Two")));
+        // A list without folders
+        FileFavorites.Parse("\t/x/a\n");
+        Assert.Equal(0, FileFavorites.SetAllCollapsed(true));
+    }
+
+    [Fact]
     public void Folders_AddRenameRemove()
     {
         FileFavorites.Parse("\t/x/a\n\t[One]\n \t/x/b\n\t/x/c\n");

@@ -361,7 +361,7 @@ internal static class Actions
     #region Preview on the main menu
 
     private const int PreviewCount = 5;
-    private const int PreviewTop = 16; // The row of the caption (below the menu items of the first page)
+    private const int PreviewTop = Menu.MenuTop + 10; // The row of the caption (below the menu items of the first page)
     private static List<Entry> _previewEntries = new();
     private static int _previewIndex;
 
@@ -834,6 +834,7 @@ internal static class Actions
 
     // The column of the color picker on the color scheme page (the examples stay visible beside it)
     private const int SchemePickerLeft = 52;
+    private const int SchemeTop = Menu.MenuTop + 1; // The row of ":scheme" on the fourth page of the menu
 
     // The page is drawn again with the colors being edited, after the color picker was shown on top of it
     private static void DrawColorSettings(int selectedProperty)
@@ -843,7 +844,7 @@ internal static class Actions
         Tools.CursorTopLeft();
         Menu.WriteModeLabel(DialogText.CaptionsColorScheme, string.Empty, 0);
         // Overwrite the "[LOCKED]" label
-        Tools.CursorDown(7);
+        Tools.CursorDown(SchemeTop);
         Tools.CursorRight(36);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
         Console.Write("[EDITING]");
@@ -851,13 +852,13 @@ internal static class Actions
         for (var property = 0; property <= 8; property++)
         {
             Tools.CursorTopLeft();
-            Tools.CursorDown(8 + property);
+            Tools.CursorDown(SchemeTop + 1 + property);
             WriteColorExample(property);
         }
 
         // Place selector
         Tools.CursorTopLeft();
-        Tools.CursorDown(8 + selectedProperty);
+        Tools.CursorDown(SchemeTop + 1 + selectedProperty);
         Menu.WriteSelectionPointer(false);
     }
 
@@ -900,7 +901,7 @@ internal static class Actions
         Tools.CursorTopLeft();
         Menu.WriteModeLabel(DialogText.CaptionsColorScheme, string.Empty, 0);
         // Overwrite the "[LOCKED]" label
-        Tools.CursorDown(7);
+        Tools.CursorDown(SchemeTop);
         Tools.CursorRight(36);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
         Console.Write("[EDITING]");
@@ -912,7 +913,7 @@ internal static class Actions
             0; // Used as both the selection pointer index and as reference to the ColorPreset we want to change
         // Place selector
         Tools.CursorTopLeft();
-        Tools.CursorDown(8);
+        Tools.CursorDown(SchemeTop + 1);
         Menu.WriteSelectionPointer(false);
         do
         {

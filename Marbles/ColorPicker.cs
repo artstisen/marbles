@@ -116,7 +116,7 @@ internal static class ColorPicker
 
             var key = Console.ReadKey(true);
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return false;
-            if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar)
+            if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.RightArrow || key.KeyChar == 'l')
             {
                 if (!CanSelect(selected)) continue;
                 picked = selected < first ? null : (ConsoleColor)(selected - first);

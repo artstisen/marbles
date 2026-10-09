@@ -81,16 +81,21 @@ internal static class Menu
     }
 
 
+    /// <summary>
+    /// The row of the page navigation of the main menu. The menu items follow below it
+    /// </summary>
+    internal const int MenuTop = 2;
+
+    // The top of the main menu: the name of the program and of the data file (the logo is for the login page)
     private static void WriteLogoForMenuDisplay()
     {
-        Logo.DrawLogo(false);
-        Tools.CursorTopLeftDown(6);
+        WriteNameInTopBar(true);
+        Tools.CursorTopLeftDown(MenuTop);
     }
 
     private static int _manageModePage;
     private static int _viewModePage;
     internal static bool BypassAwaitAction { get; set; }
-    internal static bool DisplayWelcomeMessage { get; set; }
 
     public static void DrawTopMenu(bool displayMenuFromPageOne, bool clearScreen, bool useEditorColors)
     {
@@ -105,12 +110,6 @@ internal static class Menu
         {
             Init.ApplyAutoSize(); // Follow the size of the terminal window (if automatic dimensions are on)
             Tools.ClearScreen(); // Clear screen
-        }
-
-        if (DisplayWelcomeMessage)
-        {
-            DisplayWelcomeMessage = false;
-            DisplayFooterMessage(DialogText.WelcomeTo);
         }
 
         if (Mode.CurrentMode == Mode.SelectedMode.Login)
@@ -969,22 +968,5 @@ internal static class Menu
         }
 
         Tools.LoadCursorPosition(0);
-    }
-
-    private static void DisplayFooterMessage(string msg)
-    {
-        if (Tools.IsValid(msg))
-        {
-            // Truncate long strings
-            msg = Tools.TruncateString(msg, 70, true);
-            Tools.CursorTopLeft();
-            // Place cursor in bottom right corner
-            Tools.CursorDown(Init.LineCount -1);
-            Tools.CursorRight(Init.LineWidth - 1);
-            // Move cursor left in the length of the message
-            Tools.CursorLeft(msg.Length);
-            // Write message
-            Console.Write(msg);
-        }
     }
 }

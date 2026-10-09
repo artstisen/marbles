@@ -289,6 +289,31 @@ internal static class FileFavorites
     }
 
     /// <summary>
+    /// Open or close all the folders
+    /// </summary>
+    /// <returns>The number of folders in the list</returns>
+    internal static int SetAllCollapsed(bool collapsed)
+    {
+        var folders = 0;
+        foreach (var item in List)
+        {
+            if (!item.IsFolder) continue;
+            item.Collapsed = collapsed;
+            folders++;
+        }
+
+        return folders;
+    }
+
+    /// <summary>
+    /// The folder a favorite is in (the item itself if it is not in a folder)
+    /// </summary>
+    internal static int FolderOf(int index)
+    {
+        return index >= 0 && index < List.Count ? FolderStart(index) : index;
+    }
+
+    /// <summary>
     /// The number of favorites in a folder
     /// </summary>
     internal static int FolderCount(int index)

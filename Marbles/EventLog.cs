@@ -45,7 +45,7 @@ internal static class EventLog
         "q", "quit", "q!", "quit!", "qa", "quitall", "exit", "logout", "h", "help", "about", "new", "browse",
         "import", "export", "transfer", "undelete", "vignette", "backup", "defaults", "scheme", "bw", "size",
         "password", "logo", "color", "restart", "e", "edit", "close", "delete", "revert", "title", "pin",
-        "folder", "rename", "remove", "goto", "info",
+        "folder", "rename", "remove", "goto", "info", "expand", "collapse",
         "w", "write", "wq", "wq!", "x", "noh", "nohlsearch", "u", "undo", "red", "redo", "ts", "timestamp", "pw",
         "cal", "calendar", "trim", "clear", "reg", "registers", "regclear", "putall", "spell", "nospell", "set",
         "spellnext", "spellprev", "spellsuggest", "suggest", "spellgood", "spelladd", "replace", "rep", "s", "d",

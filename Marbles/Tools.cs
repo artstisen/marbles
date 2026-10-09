@@ -1001,7 +1001,6 @@ internal static class Tools
                 FileIo.SaveSettings();
                 Vignette.CheckVignette();
                 Mode.SetMode(Mode.SelectedMode.Manage);
-                Menu.DisplayWelcomeMessage = true;
                 Menu.DrawTopMenu(true, true, false);
             }
             else if (!_load.Success)
@@ -1420,6 +1419,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Tab v", "Move the favorite or folder (j k, then Esc)", false));
             _shortcutList.Add(new Shortcut("A :folder name", "New folder (a group of favorites)", false));
             _shortcutList.Add(new Shortcut("l Enter", "On a folder: Open/Close it", false));
+            _shortcutList.Add(new Shortcut(":expand", "Open all the folders", false));
+            _shortcutList.Add(new Shortcut(":collapse", "Close all the folders", false));
             _shortcutList.Add(new Shortcut("X :rename name", "Rename the folder", false));
             _shortcutList.Add(new Shortcut("Space", "Mark/Unmark the favorite (several can be marked)", false));
             _shortcutList.Add(new Shortcut("M :move", "Move the marked (or selected) to a folder", false));

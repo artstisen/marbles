@@ -1,7 +1,12 @@
 # Changes
 
-## v1.5.2
+## v1.5.3
+- **More room in the main menu.** When a data file is open, the top of the menu pages shows `*** Marbles ***` like the lists do, instead of the big logo (which is still shown on the start and login pages). The menu starts four rows higher, which leaves more room for the preview and the vignette. The "Welcome to Marbles" text shown at the bottom after login is removed.
+- **Favorites of the file browser**: `:expand` opens all the folders and `:collapse` closes them all.
+- **Color picker**: `l` (or `Right`) picks the selected color, like `Enter` and `Space`.
 - **Saving keeps the creation time of a file.** Text files, data files and the settings file got a new "Created" time every time they were saved, because a save replaces the file with a new one. The time is now kept on Windows and macOS. Linux does not let a program set it.
+
+## v1.5.2
 - **Colors for HTML, CSS, JavaScript, JSON and XML** in the editor, besides Markdown: comments, strings, keywords and tags, names and numbers. Files are colored by their kind when opened from the file browser, `:syntax` turns the colors on and off, and `:syntax html` (or `md`, `css`, `js`, `json`, `xml`) colors any text as that kind. The setting `mdcolors` is now named `syntaxcolors`.
 - **Quick guide**: a short introduction to the two parts of Marbles, the keys for moving around and the modes of the editor. It is found on the start page, in the options of the login page (`Esc`, `U`) and with `:guide` on the first page of the main menu.
 - **Line numbers** in the editor: they are on from the start. `:number` (or `:nu`) shows or hides them, in the editor and on page 2 of the main menu, and the Configuration page has a setting for it. The choice is remembered.

@@ -6,7 +6,7 @@ internal static class DialogText
     public const string ApplicationName = "Marbles";
     public const string ApplicationCopyright = "Copyright 2026 Lars Brandt Stisen";
     public const string ApplicationBy = "by Lars Brandt Stisen (c)2026";
-    public const string ApplicationVersion = "v1.5.2"; // For display. Right click the Marbles project icon to set assembly version
+    public const string ApplicationVersion = "v1.5.3"; // For display. Right click the Marbles project icon to set assembly version
 
     //                                                                                \n <- Max line length
     //-----------------------------------------------------------------------------
@@ -35,7 +35,6 @@ internal static class DialogText
 
 
     // Mode labels and Caption
-    public const string WelcomeTo = "Welcome to " + ApplicationName;
     public const string LogReview = "Log review";
     public const string CaptionsMergeExport = "Merge/Export";
     public const string CaptionsMerge = "Merge";
@@ -416,6 +415,9 @@ internal static class DialogText
     public const string HelpSectionFavorites = "File browser favorites";
     public const string FavoritesHeader = "Files and directories marked as favorites (P in the file browser)";
     public const string FavoritesEmpty = "No favorites yet: press P on a file or directory in the file browser";
+    public const string FavoritesExpanded = "All folders are open";
+    public const string FavoritesCollapsed = "All folders are closed";
+    public const string FavoritesNoFolders = "There are no folders";
     public const string FavoritesKeys = "Enter Open | B Show | A Folder | V Move | C Color | P Remove | Esc Close";
     public const string FavoriteAdded = "Added to the favorites";
     public const string FavoriteRemoved = "Removed from the favorites";

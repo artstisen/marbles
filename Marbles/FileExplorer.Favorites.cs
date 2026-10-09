@@ -182,6 +182,10 @@ internal static partial class FileExplorer
                     case "folder":
                         NewFavoriteFolder(selected, CommandLine.LastArgument);
                         break;
+                    case "expand":
+                    case "collapse":
+                        SetFavoriteFolders(selected, command == "collapse");
+                        break;
                     case "rename":
                         RenameFavoriteFolder(selected, CommandLine.LastArgument);
                         break;
@@ -340,6 +344,28 @@ internal static partial class FileExplorer
                 ShowFavoriteInfo(selected);
             }
         }
+    }
+
+    // Open or close all the folders
+    private static void SetFavoriteFolders(int selected, bool collapsed)
+    {
+        // The folder of the selected favorite is selected when the favorite is no longer shown
+        var keep = selected < 0 ? null : FileFavorites.Items[collapsed ? FileFavorites.FolderOf(selected) : selected];
+        if (FileFavorites.SetAllCollapsed(collapsed) == 0)
+        {
+            _favoriteMessage = DialogText.FavoritesNoFolders;
+            return;
+        }
+
+        SaveFavoriteList();
+        FilterFavorites();
+        if (keep != null)
+        {
+            _favoriteIndex = Math.Max(0,
+                _favorites.FindIndex(number => ReferenceEquals(FileFavorites.Items[number], keep)));
+        }
+
+        _favoriteMessage = collapsed ? DialogText.FavoritesCollapsed : DialogText.FavoritesExpanded;
     }
 
     private static void SaveFavoriteList()
