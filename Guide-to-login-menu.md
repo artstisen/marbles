@@ -119,13 +119,14 @@ In the list of favorites:
 - `j` `k` Select, `gg` `G` First/Last
 - `l` or `Enter` Open the file in the editor (closing the editor returns to the list). A directory: go to it in the browser
 - `B` or `:goto` Show the file in the browser: its directory is opened with the file selected, where it can be renamed, copied, moved or deleted
-- `Tab` or `V` Move the selected favorite or folder: it is highlighted and follows `j` `k` up and down the list until you press `Esc`
+- `Tab` or `v` Move the selected favorite or folder: it is highlighted and follows `j` `k` up and down the list until you press `Esc`
 - `C` or `:color` Pick a text color for the favorite from the list of 16 colors
 - `P`, `D` or `:remove` Remove it from the favorites (the file itself stays where it is)
+- `u` or `:undo` Put back the favorite, or the folder with its favorites, that was removed last
 - `A` or `:folder name` Create a folder (see below)
 - `/text` Only show the paths containing "text". `Esc` shows all again
 - `?` Help
-- `Esc`, `Q`, `F` or `h` Return to the browser
+- `Esc`, `Q`, `F`, `h` or `-` Return to the browser
 
 **Folders:** Favorites can be grouped in folders. A folder only exists in the list of favorites; nothing is created on disk and no files are moved.
 

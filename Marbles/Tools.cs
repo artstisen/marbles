@@ -1358,7 +1358,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":qa", "Exit Marbles", false));
             _shortcutList.Add(new Shortcut(":new :new Title", "New entry (asks for the title if not given)", false));
             _shortcutList.Add(new Shortcut(":logout", "Logout", false));
-            _shortcutList.Add(new Shortcut("Tab V", "Favorites: Move the pinned entry (j k, then Esc)", false));
+            _shortcutList.Add(new Shortcut("Tab v", "Favorites: Move the pinned entry (j k, then Esc)", false));
             _shortcutList.Add(new Shortcut(":pin", "Favorites: Pick the color of the pinned entry", false));
             _shortcutList.Add(new Shortcut("Esc", "Return/Cancel", false));
             _shortcutList.Add(new Shortcut(":browse", "Browse files (opening a file logs out)", false));
@@ -1391,7 +1391,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("j k gg G", "Select", false));
             _shortcutList.Add(new Shortcut("l Enter", "Open the file (a directory: go to it)", false));
             _shortcutList.Add(new Shortcut("B :goto", "Show the file in the file browser", false));
-            _shortcutList.Add(new Shortcut("Tab V", "Move the favorite or folder (j k, then Esc)", false));
+            _shortcutList.Add(new Shortcut("Tab v", "Move the favorite or folder (j k, then Esc)", false));
             _shortcutList.Add(new Shortcut("A :folder name", "New folder (a group of favorites)", false));
             _shortcutList.Add(new Shortcut("l Enter", "On a folder: Open/Close it", false));
             _shortcutList.Add(new Shortcut("X :rename name", "Rename the folder", false));
@@ -1401,7 +1401,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("I :info", "Show type, size, dates and path", false));
             _shortcutList.Add(new Shortcut("P D :remove", "Remove the favorite or folder (files stay)", false));
             _shortcutList.Add(new Shortcut("/text", "Only show paths containing \"text\" (Esc: all)", false));
-            _shortcutList.Add(new Shortcut("Esc Q F h", "Back to the file browser", false));
+            _shortcutList.Add(new Shortcut("u :undo", "Put back what was removed last", false));
+            _shortcutList.Add(new Shortcut("Esc Q F h -", "Back to the file browser", false));
             _shortcutList.Add(new Shortcut("  The list", "Kept in favorites.txt in the data directory", false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionEditor, true));
             _shortcutList.Add(new Shortcut(string.Empty, "Modes", true));

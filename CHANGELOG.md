@@ -1,5 +1,11 @@
 # Changes
 
+## v1.5.2
+- **File browser columns**: the list has a column for the type of each item (`<DIR>`, `[Data file]`, or the extension of the file such as `TXT` and `MD`) and one for the size, so they line up.
+- **Favorites of the file browser**: `-` (and `Backspace`) closes the list, lowercase `v` moves a favorite like `V`, and `u` or `:undo` puts back the favorite or folder that was removed last.
+- Lowercase `v` also moves a pinned entry in the favorites list of a data file.
+- The color lists show `[Default]` in the normal text color instead of "Default" in green.
+
 ## v1.5.1
 - **Select mode at startup**: Marbles starts with a choice between _Note Management_ (the login page), _Text Editor_ (the file browser) and _Configuration_, where it can be set to start directly in one of the two (`startmode` in the settings file). From the login page the choices are reached with `Esc`, `T`.
 - **Export**: `:export` lets you select the directory in the file browser and enter the file name (the title of the entry is suggested), asks before replacing an existing file, and shows where the file was saved.

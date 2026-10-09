@@ -2997,7 +2997,7 @@ internal static class Actions
             FindAll(0, string.Empty, false, false);
         }
         else if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites &&
-                 (_c.Key == ConsoleKey.Tab || _c.KeyChar == 'V'))
+                 _c.Key is ConsoleKey.Tab or ConsoleKey.V)
         {
             // Move a pinned entry
             StartMovingPinned(pageNumber);

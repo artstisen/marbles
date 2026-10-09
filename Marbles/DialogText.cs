@@ -6,7 +6,7 @@ internal static class DialogText
     public const string ApplicationName = "Marbles";
     public const string ApplicationCopyright = "Copyright 2026 Lars Brandt Stisen";
     public const string ApplicationBy = "by Lars Brandt Stisen (c)2026";
-    public const string ApplicationVersion = "v1.5.1"; // For display. Right click the Marbles project icon to set assembly version
+    public const string ApplicationVersion = "v1.5.2"; // For display. Right click the Marbles project icon to set assembly version
 
     //                                                                                \n <- Max line length
     //-----------------------------------------------------------------------------
@@ -72,7 +72,7 @@ internal static class DialogText
     public const string MovePinnedKeys = "MOVE | j/k Move the entry up/down | Esc Done";
     public const string CaptionsColorize = "Set color";
     public const string PinColorCaption = "Pinned color";
-    public const string ColorDefault = "Default";
+    public const string ColorDefault = "[Default]";
 
     // The find-and-replace box of the editor
     public const string ReplaceCaption = "Replace";
@@ -391,6 +391,8 @@ internal static class DialogText
     public const string FavoriteFolderCount = " favorites";
     public const string FavoriteFolderOne = " favorite";
     public const string FavoriteDeleteFolderNoteOne = "The favorite in it is removed from the list too (the file stays)";
+    public const string FavoriteNothingToUndo = "Nothing to undo";
+    public const string FavoriteRestored = "Put back in the favorites";
     public const string FavoriteRenameFile = "Only folders are renamed here. B shows the file, where X renames it";
     public const string HelpSectionFiles = "File browser";
     public const string HelpKeys = "| h/l Page | j/k Line | /text Search | n/N Next/Previous | Esc Close";

@@ -61,8 +61,8 @@ internal static class ColorPicker
             string name;
             if (row < first)
             {
+                // Not in a color of its own: it stands for the color the item has without one
                 name = DialogText.ColorDefault;
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Favorites);
             }
             else
             {

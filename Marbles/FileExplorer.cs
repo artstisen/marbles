@@ -634,11 +634,12 @@ internal static partial class FileExplorer
             DrawPointer(_top + row, _top + row == _index);
             var isDataFile = !item.IsDirectory &&
                              item.Name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase);
-            var info = item.IsDirectory ? DialogText.DirectoryMark :
-                isDataFile ? DialogText.DataFileMark + " " + FileSizeFormatter.FormatSize(item.Size) :
-                FileSizeFormatter.FormatSize(item.Size);
+            // Three columns: the name, the type and (to the right) the size
+            var type = ItemType(item);
+            var size = item.IsDirectory ? string.Empty : FileSizeFormatter.FormatSize(item.Size);
+            var typeColumn = Init.LineWidth - 2 - SizeColumnWidth - TypeColumnWidth;
             var name = Tools.TruncateString(item.Name + (item.IsDirectory && item.Name != ParentName ? "/" : ""),
-                Init.LineWidth - info.Length - 8, true);
+                typeColumn - 7, true);
             ConsoleColors.SetColors(item.IsDirectory ? ConsoleColors.ColorPreset.HeaderColor :
                 isDataFile ? ConsoleColors.ColorPreset.Favorites : ConsoleColors.ColorPreset.Normal);
             Console.Write(" " + name);
@@ -650,13 +651,33 @@ internal static partial class FileExplorer
             }
 
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Tools.SetCursorEx(ListTop + row, Init.LineWidth - info.Length - 1);
-            Console.Write(info);
+            Tools.SetCursorEx(ListTop + row, typeColumn);
+            Console.Write(type);
+            Tools.SetCursorEx(ListTop + row, Init.LineWidth - size.Length - 1);
+            Console.Write(size);
         }
 
         _shownTop = _top;
         _shownIndex = _index;
         DrawStatus();
+    }
+
+    private const int TypeColumnWidth = 11; // The width of "[Data file]"
+    private const int SizeColumnWidth = 11; // The width of "1,023 bytes"
+
+    // What is shown in the type column: a directory, a data file, or the extension of the file ("TXT")
+    private static string ItemType(Item item)
+    {
+        if (item.IsDirectory) return DialogText.DirectoryMark;
+        if (item.Name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase))
+        {
+            return DialogText.DataFileMark;
+        }
+
+        var extension = System.IO.Path.GetExtension(item.Name);
+        // A name like ".gitignore" is not an extension
+        if (extension.Length < 2 || extension.Length == item.Name.Length) return string.Empty;
+        return Tools.TruncateString(extension[1..].ToUpperInvariant(), TypeColumnWidth, true);
     }
 
     // Draw (or remove) the selection pointer in front of an item, leaving the cursor after it

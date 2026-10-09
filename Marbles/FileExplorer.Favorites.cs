@@ -171,6 +171,10 @@ internal static partial class FileExplorer
                     case "remove":
                         RemoveFavorite(selected);
                         break;
+                    case "u":
+                    case "undo":
+                        UndoRemoveFavorite();
+                        break;
                     case "folder":
                         NewFavoriteFolder(selected, CommandLine.LastArgument);
                         break;
@@ -206,8 +210,8 @@ internal static partial class FileExplorer
                 if (Console.ReadKey(true).KeyChar == 'g') _favoriteIndex = 0;
                 redraw = hadMessage;
             }
-            else if (key.Key is ConsoleKey.Escape or ConsoleKey.Q or ConsoleKey.F ||
-                     navigation == ConsoleKey.LeftArrow)
+            else if (key.Key is ConsoleKey.Escape or ConsoleKey.Q or ConsoleKey.F or ConsoleKey.Backspace ||
+                     navigation == ConsoleKey.LeftArrow || key.KeyChar == '-')
             {
                 // Esc removes a filter before it closes the list
                 if (key.Key == ConsoleKey.Escape && _favoriteFilter.Length > 0)
@@ -253,6 +257,11 @@ internal static partial class FileExplorer
             {
                 NewFavoriteFolder(selected, string.Empty);
             }
+            else if (key.Key == ConsoleKey.U &&
+                     (key.Modifiers & (ConsoleModifiers.Control | ConsoleModifiers.Alt)) == 0)
+            {
+                UndoRemoveFavorite();
+            }
             else if (selected < 0)
             {
                 // The other keys need a favorite to work on
@@ -280,7 +289,7 @@ internal static partial class FileExplorer
                 path = FileFavorites.Items[selected].Path;
                 return FavoriteAction.GoTo;
             }
-            else if (key.Key == ConsoleKey.Tab || key.KeyChar == 'V')
+            else if (key.Key is ConsoleKey.Tab or ConsoleKey.V)
             {
                 if (_favoriteFilter.Length > 0)
                 {
@@ -393,6 +402,24 @@ internal static partial class FileExplorer
         var name = System.IO.Path.GetFileName(FileFavorites.Items[number].Path);
         FileFavorites.RemoveAt(number);
         _favoriteMessage = DialogText.FavoriteRemoved + ": " + name;
+        SaveFavoriteList();
+    }
+
+    // Put back the favorite, or the folder with its favorites, that was removed last
+    private static void UndoRemoveFavorite()
+    {
+        var index = FileFavorites.UndoRemove();
+        if (index < 0)
+        {
+            _favoriteMessage = DialogText.FavoriteNothingToUndo;
+            return;
+        }
+
+        // Show it, also when the list is filtered
+        _favoriteFilter = string.Empty;
+        FilterFavorites();
+        _favoriteIndex = Math.Max(0, _favorites.IndexOf(index));
+        _favoriteMessage = DialogText.FavoriteRestored;
         SaveFavoriteList();
     }
 

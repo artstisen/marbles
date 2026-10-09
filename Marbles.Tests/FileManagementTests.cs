@@ -366,5 +366,49 @@ public class FileManagementTests : IDisposable
         Assert.Equal("[F+] .b .c a d [G] .e", Show());
     }
 
+    [Fact]
+    public void Folders_TheLastRemovalCanBeUndone()
+    {
+        FileFavorites.Parse("\t/x/a\n\t[F]\n \t/x/b\n \t/x/c\n\t/x/d\n");
+        Assert.Equal(-1, FileFavorites.UndoRemove());
+        // A favorite in a folder goes back into it
+        FileFavorites.RemoveAt(Find("b"));
+        Assert.Equal("a [F] .c d", Show());
+        Assert.Equal(2, FileFavorites.UndoRemove());
+        Assert.Equal("a [F] .b .c d", Show());
+        // Only the last removal
+        Assert.Equal(-1, FileFavorites.UndoRemove());
+        // A folder comes back with its favorites
+        FileFavorites.RemoveAt(Find("F"));
+        Assert.Equal("a d", Show());
+        Assert.Equal(1, FileFavorites.UndoRemove());
+        Assert.Equal("a [F] .b .c d", Show());
+        // The last in the list
+        FileFavorites.RemoveAt(Find("d"));
+        Assert.Equal(4, FileFavorites.UndoRemove());
+        Assert.Equal("a [F] .b .c d", Show());
+    }
+
+    [Fact]
+    public void Folders_Undo_WhenTheListHasChanged()
+    {
+        FileFavorites.Parse("\t[F]\n \t/x/b\n\t/x/d\n");
+        // The folder of the favorite is gone: it is put back outside a folder
+        FileFavorites.RemoveAt(Find("b"));
+        FileFavorites.Parse("\t/x/d\n\t[G]\n \t/x/e\n");
+        Assert.Equal(-1, FileFavorites.UndoRemove());
+        FileFavorites.Parse("\t[F]\n \t/x/b\n\t/x/d\n");
+        FileFavorites.RemoveAt(Find("b"));
+        FileFavorites.RemoveAt(Find("F"));
+        // Now the folder is what was removed last
+        Assert.Equal(0, FileFavorites.UndoRemove());
+        Assert.Equal("[F] d", Show());
+        // A favorite that is in the list again is not added twice
+        FileFavorites.RemoveAt(Find("d"));
+        FileFavorites.Toggle("/x/d");
+        Assert.Equal(-1, FileFavorites.UndoRemove());
+        Assert.Equal("[F] d", Show());
+    }
+
     #endregion
 }

@@ -60,6 +60,7 @@ internal static class FileFavorites
     internal static void Parse(string text)
     {
         List.Clear();
+        _removed = null;
         var hasFolder = false;
         foreach (var rawLine in text.Split('\n'))
         {
@@ -168,7 +169,38 @@ internal static class FileFavorites
     internal static void RemoveAt(int index)
     {
         if (index < 0 || index >= List.Count) return;
-        List.RemoveRange(index, FolderEnd(index) - index + 1);
+        var count = FolderEnd(index) - index + 1;
+        // Kept so that it can be put back
+        _removed = List.GetRange(index, count);
+        _removedIndex = index;
+        List.RemoveRange(index, count);
+    }
+
+    private static List<Favorite>? _removed; // What was removed last (a favorite, or a folder with its favorites)
+    private static int _removedIndex;
+
+    /// <summary>
+    /// Put back what was removed last with RemoveAt, where it was
+    /// </summary>
+    /// <returns>Its place in the list, or -1 if there is nothing to put back</returns>
+    internal static int UndoRemove()
+    {
+        if (_removed == null) return -1;
+        var items = _removed.Where(item => item.IsFolder || !Contains(item.Path)).ToList();
+        _removed = null;
+        if (items.Count == 0) return -1;
+        var index = Math.Min(_removedIndex, List.Count);
+        // Not into the middle of a folder that it was not in
+        if (!items[0].InFolder) index = index < List.Count ? FolderStart(index) : index;
+        // A favorite that was in a folder goes back into it only if the folder is still there
+        if (items[0].InFolder && (index == 0 || !(List[index - 1].IsFolder || List[index - 1].InFolder)))
+        {
+            items[0].InFolder = false;
+            index = index < List.Count ? FolderStart(index) : index;
+        }
+
+        List.InsertRange(index, items);
+        return index;
     }
 
     internal static void SetColor(int index, ConsoleColor? color)
