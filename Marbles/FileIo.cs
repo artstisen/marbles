@@ -958,8 +958,9 @@ internal static class FileIo
         _tempSettings += "browsepane=" + (FileExplorer.StartPane + 1) + Entries.NewLineChar;
         // Two panes side by side in the file browser (false: one pane)
         _tempSettings += "browsedual=" + (FileExplorer.DualPane ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
-        // Color Markdown files (.md) in the editor (the editor command :syntax turns the colors on and off)
-        _tempSettings += "mdcolors=" + (MarkdownHighlighter.ColorFiles ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // Color Markdown, HTML, CSS, JavaScript and JSON files in the editor (the editor command :syntax turns
+        // the colors on and off)
+        _tempSettings += "syntaxcolors=" + (SyntaxHighlighter.ColorFiles ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Line numbers in the editor (the editor command :number turns them on and off)
         _tempSettings += "linenumbers=" + (TextArea.LineNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Comment
@@ -1074,7 +1075,9 @@ internal static class FileIo
         Actions.PreviewEnabled = Tools.TrimToLower(Get("preview")) == DialogText.BTrue;
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
         // On unless turned off
-        MarkdownHighlighter.ColorFiles = Tools.TrimToLower(Get("mdcolors")) != DialogText.BFalse;
+        // (named "mdcolors" in an earlier version)
+        SyntaxHighlighter.ColorFiles = Tools.TrimToLower(Get("syntaxcolors")) != DialogText.BFalse &&
+                                       Tools.TrimToLower(Get("mdcolors")) != DialogText.BFalse;
         // On unless turned off
         TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) != DialogText.BFalse;
         ConsoleColors.Monochrome = Tools.TrimToLower(Get("monochrome")) == DialogText.BTrue;

@@ -1666,7 +1666,7 @@ internal static class Actions
         FileIo.SetBackup(false, string.Empty, false);
         FileBrowser.ResetSubfolderAndIndex();
         ConsoleColors.Monochrome = false;
-        MarkdownHighlighter.ColorFiles = true;
+        SyntaxHighlighter.ColorFiles = true;
         FileExplorer.DualPane = true;
         TextArea.LineNumbers = true;
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);

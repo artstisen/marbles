@@ -115,9 +115,15 @@ public class TextArea
             MaxCells = width - 3,
             LineNumbers = LineNumbers && !_singleLine && !readOnly
         };
-        // Markdown files are colored (unless that is turned off)
-        _engine.Markdown = saveMode == SaveAsFile && !_singleLine && !readOnly && MarkdownHighlighter.ColorFiles &&
-                           MarkdownHighlighter.IsMarkdownFile(FileExplorer.CurrentFileName);
+        // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON) are colored, unless that is turned off
+        var fileType = saveMode == SaveAsFile && !_singleLine && !readOnly
+            ? SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName)
+            : SyntaxType.None;
+        if (fileType != SyntaxType.None)
+        {
+            _engine.SyntaxDefault = fileType;
+            if (SyntaxHighlighter.ColorFiles) _engine.Syntax = fileType;
+        }
         if (scrollToEnd)
         {
             _engine.CursorToEnd();
@@ -331,10 +337,11 @@ public class TextArea
                 ReloadFile(request == EditorRequest.ReloadForce);
                 break;
             case EditorRequest.SyntaxChanged:
-                // The choice is remembered for Markdown files
-                if (_saveMode == SaveAsFile && MarkdownHighlighter.IsMarkdownFile(FileExplorer.CurrentFileName))
+                // Colors on or off is remembered for the files that are colored when they are opened
+                if (_saveMode == SaveAsFile &&
+                    SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName) != SyntaxType.None)
                 {
-                    MarkdownHighlighter.ColorFiles = _engine.Markdown;
+                    SyntaxHighlighter.ColorFiles = _engine.Syntax != SyntaxType.None;
                     FileIo.SaveSettings();
                 }
 
@@ -800,7 +807,7 @@ public class TextArea
 
         // The common case is a row in a single color
         var misspelled = _engine.Misspelled(line);
-        var markdown = _engine.MarkdownStyles(line);
+        var markdown = _engine.SyntaxStyles(line);
         if (selection == null && !hasMatches && misspelled.Count == 0 && markdown == null)
         {
             row.Append(TextMetrics.Printable(s, start, end));
@@ -810,10 +817,10 @@ public class TextArea
         var styles = new int[end - start];
         if (markdown != null)
         {
-            // The colors of Markdown are below the marks: misspelled words, search matches and the selection
+            // The colors of the text are below the marks: misspelled words, search matches and the selection
             for (var i = start; i < end && i < markdown.Length; i++)
             {
-                if (markdown[i] != MarkdownStyle.None) styles[i - start] = StyleMarkdown + (int)markdown[i];
+                if (markdown[i] != SyntaxStyle.None) styles[i - start] = StyleMarkdown + (int)markdown[i];
             }
         }
 
@@ -882,42 +889,52 @@ public class TextArea
         }
 
         // Markdown: the headings have colors of their own, and the rest use the colors of the color scheme
-        switch ((MarkdownStyle)(style - StyleMarkdown))
+        switch ((SyntaxStyle)(style - StyleMarkdown))
         {
-            case MarkdownStyle.Heading1:
+            case SyntaxStyle.Heading1:
                 ConsoleColors.SetTextColor(ConsoleColor.Red);
                 break;
-            case MarkdownStyle.Heading2:
+            case SyntaxStyle.Heading2:
                 ConsoleColors.SetTextColor(ConsoleColor.Magenta);
                 break;
-            case MarkdownStyle.Heading3:
+            case SyntaxStyle.Heading3:
                 ConsoleColors.SetTextColor(ConsoleColor.Yellow);
                 break;
-            case MarkdownStyle.Heading4:
+            case SyntaxStyle.Heading4:
                 ConsoleColors.SetTextColor(ConsoleColor.Cyan);
                 break;
-            case MarkdownStyle.Heading5:
+            case SyntaxStyle.Heading5:
                 ConsoleColors.SetTextColor(ConsoleColor.Green);
                 break;
-            case MarkdownStyle.Heading6:
+            case SyntaxStyle.Heading6:
                 ConsoleColors.SetTextColor(ConsoleColor.Blue);
                 break;
-            case MarkdownStyle.Bold:
-            case MarkdownStyle.ListMarker:
+            case SyntaxStyle.Bold:
+            case SyntaxStyle.ListMarker:
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
                 break;
-            case MarkdownStyle.Italic:
+            case SyntaxStyle.Italic:
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.PreviewTitle);
                 break;
-            case MarkdownStyle.Code:
-            case MarkdownStyle.CodeBlock:
+            case SyntaxStyle.Code:
+            case SyntaxStyle.CodeBlock:
+            case SyntaxStyle.String:
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Favorites);
                 break;
-            case MarkdownStyle.Link:
+            case SyntaxStyle.Keyword:
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+                break;
+            case SyntaxStyle.Name:
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.PreviewTitle);
+                break;
+            case SyntaxStyle.Number:
+                ConsoleColors.SetTextColor(ConsoleColor.Magenta);
+                break;
+            case SyntaxStyle.Link:
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
                 break;
             default:
-                // Quotes, web addresses and rules
+                // Quotes, web addresses, rules and comments
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 break;
         }

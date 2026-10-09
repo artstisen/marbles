@@ -1,9 +1,10 @@
 ﻿namespace Marbles;
 
 /// <summary>
-/// What a character of a Markdown text is part of
+/// What a character of a colored text is part of. The first ones are those of Markdown, and the last ones
+/// those of code (HTML, CSS, JavaScript and JSON)
 /// </summary>
-internal enum MarkdownStyle
+internal enum SyntaxStyle
 {
     None,
     Heading1,
@@ -20,7 +21,12 @@ internal enum MarkdownStyle
     ListMarker,
     Link, // [text]
     LinkUrl, // (address), <address> and plain web addresses
-    Rule // A line like "---"
+    Rule, // A line like "---"
+    Comment,
+    String, // Text in quotes, and the values of attributes
+    Keyword, // The words of a language, the tags of HTML, the selectors of CSS
+    Name, // The names of attributes and properties
+    Number // Numbers, also with units, colors and character entities
 }
 
 /// <summary>
@@ -33,11 +39,6 @@ internal enum MarkdownStyle
 /// </summary>
 internal static class MarkdownHighlighter
 {
-    /// <summary>
-    /// True to color Markdown files (.md) when they are opened in the editor (setting "mdcolors")
-    /// </summary>
-    internal static bool ColorFiles { get; set; } = true;
-
     /// <summary>
     /// True if the name of a file says it is a Markdown file
     /// </summary>
@@ -72,13 +73,13 @@ internal static class MarkdownHighlighter
     /// <param name="line">The line</param>
     /// <param name="inCodeBlock">True if the line is inside a block of code</param>
     /// <returns>The style of each character, or null if no character has a style</returns>
-    internal static MarkdownStyle[]? Highlight(string line, bool inCodeBlock)
+    internal static SyntaxStyle[]? Highlight(string line, bool inCodeBlock)
     {
         if (line.Length == 0) return null;
-        var styles = new MarkdownStyle[line.Length];
+        var styles = new SyntaxStyle[line.Length];
         if (inCodeBlock || IsFence(line))
         {
-            Array.Fill(styles, MarkdownStyle.CodeBlock);
+            Array.Fill(styles, SyntaxStyle.CodeBlock);
             return styles;
         }
 
@@ -92,20 +93,20 @@ internal static class MarkdownHighlighter
             while (indent + level < line.Length && line[indent + level] == '#') level++;
             if (level <= 6 && (indent + level == line.Length || line[indent + level] == ' '))
             {
-                Array.Fill(styles, MarkdownStyle.Heading1 + (level - 1));
+                Array.Fill(styles, SyntaxStyle.Heading1 + (level - 1));
                 return styles;
             }
         }
 
         if (indent <= 3 && IsRule(line))
         {
-            Array.Fill(styles, MarkdownStyle.Rule);
+            Array.Fill(styles, SyntaxStyle.Rule);
             return styles;
         }
 
         if (indent <= 3 && line[indent] == '>')
         {
-            Array.Fill(styles, MarkdownStyle.Quote);
+            Array.Fill(styles, SyntaxStyle.Quote);
             return styles;
         }
 
@@ -114,12 +115,12 @@ internal static class MarkdownHighlighter
         var markerEnd = ListMarkerEnd(line, indent);
         if (markerEnd > indent)
         {
-            for (var i = indent; i < markerEnd; i++) styles[i] = MarkdownStyle.ListMarker;
+            for (var i = indent; i < markerEnd; i++) styles[i] = SyntaxStyle.ListMarker;
             textStart = markerEnd;
         }
 
         HighlightInline(line, textStart, styles);
-        return Array.Exists(styles, style => style != MarkdownStyle.None) ? styles : null;
+        return Array.Exists(styles, style => style != SyntaxStyle.None) ? styles : null;
     }
 
     // A line of three or more "-", "*" or "_" (blank spaces between them are allowed)
@@ -157,7 +158,7 @@ internal static class MarkdownHighlighter
     }
 
     // Find code, bold, italic and links in the text of a line
-    private static void HighlightInline(string line, int start, MarkdownStyle[] styles)
+    private static void HighlightInline(string line, int start, SyntaxStyle[] styles)
     {
         var i = start;
         while (i < line.Length)
@@ -186,7 +187,7 @@ internal static class MarkdownHighlighter
                 var close = line.IndexOf('>', i);
                 if (close > i && IsWebAddress(line, i + 1) && line.IndexOf(' ', i, close - i) < 0)
                 {
-                    Fill(styles, i, close + 1, MarkdownStyle.LinkUrl);
+                    Fill(styles, i, close + 1, SyntaxStyle.LinkUrl);
                     i = close + 1;
                 }
                 else
@@ -199,7 +200,7 @@ internal static class MarkdownHighlighter
                 // A plain web address: to the next blank space
                 var end = i;
                 while (end < line.Length && !char.IsWhiteSpace(line[end]) && line[end] is not (')' or '>')) end++;
-                Fill(styles, i, end, MarkdownStyle.LinkUrl);
+                Fill(styles, i, end, SyntaxStyle.LinkUrl);
                 i = end;
             }
             else
@@ -215,7 +216,7 @@ internal static class MarkdownHighlighter
                string.CompareOrdinal(line, at, "https://", 0, 8) == 0;
     }
 
-    private static void Fill(MarkdownStyle[] styles, int from, int to, MarkdownStyle style)
+    private static void Fill(SyntaxStyle[] styles, int from, int to, SyntaxStyle style)
     {
         for (var i = from; i < to && i < styles.Length; i++) styles[i] = style;
     }
@@ -229,7 +230,7 @@ internal static class MarkdownHighlighter
     }
 
     // `code`: from a run of backticks to the next run of the same length. Returns where to continue
-    private static int CodeSpan(string line, int at, MarkdownStyle[] styles)
+    private static int CodeSpan(string line, int at, SyntaxStyle[] styles)
     {
         var length = RunLength(line, at);
         for (var i = at + length; i < line.Length; i++)
@@ -238,7 +239,7 @@ internal static class MarkdownHighlighter
             var run = RunLength(line, i);
             if (run == length)
             {
-                Fill(styles, at, i + run, MarkdownStyle.Code);
+                Fill(styles, at, i + run, SyntaxStyle.Code);
                 return i + run;
             }
 
@@ -249,7 +250,7 @@ internal static class MarkdownHighlighter
     }
 
     // *italic*, **bold** and ***both*** (and the same with "_"). Returns where to continue
-    private static int Emphasis(string line, int at, MarkdownStyle[] styles)
+    private static int Emphasis(string line, int at, SyntaxStyle[] styles)
     {
         var marker = line[at];
         var run = RunLength(line, at);
@@ -266,7 +267,7 @@ internal static class MarkdownHighlighter
             var close = ClosingRun(line, textStart, marker, length);
             if (close < 0) continue;
             // Markers that are not part of the emphasis are left as they are
-            Fill(styles, at + run - length, close + length, length >= 2 ? MarkdownStyle.Bold : MarkdownStyle.Italic);
+            Fill(styles, at + run - length, close + length, length >= 2 ? SyntaxStyle.Bold : SyntaxStyle.Italic);
             return close + length;
         }
 
@@ -303,18 +304,18 @@ internal static class MarkdownHighlighter
     }
 
     // [text](address) and ![text](address). Returns where to continue
-    private static int Link(string line, int at, MarkdownStyle[] styles)
+    private static int Link(string line, int at, SyntaxStyle[] styles)
     {
         var open = line[at] == '!' ? at + 1 : at;
         var close = line.IndexOf(']', open + 1);
         if (close < 0) return open + 1;
-        Fill(styles, at, close + 1, MarkdownStyle.Link);
+        Fill(styles, at, close + 1, SyntaxStyle.Link);
         if (close + 1 < line.Length && line[close + 1] == '(')
         {
             var end = line.IndexOf(')', close + 2);
             if (end > 0)
             {
-                Fill(styles, close + 1, end + 1, MarkdownStyle.LinkUrl);
+                Fill(styles, close + 1, end + 1, SyntaxStyle.LinkUrl);
                 return end + 1;
             }
         }
@@ -324,14 +325,14 @@ internal static class MarkdownHighlighter
             var end = line.IndexOf(']', close + 2);
             if (end > 0)
             {
-                Fill(styles, close + 1, end + 1, MarkdownStyle.LinkUrl);
+                Fill(styles, close + 1, end + 1, SyntaxStyle.LinkUrl);
                 return end + 1;
             }
         }
         else if (close == open + 2 && line[open + 1] is ' ' or 'x' or 'X')
         {
             // The box of a task: "[ ]" and "[x]"
-            Fill(styles, at, close + 1, MarkdownStyle.ListMarker);
+            Fill(styles, at, close + 1, SyntaxStyle.ListMarker);
         }
 
         return close + 1;

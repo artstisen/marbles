@@ -31,7 +31,7 @@ internal enum EditorRequest
     ClearRegisters,
     SpellSuggest, // Show suggestions for the word at the cursor
     ReplaceDialog, // Show the find-and-replace box
-    SyntaxChanged, // The Markdown colors were turned on or off
+    SyntaxChanged, // The colors of the text were turned on or off
     LineNumbersChanged, // The line numbers were turned on or off
     Reload, // Read the file from disk again
     ReloadForce, // ... also when the text has changes that are not saved
@@ -645,7 +645,7 @@ internal sealed partial class EditorEngine
 
         if (command == "syntax" || command.StartsWith("syntax ", StringComparison.Ordinal))
         {
-            SetMarkdown(command[6..].Trim());
+            SetSyntax(command[6..].Trim().ToLowerInvariant());
             return;
         }
 

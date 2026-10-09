@@ -1,4 +1,4 @@
-namespace Marbles.Tests;
+﻿namespace Marbles.Tests;
 
 [Collection("Static state")]
 public class MarkdownTests
@@ -121,6 +121,7 @@ public class MarkdownTests
     public void MarkdownFiles(string name, bool expected)
     {
         Assert.Equal(expected, MarkdownHighlighter.IsMarkdownFile(name));
+        Assert.Equal(expected, SyntaxHighlighter.TypeOfFile(name) == SyntaxType.Markdown);
     }
 
     #region In the editor
@@ -132,7 +133,7 @@ public class MarkdownTests
 
     private static string Styles(EditorEngine editor, int line)
     {
-        var styles = editor.MarkdownStyles(line);
+        var styles = editor.SyntaxStyles(line);
         return styles == null ? "" : string.Concat(styles.Select(style => ".123456BICKQLAUR"[(int)style]));
     }
 
@@ -141,10 +142,10 @@ public class MarkdownTests
     {
         var editor = Editor("# Title");
         Assert.False(editor.Markdown);
-        Assert.Null(editor.MarkdownStyles(0));
+        Assert.Null(editor.SyntaxStyles(0));
         Assert.Equal(EditorRequest.SyntaxChanged, editor.Type(":syntax<CR>"));
         Assert.True(editor.Markdown);
-        Assert.Equal(DialogText.MarkdownOn, editor.Message);
+        Assert.Equal(DialogText.SyntaxOn + "Markdown", editor.Message);
         Assert.Equal("1111111", Styles(editor, 0));
         editor.Type(":syntax<CR>");
         Assert.False(editor.Markdown);

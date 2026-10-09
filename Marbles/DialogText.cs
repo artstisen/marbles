@@ -319,8 +319,9 @@ internal static class DialogText
     public const string EditorReloadFilesOnly = "Only text files can be read again";
     public const string LineNumbersOn = "Line numbers on";
     public const string LineNumbersOff = "Line numbers off";
-    public const string MarkdownOn = "Markdown colors on";
-    public const string MarkdownOff = "Markdown colors off";
+    public const string SyntaxOn = "Colors on: ";
+    public const string SyntaxOff = "Colors off";
+    public const string SyntaxUnknown = "Use md, html, css, js or json, not: ";
 
     // The log
     public const string LogLines = " lines";

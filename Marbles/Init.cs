@@ -252,7 +252,7 @@ internal static class Init
         Actions.PreviewEnabled = false;
         StartMenu.Mode = StartMenu.StartMode.Select;
         ConsoleColors.Monochrome = false;
-        MarkdownHighlighter.ColorFiles = true;
+        SyntaxHighlighter.ColorFiles = true;
         FileExplorer.DualPane = true;
         TextArea.LineNumbers = true;
         Logo.AnimateNext(); // Sweep the logo when the login page is first shown

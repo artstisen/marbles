@@ -133,7 +133,7 @@ backup=
         Assert.Equal("true", settings["linenumbers"]);
         Assert.Equal("true", settings["browsedual"]);
         Assert.Equal("1", settings["browsepane"]);
-        Assert.Equal("true", settings["mdcolors"]);
+        Assert.Equal("true", settings["syntaxcolors"]);
         Assert.Equal("false", settings["monochrome"]);
         Assert.Equal("select", settings["startmode"]);
 
