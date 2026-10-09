@@ -253,6 +253,7 @@ internal static class Init
         StartMenu.Mode = StartMenu.StartMode.Select;
         ConsoleColors.Monochrome = false;
         MarkdownHighlighter.ColorFiles = true;
+        FileExplorer.DualPane = true;
         Logo.AnimateNext(); // Sweep the logo when the login page is first shown
         WriteProgressBar(8); // progress
         // Set default colors

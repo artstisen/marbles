@@ -15,15 +15,49 @@ internal static partial class FileExplorer
     private sealed record Item(string Name, string Path, bool IsDirectory, long Size);
 
     /// <summary>
-    /// The directory shown when the browser is opened (setting "browsedir"). Empty = the data directory
+    /// The directories shown in the two panes when the browser is opened (settings "browsedir1" and
+    /// "browsedir2"). Empty = the data directory
     /// </summary>
     internal static string StartDirectory { get; set; } = string.Empty;
 
-    private static string _directory = string.Empty; // Empty = the list of drives (Windows)
-    private static List<Item> _items = new();
-    private static int _index;
-    private static int _top;
-    private static string _filter = string.Empty;
+    internal static string StartDirectory2 { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The pane that has the focus when the browser is opened: 0 or 1 (setting "browsepane")
+    /// </summary>
+    internal static int StartPane { get; set; }
+
+    /// <summary>
+    /// True to show two panes side by side, false to show one (setting "browsedual")
+    /// </summary>
+    internal static bool DualPane { get; set; } = true;
+
+    // A list of the content of a directory
+    private sealed class Pane
+    {
+        internal string Directory = string.Empty; // Empty = the list of drives (Windows)
+        internal List<Item> Items = new();
+        internal int Index; // The selected item
+        internal int Top; // The first item shown
+        internal string Filter = string.Empty;
+        internal int ShownTop = -1; // What is on screen: the first item shown and the item selected
+        internal int ShownIndex = -1;
+    }
+
+    // The two panes of the browser, and the one used when a file or directory is picked for something else
+    // (always a single pane)
+    private static readonly Pane[] Panes = { new(), new() };
+    private static readonly Pane PickPane = new();
+    private static int _active; // The pane with the focus
+
+    private static bool IsDual => _mode == BrowseMode.Edit && DualPane;
+
+    // The pane the keys work on
+    private static Pane ActivePane => _mode == BrowseMode.Edit ? Panes[_active] : PickPane;
+
+    // The other pane (when two are shown)
+    private static Pane OtherPane => Panes[1 - _active];
+
     private static string _message = string.Empty;
     private static TextFile? _file; // The file being edited
 
@@ -66,6 +100,18 @@ internal static partial class FileExplorer
         return Browse(BrowseMode.PickDirectory, caption);
     }
 
+    // Show a directory in a pane (the data directory if it does not exist)
+    private static void StartPaneIn(Pane pane, string directory)
+    {
+        var active = _active;
+        if (_mode == BrowseMode.Edit) _active = Array.IndexOf(Panes, pane);
+        pane.Filter = string.Empty;
+        pane.Directory = string.Empty;
+        ChangeDirectory(System.IO.Directory.Exists(directory) ? directory : DataDirectory(), null);
+        pane.ShownTop = -1;
+        _active = active;
+    }
+
     /// <summary>
     /// True if the last run of the file browser logged out of the data file (a file was opened)
     /// </summary>
@@ -86,17 +132,27 @@ internal static partial class FileExplorer
         SessionEnded = true;
     }
 
-    private static string? Browse(BrowseMode mode, string caption)
+    private static string? Browse(BrowseMode mode, string caption, string? startDirectory = null)
     {
         _mode = mode;
         _caption = caption;
         _picked = null;
         SessionEnded = false;
         DataFileSelected = false;
-        _filter = string.Empty;
         _message = string.Empty;
-        if (mode == BrowseMode.Edit) FileFavorites.Load();
-        ChangeDirectory(Directory.Exists(StartDirectory) ? StartDirectory : DataDirectory(), null);
+        if (mode == BrowseMode.Edit)
+        {
+            FileFavorites.Load();
+            _active = Math.Clamp(StartPane, 0, 1);
+            StartPaneIn(Panes[0], StartDirectory);
+            // The second pane starts where the first is until it has a directory of its own
+            StartPaneIn(Panes[1], StartDirectory2.Length > 0 ? StartDirectory2 : Panes[0].Directory);
+        }
+        else
+        {
+            StartPaneIn(PickPane, startDirectory ?? StartDirectory);
+        }
+
         Init.ApplyAutoSize();
         Draw(true);
         if (Tools.TakeRedrawRequest()) Draw(true);
@@ -117,7 +173,7 @@ internal static partial class FileExplorer
                     // File names and paths are logged, but not something typed that is not a command
                     EventLog.Add(DialogText.LogFilesCommand + ": :" + (name is "q" or "quit" or "close" or "home"
                         or "h" or "help" or "cd" or "new" or "info" or "mkdir" or "rename" or "copy" or "duplicate"
-                        or "move" or "delete" or "fav" or "favorite" or "favs" or "favorites"
+                        or "move" or "delete" or "fav" or "favorite" or "favs" or "favorites" or "panes"
                         ? command
                         : "(not a command)"));
                 }
@@ -139,9 +195,9 @@ internal static partial class FileExplorer
                 {
                     // Go to a directory by path (a relative path starts from the directory shown)
                     var path = CommandLine.Argument(command);
-                    if (path.Length > 0 && _directory.Length > 0)
+                    if (path.Length > 0 && ActivePane.Directory.Length > 0)
                     {
-                        path = System.IO.Path.GetFullPath(path, _directory);
+                        path = System.IO.Path.GetFullPath(path, ActivePane.Directory);
                     }
 
                     if (Directory.Exists(path))
@@ -169,25 +225,25 @@ internal static partial class FileExplorer
             else if (key.KeyChar == '/')
             {
                 // Only show the names containing a text
-                _filter = CommandLine.Read('/', false) ?? string.Empty;
+                ActivePane.Filter = CommandLine.Read('/', false) ?? string.Empty;
                 LoadItems(null);
             }
             else if (key.KeyChar == 'G')
             {
-                _index = _items.Count - 1;
+                ActivePane.Index = ActivePane.Items.Count - 1;
                 redraw = false;
             }
             else if (key.KeyChar == 'g')
             {
-                if (Console.ReadKey(true).KeyChar == 'g') _index = 0;
+                if (Console.ReadKey(true).KeyChar == 'g') ActivePane.Index = 0;
                 redraw = false;
             }
             else if (key.Key is ConsoleKey.Escape or ConsoleKey.Q)
             {
                 // Esc removes a filter before it closes the browser
-                if (key.Key == ConsoleKey.Escape && _filter.Length > 0)
+                if (key.Key == ConsoleKey.Escape && ActivePane.Filter.Length > 0)
                 {
-                    _filter = string.Empty;
+                    ActivePane.Filter = string.Empty;
                     LoadItems(null);
                 }
                 else
@@ -197,34 +253,34 @@ internal static partial class FileExplorer
             }
             else if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
             {
-                _index++;
+                ActivePane.Index++;
                 redraw = false;
             }
             else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
             {
-                _index--;
+                ActivePane.Index--;
                 redraw = false;
             }
             else if (key.Key == ConsoleKey.PageDown || Keyboard.IsControl(key, ConsoleKey.D) ||
                      Keyboard.IsControl(key, ConsoleKey.F))
             {
-                _index += PageSize;
+                ActivePane.Index += PageSize;
                 redraw = false;
             }
             else if (key.Key == ConsoleKey.PageUp || Keyboard.IsControl(key, ConsoleKey.U) ||
                      Keyboard.IsControl(key, ConsoleKey.B))
             {
-                _index -= PageSize;
+                ActivePane.Index -= PageSize;
                 redraw = false;
             }
             else if (key.Key is ConsoleKey.Home)
             {
-                _index = 0;
+                ActivePane.Index = 0;
                 redraw = false;
             }
             else if (key.Key is ConsoleKey.End)
             {
-                _index = _items.Count - 1;
+                ActivePane.Index = ActivePane.Items.Count - 1;
                 redraw = false;
             }
             else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow or ConsoleKey.Backspace || key.KeyChar == '-')
@@ -233,7 +289,7 @@ internal static partial class FileExplorer
             }
             else if (key.Key is ConsoleKey.L or ConsoleKey.RightArrow or ConsoleKey.Enter)
             {
-                if (_items.Count > 0 && Open(_items[_index]))
+                if (ActivePane.Items.Count > 0 && Open(ActivePane.Items[ActivePane.Index]))
                 {
                     // A file was picked, or a data file was selected: continue on the login page
                     break;
@@ -242,11 +298,21 @@ internal static partial class FileExplorer
             else if (_mode == BrowseMode.PickDirectory && key.Key is ConsoleKey.S or ConsoleKey.Spacebar)
             {
                 // Select the directory shown
-                if (_directory.Length > 0)
+                if (ActivePane.Directory.Length > 0)
                 {
-                    _picked = _directory;
+                    _picked = ActivePane.Directory;
                     break;
                 }
+            }
+            else if (_mode == BrowseMode.Edit && key.Key == ConsoleKey.Tab)
+            {
+                // The focus goes to the other pane
+                if (IsDual) _active = 1 - _active;
+                redraw = false;
+            }
+            else if (_mode == BrowseMode.Edit && key.Key == ConsoleKey.T)
+            {
+                TogglePanes();
             }
             else if (_mode == BrowseMode.Edit && key.Key == ConsoleKey.N)
             {
@@ -254,7 +320,7 @@ internal static partial class FileExplorer
             }
             else if (key.Key == ConsoleKey.R)
             {
-                LoadItems(_items.Count > 0 ? _items[_index].Name : null);
+                LoadItems(ActivePane.Items.Count > 0 ? ActivePane.Items[ActivePane.Index].Name : null);
             }
             else if (_mode == BrowseMode.Edit && HandleFileKey(key) == KeyResult.Close)
             {
@@ -264,14 +330,52 @@ internal static partial class FileExplorer
 
             // Follow the size of the terminal window, and draw again if the page could not be drawn
             if (Init.ApplyAutoSize()) redraw = true;
+            // What was done in one pane can have changed what the other shows
+            if (redraw && IsDual) Reload(OtherPane);
             Draw(redraw || hadMessage);
             if (Tools.TakeRedrawRequest()) Draw(true);
         }
 
-        // Remember the directory for next time
-        if (_directory.Length > 0) StartDirectory = _directory;
-        FileIo.SaveSettings();
+        if (_mode == BrowseMode.Edit)
+        {
+            // Remember the directories and the pane for next time
+            if (Panes[0].Directory.Length > 0) StartDirectory = Panes[0].Directory;
+            if (Panes[1].Directory.Length > 0) StartDirectory2 = Panes[1].Directory;
+            StartPane = _active;
+            FileIo.SaveSettings();
+        }
+
         return _picked;
+    }
+
+    // Show one pane or two
+    private static void TogglePanes()
+    {
+        DualPane = !DualPane;
+        // A single pane shows the one that had the focus
+        Reload(OtherPane);
+    }
+
+    // Read the content of the directory of a pane again, keeping the selection
+    private static void Reload(Pane pane)
+    {
+        var selected = pane.Items.Count > 0 && pane.Index < pane.Items.Count ? pane.Items[pane.Index] : null;
+        var index = pane.Index;
+        var top = pane.Top;
+        var message = _message;
+        if (!LoadItems(pane, null))
+        {
+            // The directory is gone (it can have been moved or deleted from the other pane)
+            pane.Directory = DataDirectory();
+            pane.Filter = string.Empty;
+            LoadItems(pane, null);
+            _message = message;
+            return;
+        }
+
+        var found = selected == null ? -1 : pane.Items.FindIndex(item => item.Name == selected.Name);
+        pane.Index = found >= 0 ? found : Math.Min(index, Math.Max(0, pane.Items.Count - 1));
+        pane.Top = top;
     }
 
     private static string DataDirectory()
@@ -283,13 +387,13 @@ internal static partial class FileExplorer
 
     private static void ChangeDirectory(string directory, string? select)
     {
-        var previous = _directory;
-        _directory = directory;
-        _filter = string.Empty;
+        var previous = ActivePane.Directory;
+        ActivePane.Directory = directory;
+        ActivePane.Filter = string.Empty;
         if (!LoadItems(select))
         {
             // Stay where we were if the directory cannot be read
-            _directory = previous;
+            ActivePane.Directory = previous;
             var message = _message;
             LoadItems(null);
             _message = message;
@@ -298,9 +402,9 @@ internal static partial class FileExplorer
 
     private static void GoToParent()
     {
-        if (_directory.Length == 0) return;
-        var parent = Directory.GetParent(_directory)?.FullName;
-        var name = System.IO.Path.GetFileName(_directory.TrimEnd(System.IO.Path.DirectorySeparatorChar));
+        if (ActivePane.Directory.Length == 0) return;
+        var parent = Directory.GetParent(ActivePane.Directory)?.FullName;
+        var name = System.IO.Path.GetFileName(ActivePane.Directory.TrimEnd(System.IO.Path.DirectorySeparatorChar));
         if (parent != null)
         {
             ChangeDirectory(parent, name);
@@ -308,17 +412,23 @@ internal static partial class FileExplorer
         else if (OperatingSystem.IsWindows())
         {
             // Above the root of a drive is the list of drives
-            ChangeDirectory(string.Empty, _directory);
+            ChangeDirectory(string.Empty, ActivePane.Directory);
         }
     }
 
-    // Read the content of the current directory: directories first, then files, both sorted by name
+    // Read the content of the directory of the pane with the focus
     private static bool LoadItems(string? select)
+    {
+        return LoadItems(ActivePane, select);
+    }
+
+    // Read the content of the directory of a pane: directories first, then files, both sorted by name
+    private static bool LoadItems(Pane pane, string? select)
     {
         var items = new List<Item>();
         try
         {
-            if (_directory.Length == 0)
+            if (pane.Directory.Length == 0)
             {
                 foreach (var drive in DriveInfo.GetDrives())
                 {
@@ -328,17 +438,17 @@ internal static partial class FileExplorer
             else
             {
                 items.Add(new Item(ParentName, string.Empty, true, 0));
-                var info = new DirectoryInfo(_directory);
+                var info = new DirectoryInfo(pane.Directory);
                 foreach (var directory in info.EnumerateDirectories().OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    if (IsShown(directory)) items.Add(new Item(directory.Name, directory.FullName, true, 0));
+                    if (IsShown(directory, pane.Filter)) items.Add(new Item(directory.Name, directory.FullName, true, 0));
                 }
 
                 if (_mode != BrowseMode.PickDirectory)
                 {
                     foreach (var file in info.EnumerateFiles().OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase))
                     {
-                        if (IsShown(file)) items.Add(new Item(file.Name, file.FullName, false, file.Length));
+                        if (IsShown(file, pane.Filter)) items.Add(new Item(file.Name, file.FullName, false, file.Length));
                     }
                 }
             }
@@ -349,16 +459,16 @@ internal static partial class FileExplorer
             return false;
         }
 
-        _items = items;
-        _index = Math.Max(0, select == null ? 0 : items.FindIndex(i => i.Name == select || i.Path == select));
-        _top = 0;
+        pane.Items = items;
+        pane.Index = Math.Max(0, select == null ? 0 : items.FindIndex(i => i.Name == select || i.Path == select));
+        pane.Top = 0;
         return true;
     }
 
-    private static bool IsShown(FileSystemInfo info)
+    private static bool IsShown(FileSystemInfo info, string filter)
     {
         if ((info.Attributes & (FileAttributes.Hidden | FileAttributes.System)) != 0) return false;
-        return _filter.Length == 0 || info.Name.Contains(_filter, StringComparison.OrdinalIgnoreCase);
+        return filter.Length == 0 || info.Name.Contains(filter, StringComparison.OrdinalIgnoreCase);
     }
 
     #endregion
@@ -484,7 +594,7 @@ internal static partial class FileExplorer
     // Create a file in the directory shown and open it in the editor. The name is asked for if it is not given
     private static void NewFile(string name)
     {
-        if (_directory.Length == 0) return;
+        if (ActivePane.Directory.Length == 0) return;
         name = name.Trim();
         if (name.Length == 0)
         {
@@ -493,7 +603,7 @@ internal static partial class FileExplorer
             name = asked;
         }
 
-        var path = System.IO.Path.Combine(_directory, name);
+        var path = System.IO.Path.Combine(ActivePane.Directory, name);
         if (!Tools.IsValidFileName(name) || File.Exists(path) || Directory.Exists(path))
         {
             _message = DialogText.InvalidFileName;
@@ -586,28 +696,54 @@ internal static partial class FileExplorer
 
     #region Drawing
 
-    private static int _shownTop = -1; // What is on screen: the first item shown and the item selected
-    private static int _shownIndex = -1;
+    private static int _shownActive = -1; // The pane that had the focus when the browser was drawn last
+    private static bool _shownDual;
+
+    // The columns of a pane: where it starts and how wide it is. Two panes share the window with a
+    // separator between them
+    private static (int Left, int Width) PaneArea(int number)
+    {
+        if (!IsDual) return (0, Init.LineWidth);
+        var half = (Init.LineWidth - 1) / 2;
+        return number == 0 ? (0, half) : (half + 1, Init.LineWidth - half - 2);
+    }
 
     /// <summary>
     /// Draw the file browser
     /// </summary>
-    /// <param name="all">False if only the selection has moved: then only the selection pointer and the
-    /// status are drawn (the whole screen is still drawn if the list has to scroll)</param>
+    /// <param name="all">False if only the selection has moved, or the focus has gone to the other pane:
+    /// then only the selection pointers, the pane labels and the status are drawn (the whole screen is
+    /// still drawn if the list has to scroll)</param>
     private static void Draw(bool all)
     {
-        // Keep the selection within the list and the view
-        _index = Math.Clamp(_index, 0, Math.Max(0, _items.Count - 1));
-        if (_index < _top) _top = _index;
-        if (_index >= _top + PageSize) _top = _index - PageSize + 1;
+        var shown = IsDual ? Panes : new[] { ActivePane };
+        foreach (var pane in shown)
+        {
+            // Keep the selection within the list and the view
+            pane.Index = Math.Clamp(pane.Index, 0, Math.Max(0, pane.Items.Count - 1));
+            if (pane.Index < pane.Top) pane.Top = pane.Index;
+            if (pane.Index >= pane.Top + PageSize) pane.Top = pane.Index - PageSize + 1;
+        }
 
         Tools.HideCursor();
-        if (!all && _top == _shownTop)
+        if (!all && _shownDual == IsDual && shown.All(pane => pane.Top == pane.ShownTop))
         {
-            // Move the selection pointer
-            DrawPointer(_shownIndex, false);
-            DrawPointer(_index, true);
-            _shownIndex = _index;
+            if (IsDual && _shownActive != _active)
+            {
+                // The focus has moved to the other pane
+                for (var number = 0; number < Panes.Length; number++) DrawPaneHeader(number);
+            }
+
+            // Move the selection pointers
+            for (var number = 0; number < shown.Length; number++)
+            {
+                var pane = shown[number];
+                DrawPointer(number, pane.ShownIndex, false);
+                DrawPointer(number, pane.Index, true);
+                pane.ShownIndex = pane.Index;
+            }
+
+            _shownActive = _active;
             DrawStatus();
             return;
         }
@@ -616,51 +752,119 @@ internal static partial class FileExplorer
         Tools.ClearScreen();
         Menu.WriteModeLabel(_caption, string.Empty, 0);
         Menu.WriteNameInTopBar(false);
-
-        // The directory (the end of a long path is shown)
-        var width = Init.LineWidth - 2;
-        var path = _directory.Length == 0 ? DialogText.Drives : _directory;
-        if (path.Length > width) path = "..." + path[^(width - 3)..];
-        Tools.SetCursorEx(1, 1);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Console.Write(path);
-        Tools.SetCursorEx(2, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
-
-        for (var row = 0; row < PageSize && _top + row < _items.Count; row++)
+        for (var number = 0; number < shown.Length; number++)
         {
-            var item = _items[_top + row];
-            DrawPointer(_top + row, _top + row == _index);
-            var isDataFile = !item.IsDirectory &&
-                             item.Name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase);
-            // Three columns: the name, the type and (to the right) the size
-            var type = ItemType(item);
-            var size = item.IsDirectory ? string.Empty : FileSizeFormatter.FormatSize(item.Size);
-            var typeColumn = Init.LineWidth - 2 - SizeColumnWidth - TypeColumnWidth;
-            var name = Tools.TruncateString(item.Name + (item.IsDirectory && item.Name != ParentName ? "/" : ""),
-                typeColumn - 7, true);
-            ConsoleColors.SetColors(item.IsDirectory ? ConsoleColors.ColorPreset.HeaderColor :
-                isDataFile ? ConsoleColors.ColorPreset.Favorites : ConsoleColors.ColorPreset.Normal);
-            Console.Write(" " + name);
-            if (_mode == BrowseMode.Edit && item.Path.Length > 0 && FileFavorites.Contains(item.Path))
+            var pane = shown[number];
+            DrawPaneHeader(number);
+            for (var row = 0; row < PageSize && pane.Top + row < pane.Items.Count; row++)
             {
-                // A favorite
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Favorites);
-                Console.Write(" *");
+                DrawItem(number, pane, pane.Top + row);
             }
 
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Tools.SetCursorEx(ListTop + row, typeColumn);
-            Console.Write(type);
-            Tools.SetCursorEx(ListTop + row, Init.LineWidth - size.Length - 1);
-            Console.Write(size);
+            pane.ShownTop = pane.Top;
+            pane.ShownIndex = pane.Index;
         }
 
-        _shownTop = _top;
-        _shownIndex = _index;
+        if (IsDual)
+        {
+            // The line between the panes
+            var column = PaneArea(1).Left - 1;
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Tools.SetCursorEx(1, column);
+            Console.Write('|');
+            for (var row = 0; row < PageSize; row++)
+            {
+                Tools.SetCursorEx(ListTop + row, column);
+                Console.Write('|');
+            }
+        }
+
+        _shownActive = _active;
+        _shownDual = IsDual;
         DrawStatus();
     }
+
+    // The pane that is drawn as a number (a single pane is always the first)
+    private static Pane ShownPane(int number) => IsDual ? Panes[number] : ActivePane;
+
+    private static bool HasFocus(int number) => !IsDual || number == _active;
+
+    // The two lines above the list of a pane: the directory, and a divider that tells which pane has the focus
+    private static void DrawPaneHeader(int number)
+    {
+        var pane = ShownPane(number);
+        var (left, width) = PaneArea(number);
+        // The directory (the end of a long path is shown)
+        var room = width - 2;
+        var path = pane.Directory.Length == 0 ? DialogText.Drives : pane.Directory;
+        if (path.Length > room) path = "..." + path[^(room - 3)..];
+        Tools.SetCursorEx(1, left);
+        ConsoleColors.SetColors(HasFocus(number)
+            ? ConsoleColors.ColorPreset.HeaderColor
+            : ConsoleColors.ColorPreset.Divider);
+        Console.Write(" " + path.PadRight(room));
+        Tools.SetCursorEx(2, left);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(new string('-', IsDual && number == 0 ? width : Math.Min(width, Init.LineWidth - left)));
+        if (!IsDual) return;
+        if (number == 0) Console.Write('+');
+        // The label of the pane: highlighted on the one with the focus
+        Tools.SetCursorEx(2, left + 2);
+        if (HasFocus(number))
+        {
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            Console.Write(" " + DialogText.PaneLabel + (number + 1) + " ");
+        }
+        else
+        {
+            Console.Write(" " + DialogText.PaneLabel.ToLowerInvariant() + (number + 1) + " ");
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    // A row of the list of a pane: the name, the type (if the pane is wide enough for it) and the size
+    private static void DrawItem(int number, Pane pane, int index)
+    {
+        var item = pane.Items[index];
+        var row = index - pane.Top;
+        var (left, width) = PaneArea(number);
+        DrawPointer(number, index, index == pane.Index);
+        var isDataFile = !item.IsDirectory &&
+                         item.Name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase);
+        var showType = width >= MinWidthForType;
+        var type = ItemType(item);
+        // In a narrow pane a directory is marked where the size would be
+        var size = item.IsDirectory ? (showType ? string.Empty : DialogText.DirectoryMark)
+            : FileSizeFormatter.FormatSize(item.Size);
+        var sizeEnd = left + width - 1;
+        var typeColumn = sizeEnd - 1 - SizeColumnWidth - TypeColumnWidth;
+        var nameEnd = showType ? typeColumn - 1 : sizeEnd - SizeColumnWidth - 1;
+        var name = Tools.TruncateString(item.Name + (item.IsDirectory && item.Name != ParentName ? "/" : ""),
+            Math.Max(4, nameEnd - (left + 3) - 2), true);
+        ConsoleColors.SetColors(item.IsDirectory ? ConsoleColors.ColorPreset.HeaderColor :
+            isDataFile ? ConsoleColors.ColorPreset.Favorites : ConsoleColors.ColorPreset.Normal);
+        Console.Write(" " + name);
+        if (_mode == BrowseMode.Edit && item.Path.Length > 0 && FileFavorites.Contains(item.Path))
+        {
+            // A favorite
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Favorites);
+            Console.Write(" *");
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        if (showType)
+        {
+            Tools.SetCursorEx(ListTop + row, typeColumn);
+            Console.Write(type);
+        }
+
+        Tools.SetCursorEx(ListTop + row, sizeEnd - size.Length);
+        Console.Write(size);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    private const int MinWidthForType = 50; // The type column is left out in a pane that is narrower
 
     private const int TypeColumnWidth = 11; // The width of "[Data file]"
     private const int SizeColumnWidth = 11; // The width of "1,023 bytes"
@@ -680,29 +884,39 @@ internal static partial class FileExplorer
         return Tools.TruncateString(extension[1..].ToUpperInvariant(), TypeColumnWidth, true);
     }
 
-    // Draw (or remove) the selection pointer in front of an item, leaving the cursor after it
-    private static void DrawPointer(int index, bool selected)
+    // Draw (or remove) the selection pointer in front of an item of a pane, leaving the cursor after it.
+    // In the pane without the focus the pointer is not highlighted
+    private static void DrawPointer(int number, int index, bool selected)
     {
-        var row = index - _top;
-        if (row < 0 || row >= PageSize || index >= _items.Count) return;
-        Tools.SetCursorEx(ListTop + row, 0);
-        ConsoleColors.SetColors(selected
-            ? ConsoleColors.ColorPreset.HighlightInverted
-            : ConsoleColors.ColorPreset.Normal);
+        var pane = ShownPane(number);
+        var row = index - pane.Top;
+        if (row < 0 || row >= PageSize || index >= pane.Items.Count) return;
+        Tools.SetCursorEx(ListTop + row, PaneArea(number).Left);
+        ConsoleColors.SetColors(!selected ? ConsoleColors.ColorPreset.Normal :
+            HasFocus(number) ? ConsoleColors.ColorPreset.HighlightInverted : ConsoleColors.ColorPreset.Divider);
         Console.Write(selected ? "->" : "  ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
-    // The two bottom lines: the number of the selected item, and a message or the keys
+    // The two bottom lines: the number of the selected item of each pane, and a message or the keys
     private static void DrawStatus()
     {
-        Tools.SetCursorEx(Init.LineCount - 2, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
-        var status = " " + (_items.Count == 0 ? 0 : _index + 1) + "/" + _items.Count + " ";
-        if (_filter.Length > 0) status += "/" + _filter + " ";
-        Tools.SetCursorEx(Init.LineCount - 2, Init.LineWidth - status.Length - 2);
-        Console.Write(status);
+        var count = IsDual ? Panes.Length : 1;
+        for (var number = 0; number < count; number++)
+        {
+            var pane = ShownPane(number);
+            var (left, width) = PaneArea(number);
+            Tools.SetCursorEx(Init.LineCount - 2, left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write(new string('-', IsDual && number == 0 ? width : Math.Min(width, Init.LineWidth - left)));
+            if (IsDual && number == 0) Console.Write('+');
+            var status = " " + (pane.Items.Count == 0 ? 0 : pane.Index + 1) + "/" + pane.Items.Count + " ";
+            if (pane.Filter.Length > 0) status += "/" + pane.Filter + " ";
+            status = Tools.TruncateString(status, Math.Max(4, width - 6), true);
+            Tools.SetCursorEx(Init.LineCount - 2, left + width - status.Length - 2);
+            Console.Write(status);
+        }
+
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         if (_message.Length > 0)
         {
@@ -715,7 +929,7 @@ internal static partial class FileExplorer
             {
                 BrowseMode.PickFile => DialogText.FilePickKeys,
                 BrowseMode.PickDirectory => DialogText.DirectoryPickKeys,
-                _ => DialogText.FileBrowserKeys
+                _ => IsDual ? DialogText.FileBrowserDualKeys : DialogText.FileBrowserKeys
             });
         }
 

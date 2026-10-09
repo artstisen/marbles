@@ -913,8 +913,6 @@ internal static class FileIo
         _tempSettings += "preview=" + (Actions.PreviewEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // What to show at startup: select (the choices), notes (the login page) or editor (the file browser)
         _tempSettings += "startmode=" + StartMenu.SettingName(StartMenu.Mode) + Entries.NewLineChar;
-        // Color Markdown files (.md) in the editor (the editor command :syntax turns the colors on and off)
-        _tempSettings += "mdcolors=" + (MarkdownHighlighter.ColorFiles ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; STYLING" + Entries.NewLineChar;
@@ -951,8 +949,17 @@ internal static class FileIo
         _tempSettings += "file=" + GetFileName()+ Entries.NewLineChar;
         // Backup path:
         _tempSettings += "backup=" + _backupPath+ Entries.NewLineChar;
-        // The directory last shown in the file browser:
-        _tempSettings += "browsedir=" + FileExplorer.StartDirectory + Entries.NewLineChar;
+        // Comment
+        _tempSettings += Entries.NewLineChar;
+        _tempSettings += "; FILE BROWSER AND EDITOR" + Entries.NewLineChar;
+        // The directories last shown in the two panes of the file browser, and the pane that had the focus (1 or 2)
+        _tempSettings += "browsedir1=" + FileExplorer.StartDirectory + Entries.NewLineChar;
+        _tempSettings += "browsedir2=" + FileExplorer.StartDirectory2 + Entries.NewLineChar;
+        _tempSettings += "browsepane=" + (FileExplorer.StartPane + 1) + Entries.NewLineChar;
+        // Two panes side by side in the file browser (false: one pane)
+        _tempSettings += "browsedual=" + (FileExplorer.DualPane ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // Color Markdown files (.md) in the editor (the editor command :syntax turns the colors on and off)
+        _tempSettings += "mdcolors=" + (MarkdownHighlighter.ColorFiles ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; SPELL CHECKING" + Entries.NewLineChar;
@@ -1158,7 +1165,13 @@ internal static class FileIo
         }
 
         // File browser directory
-        FileExplorer.StartDirectory = Tools.IsValidPath(Get("browsedir")) ? Get("browsedir") : string.Empty;
+        // (a settings file from an earlier version has one directory: "browsedir")
+        var browseDirectory = Get("browsedir1").Length > 0 ? Get("browsedir1") : Get("browsedir");
+        FileExplorer.StartDirectory = Tools.IsValidPath(browseDirectory) ? browseDirectory : string.Empty;
+        FileExplorer.StartDirectory2 = Tools.IsValidPath(Get("browsedir2")) ? Get("browsedir2") : string.Empty;
+        FileExplorer.StartPane = Get("browsepane").Trim() == "2" ? 1 : 0;
+        // Two panes unless turned off
+        FileExplorer.DualPane = Tools.TrimToLower(Get("browsedual")) != DialogText.BFalse;
 
         // Spell checking languages
         var spellLanguages = Get("spelllang").Replace(" ", string.Empty);

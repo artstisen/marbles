@@ -330,6 +330,9 @@ internal static class DialogText
     public const string DataFileMark = "[Data file]";
     public const string FileBrowserKeys = "j/k Select | l Open | h Up | / Filter | F Faves | ? Help | Esc Close";
 
+    public const string FileBrowserDualKeys = "Tab Pane | l Open | h Up | / Filter | F Faves | ? Help | Esc Close";
+    public const string PaneLabel = "PANE ";
+
     // File management in the file browser
     public const string NewDirectory = "New directory";
     public const string DeleteDirectory = "Delete directory";

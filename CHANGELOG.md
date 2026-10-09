@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.2
+- **Two panes in the file browser**: two directories are shown side by side. `Tab` goes to the other pane, and copy (`C`) and move (`M`) start in the directory of the other pane, so `S` copies or moves to it at once. `T` or `:panes` switches between two panes and one. The directories of both panes are remembered (`browsedir1`, `browsedir2`, `browsepane` and `browsedual` replace `browsedir` in the settings file).
 - **File browser columns**: the list has a column for the type of each item (`<DIR>`, `[Data file]`, or the extension of the file such as `TXT` and `MD`) and one for the size, so they line up.
 - **Favorites of the file browser**: `-` (and `Backspace`) closes the list, lowercase `v` moves a favorite like `V`, and `u` or `:undo` puts back the favorite or folder that was removed last.
 - Lowercase `v` also moves a pinned entry in the favorites list of a data file.

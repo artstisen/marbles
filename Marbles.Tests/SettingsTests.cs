@@ -129,7 +129,9 @@ backup=
         Assert.Equal("100", settings["linewidth"]);
         Assert.Equal("a=b text", settings["logotxt"]);
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(30, settings.Count);
+        Assert.Equal(33, settings.Count);
+        Assert.Equal("true", settings["browsedual"]);
+        Assert.Equal("1", settings["browsepane"]);
         Assert.Equal("true", settings["mdcolors"]);
         Assert.Equal("false", settings["monochrome"]);
         Assert.Equal("select", settings["startmode"]);

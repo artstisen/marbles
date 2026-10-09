@@ -66,7 +66,14 @@ Press `Esc` and then one of the following keys:
 ## File browser
 The file browser (`Esc`, `F`) is for editing single text files (.txt, .md, .html ...) with the Marbles editor, without logging in to a data file. **Text files are not encrypted.**
 
-The browser starts in the Marbles data directory and remembers the directory you leave it in.
+The browser shows two panes side by side, each with its own directory. The pane with the focus has a highlighted label (`PANE 1` or `PANE 2`) in the line above its list, and all keys work on that pane.
+
+- `Tab` Go to the other pane. The selection of the pane without the focus is still shown, but not highlighted
+- `T` or `:panes` Show one pane (the one with the focus, in the full width of the window) or two
+
+In a pane that is narrow, as when the window is 80 columns wide, the type column is left out and long names are shortened. With one pane, or a wide window, all columns are shown.
+
+The browser starts in the Marbles data directory and remembers the directories of both panes, the pane that had the focus and whether one or two panes were shown (`browsedir1`, `browsedir2`, `browsepane` and `browsedual` in the settings file).
 
 The file browser can also be opened with the command `:browse` when you are logged in to a data file. You can look around and close the browser again without anything else happening, but opening a file logs you out of the data file, and the login page is shown when you close the browser.
 
@@ -98,7 +105,7 @@ These work on the selected file or directory (one at a time):
 - `M` or `:move` Move to another directory
 - `D` or `:delete` Delete. You are asked first, and for a directory you are told how many files and directories it contains
 
-For copy and move the browser lets you select the target: go to the directory and press `S` (`Esc` cancels). While a directory is being copied the name of the current file is shown, and `Esc` cancels the copy (what was copied so far is removed).
+For copy and move the browser lets you select the target: go to the directory and press `S` (`Esc` cancels). With two panes the selection starts in the directory of the other pane, so pressing `S` at once copies or moves to the other pane. Both panes are updated afterwards. While a directory is being copied the name of the current file is shown, and `Esc` cancels the copy (what was copied so far is removed).
 
 Things to know:
 

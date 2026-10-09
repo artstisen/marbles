@@ -1369,6 +1369,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("l Enter", "Open the directory or file", false));
             _shortcutList.Add(new Shortcut("h - Backspace", "Go to the directory above", false));
             _shortcutList.Add(new Shortcut("/text", "Only show names containing \"text\" (Esc: all)", false));
+            _shortcutList.Add(new Shortcut("Tab", "Go to the other pane", false));
+            _shortcutList.Add(new Shortcut("T :panes", "Show two panes or one", false));
             _shortcutList.Add(new Shortcut("N :new name", "Create a new file and open it", false));
             _shortcutList.Add(new Shortcut("I :info", "Show type, size, dates and path", false));
             _shortcutList.Add(new Shortcut("A :mkdir name", "Create a new directory", false));
@@ -1376,6 +1378,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Y :duplicate", "Make a copy in the same directory", false));
             _shortcutList.Add(new Shortcut("C :copy", "Copy to another directory (select it: S)", false));
             _shortcutList.Add(new Shortcut("M :move", "Move to another directory (select it: S)", false));
+            _shortcutList.Add(new Shortcut("  Two panes", "C and M start in the other pane: S copies to it", false));
             _shortcutList.Add(new Shortcut("D :delete", "Delete (asks first, cannot be undone)", false));
             _shortcutList.Add(new Shortcut("P :fav", "Add to/Remove from the favorites (*)", false));
             _shortcutList.Add(new Shortcut("F :favorites", "Show the favorites", false));

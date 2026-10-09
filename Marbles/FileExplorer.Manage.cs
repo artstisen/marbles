@@ -86,6 +86,9 @@ internal static partial class FileExplorer
             case "favs":
             case "favorites":
                 return BrowseFavorites();
+            case "panes":
+                TogglePanes();
+                break;
             default:
                 return KeyResult.NotHandled;
         }
@@ -96,8 +99,8 @@ internal static partial class FileExplorer
     // The selected file or directory, if it is one that can be managed (not ".." or a drive)
     private static Item? SelectedItem()
     {
-        if (_directory.Length == 0 || _items.Count == 0) return null;
-        var item = _items[_index];
+        if (ActivePane.Directory.Length == 0 || ActivePane.Items.Count == 0) return null;
+        var item = ActivePane.Items[ActivePane.Index];
         return item.Name == ParentName ? null : item;
     }
 
@@ -158,19 +161,18 @@ internal static partial class FileExplorer
         return textArea.Canceled || name.Length == 0 ? null : name;
     }
 
-    // Let the user select the directory to copy or move something to (starting in the directory shown)
+    // Let the user select the directory to copy or move something to. With two panes it starts in the
+    // directory of the other pane, so that "S" at once copies or moves to it. With one: in the directory shown
     private static string? PickTargetDirectory(string caption)
     {
-        var saved = (_mode, _caption, _directory, _index, _top, StartDirectory, SessionEnded, DataFileSelected);
-        StartDirectory = _directory;
-        var target = Browse(BrowseMode.PickDirectory, caption);
-        (_mode, _caption, _directory, _index, _top, StartDirectory, SessionEnded, DataFileSelected) = saved;
+        var saved = (_mode, _caption, SessionEnded, DataFileSelected);
+        var start = IsDual ? OtherPane.Directory : ActivePane.Directory;
+        var target = Browse(BrowseMode.PickDirectory, caption, start.Length > 0 ? start : null);
+        (_mode, _caption, SessionEnded, DataFileSelected) = saved;
         _picked = null;
-        _filter = string.Empty;
         _message = string.Empty;
-        var index = _index;
-        LoadItems(null);
-        _index = index;
+        // The panes are as they were: they must be drawn again
+        foreach (var pane in Panes) pane.ShownTop = -1;
         return target;
     }
 
@@ -202,16 +204,16 @@ internal static partial class FileExplorer
     // Show the directory again after an operation, with an item selected or with the error message
     private static void Finish(string result, string? select, string message)
     {
-        var index = _index;
+        var index = ActivePane.Index;
         LoadItems(select);
-        if (select != null && _filter.Length > 0 && !_items.Any(item => item.Path == select))
+        if (select != null && ActivePane.Filter.Length > 0 && !ActivePane.Items.Any(item => item.Path == select))
         {
             // The item no longer matches the filter (it has a new name): show all
-            _filter = string.Empty;
+            ActivePane.Filter = string.Empty;
             LoadItems(select);
         }
 
-        if (select == null) _index = index;
+        if (select == null) ActivePane.Index = index;
         _message = result == DialogText.Success ? message : result;
     }
 
@@ -237,7 +239,7 @@ internal static partial class FileExplorer
 
     private static void MakeDirectory(string name)
     {
-        if (_directory.Length == 0) return;
+        if (ActivePane.Directory.Length == 0) return;
         if (name.Length == 0)
         {
             var asked = AskName(DialogText.NewDirectory, string.Empty);
@@ -245,8 +247,8 @@ internal static partial class FileExplorer
             name = asked;
         }
 
-        var result = FileOperations.CreateDirectory(_directory, name, out var path);
-        LogOperation("New directory", System.IO.Path.Combine(_directory, name), result);
+        var result = FileOperations.CreateDirectory(ActivePane.Directory, name, out var path);
+        LogOperation("New directory", System.IO.Path.Combine(ActivePane.Directory, name), result);
         Finish(result, result == DialogText.Success ? path : null, string.Empty);
     }
 
@@ -277,7 +279,7 @@ internal static partial class FileExplorer
         var result = FileOperations.Copy(item.Path, target, out var path, ShowProgress);
         LogOperation("Copy", item.Path + " -> " + target, result);
         // A copy in the same directory is selected. Else the original stays selected
-        var inPlace = result == DialogText.Success && FileOperations.SamePath(target, _directory);
+        var inPlace = result == DialogText.Success && FileOperations.SamePath(target, ActivePane.Directory);
         Finish(result, inPlace ? path : item.Path, DialogText.FileCopied + ShortPath(target));
     }
 
@@ -285,7 +287,7 @@ internal static partial class FileExplorer
     {
         var item = SelectedItem();
         if (item == null) return;
-        var result = FileOperations.Copy(item.Path, _directory, out var path, ShowProgress);
+        var result = FileOperations.Copy(item.Path, ActivePane.Directory, out var path, ShowProgress);
         LogOperation("Duplicate", item.Path + (path.Length > 0 ? " -> " + System.IO.Path.GetFileName(path) : ""),
             result);
         Finish(result, result == DialogText.Success ? path : item.Path, string.Empty);
