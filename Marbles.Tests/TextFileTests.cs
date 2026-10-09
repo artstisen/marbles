@@ -122,6 +122,9 @@ public class TextFileTests
     [Fact]
     public void EncodingLabel_TellsTheEncoding()
     {
+        Assert.Equal("CRLF", TextFile.Read(System.Text.Encoding.UTF8.GetBytes("a\r\nb\r\n")).LineEndingLabel);
+        Assert.Equal("LF", TextFile.Read(System.Text.Encoding.UTF8.GetBytes("a\nb\n")).LineEndingLabel);
+        Assert.Equal("CR", TextFile.Read(System.Text.Encoding.UTF8.GetBytes("a\rb\r")).LineEndingLabel);
         Assert.Equal("UTF-8", TextFile.Read(System.Text.Encoding.UTF8.GetBytes("text æøå")).EncodingLabel);
         Assert.Equal("UTF-8 (BOM)",
             TextFile.Read(new byte[] { 0xEF, 0xBB, 0xBF }.Concat(System.Text.Encoding.UTF8.GetBytes("text")).ToArray())

@@ -610,7 +610,8 @@ internal static partial class FileExplorer
     internal static string CurrentFileName => _file == null ? string.Empty : System.IO.Path.GetFileName(_file.Path);
 
     /// <summary>
-    /// The type and encoding of the file being edited, for the bottom line of the editor: "HTML UTF-8 (BOM)"
+    /// The type and encoding of the file being edited, and line endings of the file being edited, for the bottom line of the editor:
+    /// "HTML UTF-8 (BOM) CRLF"
     /// </summary>
     internal static string CurrentFileLabel
     {
@@ -621,7 +622,7 @@ internal static partial class FileExplorer
             var type = extension.Length > 1 && extension.Length < System.IO.Path.GetFileName(_file.Path).Length
                 ? Tools.TruncateString(extension[1..].ToUpperInvariant(), 10, true) + " "
                 : string.Empty;
-            return type + _file.EncodingLabel;
+            return type + _file.EncodingLabel + " " + _file.LineEndingLabel;
         }
     }
 

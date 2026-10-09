@@ -6,7 +6,7 @@ The editor works in the style of Vim. It is always in one of these modes, shown 
 - **INSERT**: keys type text. An empty entry starts here. Press `Esc` to return to Normal mode.
 - **VISUAL** and **V-LINE**: movements select text (or whole lines) for a command.
 
-When a text file is edited (from the file browser), the bottom line shows its type and encoding, like `HTML UTF-8 (BOM)` or `TXT Windows-1252` (a file in another encoding than UTF-8 becomes UTF-8 when it is saved). The bottom line also shows messages, the current memory string, the cursor position as `line:column` and how far into the text the cursor is. Inside Marbles, `:help` shows the list of keys.
+When a text file is edited (from the file browser), the bottom line shows its type, encoding and line endings, like `HTML UTF-8 (BOM) CRLF` or `TXT Windows-1252 LF` (a file in another encoding than UTF-8 becomes UTF-8 when it is saved; the line endings are kept: `CRLF` as used by Windows, `LF` as used by Linux and macOS). The bottom line also shows messages, the current memory string, the cursor position as `line:column` and how far into the text the cursor is. Inside Marbles, `:help` shows the list of keys.
 
 ## Save and close
 Typed on the command line: press `:`, type the command and press `Enter`.
