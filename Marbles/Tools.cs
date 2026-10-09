@@ -371,14 +371,14 @@ internal static class Tools
             new("I", DialogText.FileInfo, false, 13),
             new("N", DialogText.NewFile, false, 13),
             new("X", DialogText.RenameFile, false, 13),
-            new("C", DialogText.CopyFile, false, 13),
-            new("D", DialogText.DeleteFile, false, 13),
+            new("C/D", DialogText.CopyDeleteFile, false, 13),
             new("M", DialogText.MergeFiles, false, 13),
             new("F/T", DialogText.BrowseFilesSelectMode, false, 13),
             new(string.Empty, "-", true, 13),
             new("h l / j k", DialogText.SelectFileDirectory, false, 13),
             new("R/Y", DialogText.Refresh + "/" + DialogText.Restart, false, 13),
             new("G/S", DialogText.Log + "/" + FileIo.SettingsFileName, false, 13),
+            new("U", DialogText.QuickGuide, false, 13),
             new("? / Q", "Help/" + DialogText.Exit, false, 13)
         };
         Menu.FloatingMenu(DialogText.CaptionsOptions, tempShortcuts, 9, 14, false);
@@ -452,6 +452,12 @@ internal static class Tools
         {
             // Log
             Init.WriteLog();
+            LoginRoutine(true);
+        }
+        else if (_keyInfo.Key == ConsoleKey.U)
+        {
+            // Quick guide
+            QuickGuide.Show();
             LoginRoutine(true);
         }
         else if (_keyInfo.Key == ConsoleKey.S)
@@ -1318,13 +1324,14 @@ internal static class Tools
             // Start by collecting all shortcuts
             _shortcutList.Add(new Shortcut(string.Empty, "Keyboard Functions", true));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionStart, true));
-            _shortcutList.Add(new Shortcut("j k 1-4", "Select", false));
+            _shortcutList.Add(new Shortcut("j k 1-5", "Select", false));
             _shortcutList.Add(new Shortcut("gg G", "First/Last (also in Configuration)", false));
             _shortcutList.Add(new Shortcut("Enter", "Open the selected", false));
             _shortcutList.Add(new Shortcut("  1", "Note Management: the login page", false));
             _shortcutList.Add(new Shortcut("  2", "Text Editor/File Management: the file browser", false));
             _shortcutList.Add(new Shortcut("  3", "Configuration: startup and basic settings", false));
-            _shortcutList.Add(new Shortcut("  4", "Exit Marbles (without asking)", false));
+            _shortcutList.Add(new Shortcut("  4", "Quick guide: a short introduction", false));
+            _shortcutList.Add(new Shortcut("  5", "Exit Marbles (without asking)", false));
             _shortcutList.Add(new Shortcut("Q Esc", "Exit Marbles, asking first (Configuration: Back)", false));
             _shortcutList.Add(new Shortcut("  Configuration", "j k or the number of the row: Select", false));
             _shortcutList.Add(new Shortcut("Enter Space", "Change the selected setting", false));
@@ -1345,6 +1352,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc h l j k", "Select data file/directory", false));
             _shortcutList.Add(new Shortcut("Esc R Y", "Refresh the page/Restart Marbles", false));
             _shortcutList.Add(new Shortcut("Esc G S", "Show the log/Edit settings.ini", false));
+            _shortcutList.Add(new Shortcut("Esc U", "Quick guide: a short introduction", false));
             _shortcutList.Add(new Shortcut("Esc ?", "Show this help", false));
             _shortcutList.Add(new Shortcut("Esc Q", "Exit Marbles", false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
@@ -1359,6 +1367,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":qa", "Exit Marbles", false));
             _shortcutList.Add(new Shortcut(":new :new Title", "New entry (asks for the title if not given)", false));
             _shortcutList.Add(new Shortcut(":logout", "Logout", false));
+            _shortcutList.Add(new Shortcut(":guide", "Main menu: Quick guide (a short introduction)", false));
             _shortcutList.Add(new Shortcut("Tab v", "Favorites: Move the pinned entry (j k, then Esc)", false));
             _shortcutList.Add(new Shortcut(":pin", "Favorites: Pick the color of the pinned entry", false));
             _shortcutList.Add(new Shortcut("Esc", "Return/Cancel", false));

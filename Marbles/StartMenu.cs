@@ -31,7 +31,10 @@ internal static class StartMenu
     private const int Left = 3;
 
     private static readonly string[] Choices =
-        { DialogText.StartNotes, DialogText.StartEditor, DialogText.StartConfiguration, DialogText.StartExit };
+        {
+            DialogText.StartNotes, DialogText.StartEditor, DialogText.StartConfiguration, DialogText.QuickGuide,
+            DialogText.StartExit
+        };
 
     /// <summary>
     /// The name of a start mode in the settings file
@@ -121,6 +124,9 @@ internal static class StartMenu
                     break;
                 case 2:
                     Configure();
+                    break;
+                case 3:
+                    QuickGuide.Show();
                     break;
                 default:
                     // Exit without asking

@@ -18,6 +18,7 @@ The same keys are used everywhere in Marbles:
 The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`4`, and `Home`/`End` go to the first/last page.
 
 ### Page 1
+- `:guide` **Quick guide**: A short introduction to Marbles. It is also found on the start page and in the options of the login page.
 - `N` **New**: Create a new entry (write a title and enter your notes). With the command `:new My title` the entry is created with that title and opened in the editor; `:new` alone asks for the title. The command also works in lists and when viewing an entry.
 - `S` or `/` **Search**: Search the entries of the data file. All the words you type must be found in the title or text of an entry. The result can be sorted (press `Tab`) by _date changed_, _date created_ and alphabetically by _title_.
 - `R` **Reselect**: Select the last edited entry again.

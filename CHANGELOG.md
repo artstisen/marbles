@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.2
+- **Quick guide**: a short introduction to the two parts of Marbles, the keys for moving around and the modes of the editor. It is found on the start page, in the options of the login page (`Esc`, `U`) and with `:guide` on the first page of the main menu.
 - **Line numbers** in the editor: they are on from the start. `:number` (or `:nu`) shows or hides them, in the editor and on page 2 of the main menu, and the Configuration page has a setting for it. The choice is remembered.
 - **Editor, text files**: `:e` reads the file from disk again (`:e!` also when there are unsaved changes), and the bottom line shows the type, encoding and line endings of the file (`HTML UTF-8 (BOM) CRLF`).
 - **Search for files** in the file browser (`S` or `:find`): by name (with `*` and `?`), by text in the files, with regular expressions, in a directory and its subfolders. The files found are shown in a list where they can be opened at the line found, shown in the browser (`B`), inspected (`I`) and added to the favorites (`P`).

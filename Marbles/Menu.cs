@@ -133,6 +133,7 @@ internal static class Menu
                     (Actions.PreviewEnabled ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) + " Preview",
                     true);
                 WriteMenuItem(":", "Command line", true);
+                WriteMenuItem(":guide", DialogText.QuickGuide, true);
                 WriteMenuItem("X", "Logout", true);
                 Actions.DrawPreview();
                 Vignette.DisplayVignette();

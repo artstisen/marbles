@@ -49,7 +49,7 @@ internal static class EventLog
         "w", "write", "wq", "wq!", "x", "noh", "nohlsearch", "u", "undo", "red", "redo", "ts", "timestamp", "pw",
         "cal", "calendar", "trim", "clear", "reg", "registers", "regclear", "putall", "spell", "nospell", "set",
         "spellnext", "spellprev", "spellsuggest", "suggest", "spellgood", "spelladd", "replace", "rep", "s", "d",
-        "y", "yank", "syntax", "find", "fav", "favorite", "move", "e!", "edit!", "reload", "reload!", "number", "nu", "nonumber", "nonu"
+        "y", "yank", "syntax", "find", "fav", "favorite", "move", "e!", "edit!", "reload", "reload!", "number", "nu", "nonumber", "nonu", "guide"
     };
 
     /// <summary>
