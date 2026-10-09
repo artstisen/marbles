@@ -190,6 +190,42 @@ public class FileManagementTests : IDisposable
 
     #endregion
 
+    #region Saving
+
+    [Fact]
+    public void SavingAFile_KeepsTheTimeItWasCreated()
+    {
+        var file = MakeFile("old text", "note.txt");
+        var created = new DateTime(2001, 2, 3, 4, 5, 6, DateTimeKind.Utc);
+        File.SetCreationTimeUtc(file, created);
+        File.SetLastWriteTimeUtc(file, created);
+
+        FileIo.WriteAllBytesSafe(file, "new text"u8.ToArray());
+        Assert.Equal("new text", File.ReadAllText(file));
+        // The time it was changed is now
+        Assert.True(File.GetLastWriteTimeUtc(file) > DateTime.UtcNow.AddMinutes(-5));
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
+        {
+            Assert.Equal(created, File.GetCreationTimeUtc(file));
+        }
+
+        // A text file saved from the editor
+        var textFile = TextFile.Load(file);
+        Assert.Equal(DialogText.Success, textFile.Save("newer text"));
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())
+        {
+            Assert.Equal(created, File.GetCreationTimeUtc(file));
+        }
+
+        // A new file is created now
+        var other = In("new.txt");
+        FileIo.WriteAllBytesSafe(other, "x"u8.ToArray());
+        Assert.True(File.GetCreationTimeUtc(other) > DateTime.UtcNow.AddMinutes(-5));
+        Assert.False(File.Exists(other + ".tmp"));
+    }
+
+    #endregion
+
     #region Favorites
 
     [Fact]

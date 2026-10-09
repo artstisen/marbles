@@ -435,10 +435,22 @@ internal static class FileIo
     /// <summary>
     /// Write the content to a temporary file and then replace the target file with it,
     /// so an interrupted save can never leave a half written data file behind.
+    /// The file keeps the time it was created (where the system has one that can be set).
     /// </summary>
     internal static void WriteAllBytesSafe(string path, byte[] content)
     {
         var tempPath = path + TempFileNameExtension;
+        // The file that replaces the target is a new file: remember when the target was created
+        DateTime? created = null;
+        try
+        {
+            if (File.Exists(path)) created = File.GetCreationTimeUtc(path);
+        }
+        catch
+        {
+            // Saving matters more than the time
+        }
+
         try
         {
             using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -448,6 +460,7 @@ internal static class FileIo
             }
 
             File.Move(tempPath, path, true);
+            RestoreCreationTime(path, created);
         }
         catch
         {
@@ -461,6 +474,21 @@ internal static class FileIo
             }
 
             throw;
+        }
+    }
+
+    // Give a file that has replaced another the time the other was created. Only where the time can be set:
+    // on Linux there is none to set (and setting it would change the time the file was last written)
+    private static void RestoreCreationTime(string path, DateTime? created)
+    {
+        if (created == null || !(OperatingSystem.IsWindows() || OperatingSystem.IsMacOS())) return;
+        try
+        {
+            File.SetCreationTimeUtc(path, created.Value);
+        }
+        catch
+        {
+            // The file is saved: the time is not worth failing for
         }
     }
 
