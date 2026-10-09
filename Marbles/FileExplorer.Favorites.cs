@@ -548,14 +548,14 @@ internal static partial class FileExplorer
         DrawFavoriteStatus();
     }
 
-    // What is shown for an item of the list: the name of the file, with a blank space in front if it is in a
+    // What is shown for an item of the list: the name of the file, two blank spaces in if it is in a
     // folder, or the name of a folder with a mark that tells if it is open
     private static string FavoriteLabel(int number)
     {
         var item = FileFavorites.Items[number];
         if (item.IsFolder) return (item.Collapsed ? "[+] " : "[-] ") + item.Name;
         // The folders are not shown when the list is filtered
-        return (item.InFolder && _favoriteFilter.Length == 0 ? " " : string.Empty) + FavoriteName(item.Path);
+        return (item.InFolder && _favoriteFilter.Length == 0 ? "  " : string.Empty) + FavoriteName(item.Path);
     }
 
     private static string FavoriteName(string path)

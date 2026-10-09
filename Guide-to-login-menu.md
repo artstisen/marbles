@@ -167,7 +167,7 @@ In the list of favorites:
 **Folders:** Favorites can be grouped in folders. A folder only exists in the list of favorites; nothing is created on disk and no files are moved.
 
 - `A` or `:folder name` Create a folder in front of the selected item. It is shown as `[-] Name` when open and `[+] Name` when closed, with the number of favorites in it
-- `l` or `Enter` on a folder: Open or close it. The favorites in an open folder are shown below it, one space in
+- `l` or `Enter` on a folder: Open or close it. The favorites in an open folder are shown below it, two spaces in
 - **Into a folder:** Move a favorite (`Tab` or `V`, then `j` `k`) onto the folder. Moving down onto a folder puts it first in the folder, moving up from below puts it last. A closed folder opens
 - **Out of a folder:** Move the favorite on, past the first or the last favorite in the folder
 - A folder is moved like a favorite. It is closed first, and moves with its favorites past the favorite or folder next to it
