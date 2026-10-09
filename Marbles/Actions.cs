@@ -43,7 +43,7 @@ internal static class Actions
             if (_c.KeyChar == ':')
             {
                 // Command line
-                var command = CommandLine.Read();
+                var command = CommandLine.Read(CommandContext.Menu);
                 if (command != null)
                 {
                     RunManageCommand(command);
@@ -240,7 +240,7 @@ internal static class Actions
             if (_c.KeyChar == ':')
             {
                 // Command line
-                var command = CommandLine.Read();
+                var command = CommandLine.Read(CommandContext.Entry);
                 if (command != null)
                 {
                     RunViewCommand(command);
@@ -2954,7 +2954,7 @@ internal static class Actions
         if (_c.KeyChar == ':')
         {
             // Command line
-            var command = CommandLine.Read();
+            var command = CommandLine.Read(CommandContext.List);
             if (command == null)
             {
                 ExitNumericSelect(pageNumber, _resultIndex);

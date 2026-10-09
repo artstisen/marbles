@@ -1,6 +1,8 @@
 # Changes
 
 ## v1.5.3
+- **Tab completes commands.** On the command line, `Tab` completes the command being typed (`:und` `Tab` gives `:undelete`). `Tab` again gives the next command that starts the same, `Shift+Tab` the previous, and after the last one what you typed is shown again. With nothing typed, `Tab` goes through all the commands of the page you are on, so it also works as a way to find a command. Each page and the editor completes to its own commands.
+- **Editor**: `:d` (`:delete`) and `:y` (`:yank`) without lines in front work on the line of the cursor.
 - **More room in the main menu.** When a data file is open, the top of the menu pages shows `*** Marbles ***` like the lists do, instead of the big logo (which is still shown on the start and login pages). The menu starts four rows higher, which leaves more room for the preview and the vignette. The "Welcome to Marbles" text shown at the bottom after login is removed.
 - **Favorites of the file browser**: `:expand` opens all the folders and `:collapse` closes them all.
 - **Color picker**: `l` (or `Right`) picks the selected color, like `Enter` and `Space`.

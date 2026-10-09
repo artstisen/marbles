@@ -38,20 +38,6 @@ internal static class EventLog
         _removed += excess;
     }
 
-    // The commands of the menus, lists and editor. Only these names are logged: anything else typed on a
-    // command line (by mistake, it could be a password) is not
-    private static readonly HashSet<string> KnownCommands = new(StringComparer.Ordinal)
-    {
-        "q", "quit", "q!", "quit!", "qa", "quitall", "exit", "logout", "h", "help", "about", "new", "browse",
-        "import", "export", "transfer", "undelete", "vignette", "backup", "defaults", "scheme", "bw", "size",
-        "password", "logo", "color", "restart", "e", "edit", "close", "delete", "revert", "title", "pin",
-        "folder", "rename", "remove", "goto", "info", "expand", "collapse",
-        "w", "write", "wq", "wq!", "x", "noh", "nohlsearch", "u", "undo", "red", "redo", "ts", "timestamp", "pw",
-        "cal", "calendar", "trim", "clear", "reg", "registers", "regclear", "putall", "spell", "nospell", "set",
-        "spellnext", "spellprev", "spellsuggest", "suggest", "spellgood", "spelladd", "replace", "rep", "s", "d",
-        "y", "yank", "syntax", "find", "fav", "favorite", "move", "e!", "edit!", "reload", "reload!", "number", "nu", "nonumber", "nonu", "guide"
-    };
-
     /// <summary>
     /// What is logged for a command: its name only, without the lines it works on and what follows it.
     /// Titles, search texts and the text of a replace command are never logged
@@ -69,7 +55,9 @@ internal static class EventLog
         var name = command[start..end].ToLowerInvariant();
         // A command followed directly by its text, as in "s/old/new/"
         if (end < command.Length && !char.IsWhiteSpace(command[end])) name = name[..1];
-        if (!KnownCommands.Contains(name)) return "(not a command)";
+        // Only the names of commands are logged: anything else typed on a command line (by mistake,
+        // it could be a password) is not
+        if (!Commands.IsKnown(name)) return "(not a command)";
         return name + (end < command.Length ? " ..." : string.Empty);
     }
 

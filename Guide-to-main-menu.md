@@ -9,6 +9,7 @@ The same keys are used everywhere in Marbles:
 - `?` Help: the list of keys. The help is shown in pages (`h` `l` previous/next page, `j` `k` one line) and can be searched: `/text` goes to the first line containing "text", and `n` `N` to the next/previous. The help shows the keys of the page you are on (start page, login page, menus and lists, file browser, favorites or editor); press `?` in the help to see all keys, and `?` again to return to the keys of the page
 - `:browse` Open the [file browser](Guide-to-login-menu.md#file-browser) to edit text files. Opening a file logs out of the data file
 - `:` Command line: type a command and press `Enter`. The commands are shown in the menus
+- `Tab` on the command line completes the command you are typing: `:und` and `Tab` gives `:undelete`. Press `Tab` again for the next command that starts the same (`Shift+Tab` for the previous); after the last one, what you typed is shown again. With nothing typed, `Tab` goes through all the commands that can be used on the page. Only the name of the command is completed, not what follows it (a title, a number), and the short forms (`:q`, `:h`) are not shown. This works on every command line: in the menus, lists, file browser and editor, each with its own commands
 - `:q` Close/Return. In the main menu: Exit Marbles
 - `:qa` Exit Marbles from anywhere
 - `:logout` (or `X`) Close the data file and return to the [login page](Guide-to-login-menu.md)

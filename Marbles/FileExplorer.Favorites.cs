@@ -144,7 +144,7 @@ internal static partial class FileExplorer
 
             if (key.KeyChar == ':')
             {
-                var command = CommandLine.Read();
+                var command = CommandLine.Read(CommandContext.Favorites);
                 // A name can follow the command
                 if (command != null && CommandLine.Name(command) is "folder" or "rename")
                 {

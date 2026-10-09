@@ -89,6 +89,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - See [Managing files](#managing-files) and [Favorites](#favorites) below for the other keys
 - `R` Refresh
 - `:cd path` Go to a directory. `:home` Go to the Marbles data directory
+- `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again (see [the command line](Guide-to-main-menu.md))
 - `?` Help
 - `Esc`, `Q` or `:q` Close the file browser
 

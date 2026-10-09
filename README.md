@@ -50,6 +50,8 @@ dotnet test Marbles.sln
 dotnet run --project Marbles
 ```
 
+`AGENTS.md` has the rules for working on the code (for people and for coding agents).
+
 `publish.ps1` builds self-contained single file executables (with the .NET runtime included) for Windows, Linux and macOS, and the lightweight version for all platforms that needs the .NET runtime.
 
 ## Gallery

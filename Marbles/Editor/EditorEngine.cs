@@ -542,9 +542,12 @@ internal sealed partial class EditorEngine
 
     #region Command line (":" commands and "/" search)
 
+    private readonly CommandCompletion _completion = new(CommandContext.Editor);
+
     private void OpenCommandLine(char prefix)
     {
         ResetPending();
+        _completion.Reset();
         _commandReturnMode = Mode is EditorMode.Command or EditorMode.Search ? EditorMode.Normal : Mode;
         CommandPrefix = prefix;
         CommandText = string.Empty;
@@ -570,6 +573,14 @@ internal sealed partial class EditorEngine
             {
                 Mode = EditorMode.Normal;
                 ExecuteCommand(text.Trim());
+            }
+        }
+        else if (key.Key == ConsoleKey.Tab)
+        {
+            // Complete the command. Tab again: the next command that starts the same (Shift+Tab: the previous)
+            if (Mode == EditorMode.Command)
+            {
+                CommandText = _completion.Next(CommandText, (key.Modifiers & ConsoleModifiers.Shift) == 0);
             }
         }
         else if (key.Key == ConsoleKey.Backspace)
@@ -770,6 +781,15 @@ internal sealed partial class EditorEngine
                 break;
             case "putall":
                 PutAllRegisters();
+                break;
+            case "d":
+            case "delete":
+                // Without lines in front: the line of the cursor
+                ApplyOperatorToLines('d', Cursor.Line, Cursor.Line);
+                break;
+            case "y":
+            case "yank":
+                ApplyOperatorToLines('y', Cursor.Line, Cursor.Line);
                 break;
             default:
                 SetError("Not an editor command: " + command);

@@ -16,10 +16,11 @@ internal static class CommandLine
     /// <summary>
     /// Let the user type a command
     /// </summary>
+    /// <param name="context">Where the command is typed: Tab completes to the commands of that place</param>
     /// <returns>The command in lowercase without the ":", or null if canceled</returns>
-    internal static string? Read()
+    internal static string? Read(CommandContext context)
     {
-        return Read(Prefix, true);
+        return Read(Prefix, true, context);
     }
 
     /// <summary>
@@ -27,15 +28,18 @@ internal static class CommandLine
     /// </summary>
     /// <param name="prefix">The character shown before the text</param>
     /// <param name="isCommand">True to return the text trimmed and in lowercase</param>
+    /// <param name="context">For a command: where it is typed, to have Tab complete it</param>
     /// <returns>The text, or null if canceled or empty</returns>
-    internal static string? Read(char prefix, bool isCommand)
+    internal static string? Read(char prefix, bool isCommand, CommandContext? context = null)
     {
         var command = string.Empty;
+        var completion = context == null ? null : new CommandCompletion(context.Value);
         // The whole line is highlighted while typing
         WriteLine(prefix == Prefix ? DialogText.CommandPrompt : prefix.ToString(),
             ConsoleColors.ColorPreset.HighlightInverted, true);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
         Tools.ShowCursor();
+        var left = Console.CursorLeft; // Where the text starts
         try
         {
             while (true)
@@ -44,6 +48,21 @@ internal static class CommandLine
                 if (key.Key == ConsoleKey.Escape)
                 {
                     return null;
+                }
+
+                if (key.Key == ConsoleKey.Tab)
+                {
+                    // Complete the command. Tab again: the next command that starts the same (Shift+Tab: the previous)
+                    var completed = completion?.Next(command, (key.Modifiers & ConsoleModifiers.Shift) == 0) ?? command;
+                    if (completed != command)
+                    {
+                        Console.SetCursorPosition(left, Console.CursorTop);
+                        Console.Write(completed + new string(' ', Math.Max(0, command.Length - completed.Length)));
+                        Console.SetCursorPosition(left + completed.Length, Console.CursorTop);
+                        command = completed;
+                    }
+
+                    continue;
                 }
 
                 if (key.Key == ConsoleKey.Enter)

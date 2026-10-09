@@ -1362,6 +1362,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("/", "Search", false));
             _shortcutList.Add(new Shortcut("?", "Show this help", false));
             _shortcutList.Add(new Shortcut(":", "Command line (commands are shown in the menus)", false));
+            _shortcutList.Add(new Shortcut("  Tab", "Complete the command (again: the next, Shift: back)", false));
             _shortcutList.Add(new Shortcut(":q", "Close/Return (in the main menu: Exit Marbles)", false));
             _shortcutList.Add(new Shortcut(":qa", "Exit Marbles", false));
             _shortcutList.Add(new Shortcut(":new :new Title", "New entry (asks for the title if not given)", false));
@@ -1395,6 +1396,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("R", "Refresh", false));
             _shortcutList.Add(new Shortcut(":cd path", "Go to a directory", false));
             _shortcutList.Add(new Shortcut(":home", "Go to the Marbles data directory", false));
+            _shortcutList.Add(new Shortcut(":", "Command line (Tab completes the command)", false));
             _shortcutList.Add(new Shortcut("Esc Q :q", "Close the file browser", false));
             _shortcutList.Add(new Shortcut("  Text files", "Opened in the editor. They are NOT encrypted", false));
             _shortcutList.Add(new Shortcut("  Saving", "As UTF-8, with the line endings of the file", false));
@@ -1411,6 +1413,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("P :fav", "Add to/Remove from the favorites (*)", false));
             _shortcutList.Add(new Shortcut("/text", "Only show the files with \"text\" (Esc: all)", false));
             _shortcutList.Add(new Shortcut("S :find", "Search again", false));
+            _shortcutList.Add(new Shortcut(":", "Command line (Tab completes the command)", false));
             _shortcutList.Add(new Shortcut("Esc Q h -", "Back to the file browser", false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFavorites, true));
             _shortcutList.Add(new Shortcut("j k gg G", "Select", false));
@@ -1432,6 +1435,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("P D :remove", "Remove the favorite or folder (files stay)", false));
             _shortcutList.Add(new Shortcut("/text", "Only show paths containing \"text\" (Esc: all)", false));
             _shortcutList.Add(new Shortcut("u :undo", "Put back what was removed last", false));
+            _shortcutList.Add(new Shortcut(":", "Command line (Tab completes the command)", false));
             _shortcutList.Add(new Shortcut("Esc Q F h -", "Back to the file browser", false));
             _shortcutList.Add(new Shortcut("  The list", "Kept in favorites.txt in the data directory", false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionEditor, true));
@@ -1442,6 +1446,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("o O", "Insert mode on a new line below/above", false));
             _shortcutList.Add(new Shortcut("v V", "Visual mode (select text/lines)", false));
             _shortcutList.Add(new Shortcut(":", "Command line (type a command, press Enter)", false));
+            _shortcutList.Add(new Shortcut("  Tab", "Complete the command (again: the next, Shift: back)", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Save and close", true));
             _shortcutList.Add(new Shortcut(":w", "Save", false));
             _shortcutList.Add(new Shortcut(":wq :x ZZ", "Save and close editor", false));

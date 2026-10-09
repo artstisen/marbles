@@ -128,7 +128,7 @@ internal static partial class FileExplorer
             var navigation = Keyboard.ToNavigationKey(key).Key;
             if (key.KeyChar == ':')
             {
-                var command = CommandLine.Read();
+                var command = CommandLine.Read(CommandContext.Search);
                 switch (command)
                 {
                     case null:
