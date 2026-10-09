@@ -32,6 +32,7 @@ internal enum EditorRequest
     SpellSuggest, // Show suggestions for the word at the cursor
     ReplaceDialog, // Show the find-and-replace box
     SyntaxChanged, // The Markdown colors were turned on or off
+    LineNumbersChanged, // The line numbers were turned on or off
     Reload, // Read the file from disk again
     ReloadForce, // ... also when the text has changes that are not saved
     SaveSettings
@@ -134,6 +135,33 @@ internal sealed partial class EditorEngine
     }
 
     internal bool IsVisual => Mode is EditorMode.Visual or EditorMode.VisualLine;
+
+    /// <summary>
+    /// True to show the number of each line in front of it (the host draws them, and gives the text the
+    /// width that is left)
+    /// </summary>
+    internal bool LineNumbers { get; set; }
+
+    /// <summary>
+    /// Change the width the text is wrapped in
+    /// </summary>
+    internal void SetLayoutWidth(int width)
+    {
+        Layout.SetWidth(width);
+        TopRow = Math.Clamp(TopRow, 0, Math.Max(0, Layout.TotalRows() - 1));
+        ClampCursor();
+        EnsureCursorVisible();
+    }
+
+    // The commands ":number", ":set number" and ":set nonumber"
+    private void SetLineNumbers(bool on)
+    {
+        if (SingleLine) return;
+        LineNumbers = on;
+        Message = on ? DialogText.LineNumbersOn : DialogText.LineNumbersOff;
+        // The host remembers the choice
+        _request = EditorRequest.LineNumbersChanged;
+    }
     internal bool IsModified => Buffer.IsModified;
     internal string GetText() => Buffer.GetText();
 
@@ -636,6 +664,20 @@ internal sealed partial class EditorEngine
             case "nospell":
             case "set nospell":
                 TurnSpellOff();
+                break;
+            case "number":
+            case "nu":
+                SetLineNumbers(!LineNumbers);
+                break;
+            case "set number":
+            case "set nu":
+                SetLineNumbers(true);
+                break;
+            case "nonumber":
+            case "nonu":
+            case "set nonumber":
+            case "set nonu":
+                SetLineNumbers(false);
                 break;
             case "spellnext":
                 JumpToMisspelled(true, 1);

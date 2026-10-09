@@ -1519,6 +1519,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":pw", "Insert generated strong password", false));
             _shortcutList.Add(new Shortcut(":trim", "Trim blank space (line start/end)", false));
             _shortcutList.Add(new Shortcut(":syntax", "Markdown colors on/off (.md files: on)", false));
+            _shortcutList.Add(new Shortcut(":number :nu", "Line numbers on/off", false));
             _shortcutList.Add(new Shortcut(":%y :%d :2,9d", "Yank all/Delete all/Delete line 2 to 9", false));
             _shortcutList.Add(new Shortcut(":clear", "Clear all", false));
         }

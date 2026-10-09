@@ -960,6 +960,8 @@ internal static class FileIo
         _tempSettings += "browsedual=" + (FileExplorer.DualPane ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Color Markdown files (.md) in the editor (the editor command :syntax turns the colors on and off)
         _tempSettings += "mdcolors=" + (MarkdownHighlighter.ColorFiles ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // Line numbers in the editor (the editor command :number turns them on and off)
+        _tempSettings += "linenumbers=" + (TextArea.LineNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; SPELL CHECKING" + Entries.NewLineChar;
@@ -1073,6 +1075,7 @@ internal static class FileIo
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
         // On unless turned off
         MarkdownHighlighter.ColorFiles = Tools.TrimToLower(Get("mdcolors")) != DialogText.BFalse;
+        TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) == DialogText.BTrue;
         ConsoleColors.Monochrome = Tools.TrimToLower(Get("monochrome")) == DialogText.BTrue;
 
         // Vignettes

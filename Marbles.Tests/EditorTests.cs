@@ -777,6 +777,45 @@ public class EditorTests
 
     #endregion
 
+    #region Line numbers
+
+    [Fact]
+    public void LineNumberCommands()
+    {
+        var editor = Editor("text");
+        Assert.False(editor.LineNumbers);
+        Assert.Equal(EditorRequest.LineNumbersChanged, editor.Type(":number<CR>"));
+        Assert.True(editor.LineNumbers);
+        Assert.Equal(DialogText.LineNumbersOn, editor.Message);
+        editor.Type(":nu<CR>");
+        Assert.False(editor.LineNumbers);
+        editor.Type(":set number<CR>");
+        Assert.True(editor.LineNumbers);
+        editor.Type(":set nu<CR>");
+        Assert.True(editor.LineNumbers);
+        editor.Type(":set nonumber<CR>");
+        Assert.False(editor.LineNumbers);
+        Assert.Equal(DialogText.LineNumbersOff, editor.Message);
+    }
+
+    [Fact]
+    public void LayoutWidth_CanChange_AndTheTextIsWrappedAgain()
+    {
+        var editor = Editor("aaaa bbbb cccc dddd eeee ffff", 20, 5);
+        Assert.Equal(2, editor.Layout.RowCount(0));
+        editor.Type("$");
+        // Narrower, as when line numbers take some of the width
+        editor.SetLayoutWidth(10);
+        Assert.Equal(3, editor.Layout.RowCount(0));
+        Assert.Equal(new TextPos(0, 28), editor.Cursor);
+        Assert.Equal(2, editor.Layout.RowOf(editor.Cursor));
+        editor.SetLayoutWidth(40);
+        Assert.Equal(1, editor.Layout.RowCount(0));
+        Assert.Equal(0, editor.TopRow);
+    }
+
+    #endregion
+
     #region Reading the file again
 
     [Theory]

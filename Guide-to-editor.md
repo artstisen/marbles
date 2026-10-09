@@ -114,6 +114,13 @@ Marbles reads spell files from a directory named `spell`, next to the `data` dir
 
 The words you add are saved as plain text, one word per line, in `spell/<language>.utf-8.add` (for the first of the languages). This is the format of Neovim's word list, so an existing list can be copied to the directory as well.
 
+## Line numbers
+- `:number` (or `:nu`) Show or hide line numbers. `:set number` and `:set nonumber` do one of the two
+
+The numbers are shown to the left of the text, with a small gap. A long line that continues on the next row has its number on the first row only, so the numbers are the ones used by `:5` and shown as `line:column` on the bottom line. The number of the line the cursor is on stands out. The choice is remembered (`linenumbers` in the settings file) and is used for notes and text files alike.
+
+When text is copied from the terminal window with the mouse, the line numbers are copied too: turn them off first (`:nu`). Text yanked in the editor never has them.
+
 ## Markdown colors
 The editor can color the parts of a Markdown text. The text itself is shown as it is written (the `#` and `**` are still there): it is coloring, not a preview.
 

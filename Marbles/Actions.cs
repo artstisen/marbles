@@ -1656,6 +1656,7 @@ internal static class Actions
         ConsoleColors.Monochrome = false;
         MarkdownHighlighter.ColorFiles = true;
         FileExplorer.DualPane = true;
+        TextArea.LineNumbers = false;
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
         ConsoleColors.DefaultColorPresetIndex();
         Vignette.SetDefaultVignetteState();

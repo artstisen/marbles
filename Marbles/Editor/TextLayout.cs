@@ -15,7 +15,18 @@ internal sealed class TextLayout
     /// <summary>
     /// The number of terminal cells available for text on each row
     /// </summary>
-    internal int Width { get; }
+    internal int Width { get; private set; }
+
+    /// <summary>
+    /// Change the width: all lines are wrapped again (when they are asked for)
+    /// </summary>
+    internal void SetWidth(int width)
+    {
+        width = Math.Max(1, width);
+        if (width == Width) return;
+        Width = width;
+        for (var i = 0; i < _segments.Count; i++) _segments[i] = null;
+    }
 
     internal TextLayout(TextBuffer buffer, int width, bool wrap)
     {

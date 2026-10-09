@@ -33,7 +33,19 @@ public class TextArea
     private const int StyleSelection = 1;
     private const int StyleSearchMatch = 2;
     private const int StyleMisspelled = 3;
+    private const int StyleLineNumber = 4;
+    private const int StyleCurrentLineNumber = 5; // The number of the line the cursor is on
     private const int StyleMarkdown = 10; // The styles of Markdown follow from this number
+
+    /// <summary>
+    /// True to show line numbers in the editor (setting "linenumbers")
+    /// </summary>
+    internal static bool LineNumbers { get; set; }
+
+    private const int GutterGap = 2; // The blank columns between the line numbers and the text
+    private const int MinNumberWidth = 2;
+    private readonly int _textWidth; // The width for the text when no line numbers are shown
+    private int _gutter; // The columns in use for the line numbers and the gap after them (0: no numbers)
 
     private readonly EditorEngine _engine;
     private readonly int _top;
@@ -97,9 +109,11 @@ public class TextArea
         Canceled = false;
         SaveWasInvoked = false;
 
-        _engine = new EditorEngine(text ?? string.Empty, width - 1, _height, _singleLine)
+        _textWidth = width - 1;
+        _engine = new EditorEngine(text ?? string.Empty, _textWidth, _height, _singleLine)
         {
-            MaxCells = width - 3
+            MaxCells = width - 3,
+            LineNumbers = LineNumbers && !_singleLine && !readOnly
         };
         // Markdown files are colored (unless that is turned off)
         _engine.Markdown = saveMode == SaveAsFile && !_singleLine && !readOnly && MarkdownHighlighter.ColorFiles &&
@@ -307,6 +321,11 @@ public class TextArea
             case EditorRequest.ReplaceDialog:
                 ShowReplaceDialog();
                 break;
+            case EditorRequest.LineNumbersChanged:
+                // Remembered (but not while the settings file itself is being edited)
+                LineNumbers = _engine.LineNumbers;
+                if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
+                break;
             case EditorRequest.Reload:
             case EditorRequest.ReloadForce:
                 ReloadFile(request == EditorRequest.ReloadForce);
@@ -414,7 +433,8 @@ public class TextArea
         if (firstRow + boxHeight > _height) firstRow = cursorRow - boxHeight;
         firstRow = Math.Clamp(firstRow, 0, Math.Max(0, _height - boxHeight));
         var left = Math.Max(0,
-            Math.Min(_leftMargin.Length + _engine.Layout.CellOf(cursor), Init.LineWidth - 1 - _left - inner - 2));
+            Math.Min(_leftMargin.Length + _gutter + _engine.Layout.CellOf(cursor),
+                Init.LineWidth - 1 - _left - inner - 2));
         var selected = 0;
         var picked = -1;
         var add = false;
@@ -692,9 +712,27 @@ public class TextArea
         Draw();
     }
 
+    // The line numbers take the columns they need: as many as the number of the last line has digits, and
+    // the gap. The text is wrapped in the width that is left
+    private void UpdateGutter()
+    {
+        var gutter = 0;
+        if (_engine.LineNumbers)
+        {
+            gutter = Math.Max(MinNumberWidth, _engine.Buffer.LineCount.ToString().Length) + GutterGap;
+        }
+
+        if (gutter == _gutter) return;
+        _gutter = gutter;
+        _engine.SetLayoutWidth(_textWidth - gutter);
+        // All rows are written again
+        Array.Fill(_shownRows, null);
+    }
+
     private void Draw()
     {
         Tools.HideCursor();
+        UpdateGutter();
         var buffer = _engine.Buffer;
         var layout = _engine.Layout;
         var (line, segment) = layout.LineAtRow(_engine.TopRow);
@@ -726,6 +764,26 @@ public class TextArea
 
     // Build the content of a row: the text of a segment of a line, split where the color changes
     private int BuildRow(StringBuilder row, int line, int segment)
+    {
+        if (_gutter == 0) return BuildTextRow(row, line, segment);
+        // The number of the line on its first row (the following rows of a long line have none)
+        var number = segment == 0 ? (line + 1).ToString() : string.Empty;
+        row.Append(StyleMarker)
+            .Append((char)('0' + (line == _engine.Cursor.Line ? StyleCurrentLineNumber : StyleLineNumber)))
+            .Append(number.PadLeft(_gutter - GutterGap)).Append(' ', GutterGap);
+        var textStart = row.Length;
+        var cells = BuildTextRow(row, line, segment);
+        // The text follows as a part of its own
+        if (row.Length == textStart || row[textStart] != StyleMarker)
+        {
+            row.Insert(textStart, new string(new[] { StyleMarker, (char)('0' + StyleNormal) }));
+        }
+
+        return cells + _gutter;
+    }
+
+    // The text of a row
+    private int BuildTextRow(StringBuilder row, int line, int segment)
     {
         var layout = _engine.Layout;
         var s = _engine.Buffer[line];
@@ -817,6 +875,7 @@ public class TextArea
                 StyleSelection => ConsoleColors.ColorPreset.HighlightInverted,
                 StyleSearchMatch => ConsoleColors.ColorPreset.AttentionInverted,
                 StyleMisspelled => ConsoleColors.ColorPreset.WarningInverted,
+                StyleLineNumber => ConsoleColors.ColorPreset.Divider,
                 _ => ConsoleColors.ColorPreset.Normal
             });
             return;
@@ -1001,7 +1060,7 @@ public class TextArea
         {
             var cursor = _engine.Cursor;
             Tools.SetCursorEx(_top + _engine.Layout.RowOf(cursor) - _engine.TopRow,
-                _left + _leftMargin.Length + _engine.Layout.CellOf(cursor));
+                _left + _leftMargin.Length + _gutter + _engine.Layout.CellOf(cursor));
         }
 
         Tools.ShowCursor();

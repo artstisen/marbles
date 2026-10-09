@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.2
+- **Line numbers** in the editor: `:number` (or `:nu`) shows or hides them, and the choice is remembered.
 - **Editor, text files**: `:e` reads the file from disk again (`:e!` also when there are unsaved changes), and the bottom line shows the type, encoding and line endings of the file (`HTML UTF-8 (BOM) CRLF`).
 - **Search for files** in the file browser (`S` or `:find`): by name (with `*` and `?`), by text in the files, with regular expressions, in a directory and its subfolders. The files found are shown in a list where they can be opened at the line found, shown in the browser (`B`), inspected (`I`) and added to the favorites (`P`).
 - **Two panes in the file browser**: two directories are shown side by side. `Tab` goes to the other pane, and copy (`C`) and move (`M`) start in the directory of the other pane, so `S` copies or moves to it at once; the place is selected in the panes themselves, so you can go anywhere in either pane first. `T` or `:panes` switches between two panes and one. The directories of both panes are remembered (`browsedir1`, `browsedir2`, `browsepane` and `browsedual` replace `browsedir` in the settings file).
