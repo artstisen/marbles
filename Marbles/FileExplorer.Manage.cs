@@ -43,6 +43,8 @@ internal static partial class FileExplorer
                 break;
             case ConsoleKey.F:
                 return BrowseFavorites();
+            case ConsoleKey.S:
+                return SearchFiles();
             default:
                 return KeyResult.NotHandled;
         }
@@ -89,6 +91,8 @@ internal static partial class FileExplorer
             case "panes":
                 TogglePanes();
                 break;
+            case "find":
+                return SearchFiles();
             default:
                 return KeyResult.NotHandled;
         }

@@ -380,6 +380,27 @@ internal static class DialogText
     public const string InfoTypeLink = ", link to ";
     public const string InfoTypeReadOnly = ", read-only";
 
+    // Searching for files in the file browser
+    public const string SearchCaption = "Search files";
+    public const string SearchResultCaption = "Files found";
+    public const string HelpSectionSearch = "File browser search";
+    public const string SearchIn = "In: ";
+    public const string SearchName = "Name:";
+    public const string SearchText = "Text in files:";
+    public const string SearchSubfolders = "This directory and its subfolders";
+    public const string SearchThisDirectory = "This directory only";
+    public const string SearchRun = "Search";
+    public const string SearchNothing = "Write a name or a text to search for";
+    public const string SearchInvalidPattern = "Not a regular expression: ";
+    public const string SearchProgress = "Searching (Esc: Stop), {0} found: ";
+    public const string SearchFound = " files found";
+    public const string SearchFoundOne = " file found";
+    public const string SearchFoundIn = " in ";
+    public const string SearchCapped = " (the search stops at this number)";
+    public const string SearchStopped = " (stopped)";
+    public const string SearchUnreadable = " directories could not be read";
+    public const string SearchResultKeys = "Enter Open | B Show | I Info | P Fave | S Search | / Filter | Esc Close";
+
     // The favorites of the file browser
     public const string CaptionsFileFavorites = "Favorite files";
     public const string HelpSectionFavorites = "File browser favorites";

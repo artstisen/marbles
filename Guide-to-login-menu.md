@@ -115,6 +115,35 @@ Things to know:
 - What Marbles is using cannot be renamed, moved or deleted here: the data directory (and the directories it is in), `settings.ini`, the favorites list, and the data file you are logged in to.
 - Hidden files are not shown in the browser, but they are included when a directory is copied, moved or deleted.
 
+### Searching for files
+`/text` only narrows the list of the directory shown. To find files in the directories below it as well, or by the text in them, use the search:
+
+- `S` or `:find` Open the search box. It searches the directory of the pane with the focus
+
+In the box:
+
+- **Name**: Part of the name of the file. With `*` (any characters) and `?` (one character) the whole name must fit, as in `*.md`. Leave it empty to search all files for a text
+- **Text in files**: Find the text files that contain a text. Files that are not text, files larger than 10 MB and Marbles data files (they are encrypted) are not searched
+- **Regular expression**: The name and the text are regular expressions (`^(notes|plan)\.`, `\d{4}-\d\d`)
+- **Match case**: Off, so `cat` also finds `Cat`
+- **Where**: The directory and its subfolders, or the directory only
+- **Search**: Press `Enter` here to search
+
+The box opens in the _Name_ field: type and press `Enter`. `j` `k` select a row, `Enter` or `Space` edit a field or change an option, and `Esc` closes the box. What you entered is remembered.
+
+While it searches, the bottom line shows the directory being read and the number of files found. `Esc` stops the search and shows what was found so far. The search also stops at 5000 files. Hidden files and directories are not searched, and links to directories are not followed.
+
+The files found are shown in a list, with the directory they are in. When you searched for a text, the first line containing it is shown with its line number.
+
+- `j` `k` Select, `gg` `G` First/Last
+- `l` or `Enter` Open the file in the editor, at the line that was found. Closing the editor returns to the list
+- `B` or `:goto` Show the file in the browser: its directory is opened in the pane with the focus, with the file selected
+- `I` or `:info` Show information about the file
+- `P` or `:fav` Add the file to the favorites, or remove it
+- `/text` Only show the files with "text" in the path or the line found. `Esc` shows all again
+- `S` or `:find` Search again
+- `Esc`, `Q`, `h` or `-` Return to the browser
+
 ### Favorites
 Files and directories you use often can be marked as favorites:
 

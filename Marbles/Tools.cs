@@ -1302,6 +1302,7 @@ internal static class Tools
         Menus, // The main menu, the lists of entries and the entry view
         Files, // The file browser
         Favorites, // The favorites of the file browser
+        Search, // The files found by a search in the file browser
         Editor
     }
 
@@ -1382,6 +1383,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("D :delete", "Delete (asks first, cannot be undone)", false));
             _shortcutList.Add(new Shortcut("P :fav", "Add to/Remove from the favorites (*)", false));
             _shortcutList.Add(new Shortcut("F :favorites", "Show the favorites", false));
+            _shortcutList.Add(new Shortcut("S :find", "Search for files by name and by text", false));
             _shortcutList.Add(new Shortcut("R", "Refresh", false));
             _shortcutList.Add(new Shortcut(":cd path", "Go to a directory", false));
             _shortcutList.Add(new Shortcut(":home", "Go to the Marbles data directory", false));
@@ -1390,6 +1392,18 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  Saving", "As UTF-8, with the line endings of the file", false));
             _shortcutList.Add(new Shortcut("  Not UTF-8", "Can be converted (replace file or save copy)", false));
             _shortcutList.Add(new Shortcut("  Data files", "Opening one selects it on the login page", false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionSearch, true));
+            _shortcutList.Add(new Shortcut("  Name", "Part of the name, or with * and ? (*.md)", false));
+            _shortcutList.Add(new Shortcut("  Text in files", "Text files containing the text", false));
+            _shortcutList.Add(new Shortcut("  Regular expr.", "Name and text are regular expressions", false));
+            _shortcutList.Add(new Shortcut("j k gg G", "Select in the list of files found", false));
+            _shortcutList.Add(new Shortcut("l Enter", "Open the file (at the line found)", false));
+            _shortcutList.Add(new Shortcut("B :goto", "Show the file in the file browser", false));
+            _shortcutList.Add(new Shortcut("I :info", "Show type, size, dates and path", false));
+            _shortcutList.Add(new Shortcut("P :fav", "Add to/Remove from the favorites (*)", false));
+            _shortcutList.Add(new Shortcut("/text", "Only show the files with \"text\" (Esc: all)", false));
+            _shortcutList.Add(new Shortcut("S :find", "Search again", false));
+            _shortcutList.Add(new Shortcut("Esc Q h -", "Back to the file browser", false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFavorites, true));
             _shortcutList.Add(new Shortcut("j k gg G", "Select", false));
             _shortcutList.Add(new Shortcut("l Enter", "Open the file (a directory: go to it)", false));
@@ -1523,6 +1537,7 @@ internal static class Tools
             HelpTopic.Menus => DialogText.HelpSectionMenus,
             HelpTopic.Files => DialogText.HelpSectionFiles,
             HelpTopic.Favorites => DialogText.HelpSectionFavorites,
+            HelpTopic.Search => DialogText.HelpSectionSearch,
             HelpTopic.Editor => DialogText.HelpSectionEditor,
             _ => string.Empty
         };

@@ -4,7 +4,8 @@
 /// The file browser opened from the options of the login page. It lists the directories and files of a
 /// directory, and opens text files in the editor: for editing single files outside the encrypted data files.
 /// Selecting a Marbles data file returns to the login page with the file selected.
-/// File management is found in FileExplorer.Manage.cs and the list of favorites in FileExplorer.Favorites.cs.
+/// File management is found in FileExplorer.Manage.cs, the list of favorites in FileExplorer.Favorites.cs
+/// and the search for files in FileExplorer.Search.cs.
 /// </summary>
 internal static partial class FileExplorer
 {
@@ -192,6 +193,7 @@ internal static partial class FileExplorer
                     EventLog.Add(DialogText.LogFilesCommand + ": :" + (name is "q" or "quit" or "close" or "home"
                         or "h" or "help" or "cd" or "new" or "info" or "mkdir" or "rename" or "copy" or "duplicate"
                         or "move" or "delete" or "fav" or "favorite" or "favs" or "favorites" or "panes"
+                        or "find"
                         ? command
                         : "(not a command)"));
                 }
@@ -592,7 +594,7 @@ internal static partial class FileExplorer
             Tools.ClearScreen();
             Actions.DrawEditFileMenu();
             var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                Init.LineCount - 5, file.Text, 0, false, false, false, TextArea.SaveAsFile, modified);
+                Init.LineCount - 5, file.Text, _openAtIndex, false, false, false, TextArea.SaveAsFile, modified);
             textArea.ClearUndoRedoCache();
         }
         finally
