@@ -332,6 +332,11 @@ internal static class DialogText
 
     public const string FileBrowserDualKeys = "Tab Pane | l Open | h Up | / Filter | F Faves | ? Help | Esc Close";
     public const string PaneLabel = "PANE ";
+    public const string FileTargetDualKeys = "Tab Pane | l Open | h Up | / Filter | S {0} | Esc Cancel";
+    public const string FileTargetKeys = "j/k Select | l Open | h Up | / Filter | S {0} | Esc Cancel";
+    public const string FileCopyHere = "Copy here";
+    public const string FileMoveHere = "Move here";
+    public const string FileSelectTarget = "Go to the directory and press S (Esc cancels)";
 
     // File management in the file browser
     public const string NewDirectory = "New directory";

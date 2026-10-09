@@ -132,8 +132,9 @@ internal static partial class FileExplorer
         SessionEnded = true;
     }
 
-    private static string? Browse(BrowseMode mode, string caption, string? startDirectory = null)
+    private static string? Browse(BrowseMode mode, string caption)
     {
+        _pending = null;
         _mode = mode;
         _caption = caption;
         _picked = null;
@@ -150,7 +151,7 @@ internal static partial class FileExplorer
         }
         else
         {
-            StartPaneIn(PickPane, startDirectory ?? StartDirectory);
+            StartPaneIn(PickPane, StartDirectory);
         }
 
         Init.ApplyAutoSize();
@@ -163,11 +164,28 @@ internal static partial class FileExplorer
             var redraw = true;
             var hadMessage = _message.Length > 0;
             _message = string.Empty;
-            if (key.KeyChar == ':')
+            if (_pending != null && key.Key is ConsoleKey.Escape or ConsoleKey.Q)
+            {
+                // Not copied or moved after all
+                StopSelectingTarget();
+            }
+            else if (_pending != null && key.Key is ConsoleKey.S or ConsoleKey.Spacebar)
+            {
+                CompleteSelectingTarget();
+            }
+            else if (key.KeyChar == ':')
             {
                 // The command is read as typed, as paths can be case sensitive
                 var command = CommandLine.Read(':', false);
                 var name = command == null ? string.Empty : CommandLine.Name(command).ToLowerInvariant();
+                if (_pending != null && command != null && name is not ("cd" or "home" or "h" or "help" or "panes"))
+                {
+                    // Only going to a directory while the place to copy or move to is selected
+                    _message = DialogText.FileSelectTarget;
+                    command = null;
+                    name = string.Empty;
+                }
+
                 if (command != null)
                 {
                     // File names and paths are logged, but not something typed that is not a command
@@ -289,7 +307,10 @@ internal static partial class FileExplorer
             }
             else if (key.Key is ConsoleKey.L or ConsoleKey.RightArrow or ConsoleKey.Enter)
             {
-                if (ActivePane.Items.Count > 0 && Open(ActivePane.Items[ActivePane.Index]))
+                // (while the place to copy or move to is selected, only directories are opened)
+                if (ActivePane.Items.Count > 0 &&
+                    (_pending == null || ActivePane.Items[ActivePane.Index].IsDirectory) &&
+                    Open(ActivePane.Items[ActivePane.Index]))
                 {
                     // A file was picked, or a data file was selected: continue on the login page
                     break;
@@ -313,6 +334,10 @@ internal static partial class FileExplorer
             else if (_mode == BrowseMode.Edit && key.Key == ConsoleKey.T)
             {
                 TogglePanes();
+            }
+            else if (_pending != null)
+            {
+                // The other keys do nothing until the place to copy or move to is selected
             }
             else if (_mode == BrowseMode.Edit && key.Key == ConsoleKey.N)
             {
@@ -929,6 +954,8 @@ internal static partial class FileExplorer
             {
                 BrowseMode.PickFile => DialogText.FilePickKeys,
                 BrowseMode.PickDirectory => DialogText.DirectoryPickKeys,
+                _ when _pending != null => (IsDual ? DialogText.FileTargetDualKeys : DialogText.FileTargetKeys)
+                    .Replace("{0}", _pending.IsMove ? DialogText.FileMoveHere : DialogText.FileCopyHere),
                 _ => IsDual ? DialogText.FileBrowserDualKeys : DialogText.FileBrowserKeys
             });
         }

@@ -105,7 +105,7 @@ These work on the selected file or directory (one at a time):
 - `M` or `:move` Move to another directory
 - `D` or `:delete` Delete. You are asked first, and for a directory you are told how many files and directories it contains
 
-For copy and move the browser lets you select the target: go to the directory and press `S` (`Esc` cancels). With two panes the selection starts in the directory of the other pane, so pressing `S` at once copies or moves to the other pane. Both panes are updated afterwards. While a directory is being copied the name of the current file is shown, and `Esc` cancels the copy (what was copied so far is removed).
+For copy and move you select where to: after `C` or `M` the browser stays as it is, with the name of the file at the top left. Go to the directory, in either pane, and press `S` to copy or move the file to the directory shown in the pane with the focus. `Esc` cancels. With two panes the focus goes to the other pane, so pressing `S` at once copies or moves to it, and `Tab` takes you back if the place is in the first pane. With one pane you go to the directory in that pane. While you are selecting, the other file keys and commands are not in use (`:cd` and `:home` are). Both panes are updated afterwards, and the focus returns to the pane the file was in. While a directory is being copied the name of the current file is shown, and `Esc` cancels the copy (what was copied so far is removed).
 
 Things to know:
 

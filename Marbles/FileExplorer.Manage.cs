@@ -161,20 +161,65 @@ internal static partial class FileExplorer
         return textArea.Canceled || name.Length == 0 ? null : name;
     }
 
-    // Let the user select the directory to copy or move something to. With two panes it starts in the
-    // directory of the other pane, so that "S" at once copies or moves to it. With one: in the directory shown
-    private static string? PickTargetDirectory(string caption)
+    #region Selecting where to copy or move to
+
+    // A file or directory that is being copied or moved: the user is selecting the directory to put it in.
+    // This is done in the panes as they are: any directory can be gone to, in either pane, and "S" selects
+    // the directory shown in the pane with the focus
+    private sealed record PendingOperation(Item Item, bool IsMove, int Pane);
+
+    private static PendingOperation? _pending;
+
+    private static void StartSelectingTarget(Item item, bool isMove)
     {
-        var saved = (_mode, _caption, SessionEnded, DataFileSelected);
-        var start = IsDual ? OtherPane.Directory : ActivePane.Directory;
-        var target = Browse(BrowseMode.PickDirectory, caption, start.Length > 0 ? start : null);
-        (_mode, _caption, SessionEnded, DataFileSelected) = saved;
-        _picked = null;
-        _message = string.Empty;
-        // The panes are as they were: they must be drawn again
-        foreach (var pane in Panes) pane.ShownTop = -1;
-        return target;
+        _pending = new PendingOperation(item, isMove, _active);
+        _caption = (isMove ? DialogText.FileMoveTo : DialogText.FileCopyTo) + item.Name;
+        // With two panes the other pane is the place to start: "S" at once copies or moves to it
+        if (IsDual) _active = 1 - _active;
     }
+
+    private static void StopSelectingTarget()
+    {
+        if (_pending == null) return;
+        _active = _pending.Pane;
+        _pending = null;
+        _caption = DialogText.CaptionsFiles;
+    }
+
+    // Copy or move to the directory shown in the pane with the focus
+    private static void CompleteSelectingTarget()
+    {
+        if (_pending == null) return;
+        var target = ActivePane.Directory;
+        if (target.Length == 0)
+        {
+            // The list of drives is not a directory
+            _message = DialogText.DirectoryNotFound;
+            return;
+        }
+
+        var (item, isMove, _) = _pending;
+        // Back to the pane the file is in
+        StopSelectingTarget();
+        Draw(true);
+        if (isMove)
+        {
+            var result = FileOperations.Move(item.Path, target, out var path, ShowProgress);
+            LogOperation("Move", item.Path + " -> " + target, result);
+            Finish(result, result == DialogText.Success ? null : item.Path, DialogText.FileMoved + ShortPath(target));
+            if (result == DialogText.Success && FileFavorites.PathChanged(item.Path, path)) SaveFavorites();
+        }
+        else
+        {
+            var result = FileOperations.Copy(item.Path, target, out var path, ShowProgress);
+            LogOperation("Copy", item.Path + " -> " + target, result);
+            // A copy in the same directory is selected. Else the original stays selected
+            var inPlace = result == DialogText.Success && FileOperations.SamePath(target, ActivePane.Directory);
+            Finish(result, inPlace ? path : item.Path, DialogText.FileCopied + ShortPath(target));
+        }
+    }
+
+    #endregion
 
     // Show the file being copied on the bottom line. Esc cancels
     private static bool ShowProgress(string name)
@@ -272,15 +317,7 @@ internal static partial class FileExplorer
     private static void CopySelected()
     {
         var item = SelectedItem();
-        if (item == null) return;
-        var target = PickTargetDirectory(DialogText.FileCopyTo + item.Name);
-        if (target == null) return;
-        Draw(true);
-        var result = FileOperations.Copy(item.Path, target, out var path, ShowProgress);
-        LogOperation("Copy", item.Path + " -> " + target, result);
-        // A copy in the same directory is selected. Else the original stays selected
-        var inPlace = result == DialogText.Success && FileOperations.SamePath(target, ActivePane.Directory);
-        Finish(result, inPlace ? path : item.Path, DialogText.FileCopied + ShortPath(target));
+        if (item != null) StartSelectingTarget(item, false);
     }
 
     private static void DuplicateSelected()
@@ -296,14 +333,7 @@ internal static partial class FileExplorer
     private static void MoveSelected()
     {
         var item = SelectedItem();
-        if (item == null || IsProtected(item)) return;
-        var target = PickTargetDirectory(DialogText.FileMoveTo + item.Name);
-        if (target == null) return;
-        Draw(true);
-        var result = FileOperations.Move(item.Path, target, out var path, ShowProgress);
-        LogOperation("Move", item.Path + " -> " + target, result);
-        Finish(result, result == DialogText.Success ? null : item.Path, DialogText.FileMoved + ShortPath(target));
-        if (result == DialogText.Success && FileFavorites.PathChanged(item.Path, path)) SaveFavorites();
+        if (item != null && !IsProtected(item)) StartSelectingTarget(item, true);
     }
 
     private static void DeleteSelected()

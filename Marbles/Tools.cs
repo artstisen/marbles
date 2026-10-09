@@ -1376,9 +1376,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("A :mkdir name", "Create a new directory", false));
             _shortcutList.Add(new Shortcut("X :rename name", "Rename the file or directory", false));
             _shortcutList.Add(new Shortcut("Y :duplicate", "Make a copy in the same directory", false));
-            _shortcutList.Add(new Shortcut("C :copy", "Copy to another directory (select it: S)", false));
-            _shortcutList.Add(new Shortcut("M :move", "Move to another directory (select it: S)", false));
-            _shortcutList.Add(new Shortcut("  Two panes", "C and M start in the other pane: S copies to it", false));
+            _shortcutList.Add(new Shortcut("C :copy", "Copy: go to the directory, then S (Esc cancels)", false));
+            _shortcutList.Add(new Shortcut("M :move", "Move: go to the directory, then S (Esc cancels)", false));
+            _shortcutList.Add(new Shortcut("  Two panes", "C and M go to the other pane: S copies to it", false));
             _shortcutList.Add(new Shortcut("D :delete", "Delete (asks first, cannot be undone)", false));
             _shortcutList.Add(new Shortcut("P :fav", "Add to/Remove from the favorites (*)", false));
             _shortcutList.Add(new Shortcut("F :favorites", "Show the favorites", false));
