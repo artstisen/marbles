@@ -32,6 +32,8 @@ internal enum EditorRequest
     SpellSuggest, // Show suggestions for the word at the cursor
     ReplaceDialog, // Show the find-and-replace box
     SyntaxChanged, // The Markdown colors were turned on or off
+    Reload, // Read the file from disk again
+    ReloadForce, // ... also when the text has changes that are not saved
     SaveSettings
 }
 
@@ -335,6 +337,27 @@ internal sealed partial class EditorEngine
         if (!Buffer.IsStepOpen) _stepCursor = Cursor;
         Cursor = Insert(Buffer.Clamp(Cursor), text);
         if (Mode != EditorMode.Insert) Buffer.EndStep(Cursor);
+        ClampCursor();
+        EnsureCursorVisible();
+    }
+
+    /// <summary>
+    /// Replace the text with the text of the file as it is on disk now. The text is not changed as far as
+    /// saving goes, and what was done before cannot be undone
+    /// </summary>
+    internal void ReloadText(string text)
+    {
+        var cursor = Cursor;
+        ResetPending();
+        Mode = EditorMode.Normal;
+        _stepCursor = cursor;
+        Delete(new TextPos(0, 0), Buffer.End);
+        Insert(new TextPos(0, 0), TextBuffer.Normalize(text));
+        Buffer.EndStep(cursor);
+        Buffer.ClearHistory();
+        Buffer.MarkSaved();
+        // The cursor stays where it was, if the text still reaches that far
+        Cursor = Buffer.Clamp(cursor);
         ClampCursor();
         EnsureCursorVisible();
     }
@@ -682,6 +705,16 @@ internal sealed partial class EditorEngine
                 break;
             case "trim":
                 TrimLines();
+                break;
+            case "e":
+            case "edit":
+            case "reload":
+                _request = EditorRequest.Reload;
+                break;
+            case "e!":
+            case "edit!":
+            case "reload!":
+                _request = EditorRequest.ReloadForce;
                 break;
             case "clear":
                 if (!Buffer.IsEmpty) _request = EditorRequest.ClearAll;

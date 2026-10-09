@@ -310,6 +310,9 @@ internal static class DialogText
     public const string ConfigRestart = "Restart Marbles";
     public const string ConfigViewLog = "View log";
 
+    public const string EditorReloaded = "Read from the file again";
+    public const string EditorReloadUnsaved = "Unsaved changes (:e! reads the file anyway)";
+    public const string EditorReloadFilesOnly = "Only text files can be read again";
     public const string MarkdownOn = "Markdown colors on";
     public const string MarkdownOff = "Markdown colors off";
 

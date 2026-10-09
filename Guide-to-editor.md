@@ -6,7 +6,7 @@ The editor works in the style of Vim. It is always in one of these modes, shown 
 - **INSERT**: keys type text. An empty entry starts here. Press `Esc` to return to Normal mode.
 - **VISUAL** and **V-LINE**: movements select text (or whole lines) for a command.
 
-The bottom line also shows messages, the current memory string, the cursor position as `line:column` and how far into the text the cursor is. Inside Marbles, `:help` shows the list of keys.
+When a text file is edited (from the file browser), the bottom line shows its type and encoding, like `HTML UTF-8 (BOM)` or `TXT Windows-1252` (a file in another encoding than UTF-8 becomes UTF-8 when it is saved). The bottom line also shows messages, the current memory string, the cursor position as `line:column` and how far into the text the cursor is. Inside Marbles, `:help` shows the list of keys.
 
 ## Save and close
 Typed on the command line: press `:`, type the command and press `Enter`.
@@ -15,6 +15,7 @@ Typed on the command line: press `:`, type the command and press `Enter`.
 - `:wq` or `:x` or `ZZ` Save and close the editor
 - `:q` or `Esc` in Normal mode: Close the editor (asks what to do with unsaved changes)
 - `:q!` or `ZQ` Close the editor without saving
+- `:e` (or `:reload`) Text files: read the file from disk again, when it has been changed by another program. If you have changes that are not saved it is not done; `:e!` reads the file anyway and drops your changes. What was done before cannot be undone afterwards
 - `:help` Show the list of keys
 
 `Esc` first leaves what you are in the middle of: Insert or Visual mode, a command that is half typed, or the highlighting of search matches. When there is nothing to leave, it closes the editor.

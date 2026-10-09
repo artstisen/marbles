@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 namespace Marbles.Tests;
 
@@ -117,5 +117,17 @@ public class TextFileTests
         {
             File.Delete(path);
         }
+    }
+
+    [Fact]
+    public void EncodingLabel_TellsTheEncoding()
+    {
+        Assert.Equal("UTF-8", TextFile.Read(System.Text.Encoding.UTF8.GetBytes("text æøå")).EncodingLabel);
+        Assert.Equal("UTF-8 (BOM)",
+            TextFile.Read(new byte[] { 0xEF, 0xBB, 0xBF }.Concat(System.Text.Encoding.UTF8.GetBytes("text")).ToArray())
+                .EncodingLabel);
+        Assert.Equal("UTF-16",
+            TextFile.Read(new byte[] { 0xFF, 0xFE }.Concat(System.Text.Encoding.Unicode.GetBytes("text")).ToArray())
+                .EncodingLabel);
     }
 }

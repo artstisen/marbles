@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 
 namespace Marbles;
 
@@ -33,6 +33,11 @@ internal sealed class TextFile
     internal string EncodingName { get; private set; } = "UTF-8";
 
     internal string LineEnding { get; private set; } = Environment.NewLine;
+
+    /// <summary>
+    /// The encoding of the file as shown to the user: "UTF-8", "UTF-8 (BOM)", "UTF-16", "Windows-1252" ...
+    /// </summary>
+    internal string EncodingLabel => EncodingName + (_hasUtf8Bom ? " (BOM)" : string.Empty);
     private bool _hasUtf8Bom;
 
     /// <summary>
@@ -132,7 +137,9 @@ internal sealed class TextFile
         {
             FileIo.WriteAllBytesSafe(Path, GetBytes(text));
             Text = TextBuffer.Normalize(text);
+            // The file is UTF-8 now, whatever it was read as
             IsUtf8 = true;
+            EncodingName = "UTF-8";
             return DialogText.Success;
         }
         catch (Exception e)

@@ -776,6 +776,42 @@ public class EditorTests
     }
 
     #endregion
+
+    #region Reading the file again
+
+    [Theory]
+    [InlineData(":e<CR>", nameof(EditorRequest.Reload))]
+    [InlineData(":edit<CR>", nameof(EditorRequest.Reload))]
+    [InlineData(":reload<CR>", nameof(EditorRequest.Reload))]
+    [InlineData(":e!<CR>", nameof(EditorRequest.ReloadForce))]
+    public void ReloadCommands_AskTheHost(string keys, string expected)
+    {
+        Assert.Equal(expected, Editor("text").Type(keys).ToString());
+    }
+
+    [Fact]
+    public void ReloadText_ReplacesTheText_AsSaved()
+    {
+        var editor = Editor("one\ntwo\nthree");
+        editor.Type("jlix<Esc>");
+        Assert.True(editor.IsModified);
+        editor.ReloadText("first\r\nsecond line\r\nthird\r\nfourth");
+        Assert.Equal("first\nsecond line\nthird\nfourth", editor.GetText());
+        Assert.False(editor.IsModified);
+        Assert.Equal(EditorMode.Normal, editor.Mode);
+        // The cursor stays on its line
+        Assert.Equal(1, editor.Cursor.Line);
+        // What was done before the file was read cannot be undone
+        editor.Type("u");
+        Assert.Equal("first\nsecond line\nthird\nfourth", editor.GetText());
+        Assert.False(editor.IsModified);
+        // A shorter text: the cursor is moved into it
+        editor.Type("G");
+        editor.ReloadText("only");
+        AssertState(editor, "only", 0, 0);
+    }
+
+    #endregion
 }
 
 public class TextBufferTests

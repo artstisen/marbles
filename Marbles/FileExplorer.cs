@@ -610,6 +610,46 @@ internal static partial class FileExplorer
     internal static string CurrentFileName => _file == null ? string.Empty : System.IO.Path.GetFileName(_file.Path);
 
     /// <summary>
+    /// The type and encoding of the file being edited, for the bottom line of the editor: "HTML UTF-8 (BOM)"
+    /// </summary>
+    internal static string CurrentFileLabel
+    {
+        get
+        {
+            if (_file == null) return string.Empty;
+            var extension = System.IO.Path.GetExtension(_file.Path);
+            var type = extension.Length > 1 && extension.Length < System.IO.Path.GetFileName(_file.Path).Length
+                ? Tools.TruncateString(extension[1..].ToUpperInvariant(), 10, true) + " "
+                : string.Empty;
+            return type + _file.EncodingLabel;
+        }
+    }
+
+    /// <summary>
+    /// Read the file being edited from disk again (it can have been changed by another program)
+    /// </summary>
+    /// <param name="text">The text of the file</param>
+    /// <returns>DialogText.Success or an error message</returns>
+    internal static string ReloadCurrentFile(out string text)
+    {
+        text = string.Empty;
+        if (_file == null) return DialogText.FileNotFound;
+        try
+        {
+            if (!File.Exists(_file.Path)) return DialogText.FileNotFound;
+            _file = TextFile.Load(_file.Path);
+        }
+        catch (Exception e)
+        {
+            return e.Message;
+        }
+
+        EventLog.Add(DialogText.LogFile + "Reload: " + _file.Path);
+        text = _file.Text;
+        return DialogText.Success;
+    }
+
+    /// <summary>
     /// Save the text of the file being edited (called by the editor)
     /// </summary>
     /// <returns>DialogText.Success or an error message</returns>

@@ -1437,6 +1437,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":wq :x ZZ", "Save and close editor", false));
             _shortcutList.Add(new Shortcut(":q Esc", "Close editor (asks to save changes)", false));
             _shortcutList.Add(new Shortcut(":q! ZQ", "Close editor without saving", false));
+            _shortcutList.Add(new Shortcut(":e :e!", "Text files: Read the file again (!: drop changes)", false));
             _shortcutList.Add(new Shortcut(":help", "Show this help", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Moving the cursor (Normal and Visual mode)", true));
             _shortcutList.Add(new Shortcut("h j k l", "Left/Down/Up/Right (as the arrow keys)", false));

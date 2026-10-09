@@ -307,6 +307,10 @@ public class TextArea
             case EditorRequest.ReplaceDialog:
                 ShowReplaceDialog();
                 break;
+            case EditorRequest.Reload:
+            case EditorRequest.ReloadForce:
+                ReloadFile(request == EditorRequest.ReloadForce);
+                break;
             case EditorRequest.SyntaxChanged:
                 // The choice is remembered for Markdown files
                 if (_saveMode == SaveAsFile && MarkdownHighlighter.IsMarkdownFile(FileExplorer.CurrentFileName))
@@ -321,6 +325,34 @@ public class TextArea
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
                 break;
         }
+    }
+
+    // Read the file from disk again. Changes that are not saved are only given up if that is asked for
+    private void ReloadFile(bool force)
+    {
+        if (_saveMode != SaveAsFile)
+        {
+            // An entry of a data file cannot be changed by another program
+            _engine.SetMessage(DialogText.EditorReloadFilesOnly, true);
+            return;
+        }
+
+        if (_engine.IsModified && !force)
+        {
+            _engine.SetMessage(DialogText.EditorReloadUnsaved, true);
+            return;
+        }
+
+        var status = FileExplorer.ReloadCurrentFile(out var text);
+        if (status != DialogText.Success)
+        {
+            _engine.SetMessage(status, true);
+            return;
+        }
+
+        _engine.ReloadText(text);
+        UpdateChangeIndicator();
+        _engine.SetMessage(DialogText.EditorReloaded, false);
     }
 
     // Show the find-and-replace box on top of the text, and replace as asked for
@@ -902,6 +934,8 @@ public class TextArea
         if (_engine.PendingKeys.Length > 0) right += _engine.PendingKeys + " | ";
         if (Tools.HasLineMemory()) right += DialogText.EditorMemory + " " + Tools.GetLineMemoryPosition() + " | ";
         if (_engine.IsSpellOn) right += DialogText.SpellStatus + " " + _engine.SpellLanguages + " | ";
+        // A text file: its type and encoding
+        if (_saveMode == SaveAsFile) right += FileExplorer.CurrentFileLabel + " | ";
         right += (cursor.Line + 1) + ":" + column + " | " + percent + "% ";
 
         // Make it fit
