@@ -1,7 +1,7 @@
 # Changes
 
 ## v1.5.2
-- **Colors for HTML, CSS, JavaScript and JSON** in the editor, besides Markdown: comments, strings, keywords and tags, names and numbers. Files are colored by their kind when opened from the file browser, `:syntax` turns the colors on and off, and `:syntax html` (or `md`, `css`, `js`, `json`) colors any text as that kind. The setting `mdcolors` is now named `syntaxcolors`.
+- **Colors for HTML, CSS, JavaScript, JSON and XML** in the editor, besides Markdown: comments, strings, keywords and tags, names and numbers. Files are colored by their kind when opened from the file browser, `:syntax` turns the colors on and off, and `:syntax html` (or `md`, `css`, `js`, `json`, `xml`) colors any text as that kind. The setting `mdcolors` is now named `syntaxcolors`.
 - **Quick guide**: a short introduction to the two parts of Marbles, the keys for moving around and the modes of the editor. It is found on the start page, in the options of the login page (`Esc`, `U`) and with `:guide` on the first page of the main menu.
 - **Line numbers** in the editor: they are on from the start. `:number` (or `:nu`) shows or hides them, in the editor and on page 2 of the main menu, and the Configuration page has a setting for it. The choice is remembered.
 - **Editor, text files**: `:e` reads the file from disk again (`:e!` also when there are unsaved changes), and the bottom line shows the type, encoding and line endings of the file (`HTML UTF-8 (BOM) CRLF`).

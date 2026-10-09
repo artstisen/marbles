@@ -122,11 +122,11 @@ The numbers are shown to the left of the text, with a small gap. A long line tha
 When text is copied from the terminal window with the mouse, the line numbers are copied too: turn them off first (`:nu`). Text yanked in the editor never has them.
 
 ## Colors
-The editor can color the parts of a text by what they are, for Markdown, HTML, CSS, JavaScript and JSON. The text itself is shown as it is written: it is coloring, not a preview, and nothing is checked for errors.
+The editor can color the parts of a text by what they are, for Markdown, HTML, CSS, JavaScript, JSON and XML. The text itself is shown as it is written: it is coloring, not a preview, and nothing is checked for errors.
 
-- Files named `.md`, `.html`/`.htm`, `.css`, `.js`/`.mjs` and `.json` are colored when they are opened from the file browser
+- Files named `.md`, `.html`/`.htm`, `.css`, `.js`/`.mjs`, `.json` and `.xml` (also `.svg`, `.xsd`, `.xsl`, `.xaml`, `.rss`, `.csproj` and other XML files) are colored when they are opened from the file browser
 - `:syntax` Turn the colors on or off (`:syntax on` and `:syntax off` do one of the two). When you turn them off in one of these files, that is remembered (`syntaxcolors` in the settings file), so files are opened without colors until you turn them on again
-- `:syntax md`, `:syntax html`, `:syntax css`, `:syntax js`, `:syntax json` Color the text as that kind, whatever the name of the file is. This is how the colors are used in a note of a data file, where they are off until you ask for them, and it lasts while the editor is open. In a note, `:syntax` alone colors it as Markdown
+- `:syntax md`, `:syntax html`, `:syntax css`, `:syntax js`, `:syntax json`, `:syntax xml` Color the text as that kind, whatever the name of the file is. This is how the colors are used in a note of a data file, where they are off until you ask for them, and it lasts while the editor is open. In a note, `:syntax` alone colors it as Markdown
 
 Selected text, search matches and misspelled words are shown on top of the colors. With _Black and white_ on, the colored parts are shown brighter than the text.
 
@@ -143,7 +143,7 @@ Selected text, search matches and misspelled words are shown on top of the color
 
 The reading of Markdown is simple: emphasis inside emphasis is shown as the outer one, emphasis that continues on the next line is not found, and tables are not colored.
 
-### HTML, CSS, JavaScript and JSON
+### HTML, CSS, JavaScript, JSON and XML
 
 | | |
 |---|---|
@@ -153,7 +153,7 @@ The reading of Markdown is simple: emphasis inside emphasis is shown as the oute
 | The names of attributes in HTML, of properties in CSS and of values in JSON | The color of the preview title |
 | Numbers (also with units, like `12px`), CSS colors like `#fff`, and character entities like `&amp;` | Magenta |
 
-In an HTML file, what is between `<style>` and `</style>` is colored as CSS, and what is between `<script>` and `</script>` as JavaScript.
+In an HTML file, what is between `<style>` and `</style>` is colored as CSS, and what is between `<script>` and `</script>` as JavaScript. XML is colored like HTML (tags, attributes, comments and entities), without the CSS and JavaScript, and the text of a `<![CDATA[ ... ]]>` section is left uncolored.
 
 This too is a simple reading. Regular expressions written between slashes in JavaScript are not recognized (and can be colored wrongly if they contain quotes), the code inside `${...}` in a template string is shown as part of the string, and CSS or JavaScript written in the attributes of an HTML tag is shown as an ordinary value.
 

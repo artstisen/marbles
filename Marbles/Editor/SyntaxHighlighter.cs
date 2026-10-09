@@ -10,11 +10,12 @@ internal enum SyntaxType
     Html,
     Css,
     JavaScript,
-    Json
+    Json,
+    Xml
 }
 
 /// <summary>
-/// The coloring of text in the editor by what it is: Markdown, HTML, CSS, JavaScript or JSON.
+/// The coloring of text in the editor by what it is: Markdown, HTML, CSS, JavaScript, JSON or XML.
 /// Each kind has a class of its own that finds the styles of a line (MarkdownHighlighter, HtmlHighlighter ...).
 /// This class picks the one to use, and tells what kind a file is from its name.
 ///
@@ -41,6 +42,8 @@ internal static class SyntaxHighlighter
             ".css" => SyntaxType.Css,
             ".js" or ".mjs" or ".cjs" => SyntaxType.JavaScript,
             ".json" => SyntaxType.Json,
+            ".xml" or ".xsd" or ".xsl" or ".xslt" or ".svg" or ".xaml" or ".rss" or ".atom" or ".plist"
+                or ".csproj" or ".props" or ".targets" or ".resx" => SyntaxType.Xml,
             _ => SyntaxType.None
         };
     }
@@ -57,6 +60,7 @@ internal static class SyntaxHighlighter
             "css" => SyntaxType.Css,
             "js" or "javascript" => SyntaxType.JavaScript,
             "json" => SyntaxType.Json,
+            "xml" => SyntaxType.Xml,
             _ => SyntaxType.None
         };
     }
@@ -70,6 +74,7 @@ internal static class SyntaxHighlighter
             SyntaxType.Css => "CSS",
             SyntaxType.JavaScript => "JavaScript",
             SyntaxType.Json => "JSON",
+            SyntaxType.Xml => "XML",
             _ => string.Empty
         };
     }
@@ -107,6 +112,9 @@ internal static class SyntaxHighlighter
                 break;
             case SyntaxType.Json:
                 JavaScriptHighlighter.ScanJson(line, styles);
+                break;
+            case SyntaxType.Xml:
+                nextState = HtmlHighlighter.Scan(line, state, styles, true);
                 break;
         }
 

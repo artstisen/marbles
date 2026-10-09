@@ -4,6 +4,7 @@
 /// Finds the parts of a line of HTML to color: tags, the names and values of attributes, comments and
 /// character entities (like &amp;amp;). What is between &lt;style&gt; and &lt;/style&gt; is read as CSS,
 /// and what is between &lt;script&gt; and &lt;/script&gt; as JavaScript.
+/// XML is read the same way, without the CSS and JavaScript, and with its CDATA sections.
 /// </summary>
 internal static class HtmlHighlighter
 {
@@ -13,6 +14,7 @@ internal static class HtmlHighlighter
     private const int InTag = 2; // After the name of a tag: among its attributes
     private const int InScript = 3;
     private const int InStyle = 4;
+    private const int InCData = 5; // <![CDATA[ text that is not read as tags ]]>
 
     // The state is kept in one number: where the line starts (3 bits), what the tag it is in starts when it
     // ends (2 bits: nothing, script or style), and the state of the JavaScript or CSS it is in (the rest)
@@ -27,8 +29,9 @@ internal static class HtmlHighlighter
     /// <param name="line">The line</param>
     /// <param name="state">The state the line starts in (0 at the start of a document)</param>
     /// <param name="styles">The styles of the line, to fill in</param>
+    /// <param name="xml">True for XML: script and style are tags like the others</param>
     /// <returns>The state after the line</returns>
-    internal static int Scan(string line, int state, SyntaxStyle[] styles)
+    internal static int Scan(string line, int state, SyntaxStyle[] styles, bool xml = false)
     {
         var mode = state & ((1 << ModeBits) - 1);
         var pending = (state >> ModeBits) & ((1 << PendingBits) - 1);
@@ -67,11 +70,25 @@ internal static class HtmlHighlighter
                     i = stop;
                     break;
                 }
+                case InCData:
+                {
+                    // The text is left as it is, to the mark that ends the section
+                    var close = line.IndexOf("]]>", i, StringComparison.Ordinal);
+                    if (close >= 0)
+                    {
+                        JavaScriptHighlighter.Fill(styles, close, close + 3, SyntaxStyle.Keyword);
+                        mode = InText;
+                    }
+
+                    i = close < 0 ? end : close + 3;
+                    break;
+                }
                 case InTag:
                     i = ScanTag(line, i, styles, ref mode, ref pending);
                     break;
                 default:
                     i = ScanText(line, i, styles, ref mode, ref pending);
+                    if (xml) pending = 0;
                     break;
             }
         }
@@ -92,8 +109,16 @@ internal static class HtmlHighlighter
                 return i + 4;
             }
 
+            const string cdata = "<![CDATA[";
+            if (string.CompareOrdinal(line, i, cdata, 0, cdata.Length) == 0)
+            {
+                JavaScriptHighlighter.Fill(styles, i, i + cdata.Length, SyntaxStyle.Keyword);
+                mode = InCData;
+                return i + cdata.Length;
+            }
+
             var next = i + 1 < line.Length ? line[i + 1] : '\0';
-            if (next is '!' or '?')
+            if (next == '!')
             {
                 // <!DOCTYPE html> and the like
                 var close = line.IndexOf('>', i);
@@ -102,7 +127,8 @@ internal static class HtmlHighlighter
                 return stop;
             }
 
-            var name = next == '/' ? i + 2 : i + 1;
+            // (<?xml version="1.0"?> is read as a tag that ends with "?>")
+            var name = next is '/' or '?' ? i + 2 : i + 1;
             if (name < line.Length && char.IsAsciiLetter(line[name]))
             {
                 var stop = name;
@@ -137,7 +163,7 @@ internal static class HtmlHighlighter
     {
         var c = line[i];
         if (char.IsWhiteSpace(c)) return i + 1;
-        if (c == '>' || (c == '/' && i + 1 < line.Length && line[i + 1] == '>'))
+        if (c == '>' || (c is '/' or '?' && i + 1 < line.Length && line[i + 1] == '>'))
         {
             var stop = c == '>' ? i + 1 : i + 2;
             JavaScriptHighlighter.Fill(styles, i, stop, SyntaxStyle.Keyword);
@@ -171,7 +197,11 @@ internal static class HtmlHighlighter
 
         // The name of an attribute
         var end = i;
-        while (end < line.Length && !char.IsWhiteSpace(line[end]) && line[end] is not ('=' or '>' or '/')) end++;
+        while (end < line.Length && !char.IsWhiteSpace(line[end]) && line[end] is not ('=' or '>' or '/' or '?'))
+        {
+            end++;
+        }
+
         if (end == i) return i + 1;
         JavaScriptHighlighter.Fill(styles, i, end, SyntaxStyle.Name);
         return end;

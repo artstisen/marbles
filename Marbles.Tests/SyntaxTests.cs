@@ -176,6 +176,28 @@ public class SyntaxTests
 
     #endregion
 
+    #region XML
+
+    [Theory]
+    [InlineData("<?xml version=\"1.0\"?>", "WWWWW.NNNNNNN.SSSSSWW")]
+    [InlineData("<a:b c=\"d\"/> &lt;", "WWWW.N.SSSWW.9999")]
+    [InlineData("<script>let x;</script>", "WWWWWWWW......WWWWWWWWW")]
+    [InlineData("<x><![CDATA[ <b> & ]]></x>", "WWWWWWWWWWWW.......WWWWWWW")]
+    public void Xml_Lines(string line, string expected)
+    {
+        Assert.Equal(expected, Style(SyntaxType.Xml, line));
+    }
+
+    [Fact]
+    public void Xml_CDataAndCommentsOverSeveralLines()
+    {
+        Assert.Equal(new[] { "WWWWWWWWW....", ".....", "..WWWWWW" },
+            Styles(SyntaxType.Xml, "<![CDATA[ <a>", "<b/> ", "x ]]><c>"));
+        Assert.Equal(new[] { "####", "######WW" }, Styles(SyntaxType.Xml, "<!--", "<a>--><c"));
+    }
+
+    #endregion
+
     #region Kinds of text
 
     [Theory]
@@ -185,6 +207,8 @@ public class SyntaxTests
     [InlineData("app.js", nameof(SyntaxType.JavaScript))]
     [InlineData("module.mjs", nameof(SyntaxType.JavaScript))]
     [InlineData("data.json", nameof(SyntaxType.Json))]
+    [InlineData("feed.xml", nameof(SyntaxType.Xml))]
+    [InlineData("icon.SVG", nameof(SyntaxType.Xml))]
     [InlineData("notes.md", nameof(SyntaxType.Markdown))]
     [InlineData("notes.txt", nameof(SyntaxType.None))]
     [InlineData("json", nameof(SyntaxType.None))]

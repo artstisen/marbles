@@ -321,7 +321,7 @@ internal static class DialogText
     public const string LineNumbersOff = "Line numbers off";
     public const string SyntaxOn = "Colors on: ";
     public const string SyntaxOff = "Colors off";
-    public const string SyntaxUnknown = "Use md, html, css, js or json, not: ";
+    public const string SyntaxUnknown = "Use md, html, css, js, json or xml, not: ";
 
     // The log
     public const string LogLines = " lines";
