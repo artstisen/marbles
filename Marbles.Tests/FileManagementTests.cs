@@ -410,5 +410,42 @@ public class FileManagementTests : IDisposable
         Assert.Equal("[F] d", Show());
     }
 
+    private static List<FileFavorites.Favorite> Items(params string[] names)
+    {
+        return names.Select(name => FileFavorites.Items[Find(name)]).ToList();
+    }
+
+    [Fact]
+    public void Folders_SeveralFavoritesAreMovedToAFolder()
+    {
+        FileFavorites.Parse("\t/x/a\n\t/x/b\n\t[F]\tcollapsed\n \t/x/c\n\t/x/d\n\t[G]\n \t/x/e\n");
+        // Last in the folder, in the order they have in the list (the folder opens)
+        Assert.Equal(3, FileFavorites.MoveToFolder(Items("d", "a", "e"), FileFavorites.Items[Find("F")]));
+        Assert.Equal("b [F] .c .a .d .e [G]", Show());
+        // Out of the folders: last in the list
+        Assert.Equal(5, FileFavorites.MoveToFolder(Items("c", "e"), null));
+        Assert.Equal("b [F] .a .d [G] c e", Show());
+        // Folders are not moved, and a favorite is not a folder to move to
+        Assert.Equal(-1, FileFavorites.MoveToFolder(Items("G"), FileFavorites.Items[Find("F")]));
+        Assert.Equal(-1, FileFavorites.MoveToFolder(Items("b"), FileFavorites.Items[Find("c")]));
+        Assert.Equal("b [F] .a .d [G] c e", Show());
+        // A favorite that is in the folder already goes last in it
+        FileFavorites.MoveToFolder(Items("a"), FileFavorites.Items[Find("F")]);
+        Assert.Equal("b [F] .d .a [G] c e", Show());
+    }
+
+    [Fact]
+    public void Folders_SeveralFavoritesAreRemoved_AndPutBack()
+    {
+        FileFavorites.Parse("\t/x/a\n\t[F]\n \t/x/b\n \t/x/c\n\t/x/d\n\t/x/e\n");
+        Assert.Equal(3, FileFavorites.RemoveMany(Items("a", "c", "e", "F")));
+        // The folder is not removed this way
+        Assert.Equal("[F] .b d", Show());
+        Assert.Equal(0, FileFavorites.UndoRemove());
+        Assert.Equal("a [F] .b .c d e", Show());
+        Assert.Equal(-1, FileFavorites.UndoRemove());
+        Assert.Equal(0, FileFavorites.RemoveMany(new List<FileFavorites.Favorite>()));
+    }
+
     #endregion
 }

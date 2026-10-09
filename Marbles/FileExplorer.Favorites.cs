@@ -27,6 +27,7 @@ internal static partial class FileExplorer
         _favoriteFilter = string.Empty;
         _favoriteMessage = string.Empty;
         _favoriteMoving = false;
+        _favoriteMarks.Clear();
         while (true)
         {
             var action = ShowFavorites(out var path);
@@ -171,6 +172,9 @@ internal static partial class FileExplorer
                     case "remove":
                         RemoveFavorite(selected);
                         break;
+                    case "move":
+                        MoveFavoritesToFolder(selected);
+                        break;
                     case "u":
                     case "undo":
                         UndoRemoveFavorite();
@@ -213,8 +217,12 @@ internal static partial class FileExplorer
             else if (key.Key is ConsoleKey.Escape or ConsoleKey.Q or ConsoleKey.F or ConsoleKey.Backspace ||
                      navigation == ConsoleKey.LeftArrow || key.KeyChar == '-')
             {
-                // Esc removes a filter before it closes the list
-                if (key.Key == ConsoleKey.Escape && _favoriteFilter.Length > 0)
+                // Esc removes the marks, and then a filter, before it closes the list
+                if (key.Key == ConsoleKey.Escape && _favoriteMarks.Count > 0)
+                {
+                    _favoriteMarks.Clear();
+                }
+                else if (key.Key == ConsoleKey.Escape && _favoriteFilter.Length > 0)
                 {
                     _favoriteFilter = string.Empty;
                 }
@@ -301,6 +309,24 @@ internal static partial class FileExplorer
                     _favoriteMoving = true;
                 }
             }
+            else if (key.Key == ConsoleKey.Spacebar)
+            {
+                // Mark (or unmark) the favorite and go to the next
+                var item = FileFavorites.Items[selected];
+                if (item.IsFolder)
+                {
+                    _favoriteMessage = DialogText.FavoriteMarkFolder;
+                }
+                else
+                {
+                    if (!_favoriteMarks.Remove(item)) _favoriteMarks.Add(item);
+                    if (_favoriteIndex < _favorites.Count - 1) _favoriteIndex++;
+                }
+            }
+            else if (key.Key == ConsoleKey.M)
+            {
+                MoveFavoritesToFolder(selected);
+            }
             else if (key.Key is ConsoleKey.P or ConsoleKey.D)
             {
                 RemoveFavorite(selected);
@@ -377,8 +403,153 @@ internal static partial class FileExplorer
         }
     }
 
+    // The favorites the user has marked (to move to a folder, or remove, in one go)
+    private static readonly HashSet<FileFavorites.Favorite> _favoriteMarks = new();
+
+    // The favorites a key works on: the marked ones, or the selected one if none are marked
+    private static List<FileFavorites.Favorite> MarkedOrSelected(int selected)
+    {
+        if (_favoriteMarks.Count > 0)
+        {
+            return FileFavorites.Items.Where(item => _favoriteMarks.Contains(item)).ToList();
+        }
+
+        return selected >= 0 && !FileFavorites.Items[selected].IsFolder
+            ? new List<FileFavorites.Favorite> { FileFavorites.Items[selected] }
+            : new List<FileFavorites.Favorite>();
+    }
+
+    // Move the marked favorites (or the selected one) to a folder picked from a list: one of the folders,
+    // a new folder, or out of the folders
+    private static void MoveFavoritesToFolder(int selected)
+    {
+        var items = MarkedOrSelected(selected);
+        if (items.Count == 0)
+        {
+            _favoriteMessage = DialogText.FavoriteMarkFolder;
+            return;
+        }
+
+        var folders = FileFavorites.Items.Where(item => item.IsFolder).ToList();
+        var choices = new List<string> { DialogText.FavoriteNewFolder + "...", DialogText.FavoriteNoFolder };
+        choices.AddRange(folders.Select(folder => "[" + folder.Name + "]"));
+        var caption = items.Count == 1
+            ? DialogText.FavoriteMoveOne
+            : DialogText.FavoriteMoveMany.Replace("{0}", items.Count.ToString());
+        var choice = PickFromList(caption, choices, folders.Count > 0 ? 2 : 0);
+        if (choice < 0) return;
+        FileFavorites.Favorite? folder = null;
+        if (choice == 0)
+        {
+            // A new folder, where the first of the favorites is
+            var name = AskName(DialogText.FavoriteNewFolder, string.Empty);
+            if (name == null) return;
+            var first = -1;
+            for (var i = 0; i < FileFavorites.Items.Count && first < 0; i++)
+            {
+                if (ReferenceEquals(FileFavorites.Items[i], items[0])) first = i;
+            }
+
+            var index = FileFavorites.AddFolder(name, first);
+            if (index < 0)
+            {
+                _favoriteMessage = DialogText.FavoriteFolderName;
+                return;
+            }
+
+            folder = FileFavorites.Items[index];
+        }
+        else if (choice >= 2)
+        {
+            folder = folders[choice - 2];
+        }
+
+        if (FileFavorites.MoveToFolder(items, folder) < 0) return;
+        _favoriteMarks.Clear();
+        // Show them, also when the list was filtered
+        _favoriteFilter = string.Empty;
+        FilterFavorites();
+        _favoriteIndex = Math.Max(0,
+            _favorites.FindIndex(number => ReferenceEquals(FileFavorites.Items[number], folder ?? items[0])));
+        _favoriteMessage = (items.Count == 1 ? DialogText.FavoriteMovedOne
+                               : DialogText.FavoriteMovedMany.Replace("{0}", items.Count.ToString())) +
+                           (folder == null ? DialogText.FavoriteNoFolder : folder.Name);
+        SaveFavoriteList();
+    }
+
+    // A list of choices in a box on top of the page. Returns the number of the one picked, or -1
+    private static int PickFromList(string caption, List<string> choices, int selected)
+    {
+        const int top = 2;
+        var rows = Math.Min(choices.Count, Init.LineCount - 6);
+        var inner = Math.Min(Init.LineWidth - 6,
+            Math.Max(caption.Length + 4, choices.Max(choice => choice.Length) + 6));
+        var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
+        var first = 0;
+        Tools.HideCursor();
+        while (true)
+        {
+            // The list scrolls if there are more folders than rows
+            if (selected < first) first = selected;
+            if (selected >= first + rows) first = selected - rows + 1;
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Tools.SetCursorEx(top, left);
+            Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+            Tools.SetCursorEx(top, left + 2);
+            Console.Write(" " + Tools.TruncateString(caption, inner - 4, true) + " ");
+            for (var row = 0; row < rows; row++)
+            {
+                var number = first + row;
+                Tools.SetCursorEx(top + 1 + row, left);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                Console.Write("| ");
+                if (number == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                Console.Write(number == selected ? "->" : "  ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Console.Write(" " + Tools.TruncateString(choices[number], inner - 5, true).PadRight(inner - 4));
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                Console.Write('|');
+            }
+
+            Tools.SetCursorEx(top + 1 + rows, left);
+            Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+
+            var key = Console.ReadKey(true);
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return -1;
+            if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L) return selected;
+            if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow) selected = (selected + 1) % choices.Count;
+            if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+            {
+                selected = (selected + choices.Count - 1) % choices.Count;
+            }
+
+            if (key.KeyChar == 'G' || key.Key == ConsoleKey.End) selected = choices.Count - 1;
+            if (key.KeyChar == 'g' || key.Key == ConsoleKey.Home) selected = 0;
+        }
+    }
+
     private static void RemoveFavorite(int number)
     {
+        if (_favoriteMarks.Count > 0)
+        {
+            // All the marked favorites
+            var count = _favoriteMarks.Count;
+            if (count > 1 && !Menu.YesNoPrompt(DialogText.FavoriteRemoveCaption,
+                    DialogText.FavoriteRemoveManyYn.Replace("{0}", count.ToString()),
+                    DialogText.FavoriteRemoveNote, true))
+            {
+                return;
+            }
+
+            count = FileFavorites.RemoveMany(_favoriteMarks);
+            _favoriteMarks.Clear();
+            _favoriteMessage = DialogText.FavoriteRemovedMany.Replace("{0}", count.ToString());
+            SaveFavoriteList();
+            return;
+        }
+
         if (number < 0) return;
         var item = FileFavorites.Items[number];
         if (item.IsFolder)
@@ -522,7 +693,20 @@ internal static partial class FileExplorer
                     : ConsoleColors.ColorPreset.Normal);
             }
 
-            Console.Write(" " + name);
+            if (_favoriteMarks.Contains(favorite))
+            {
+                // Marked
+                var colors = (Console.ForegroundColor, Console.BackgroundColor);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+                Console.Write("+");
+                (Console.ForegroundColor, Console.BackgroundColor) = colors;
+                Console.Write(name);
+            }
+            else
+            {
+                Console.Write(" " + name);
+            }
+
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             // The directory it is in (the end of a long path is shown)
             var directory = favorite.IsFolder
@@ -584,6 +768,7 @@ internal static partial class FileExplorer
         Console.Write(new string('-', Init.LineWidth));
         var status = " " + (_favorites.Count == 0 ? 0 : _favoriteIndex + 1) + "/" + _favorites.Count + " ";
         if (_favoriteFilter.Length > 0) status += "/" + _favoriteFilter + " ";
+        if (_favoriteMarks.Count > 0) status = " " + _favoriteMarks.Count + DialogText.FavoriteMarked + " -" + status;
         Tools.SetCursorEx(Init.LineCount - 2, Init.LineWidth - status.Length - 2);
         Console.Write(status);
         Tools.SetCursorEx(Init.LineCount - 1, 0);
@@ -598,6 +783,11 @@ internal static partial class FileExplorer
         {
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
             Console.Write(" " + DialogText.MovePinnedKeys + " ");
+        }
+        else if (_favoriteMarks.Count > 0)
+        {
+            // What can be done with the marked favorites
+            Menu.WriteKeyHints(DialogText.FavoritesMarkedKeys);
         }
         else
         {

@@ -1412,7 +1412,10 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("A :folder name", "New folder (a group of favorites)", false));
             _shortcutList.Add(new Shortcut("l Enter", "On a folder: Open/Close it", false));
             _shortcutList.Add(new Shortcut("X :rename name", "Rename the folder", false));
-            _shortcutList.Add(new Shortcut("  Into a folder", "Move the favorite onto the folder", false));
+            _shortcutList.Add(new Shortcut("Space", "Mark/Unmark the favorite (several can be marked)", false));
+            _shortcutList.Add(new Shortcut("M :move", "Move the marked (or selected) to a folder", false));
+            _shortcutList.Add(new Shortcut("  Marked", "D removes them all. Esc clears the marks", false));
+            _shortcutList.Add(new Shortcut("  Into a folder", "M, or move the favorite onto the folder", false));
             _shortcutList.Add(new Shortcut("  Out of a folder", "Move it past the first or last in it", false));
             _shortcutList.Add(new Shortcut("C :color", "Pick the text color of the favorite", false));
             _shortcutList.Add(new Shortcut("I :info", "Show type, size, dates and path", false));
