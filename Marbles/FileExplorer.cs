@@ -78,10 +78,14 @@ internal static partial class FileExplorer
     /// <summary>
     /// Show the file browser. Returns when it is closed, or when a data file was selected
     /// </summary>
-    internal static void Run()
+    /// <param name="favorites">True to open the favorites list first</param>
+    internal static void Run(bool favorites = false)
     {
+        _openFavorites = favorites;
         Browse(BrowseMode.Edit, DialogText.CaptionsFiles);
     }
+
+    private static bool _openFavorites; // The favorites list is opened as soon as the file browser is shown
 
     /// <summary>
     /// Let the user select a file
@@ -160,7 +164,11 @@ internal static partial class FileExplorer
         if (Tools.TakeRedrawRequest()) Draw(true);
         while (true)
         {
-            var key = Console.ReadKey(true);
+            // Starting in the favorites list is the same as pressing F (closing the list shows the file browser)
+            var key = _openFavorites && _mode == BrowseMode.Edit
+                ? new ConsoleKeyInfo('F', ConsoleKey.F, true, false, false)
+                : Console.ReadKey(true);
+            _openFavorites = false;
             // Moving the selection only redraws the selection pointer (unless the list has to scroll)
             var redraw = true;
             var hadMessage = _message.Length > 0;

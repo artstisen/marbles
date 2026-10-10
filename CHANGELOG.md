@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Start in the favorites**: when Marbles starts in the Text Editor, it can open the favorites list of the file browser first (Configuration page, below "Start in Text Editor").
 - **Languages**: the menus, help, quick guide and messages can be shown in Danish, German, Norwegian (bokmål), Swedish, Spanish or French. Choose the language on the Configuration page of the start page, or with `:language da` (and so on) in the main menu (saved as `language` in the settings file). Commands, keys and the names of the editor modes stay English in all languages. Lines of help and key hints that are too long for the window in a language are cut at its edge.
 - **`gv`** in the editor selects the last selection again (as in Vim), in the same kind of selection.
 - **Lists**: `:ol` makes the selected lines a numbered list and `:ul` a bulleted list (Markdown). Used again on the same lines, the list marks are removed. Indented lines are numbered as a list of their own.

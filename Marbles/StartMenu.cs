@@ -40,6 +40,12 @@ internal static class StartMenu
     /// <summary>
     /// The name of a start mode in the settings file
     /// </summary>
+    /// <summary>
+    /// When Marbles starts in the Text Editor: open the favorites list of the file browser first
+    /// (setting "startfavorites")
+    /// </summary>
+    internal static bool StartInFavorites { get; set; }
+
     internal static string SettingName(StartMode mode)
     {
         return mode switch
@@ -140,7 +146,7 @@ internal static class StartMenu
     // Open the file browser. True if a data file was selected there: the login page is shown for it
     private static bool BrowseFiles()
     {
-        FileExplorer.Run();
+        FileExplorer.Run(StartInFavorites);
         return FileExplorer.DataFileSelected;
     }
 
@@ -149,6 +155,7 @@ internal static class StartMenu
         StartSelect,
         StartNotes,
         StartEditor,
+        StartFavorites, // Shown below StartEditor when it is chosen
         Monochrome,
         Language,
         ColorScheme,
@@ -166,8 +173,10 @@ internal static class StartMenu
     {
         var settings = new List<Setting>
         {
-            Setting.StartSelect, Setting.StartNotes, Setting.StartEditor, Setting.Monochrome
+            Setting.StartSelect, Setting.StartNotes, Setting.StartEditor
         };
+        if (Mode == StartMode.Editor) settings.Add(Setting.StartFavorites);
+        settings.Add(Setting.Monochrome);
         if (!ConsoleColors.Monochrome) settings.Add(Setting.ColorScheme);
         settings.Add(Setting.Logo);
         settings.Add(Setting.Language);
@@ -190,6 +199,7 @@ internal static class StartMenu
             Setting.StartSelect => Check(Mode == StartMode.Select) + DialogText.StartConfigSelect,
             Setting.StartNotes => Check(Mode == StartMode.Notes) + DialogText.StartConfigNotes,
             Setting.StartEditor => Check(Mode == StartMode.Editor) + DialogText.StartConfigEditor,
+            Setting.StartFavorites => indent + Check(StartInFavorites) + Lang.T("Open the favorites list first"),
             Setting.Monochrome => Check(ConsoleColors.Monochrome) + DialogText.ConfigMonochrome,
             Setting.Language => indent + DialogText.ConfigLanguage + Lang.CurrentName,
             Setting.ColorScheme => indent + Lang.F("Color scheme: {0} of {1}", ConsoleColors.GetColorPresetIndex() + 1,
@@ -303,7 +313,9 @@ internal static class StartMenu
 
     private static int SettingRow(List<Setting> settings, int index)
     {
-        return FirstRow + index + (settings[index] >= Setting.Monochrome ? 1 : 0);
+        // A blank row between the settings of the start page and the basic settings, when there is room for it
+        var gap = FirstRow + settings.Count + 1 <= Init.LineCount - 1 ? 1 : 0;
+        return FirstRow + index + (settings[index] >= Setting.Monochrome ? gap : 0);
     }
 
     private static void ChangeSetting(Setting setting, bool next)
@@ -318,6 +330,9 @@ internal static class StartMenu
                 break;
             case Setting.StartEditor:
                 Mode = StartMode.Editor;
+                break;
+            case Setting.StartFavorites:
+                StartInFavorites = !StartInFavorites;
                 break;
             case Setting.Monochrome:
                 ConsoleColors.Monochrome = !ConsoleColors.Monochrome;

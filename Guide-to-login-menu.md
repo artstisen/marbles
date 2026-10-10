@@ -15,6 +15,7 @@ Move the selection with `j`/`k` (or the arrow keys) or the number, and press `En
 - **Show choices on startup** (the default)
 - **Start in Note Management**: Go directly to the login page
 - **Start in Text Editor (file browser)**: Go directly to the file browser
+  - **Open the favorites list first** (shown when starting in the Text Editor): Start in the [favorites](#favorites) of the file browser. Closing the list shows the file browser. Saved as `startfavorites` in the settings file
 
 The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to showing the choices.
 

@@ -941,6 +941,9 @@ internal static class FileIo
         _tempSettings += "preview=" + (Actions.PreviewEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // What to show at startup: select (the choices), notes (the login page) or editor (the file browser)
         _tempSettings += "startmode=" + StartMenu.SettingName(StartMenu.Mode) + Entries.NewLineChar;
+        // Starting in the Text Editor: open the favorites list first
+        _tempSettings += "startfavorites=" + (StartMenu.StartInFavorites ? DialogText.BTrue : DialogText.BFalse) +
+                         Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; STYLING" + Entries.NewLineChar;
@@ -1108,6 +1111,7 @@ internal static class FileIo
         Init.AutoSize = Tools.TrimToLower(Get("autosize")) == DialogText.BTrue;
         Actions.PreviewEnabled = Tools.TrimToLower(Get("preview")) == DialogText.BTrue;
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
+        StartMenu.StartInFavorites = Tools.TrimToLower(Get("startfavorites")) == DialogText.BTrue;
         Lang.Set(Get("language"));
         // On unless turned off
         // (named "mdcolors" in an earlier version)

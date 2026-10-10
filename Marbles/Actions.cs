@@ -1716,6 +1716,7 @@ internal static class Actions
         Logo.AnimationEnabled = true;
         PreviewEnabled = false;
         StartMenu.Mode = StartMenu.StartMode.Select;
+        StartMenu.StartInFavorites = false;
         Init.AutoSize = false;
         Init.SetDefaultOutputDimensions();
         FileIo.SaveSettings();
