@@ -1354,6 +1354,7 @@ internal static class Tools
         Menus, // The main menu, the lists of entries and the entry view
         Files, // The file browser
         Favorites, // The favorites of the file browser
+        History, // The files opened from the file browser
         Search, // The files found by a search in the file browser
         ColorScheme, // The color scheme editor
         Editor
@@ -1446,6 +1447,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("D :delete", Lang.T("Delete (asks first, cannot be undone)"), false));
             _shortcutList.Add(new Shortcut("P :fav", Lang.T("Add to/Remove from the favorites (*)"), false));
             _shortcutList.Add(new Shortcut("F :favorites", Lang.T("Show the favorites"), false));
+            _shortcutList.Add(new Shortcut("O :history", Lang.T("Show the files opened before (file history)"), false));
             _shortcutList.Add(new Shortcut("S :find", Lang.T("Search for files by name and by text"), false));
             _shortcutList.Add(new Shortcut("R", Lang.T("Refresh"), false));
             _shortcutList.Add(new Shortcut(":cd path", Lang.T("Go to a directory"), false));
@@ -1492,6 +1494,18 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q F h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.T("Kept in favorites.txt in the data directory"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionHistory, true));
+            _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
+            _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file in the editor"), false));
+            _shortcutList.Add(new Shortcut("B :goto", Lang.T("Show the file in the file browser"), false));
+            _shortcutList.Add(new Shortcut("P :fav", Lang.T("Add to/Remove from the favorites (*)"), false));
+            _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
+            _shortcutList.Add(new Shortcut("D :remove", Lang.T("Take the file out of the history (it stays)"), false));
+            _shortcutList.Add(new Shortcut("X :clear", Lang.T("Clear the file history (asks first)"), false));
+            _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
+            _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("Esc Q O h -", Lang.T("Back to the file browser"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.F("The last {0} files opened, kept in history.txt", FileHistory.MaxCount), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionColorScheme, true));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select the preset or a group of colors"), false));
             _shortcutList.Add(new Shortcut("h l", Lang.T("On the preset: the previous/next preset"), false));
@@ -1636,6 +1650,7 @@ internal static class Tools
             HelpTopic.Menus => DialogText.HelpSectionMenus,
             HelpTopic.Files => DialogText.HelpSectionFiles,
             HelpTopic.Favorites => DialogText.HelpSectionFavorites,
+            HelpTopic.History => DialogText.HelpSectionHistory,
             HelpTopic.Search => DialogText.HelpSectionSearch,
             HelpTopic.ColorScheme => DialogText.HelpSectionColorScheme,
             HelpTopic.Editor => DialogText.HelpSectionEditor,

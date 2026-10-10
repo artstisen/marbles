@@ -87,7 +87,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `/text` Only show the names containing "text". `Esc` shows all again
 - `N` or `:new name` Create a new file in the directory and open it. Without a name (`N` or `:new`) you are asked for it
 - `I` or `:info` (also in the list of favorites) Show information about the selected file or directory: type, size (for a directory: the number of files and directories in it), when it was created and last changed, and the full path. Any key closes the box
-- See [Managing files](#managing-files) and [Favorites](#favorites) below for the other keys
+- See [Managing files](#managing-files), [Favorites](#favorites) and [File history](#file-history) below for the other keys
 - `R` Refresh
 - `:cd path` Go to a directory. `:home` Go to the Marbles data directory
 - `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again (see [the command line](Guide-to-main-menu.md))
@@ -122,7 +122,7 @@ Things to know:
 - **Deleted files cannot be recovered.** They are not moved to a recycle bin.
 - Nothing is overwritten. An operation is refused if something with the same name is already in the target directory.
 - A directory cannot be copied or moved into itself.
-- What Marbles is using cannot be renamed, moved or deleted here: the data directory (and the directories it is in), `settings.ini`, the favorites list, and the data file you are logged in to.
+- What Marbles is using cannot be renamed, moved or deleted here: the data directory (and the directories it is in), `settings.ini`, the favorites list, the file history, and the data file you are logged in to.
 - Hidden files are not shown in the browser, but they are included when a directory is copied, moved or deleted.
 
 ### Searching for files
@@ -190,6 +190,23 @@ In the list of favorites:
 While the list is filtered with `/text` the favorites found are shown without the folders, and nothing can be moved.
 
 The list is kept in the file `favorites.txt` in the data directory (one line per favorite: the color, a tab character and the path; a folder has its name in brackets instead of a path, and the favorites in it start with a blank space). Favorites follow when you rename or move a file or directory in the browser, and are removed when you delete it. A favorite whose file is gone is shown as _(missing)_.
+
+### File history
+The file history lists the files you have opened in the editor from the file browser (also from the favorites, the search and the history itself), the last opened first, with the time each was opened. A file opened again moves to the top. It is practical when you work on many files over several days.
+
+- `O` or `:history` (in the file browser) Show the file history
+- `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down
+- `l` or `Enter` Open the file in the editor (`:q` returns to the history)
+- `B` or `:goto` Show the file in the file browser: its directory, with the file selected
+- `P` or `:fav` Add the file to the favorites, or remove it. A favorite has a `*` after its name
+- `I` or `:info` Show information about the file
+- `D` or `:remove` Take the file out of the history (the file itself stays)
+- `X` or `:clear` Clear the file history. You are asked first, in a box on top of the list
+- `/text` Only show the files whose path contains "text". `Esc` shows all again
+- `?` Help, `:` the command line
+- `Esc`, `Q`, `O`, `h` or `-` Back to the file browser
+
+The history holds the last 100 files: when it is full, the file opened longest ago is dropped. A file that is gone is shown as _(missing)_. The list is kept in the file `history.txt` in the data directory (one line per file: the time it was opened, a tab character and the path). Like the favorites, it is not encrypted.
 
 ## The log
 The log lists what has happened since Marbles was started: the startup, logins, commands, and the file operations of the file browser (new, open, rename, copy, move and delete, with the reason if one failed). It is shown from the options of the login page (`Esc`, `G`) and from the Configuration page.

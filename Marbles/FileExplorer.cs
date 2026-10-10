@@ -4,8 +4,8 @@
 /// The file browser opened from the options of the login page. It lists the directories and files of a
 /// directory, and opens text files in the editor: for editing single files outside the encrypted data files.
 /// Selecting a Marbles data file returns to the login page with the file selected.
-/// File management is found in FileExplorer.Manage.cs, the list of favorites in FileExplorer.Favorites.cs
-/// and the search for files in FileExplorer.Search.cs.
+/// File management is found in FileExplorer.Manage.cs, the list of favorites in FileExplorer.Favorites.cs,
+/// the files opened before in FileExplorer.History.cs and the search for files in FileExplorer.Search.cs.
 /// </summary>
 internal static partial class FileExplorer
 {
@@ -608,6 +608,7 @@ internal static partial class FileExplorer
         EndSession();
         _file = file;
         EventLog.Add(DialogText.LogFile + "Open: " + file.Path);
+        AddToHistory(file.Path);
         Mode.SetMode(Mode.SelectedMode.Edit);
         try
         {

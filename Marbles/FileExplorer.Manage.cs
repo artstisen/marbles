@@ -44,6 +44,8 @@ internal static partial class FileExplorer
                 break;
             case ConsoleKey.F:
                 return BrowseFavorites();
+            case ConsoleKey.O:
+                return BrowseHistory();
             case ConsoleKey.S:
                 return SearchFiles();
             default:
@@ -89,6 +91,9 @@ internal static partial class FileExplorer
             case "favs":
             case "favorites":
                 return BrowseFavorites();
+            case "hist":
+            case "history":
+                return BrowseHistory();
             case "panes":
                 TogglePanes();
                 break;
@@ -129,7 +134,8 @@ internal static partial class FileExplorer
         }
 
         if (FileOperations.SamePath(item.Path, System.IO.Path.Combine(dataDirectory, FileIo.SettingsFileName)) ||
-            FileOperations.SamePath(item.Path, FileFavorites.FilePath))
+            FileOperations.SamePath(item.Path, FileFavorites.FilePath) ||
+            FileOperations.SamePath(item.Path, FileHistory.FilePath))
         {
             return DialogText.FileUsedByMarbles;
         }

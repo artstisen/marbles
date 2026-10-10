@@ -348,9 +348,9 @@ internal static class DialogText
     public static string Drives => Lang.T("Drives");
     public const string DirectoryMark = "<DIR>";
     public static string DataFileMark => Lang.T("[Data file]");
-    public static string FileBrowserKeys => Lang.T("j/k Select | l Open | h Up | / Filter | F Faves | ? Help | Esc Close");
+    public static string FileBrowserKeys => Lang.T("j/k Select | l Open | F Faves | O History | ? Help | Esc Close");
 
-    public static string FileBrowserDualKeys => Lang.T("Tab Pane | l Open | h Up | / Filter | F Faves | ? Help | Esc Close");
+    public static string FileBrowserDualKeys => Lang.T("Tab Pane | l Open | F Faves | O History | ? Help | Esc Close");
     public static string FileTargetDualKeys => Lang.T("Tab Pane | l Open | h Up | / Filter | S {0} | Esc Cancel");
     public static string FileTargetKeys => Lang.T("j/k Select | l Open | h Up | / Filter | S {0} | Esc Cancel");
     public static string FileCopyHere => Lang.T("Copy here");
@@ -421,6 +421,14 @@ internal static class DialogText
     // The favorites of the file browser
     public static string CaptionsFileFavorites => Lang.T("Favorite files");
     public static string HelpSectionFavorites => Lang.T("File browser favorites");
+    // The history of the file browser (the files opened from it)
+    public static string HelpSectionHistory => Lang.T("File history");
+    public static string CaptionsFileHistory => Lang.T("File history");
+    public static string HistoryEmpty => Lang.T("No files yet: the files opened from the file browser are listed here");
+    public static string HistoryKeys => Lang.T("Enter Open | B Show | P Fave | D Remove | X Clear | / Filter | Esc Close");
+    public static string HistoryClearCaption => Lang.T("Clear file history");
+    public static string HistoryClearNote => Lang.T("The files themselves are not changed");
+    public static string HistoryCleared => Lang.T("The file history is cleared");
     public static string FavoritesHeader => Lang.T("Files and directories marked as favorites (P in the file browser)");
     public static string FavoritesEmpty => Lang.T("No favorites yet: press P on a file or directory in the file browser");
     public static string FavoritesExpanded => Lang.T("All folders are open");

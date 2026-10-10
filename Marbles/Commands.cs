@@ -11,6 +11,7 @@ internal enum CommandContext
     Files, // The file browser
     FilePicker, // The file browser when a file or directory is picked for something
     Favorites, // The favorites of the file browser
+    History, // The files opened from the file browser
     Search, // The files found by a search in the file browser
     Editor
 }
@@ -59,14 +60,17 @@ internal static class Commands
             "quit close help browse new title delete pin transfer size" + Common,
             "q h" + CommonShort),
         [CommandContext.Files] = new Table(
-            "quit close home help cd new info mkdir rename copy duplicate move delete favorite favorites panes find",
-            "q h fav favs"),
+            "quit close home help cd new info mkdir rename copy duplicate move delete favorite favorites history panes find",
+            "q h fav favs hist"),
         [CommandContext.FilePicker] = new Table(
             "quit close home help cd",
             "q h"),
         [CommandContext.Favorites] = new Table(
             "quit close help color info remove move undo folder expand collapse rename goto",
             "q h u"),
+        [CommandContext.History] = new Table(
+            "quit close help info goto favorite remove clear",
+            "q h fav"),
         [CommandContext.Search] = new Table(
             "quit close help find info goto favorite",
             "q h fav"),
