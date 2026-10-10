@@ -22,14 +22,20 @@ internal static class Vignette
     /// </summary>
     internal static int Left => Init.LineWidth - (VignetteWidth + 1);
 
-    public static void DisplayVignette()
+    /// <summary>
+    /// Show the vignette at the bottom right, from a row down (it is made lower if there is not room for all of it)
+    /// </summary>
+    public static void DisplayVignette(int top)
     {
+        var height = Math.Min(VignetteHeight, Init.LineCount - 2 - top);
+        if (height < 3) return;
         if (!_vignetteEnabled) return;
         // Write vignette text to output
         if (_vignetteText.Length <= 0) return;
         SaveCursorPosition();
         // Show in read only editor
-        var dummy = new TextArea(Init.LineWidth - (VignetteWidth + 1), Init.LineCount - (VignetteHeight + 2), VignetteWidth, VignetteHeight, _vignetteText, 0, false, true, false, 0);
+        var dummy = new TextArea(Init.LineWidth - (VignetteWidth + 1), Init.LineCount - (height + 2), VignetteWidth, height,
+            _vignetteText, 0, false, true, false, 0);
         LoadCursorPosition();
     }
 

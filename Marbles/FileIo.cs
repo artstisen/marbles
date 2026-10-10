@@ -938,7 +938,6 @@ internal static class FileIo
         // Vignette
         _tempSettings += "vignette=" + Vignette.GetVignetteState() + Entries.NewLineChar;
         // Preview of the last edited entries on the main menu
-        _tempSettings += "preview=" + (Actions.PreviewEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // What to show at startup: select (the choices), notes (the login page) or editor (the file browser)
         _tempSettings += "startmode=" + StartMenu.SettingName(StartMenu.Mode) + Entries.NewLineChar;
         // Starting in the Text Editor: open the favorites list first
@@ -1103,9 +1102,8 @@ internal static class FileIo
         Init.SetLineWidth((byte)Math.Clamp(GetNumber("linewidth") ?? Init.MinLineWidth, 0, byte.MaxValue));
         Init.SetLineCount((byte)Math.Clamp(GetNumber("linecount") ?? Init.MinLineCount, 0, byte.MaxValue));
 
-        // Automatic dimensions and preview (off unless turned on)
+        // Automatic dimensions (off unless turned on)
         Init.AutoSize = Tools.TrimToLower(Get("autosize")) == DialogText.BTrue;
-        Actions.PreviewEnabled = Tools.TrimToLower(Get("preview")) == DialogText.BTrue;
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
         StartMenu.StartInFavorites = Tools.TrimToLower(Get("startfavorites")) == DialogText.BTrue;
         Lang.Set(Get("language"));

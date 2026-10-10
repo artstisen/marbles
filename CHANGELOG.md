@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **A new main menu**: the four pages of the menu are now two, each with two boxes: _Notes_ and _Data file_ on the first page, _Settings_ and _Marbles_ on the second. _MENU_ is shown at the top left, as on the other pages. The vignette is shown below the boxes of the first page. The preview of the last edited entries (`P`) is removed, and so is its setting `preview`.
 - **Start page**: the name of the selected data file is no longer shown at the top right (it belongs to the login page). In the options of the login page (`Esc`), `F/T` (Files/Select mode) is now the first item, and `I` (Info) has taken its place.
 - **A new logo**: "Marbles" in the style of block letters, drawn with ordinary characters. It is now the only logo: the logo presets, `:logo`, the Logo row of the Configuration page and the settings `logo` and `logotxt` are removed. The sweep of the logo on the login page is twice as fast.
 - **Color scheme editor**: the colors are edited on a page of their own, opened with `:scheme` or from the Configuration page (Color scheme, `Enter`). Choose a preset to start from, pick the colors of each group from a list, and see them all on a small screen at the bottom before saving with `S`. Menu page 4 now holds `:scheme`, `:color` and `:bw`. The colors can also be edited while black and white is on.

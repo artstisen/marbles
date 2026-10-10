@@ -58,7 +58,7 @@ internal static class Actions
             else if (_c.KeyChar == 'G')
             {
                 // Last menu page
-                Menu.SetTopMenuManagePage(3);
+                Menu.SetTopMenuManagePage(Menu.ManagePageCount - 1);
                 Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.KeyChar == 'g')
@@ -69,37 +69,6 @@ internal static class Actions
                     Menu.SetTopMenuManagePage(0);
                     Menu.DrawTopMenu(false, true, false);
                 }
-            }
-            else if (IsPreviewActive && _c.Key is ConsoleKey.J or ConsoleKey.DownArrow)
-            {
-                // Next entry in the preview
-                _previewIndex = _previewIndex < _previewEntries.Count - 1 ? _previewIndex + 1 : 0;
-                DrawPreview();
-            }
-            else if (IsPreviewActive && _c.Key is ConsoleKey.K or ConsoleKey.UpArrow)
-            {
-                // Previous entry in the preview
-                _previewIndex = _previewIndex > 0 ? _previewIndex - 1 : _previewEntries.Count - 1;
-                DrawPreview();
-            }
-            else if (IsPreviewActive && _c.Key == ConsoleKey.Enter)
-            {
-                // Open the entry selected in the preview (Esc returns to the main menu)
-                if (Entries.SelectEntryById(_previewEntries[_previewIndex].Id))
-                {
-                    ResetLastSelectedIndex();
-                    Mode.SetRecallMode(Mode.RecallMode.None);
-                    DisplayEntry(true);
-                }
-            }
-            else if (_c.Key == ConsoleKey.P)
-            {
-                // Toggle the preview
-                PreviewEnabled = !PreviewEnabled;
-                _previewIndex = 0;
-                FileIo.SaveSettings();
-                Menu.SetTopMenuManagePage(0);
-                Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.Key == ConsoleKey.X)
             {
@@ -157,7 +126,7 @@ internal static class Actions
             else if (_c.Key == ConsoleKey.End)
             {
                 // Last menu item
-                Menu.SetTopMenuManagePage(3);
+                Menu.SetTopMenuManagePage(Menu.ManagePageCount - 1);
                 Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.Key == ConsoleKey.D1)
@@ -170,18 +139,6 @@ internal static class Actions
             {
                 // Menuitem 2
                 Menu.SetTopMenuManagePage(1);
-                Menu.DrawTopMenu(false, true, false);
-            }
-            else if (_c.Key == ConsoleKey.D3)
-            {
-                // Menuitem 3
-                Menu.SetTopMenuManagePage(2);
-                Menu.DrawTopMenu(false, true, false);
-            }
-            else if (_c.Key == ConsoleKey.D4)
-            {
-                // Menuitem 4
-                Menu.SetTopMenuManagePage(3);
                 Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.Key == ConsoleKey.I)
@@ -358,75 +315,6 @@ internal static class Actions
         }
     }
 
-    #region Preview on the main menu
-
-    private const int PreviewCount = 5;
-    private const int PreviewTop = Menu.MenuTop + 10; // The row of the caption (below the menu items of the first page)
-    private static List<Entry> _previewEntries = new();
-    private static int _previewIndex;
-
-    /// <summary>
-    /// Show the last edited entries on the first page of the main menu (setting "preview")
-    /// </summary>
-    internal static bool PreviewEnabled { get; set; }
-
-    private static bool IsPreviewActive =>
-        PreviewEnabled && Menu.GetTopMenuManagePage() == 0 && _previewEntries.Count > 0;
-
-    /// <summary>
-    /// Draw the preview: the last edited entries, where one can be selected and opened
-    /// </summary>
-    internal static void DrawPreview()
-    {
-        _previewEntries.Clear();
-        if (!PreviewEnabled) return;
-        // The time stamps are in ISO format, so they sort as text
-        _previewEntries = Entries.GetEntries()
-            .OrderByDescending(e => e.DateChanged, StringComparer.Ordinal)
-            .Take(PreviewCount)
-            .ToList();
-        _previewIndex = Math.Clamp(_previewIndex, 0, Math.Max(0, _previewEntries.Count - 1));
-
-        // Stay to the left of the vignette if one is shown
-        var width = (Vignette.IsShown ? Vignette.Left : Init.LineWidth) - 2;
-        Tools.SaveCursorPosition(6);
-        Tools.SetCursorEx(PreviewTop, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(" " + Tools.TruncateString(DialogText.PreviewCaption, width, false));
-        for (var i = 0; i < _previewEntries.Count; i++)
-        {
-            var entry = _previewEntries[i];
-            Tools.SetCursorEx(PreviewTop + 1 + i, 0);
-            if (i == _previewIndex)
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                Console.Write("->");
-            }
-            else
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                Console.Write("  ");
-            }
-
-            // Only the title is shown
-            var titleWidth = width - 4;
-            var title = Tools.TruncateString(entry.Title, titleWidth, true);
-            // Favorites have a color, and pinned entries can have a color of their own
-            PinColors.Apply(entry, IsFavorite(entry)
-                ? ConsoleColors.ColorPreset.Favorites
-                : ConsoleColors.ColorPreset.Normal);
-            Console.Write(" " + title);
-            // Remove what is left of a longer title shown before
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(new string(' ', Math.Max(0, titleWidth - title.Length)));
-        }
-
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Tools.LoadCursorPosition(6);
-    }
-
-    #endregion
-
     #region Command line commands
 
     // Commands available everywhere
@@ -502,7 +390,7 @@ internal static class Actions
             case "number":
             case "nu":
                 // Line numbers in the editor on or off
-                ChangeMenuFocus(1);
+                ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
                 TextArea.LineNumbers = !TextArea.LineNumbers;
                 FileIo.SaveSettings();
                 Menu.DrawTopMenu(false, true, false);
@@ -512,7 +400,7 @@ internal static class Actions
                 break;
             case "transfer":
                 // Switch to settings page if on a different index
-                ChangeMenuFocus(2);
+                ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
                 Entries.TransferEntry();
                 Menu.DrawTopMenu(false, true, false);
                 break;
@@ -538,12 +426,12 @@ internal static class Actions
             case "scheme":
                 // The color scheme editor, a page of its own
                 SchemeEditor.Show();
-                ChangeMenuFocus(3);
+                ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "bw":
                 // Black and white on or off
-                ChangeMenuFocus(3);
+                ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
                 ConsoleColors.Monochrome = !ConsoleColors.Monochrome;
                 FileIo.SaveSettings();
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -553,7 +441,7 @@ internal static class Actions
                 if (command == "size auto")
                 {
                     // Toggle automatic dimensions (following the size of the terminal window)
-                    ChangeMenuFocus(2);
+                    ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
                     Init.AutoSize = !Init.AutoSize;
                     Init.ApplyAutoSize();
                     FileIo.SaveSettings();
@@ -579,7 +467,7 @@ internal static class Actions
                         true, true, true, DialogText.CaptionsSettings, string.Empty, false);
                 }
 
-                ChangeMenuFocus(2);
+                ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
                 FileIo.SaveSettings();
                 Menu.DrawTopMenu(false, true, false);
                 break;
@@ -593,7 +481,7 @@ internal static class Actions
                 }
 
                 // Switch to the page of the colors if on a different one
-                ChangeMenuFocus(3);
+                ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
                 // Select the color preset, or use the next
                 SetColorPreset(number > 0
                     ? number - 1
@@ -1471,7 +1359,6 @@ internal static class Actions
         ConsoleColors.DefaultColorPresetIndex();
         Vignette.SetDefaultVignetteState();
         Logo.AnimationEnabled = true;
-        PreviewEnabled = false;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;
         Init.AutoSize = false;

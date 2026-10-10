@@ -1381,9 +1381,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc ?", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Exit Marbles"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
-            _shortcutList.Add(new Shortcut("h l", Lang.T("Previous/Next page (as Left/Right)"), false));
+            _shortcutList.Add(new Shortcut("h l 1 2", Lang.T("Previous/Next page (as Left/Right)"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select in lists/Scroll text (as Down/Up)"), false));
-            _shortcutList.Add(new Shortcut("P", Lang.T("Main menu: Preview of the last edited entries"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last (page, entry or text)"), false));
             _shortcutList.Add(new Shortcut("/", Lang.T("Search"), false));
             _shortcutList.Add(new Shortcut("?", Lang.T("Show this help"), false));

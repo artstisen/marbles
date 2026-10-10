@@ -45,6 +45,7 @@ internal static class DialogText
     public static string CaptionsOptions => Lang.T("Options");
     public static string CaptionsMoreOptions => Lang.T("More options");
     public static string CaptionsColorScheme => Lang.T("Edit color scheme");
+    public static string CaptionsMenu => Lang.T("Menu");
     public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | ? Help | Esc Close");
     public static string HelpSectionColorScheme => Lang.T("Color scheme editor");
     public static string CaptionsExport => Lang.T("Export");
@@ -439,7 +440,6 @@ internal static class DialogText
     public static string NotEncrypted => Lang.T("[Not encrypted]");
     public static string FilePickKeys => Lang.T("j/k Select | l/Enter Open/Select file | h Up | / Filter | Esc Cancel");
     public static string DirectoryPickKeys => Lang.T("j/k Select | l/Enter Open | h Up | S Select this directory | Esc Cancel");
-    public static string PreviewCaption => Lang.T("Last edited (j/k, Enter: Open)");
     public static string FileTooLarge => Lang.T("The file is too large to open (the limit is 10 MB)");
     public static string FileNotText => Lang.T("This is not a text file");
     public static string DirectoryNotFound => Lang.T("Directory not found");

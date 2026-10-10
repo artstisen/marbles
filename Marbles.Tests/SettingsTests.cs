@@ -128,7 +128,7 @@ backup=
         Assert.False(settings.ContainsKey("logo"));
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(35, settings.Count);
+        Assert.Equal(34, settings.Count);
         Assert.Equal("false", settings["startfavorites"]);
         Assert.Equal("en", settings["language"]);
         Assert.Equal("default", settings["background"]);

@@ -13,7 +13,20 @@ internal static class Menu
         return _manageModePage;
     }
 
-    private const int MaxManageModePages = 3;
+    private const int MaxManageModePages = 1;
+
+    /// <summary>
+    /// The number of pages of the main menu
+    /// </summary>
+    internal static int ManagePageCount => MaxManageModePages + 1;
+
+    /// <summary>
+    /// The page of the main menu a command is shown on
+    /// </summary>
+    internal static int PageOfCommand(string command)
+    {
+        return command is "undelete" or "import" or "transfer" or "backup" or "password" ? 0 : 1;
+    }
 
     public static void NextTopMenuManagePage()
     {
@@ -81,18 +94,6 @@ internal static class Menu
     }
 
 
-    /// <summary>
-    /// The row of the page navigation of the main menu. The menu items follow below it
-    /// </summary>
-    internal const int MenuTop = 2;
-
-    // The top of the main menu: the name of the program and of the data file (the logo is for the login page)
-    private static void WriteLogoForMenuDisplay()
-    {
-        WriteNameInTopBar(true);
-        Tools.CursorTopLeftDown(MenuTop);
-    }
-
     private static int _manageModePage;
     private static int _viewModePage;
     internal static bool BypassAwaitAction { get; set; }
@@ -118,80 +119,7 @@ internal static class Menu
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.Manage)
         {
-            if (_manageModePage == 0)
-            {
-                WriteLogoForMenuDisplay();
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem("N", Lang.T("New"), true);
-                WriteMenuItem("S /", Lang.T("Search"), true);
-                WriteMenuItem("R", Lang.T("Reselect"), true);
-                WriteMenuItem("F", Lang.T("Favorites") + " " + Entries.GetFavoritesCount(), true);
-                WriteMenuItem("P",
-                    (Actions.PreviewEnabled ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) + " " + Lang.T("Preview"),
-                    true);
-                WriteMenuItem(":", Lang.T("Command line"), true);
-                WriteMenuItem(":guide", DialogText.QuickGuide, true);
-                WriteMenuItem("X", Lang.T("Logout"), true);
-                Actions.DrawPreview();
-                Vignette.DisplayVignette();
-            }
-            else if (_manageModePage == 1)
-            {
-                WriteLogoForMenuDisplay();
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem("T", Lang.T("Top 20"), true);
-                WriteMenuItem("M", Lang.T("Session history") + " " + Entries.GetSessionCountAsString(), true);
-                WriteMenuItem("A", Lang.T("List all") + " " + Entries.GetEntriesCountAsString(), true);
-                WriteMenuItem("I", Lang.T("File info"), true);
-                WriteMenuItem(":browse", Lang.T("Browse files"), true);
-                WriteMenuItem(":number",
-                    (TextArea.LineNumbers ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
-                    " " + Lang.T("Line numbers in the editor"), true);
-                WriteMenuItem("D", Lang.T("Display timestamp"), true);
-                WriteMenuItem("?", Lang.T("Help"), true);
-                WriteMenuItem(":about", Lang.T("About"), true);
-            }
-            else if (_manageModePage == 2)
-            {
-                WriteLogoForMenuDisplay();
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem(":undelete", Lang.T("Undo deletion"), true);
-                WriteMenuItem(":transfer", Lang.T("Transfer") + " " + Entries.GetTransferState(), true);
-                WriteMenuItem(":import", Lang.T("Import text file"), true);
-                WriteMenuItem(":vignette", Lang.T("Text vignette"), true);
-                WriteMenuItem("", "-", true);
-                WriteMenuItem(":size", Lang.T("Change dimensions") + " " + Init.GetOutputDimensions(), true);
-                WriteMenuItem(":size auto",
-                    (Init.AutoSize ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
-                    " " + Lang.T("Follow the size of the window"), true);
-                WriteMenuItem(":language", "[" + Lang.Current + "] " + Lang.T("Language: da, de ... (none: next)"), true);
-                WriteMenuItem(":backup", FileIo.GetBackupStatus() + " " + Lang.T("Toggle Backup"), true);
-                WriteMenuItem(":password", Lang.T("Reset password"), true);
-                WriteMenuItem(":defaults", Lang.T("Default settings"), true);
-                WriteMenuItem(":restart", Lang.T("Restart Marbles"), true);
-                WriteMenuItem(":logout", Lang.T("Logout"), true);
-                WriteMenuItem(":q", Lang.T("Exit"), true);
-            }
-            else if (_manageModePage == 3)
-            {
-                WriteLogoForMenuDisplay();
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem(":scheme", Lang.T("Edit color scheme"), true);
-                WriteMenuItem(":color 1-" + Actions.ColorPresetCount,
-                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] " + Lang.T("Color preset (no number: next)"), true);
-                WriteMenuItem(":bw",
-                    (ConsoleColors.Monochrome ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
-                    " " + Lang.T("Black and white (no colors)"), true);
-            }
-
+            DrawMenuPage(_manageModePage);
 
             if (BypassAwaitAction)
             {
@@ -557,6 +485,129 @@ internal static class Menu
 
     // Primary menu item method
     public static bool DimMenuItem { get; set; }
+
+    #region The main menu of a data file
+
+    // An item of the main menu: its key (or command) and what it does
+    private readonly record struct MenuItem(string Key, string Text);
+
+    private const int MenuBoxTop = 2; // The row of the top of the boxes
+    private const int MenuKeyWidth = 11; // The room for the key of an item (the dots fill up to it)
+
+    // The main menu of a data file: two pages, each with two boxes of items
+    private static void DrawMenuPage(int page)
+    {
+        WriteModeLabel(DialogText.CaptionsMenu, string.Empty, 0);
+        WriteNameInTopBar(true);
+        Tools.SetCursorEx(1, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(" " + GetMenuNavigation((page + 1) + "/" + ManagePageCount));
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        static string Check(bool on) => on ? DialogText.CheckedSetting : DialogText.UnCheckedSetting;
+        int rows;
+        if (page == 0)
+        {
+            rows = DrawMenuBoxes(Lang.T("Notes"), new MenuItem[]
+            {
+                new("N", Lang.T("New")),
+                new("S /", Lang.T("Search")),
+                new("R", Lang.T("Reselect")),
+                new("F", Lang.T("Favorites") + " " + Entries.GetFavoritesCount()),
+                new("T", Lang.T("Top 20")),
+                new("M", Lang.T("Session history") + " " + Entries.GetSessionCountAsString()),
+                new("A", Lang.T("List all") + " " + Entries.GetEntriesCountAsString()),
+                new(":undelete", Lang.T("Undo deletion"))
+            }, Lang.T("Data file"), new MenuItem[]
+            {
+                new("I", Lang.T("File info")),
+                new(":import", Lang.T("Import text file")),
+                new(":transfer", Lang.T("Transfer") + " " + Entries.GetTransferState()),
+                new(":backup", FileIo.GetBackupStatus() + " " + Lang.T("Backup")),
+                new(":password", Lang.T("Reset password")),
+                new(":", Lang.T("Command line")),
+                new("?", Lang.T("Help")),
+                new("X", Lang.T("Logout"))
+            });
+            // The vignette is shown below the boxes, where there is room for it
+            Vignette.DisplayVignette(MenuBoxTop + rows + 3);
+        }
+        else
+        {
+            DrawMenuBoxes(DialogText.CaptionsSettings, new MenuItem[]
+            {
+                new(":scheme", Lang.T("Edit color scheme")),
+                new(":color 1-" + Actions.ColorPresetCount,
+                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] " + Lang.T("Color preset")),
+                new(":bw", Check(ConsoleColors.Monochrome) + " " + Lang.T("Black and white")),
+                new(":language", "[" + Lang.Current + "] " + Lang.T("Language")),
+                new(":number", Check(TextArea.LineNumbers) + " " + Lang.T("Line numbers")),
+                new(":size", Lang.T("Size") + " " + Init.GetOutputDimensions()),
+                new(":size auto", Check(Init.AutoSize) + " " + Lang.T("Follow the window")),
+                new(":vignette", Lang.T("Text vignette"))
+            }, DialogText.ApplicationName, new MenuItem[]
+            {
+                new(":browse", Lang.T("Browse files")),
+                new("D", Lang.T("Display timestamp")),
+                new(":guide", DialogText.QuickGuide),
+                new(":about", Lang.T("About")),
+                new(":defaults", Lang.T("Default settings")),
+                new(":restart", Lang.T("Restart Marbles")),
+                new(":logout", Lang.T("Logout")),
+                new(":q", Lang.T("Exit"))
+            });
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+    }
+
+    // Two boxes side by side, each with a title and its items
+    // <returns>The number of rows of items</returns>
+    private static int DrawMenuBoxes(string leftTitle, MenuItem[] left, string rightTitle, MenuItem[] right)
+    {
+        var width = (Init.LineWidth - 1) / 2;
+        var rows = Math.Max(left.Length, right.Length);
+        DrawMenuBox(0, width, rows, leftTitle, left);
+        DrawMenuBox(width + 1, width, rows, rightTitle, right);
+        return rows;
+    }
+
+    private static void DrawMenuBox(int left, int width, int rows, string title, MenuItem[] items)
+    {
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(MenuBoxTop, left);
+        Console.Write(AsciiStyles.GetTopCorner() + new string('-', width - 2) + AsciiStyles.GetTopCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+        Tools.SetCursorEx(MenuBoxTop, left + 2);
+        Console.Write(Tools.FitLine(" " + title + " ", Init.LineWidth - (width - 4)));
+        for (var row = 0; row < rows; row++)
+        {
+            var y = MenuBoxTop + 1 + row;
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Tools.SetCursorEx(y, left);
+            Console.Write('|');
+            Tools.SetCursorEx(y, left + width - 1);
+            Console.Write('|');
+            if (row >= items.Length) continue;
+            var item = items[row];
+            Tools.SetCursorEx(y, left + 2);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(item.Key);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write(" " + new string('.', Math.Max(1, MenuKeyWidth - item.Key.Length)) + " ");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            // A long text (in another language) is cut at the side of the box
+            var room = left + width - 2 - Console.CursorLeft;
+            Console.Write(Tools.FitLine(item.Text, Init.LineWidth - 1 - room));
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(MenuBoxTop + rows + 1, left);
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', width - 2) + AsciiStyles.GetBottomCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    #endregion
 
     public static void WriteMenuItem(string key, string description, bool newLine)
     {

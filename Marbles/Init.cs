@@ -247,7 +247,6 @@ internal static class Init
         Vignette.SetDefaultVignetteState();
         Logo.AnimationEnabled = true;
         AutoSize = false;
-        Actions.PreviewEnabled = false;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;
         ConsoleColors.Monochrome = false;

@@ -16,48 +16,49 @@ The same keys are used everywhere in Marbles:
 - `Esc` Return/Cancel
 
 ## Main menu
-The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`4`, and `Home`/`End` go to the first/last page.
+The main menu has 2 pages, each with two boxes of keys and commands. _MENU_ is shown at the top left, and the name of the data file at the top right. Besides `h`/`l` (or `Tab`), the pages can be selected with `1` and `2`, and `gg`/`G` (or `Home`/`End`) go to the first/last page. When a [vignette](#page-2-settings-and-marbles) is made, it is shown below the boxes of the first page.
 
-### Page 1
-- `:guide` **Quick guide**: A short introduction to Marbles. It is also found on the start page and in the options of the login page.
+### Page 1: Notes and Data file
+**Notes**
 - `N` **New**: Create a new entry (write a title and enter your notes). With the command `:new My title` the entry is created with that title and opened in the editor; `:new` alone asks for the title. The command also works in lists and when viewing an entry.
 - `S` or `/` **Search**: Search the entries of the data file. All the words you type must be found in the title or text of an entry. The result can be sorted (press `Tab`) by _date changed_, _date created_ and alphabetically by _title_.
 - `R` **Reselect**: Select the last edited entry again.
 - `F` **Favorites**: Show the entries added to the favorites list.
-- `P` **Preview**: Turn the preview on or off. The preview lists the 5 last edited entries below the menu: select one with `j` `k` and open it with `Enter`. The preview is off by default.
-- `:` **Command line**: Type a command. "COMMAND:" is shown on the bottom line while typing.
-- `X` **Logout**
-
-### Page 2
 - `T` **Top 20**: The 20 most recently edited entries.
 - `M` **Session history**: The entries viewed since you logged in.
 - `A` **List all**: All entries, sorted by date created, date changed or title (press `Tab`).
-- `I` **File info**: The directory, name and size of the data file.
-- `:browse` **Browse files**: Open the file browser.
-- `:number` **Line numbers in the editor**: Show or hide line numbers in the editor (the same as `:number` in the editor itself).
-- `D` **Display timestamp**: The current date, time and week number.
-- `?` **Help**
-- `:about` **About**: General information about Marbles.
-
-### Page 3 (commands)
 - `:undelete` **Undo deletion**: Undo the last deletion of an entry (since you logged in).
-- `:transfer` **Transfer**: Collect entries for transfer to another data file, protected by a key.
+
+**Data file**
+- `I` **File info**: The directory, name and size of the data file.
 - `:import` **Import text file**: Import a text file as a new entry. The file is selected in the file browser, and the entry gets the name of the file as its title.
-- `:vignette` **Text vignette**: Create a text to be shown on the main menu.
-- `:size` **Change dimensions**: Set the number of rows and columns used by Marbles.
-- `:size auto` **Follow the size of the window**: Turn automatic dimensions on or off. When on, Marbles uses the size of the terminal window (leaving one row and one column unused), checked when the login page, a menu, a list or an entry is shown. A window resized while the editor is open is picked up when the editor is closed. Setting the dimensions yourself with `:size` turns automatic dimensions off.
-- `:language` **Language**: Use the next language, or select one by its code: `:language en` (English), `da` (Danish), `de` (German), `nb` (Norwegian), `sv` (Swedish), `es` (Spanish), `fr` (French). The language is saved as `language` in the settings file, and can also be changed on the Configuration page
-- `:backup` **Toggle backup**: Save a copy of the data file in another directory every time it is saved. The directory is selected in the file browser: go to it and press `S`.
+- `:transfer` **Transfer**: Collect entries for transfer to another data file, protected by a key.
+- `:backup` **Backup**: Turn backup on or off. When on, a copy of the data file is saved in another directory every time it is saved. The directory is selected in the file browser: go to it and press `S`.
 - `:password` **Reset password**: Change the password of the data file. It is not possible to recover your notes if you forget your password.
+- `:` **Command line**: Type a command. "COMMAND:" is shown on the bottom line while typing.
+- `?` **Help**
+- `X` **Logout**
+
+### Page 2: Settings and Marbles
+**Settings**
+- `:scheme` **Edit color scheme**: Open the [color scheme editor](#color-scheme-editor)
+- `:color` **Color preset**: Use the next of the color presets, or select one by number: `:color 5`
+- `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the terminal's own background is used
+- `:language` **Language**: Use the next language, or select one by its code: `:language en` (English), `da` (Danish), `de` (German), `nb` (Norwegian), `sv` (Swedish), `es` (Spanish), `fr` (French). The language is saved as `language` in the settings file, and can also be changed on the Configuration page
+- `:number` **Line numbers**: Show or hide line numbers in the editor (the same as `:number` in the editor itself).
+- `:size` **Size**: Set the number of rows and columns used by Marbles.
+- `:size auto` **Follow the window**: Turn automatic dimensions on or off. When on, Marbles uses the size of the terminal window (leaving one row and one column unused), checked when the login page, a menu, a list or an entry is shown. A window resized while the editor is open is picked up when the editor is closed. Setting the dimensions yourself with `:size` turns automatic dimensions off.
+- `:vignette` **Text vignette**: Create a text to be shown on the first page of the main menu, below the boxes.
+
+**Marbles**
+- `:browse` **Browse files**: Open the file browser.
+- `D` **Display timestamp**: The current date, time and week number.
+- `:guide` **Quick guide**: A short introduction to Marbles. It is also found on the start page and in the options of the login page.
+- `:about` **About**: General information about Marbles.
 - `:defaults` **Default settings**: Reset all settings.
 - `:restart` **Restart Marbles**
 - `:logout` **Logout**
 - `:q` **Exit**
-
-### Page 4 (colors)
-- `:scheme` **Edit color scheme**: Open the [color scheme editor](#color-scheme-editor)
-- `:color` **Color preset**: Use the next of the color presets, or select one by number: `:color 5`
-- `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the terminal's own background is used
 
 ### Color scheme editor
 The colors of Marbles are edited on a page of their own, opened with `:scheme` in the main menu or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It shows the colors being edited: the preset at the top, the ten groups of colors below it, each with a sample and the names of its colors, and a small screen at the bottom that shows them all on the background. Nothing is used until you save.
