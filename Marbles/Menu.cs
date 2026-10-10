@@ -724,13 +724,13 @@ internal static class Menu
             ConsoleColors.SetColors(i == active
                 ? ConsoleColors.ColorPreset.HighlightInverted
                 : ConsoleColors.ColorPreset.Divider);
+            // Each number has a blank space on each side: " 1  2  3  4  (Tab)"
             Console.Write(" " + (i + 1) + " ");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(" ");
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(DialogText.TabBrackets);
+        Console.Write(" " + DialogText.TabBrackets);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
