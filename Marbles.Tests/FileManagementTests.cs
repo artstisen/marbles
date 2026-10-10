@@ -50,10 +50,33 @@ public class FileManagementTests : IDisposable
         Assert.Equal(DialogText.Success, FileOperations.CreateDirectory(_root, " new ", out var path));
         Assert.Equal(In("new"), path);
         Assert.True(Directory.Exists(path));
-        Assert.Equal(DialogText.ErrorFileAlreadyExist, FileOperations.CreateDirectory(_root, "new", out _));
-        Assert.Equal(DialogText.InvalidFileName, FileOperations.CreateDirectory(_root, "a/b", out _));
+        Assert.Equal(DialogText.NameExists, FileOperations.CreateDirectory(_root, "new", out _));
+        Assert.Equal(DialogText.NameCharacter('/'), FileOperations.CreateDirectory(_root, "a/b", out _));
         Assert.Equal(DialogText.InvalidFileName, FileOperations.CreateDirectory(_root, "..", out _));
         Assert.Equal(DialogText.InvalidFileName, FileOperations.CreateDirectory(_root, " ", out _));
+    }
+
+    [Fact]
+    public void FileNameProblem_TellsWhatIsWrong_TheSameOnAllPlatforms()
+    {
+        Assert.Null(Tools.FileNameProblem("notes.md"));
+        Assert.Null(Tools.FileNameProblem("my notes (2).txt"));
+        Assert.Null(Tools.FileNameProblem(".gitignore"));
+        Assert.Null(Tools.FileNameProblem("console.txt"));
+        Assert.Equal(DialogText.InvalidFileName, Tools.FileNameProblem(""));
+        Assert.Equal(DialogText.InvalidFileName, Tools.FileNameProblem(".."));
+        foreach (var c in "\\/:*?\"<>|")
+        {
+            Assert.Equal(DialogText.NameCharacter(c), Tools.FileNameProblem("a" + c + "b.txt"));
+        }
+
+        Assert.Equal(DialogText.NameControlCharacters, Tools.FileNameProblem("a\tb"));
+        Assert.Equal(DialogText.NameEnd, Tools.FileNameProblem("notes."));
+        Assert.Equal(DialogText.NameEnd, Tools.FileNameProblem("notes "));
+        Assert.Equal(DialogText.NameTooLong, Tools.FileNameProblem(new string('a', 256)));
+        Assert.Equal(DialogText.NameReserved("CON"), Tools.FileNameProblem("con"));
+        Assert.Equal(DialogText.NameReserved("LPT1"), Tools.FileNameProblem("Lpt1.txt"));
+        Assert.Equal(DialogText.NameReserved("NUL"), Tools.FileNameProblem("nul.tar.gz"));
     }
 
     [Fact]
@@ -70,9 +93,9 @@ public class FileManagementTests : IDisposable
 
         // Nothing is overwritten
         MakeFile("other", "c.txt");
-        Assert.Equal(DialogText.ErrorFileAlreadyExist, FileOperations.Rename(renamed, "c.txt", out _));
-        Assert.Equal(DialogText.ErrorFileAlreadyExist, FileOperations.Rename(renamed, "other", out _));
-        Assert.Equal(DialogText.InvalidFileName, FileOperations.Rename(renamed, "a/b", out _));
+        Assert.Equal(DialogText.NameExists, FileOperations.Rename(renamed, "c.txt", out _));
+        Assert.Equal(DialogText.NameExists, FileOperations.Rename(renamed, "other", out _));
+        Assert.Equal(DialogText.NameCharacter('/'), FileOperations.Rename(renamed, "a/b", out _));
         Assert.Equal("text", File.ReadAllText(renamed));
     }
 

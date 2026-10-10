@@ -678,9 +678,11 @@ internal static partial class FileExplorer
         }
 
         var path = System.IO.Path.Combine(ActivePane.Directory, name);
-        if (!Tools.IsValidFileName(name) || File.Exists(path) || Directory.Exists(path))
+        var problem = Tools.FileNameProblem(name) ??
+                      (File.Exists(path) || Directory.Exists(path) ? DialogText.NameExists : null);
+        if (problem != null)
         {
-            _message = DialogText.InvalidFileName;
+            _message = problem;
             LogOperation("New file", path, _message);
             return;
         }

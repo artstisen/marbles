@@ -109,6 +109,42 @@ internal static class Tools
         return invalidChars.All(c => !input.Contains(c));
     }
 
+    // The characters a name of a file cannot contain on Windows. Not used on any platform, so files can be copied
+    // between Windows, macOS and Linux
+    private const string ReservedFileNameCharacters = "\\/:*?\"<>|";
+
+    // The names Windows keeps for devices, also with an extension ("con.txt")
+    private static readonly string[] ReservedFileNames =
+    [
+        "CON", "PRN", "AUX", "NUL",
+        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+    ];
+
+    /// <summary>
+    /// What is wrong with a new name of a file or directory, or null if it can be used. The rules are the same on
+    /// all platforms (those of Windows), so the names work everywhere
+    /// </summary>
+    public static string? FileNameProblem(string name)
+    {
+        if (name.Length == 0 || name is "." or "..") return DialogText.InvalidFileName;
+        foreach (var c in name)
+        {
+            if (char.IsControl(c)) return DialogText.NameControlCharacters;
+            if (ReservedFileNameCharacters.Contains(c)) return DialogText.NameCharacter(c);
+        }
+
+        if (name.EndsWith('.') || name.EndsWith(' ')) return DialogText.NameEnd;
+        if (name.Length > 255) return DialogText.NameTooLong;
+        var stem = name.Split('.')[0].TrimEnd();
+        if (ReservedFileNames.Contains(stem, StringComparer.OrdinalIgnoreCase))
+        {
+            return DialogText.NameReserved(stem.ToUpperInvariant());
+        }
+
+        return null;
+    }
+
     public static bool IsValidPath(string input)
     {
         if (!IsValid(input)) return false;

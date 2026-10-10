@@ -106,7 +106,8 @@ public static class FileActions
         string fileName = textArea.GetText();
         fileName = Tools.TruncateString(fileName, 32, false);
         // Check file name
-        if (Tools.IsValidFileName(fileName))
+        var problem = Tools.FileNameProblem(fileName);
+        if (problem == null)
         {
             // Add file name extension
             fileName += FileIo.GetFileNameExtension();
@@ -118,14 +119,14 @@ public static class FileActions
             }
             else
             {
-                Menu.StatusMessage(DialogText.InvalidFileName, true, true, true, DialogText.NewFile, string.Empty,
+                Menu.StatusMessage(DialogText.DataFileExists, true, true, true, DialogText.NewFile, string.Empty,
                     false);
                 NewDataFile(type);
             }
         }
         else
         {
-            Menu.StatusMessage(DialogText.InvalidFileName, true, true, true, DialogText.NewFile, string.Empty, false);
+            Menu.StatusMessage(problem, true, true, true, DialogText.NewFile, string.Empty, false);
             NewDataFile(type);
         }
 
@@ -161,7 +162,8 @@ public static class FileActions
             string newFileName = textArea.GetText();
             newFileName = Tools.TruncateString(newFileName, 32, false);
             // Check file name
-            if (Tools.IsValidFileName(newFileName))
+            var problem = Tools.FileNameProblem(newFileName);
+            if (problem == null)
             {
                 // Add file name extension
                 newFileName += FileIo.GetFileNameExtension();
@@ -197,14 +199,14 @@ public static class FileActions
                 }
                 else
                 {
-                    Menu.StatusMessage(DialogText.InvalidFileName, true, true, true, DialogText.RenameFile,
+                    Menu.StatusMessage(DialogText.DataFileExists, true, true, true, DialogText.RenameFile,
                         string.Empty, false);
                     RenameCurrentDataFile();
                 }
             }
             else
             {
-                Menu.StatusMessage(DialogText.InvalidFileName, true, true, true, DialogText.RenameFile, string.Empty,
+                Menu.StatusMessage(problem, true, true, true, DialogText.RenameFile, string.Empty,
                     false);
                 RenameCurrentDataFile();
             }
@@ -240,7 +242,8 @@ public static class FileActions
             string newFileName = textArea.GetText();
             newFileName = Tools.TruncateString(newFileName, 32, false);
             // Check file name
-            if (Tools.IsValidFileName(newFileName))
+            var problem = Tools.FileNameProblem(newFileName);
+            if (problem == null)
             {
                 // Add file name extension
                 newFileName += FileIo.GetFileNameExtension();
@@ -271,14 +274,14 @@ public static class FileActions
                 }
                 else
                 {
-                    Menu.StatusMessage(DialogText.InvalidFileName, true, true, true, DialogText.CopyFile, string.Empty,
+                    Menu.StatusMessage(DialogText.DataFileExists, true, true, true, DialogText.CopyFile, string.Empty,
                         false);
                     CopyCurrentDataFile();
                 }
             }
             else
             {
-                Menu.StatusMessage(DialogText.InvalidFileName, true, true, true, DialogText.CopyFile, string.Empty,
+                Menu.StatusMessage(problem, true, true, true, DialogText.CopyFile, string.Empty,
                     false);
                 CopyCurrentDataFile();
             }

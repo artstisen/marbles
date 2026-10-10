@@ -269,6 +269,14 @@ internal static class DialogText
     public static string CapsLockNotice => Lang.T("Make sure Caps Lock is not enabled.");
     public static string PasswordCreated => Lang.T("Password created");
     public static string InvalidFileName => Lang.T("Invalid file name");
+    // What is wrong with a new name of a file or directory (Tools.FileNameProblem)
+    public static string NameExists => Lang.T("A file or directory with that name already exists");
+    public static string DataFileExists => Lang.T("A data file with that name already exists");
+    public static string NameControlCharacters => Lang.T("A name cannot contain control characters");
+    public static string NameEnd => Lang.T("A name cannot end with a dot or a space");
+    public static string NameTooLong => Lang.T("A name can be at most 255 characters long");
+    public static string NameCharacter(char c) => Lang.F("A name cannot contain the character {0}", c.ToString());
+    public static string NameReserved(string name) => Lang.F("{0} is a name kept by Windows and cannot be used", name);
     public static string NoRecallHistoryFound => Lang.T("No recall history found");
     public static string NoBackupFound => Lang.T("No edit history to revert to");
     public static string NoDeletionBackupFound => Lang.T("No restore data available");

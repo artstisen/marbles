@@ -98,9 +98,10 @@ internal static class FileOperations
     {
         newPath = string.Empty;
         name = name.Trim();
-        if (!Tools.IsValidFileName(name) || name is "." or "..") return DialogText.InvalidFileName;
+        var problem = Tools.FileNameProblem(name);
+        if (problem != null) return problem;
         var path = Path.Combine(parent, name);
-        if (Exists(path)) return DialogText.ErrorFileAlreadyExist;
+        if (Exists(path)) return DialogText.NameExists;
         try
         {
             Directory.CreateDirectory(path);
@@ -121,7 +122,8 @@ internal static class FileOperations
     {
         newPath = string.Empty;
         newName = newName.Trim();
-        if (!Tools.IsValidFileName(newName) || newName is "." or "..") return DialogText.InvalidFileName;
+        var problem = Tools.FileNameProblem(newName);
+        if (problem != null) return problem;
         var directory = Path.GetDirectoryName(Trimmed(path));
         if (directory == null) return DialogText.InvalidFileName;
         var target = Path.Combine(directory, newName);
@@ -134,7 +136,7 @@ internal static class FileOperations
 
         // Only the case of the name can differ ("notes.txt" to "Notes.txt") where names are not case sensitive
         var caseOnly = SamePath(path, target) && string.Equals(oldName, newName, StringComparison.OrdinalIgnoreCase);
-        if (!caseOnly && Exists(target)) return DialogText.ErrorFileAlreadyExist;
+        if (!caseOnly && Exists(target)) return DialogText.NameExists;
         try
         {
             if (Directory.Exists(path) && !File.Exists(path))
