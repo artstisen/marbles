@@ -34,16 +34,16 @@ internal static class Actions
             }
             else if (_c.KeyChar == 'G')
             {
-                // Last menu page
-                Menu.SetTopMenuManagePage(Menu.ManagePageCount - 1);
+                // The last item of the last box
+                Menu.SelectLastMenuItem();
                 Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.KeyChar == 'g')
             {
-                // "gg": First menu page
+                // "gg": The first item of the first box
                 if (Console.ReadKey(true).KeyChar == 'g')
                 {
-                    Menu.SetTopMenuManagePage(0);
+                    Menu.SelectFirstMenuItem();
                     Menu.DrawTopMenu(false, true, false);
                 }
             }
@@ -95,11 +95,11 @@ internal static class Actions
             }
             else if (_c.Key is ConsoleKey.J or ConsoleKey.DownArrow)
             {
-                Menu.MoveMenuSelection(1);
+                if (Menu.MoveMenuSelection(1)) Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.Key is ConsoleKey.K or ConsoleKey.UpArrow)
             {
-                Menu.MoveMenuSelection(-1);
+                if (Menu.MoveMenuSelection(-1)) Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.Key == ConsoleKey.Enter)
             {
@@ -130,14 +130,14 @@ internal static class Actions
             }
             else if (_c.Key == ConsoleKey.Home)
             {
-                // First menu item
-                Menu.SetTopMenuManagePage(0);
+                // The first item of the first box
+                Menu.SelectFirstMenuItem();
                 Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.Key == ConsoleKey.End)
             {
-                // Last menu item
-                Menu.SetTopMenuManagePage(Menu.ManagePageCount - 1);
+                // The last item of the last box
+                Menu.SelectLastMenuItem();
                 Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.Key == ConsoleKey.D1)

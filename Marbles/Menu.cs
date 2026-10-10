@@ -517,7 +517,7 @@ internal static class Menu
         WriteNameInTopBar(true);
         Tools.SetCursorEx(1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(" " + GetMenuNavigation((page + 1) + "/" + ManagePageCount));
+        Console.Write(new string('-', Init.LineWidth - 1));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         static string Check(bool on) => on ? DialogText.CheckedSetting : DialogText.UnCheckedSetting;
         if (page == 0)
@@ -573,6 +573,7 @@ internal static class Menu
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         WriteKeyHints(DialogText.MenuKeys);
+        DrawMenuBoxNumbers();
         DrawMenuPointer(true);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.SetCursorEx(Init.LineCount - 1, 0);
@@ -658,13 +659,32 @@ internal static class Menu
     /// <summary>
     /// Move the selection of the main menu up or down in its box (only the pointer is drawn again)
     /// </summary>
-    internal static void MoveMenuSelection(int rows)
+    /// <returns>True if the selection has gone to the other page, which must be drawn</returns>
+    internal static bool MoveMenuSelection(int rows)
     {
         var count = _menuBoxes[_menuBox].Length;
-        if (count == 0) return;
+        var row = _menuRow + rows;
+        if (row >= 0 && row < count)
+        {
+            DrawMenuPointer(false);
+            _menuRow = row;
+            DrawMenuPointer(true);
+            return false;
+        }
+
+        // Past the last item: the first of the next box. Before the first: the last of the previous box
+        var forward = rows > 0;
+        var changedPage = NextMenuBox(!forward);
+        if (changedPage)
+        {
+            _menuRow = forward ? 0 : int.MaxValue; // The last of the box, when it is drawn
+            return true;
+        }
+
         DrawMenuPointer(false);
-        _menuRow = ((_menuRow + rows) % count + count) % count;
+        _menuRow = forward ? 0 : Math.Max(0, _menuBoxes[_menuBox].Length - 1);
         DrawMenuPointer(true);
+        return false;
     }
 
     /// <summary>
@@ -689,8 +709,49 @@ internal static class Menu
         ClampMenuSelection();
         DrawMenuTitle(0);
         DrawMenuTitle(1);
+        DrawMenuBoxNumbers();
         DrawMenuPointer(true);
         return false;
+    }
+
+    // The numbers of the four boxes below them, with the one of the box with the selection highlighted
+    private static void DrawMenuBoxNumbers()
+    {
+        Tools.SetCursorEx(MenuBoxTop + MenuBoxRows + 2, 1);
+        var active = _manageModePage * 2 + _menuBox;
+        for (var i = 0; i < ManagePageCount * 2; i++)
+        {
+            ConsoleColors.SetColors(i == active
+                ? ConsoleColors.ColorPreset.HighlightInverted
+                : ConsoleColors.ColorPreset.Divider);
+            Console.Write(" " + (i + 1) + " ");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(" ");
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(DialogText.TabBrackets);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    /// <summary>
+    /// Select the first item of the first box of the main menu (gg)
+    /// </summary>
+    internal static void SelectFirstMenuItem()
+    {
+        _manageModePage = 0;
+        _menuBox = 0;
+        _menuRow = 0;
+    }
+
+    /// <summary>
+    /// Select the last item of the last box of the main menu (G)
+    /// </summary>
+    internal static void SelectLastMenuItem()
+    {
+        _manageModePage = ManagePageCount - 1;
+        _menuBox = 1;
+        _menuRow = int.MaxValue; // The last of the box, when it is drawn
     }
 
     /// <summary>
