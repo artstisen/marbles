@@ -495,11 +495,11 @@ internal static class DialogText
     public const string SelectFileDirectory = "File/Directory";
 
     // Editor status line
-    public const string EditorModeNormal = " NORMAL ";
-    public const string EditorModeInsert = " INSERT ";
-    public const string EditorModeVisual = " VISUAL ";
-    public const string EditorModeVisualLine = " V-LINE ";
-    public const string EditorModeVisualBlock = " V-BLOCK ";
+    public const string EditorModeNormal = "-- NORMAL --";
+    public const string EditorModeInsert = "-- INSERT --";
+    public const string EditorModeVisual = "-- VISUAL --";
+    public const string EditorModeVisualLine = "-- V-LINE --";
+    public const string EditorModeVisualBlock = "-- V-BLOCK --";
     public const string EditorMemory = "mem";
     public const string EditorSaved = "Saved";
     public const string EditorNoChanges = "No changes to save";
