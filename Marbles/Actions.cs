@@ -645,7 +645,7 @@ internal static class Actions
         }
     }
 
-    internal const int LogoPresetCount = 8;
+    internal static int LogoPresetCount => Logo.PresetCount;
 
     // The color presets in the order they are numbered (the first is the default colors)
     private static readonly ConsoleColors.ColorPreset[] ColorPresets =

@@ -9,6 +9,12 @@ internal static class Logo
         @"  / /|_/ // __ `// ___// __ \ / // _ \ / ___/ ",
         @" / /  / // /_/ // /   / /_/ // //  __/(__  )  ",
         @"/_/  /_/ \__,_//_/   /_.___//_/ \___//____/   ",
+        // Marbles in small and big marbles, slanted
+        @"    o   o  ooo  oooo  oooo  o     ooooo  oooo",
+        @"   oo oo o   o o   o o   o o     o     o",
+        @"  o o o ooooo oooo  oooo  o     oooo   ooo",
+        @" O   O O   O O  O  O   O O     O         O",
+        @"O   O O   O O   O OOOO  OOOOO OOOOO OOOO",
         @"    _   __        __             ",
         @"   / | / /____   / /_ ___   _____",
         @"  /  |/ // __ \ / __// _ \ / ___/",
@@ -48,9 +54,21 @@ internal static class Logo
 
     private static int _logoIndex;
 
+    // For each preset: the left margin of the logo and the column of the version number
+    private static readonly int[] LogoMargins = { 4, 2, 4, 1, 3, 2, 3, 3, 2 };
+    private static readonly int[] VersionMargins = { 43, 48, 31, 45, 32, 32, 31, 1, 1 };
+
+    /// <summary>
+    /// The number of logo presets (five lines each)
+    /// </summary>
+    internal static int PresetCount => LogoMargins.Length;
+
+    // The last preset shows a text of your own (setting "logotxt")
+    private static int CustomTextPreset => PresetCount - 1;
+
     public static void SetLogoIndex(int index)
     {
-        if (index is >= 0 and <= 7)
+        if (index >= 0 && index < PresetCount)
             _logoIndex = index;
         else
         {
@@ -136,32 +154,9 @@ internal static class Logo
 
     internal static void DrawLogo(bool showVersionNumber, bool animate)
     {
-        // Resolve start index
-        _startIndex = @_logoIndex switch
-        {
-            0 => 0,
-            1 => 5,
-            2 => 10,
-            3 => 15,
-            4 => 20,
-            5 => 25,
-            6 => 30,
-            7 => 35,
-            _ => 0
-        };
-        // Resolve left margin
-        _logoMargin = _logoIndex switch
-        {
-            0 => 4,
-            1 => 4,
-            2 => 1,
-            3 => 3,
-            4 => 2,
-            5 => 3,
-            6 => 3,
-            7 => 2,
-            _ => 0
-        };
+        // The lines of the preset, and its margin
+        _startIndex = _logoIndex * 5;
+        _logoMargin = LogoMargins[_logoIndex];
 
         // The five lines of the logo (the third and fourth are replaced if using custom logo text)
         var lines = new string[5];
@@ -170,7 +165,7 @@ internal static class Logo
             lines[i] = LogoLines[_startIndex + i];
         }
 
-        if (_logoIndex == 7 && HasLogoText())
+        if (_logoIndex == CustomTextPreset && HasLogoText())
         {
             lines[2] = GetLogoText();
             lines[3] = " ";
@@ -192,19 +187,7 @@ internal static class Logo
         // Write version number
         if (showVersionNumber)
         {
-            // Resolve margin for the version number
-            _versionMargin = _logoIndex switch
-            {
-                0 => 43,
-                1 => 31,
-                2 => 45,
-                3 => 32,
-                4 => 32,
-                5 => 31,
-                6 => 1,
-                7 => 1,
-                _ => 0
-            };
+            _versionMargin = VersionMargins[_logoIndex];
             Tools.CursorTopLeft();
             Tools.CursorRight(_versionMargin);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
