@@ -264,13 +264,15 @@ internal static partial class FileExplorer
             return;
         }
 
-        var (items, isMove, _) = _pending;
-        // Back to the pane the files are in
+        var (items, isMove, sourceNumber) = _pending;
+        var targetNumber = _active;
         StopSelectingTarget();
+        // The focus stays in the pane copied or moved to (the pane the files are in is shown again as well)
+        _active = targetNumber;
+        var source = Panes[sourceNumber];
         Draw(true);
         // One after the other, until one fails (or the copying is canceled). Those done are no longer marked
         string? failed = null;
-        Item? failedItem = null;
         var done = 0;
         var path = string.Empty;
         var favoritesChanged = false;
@@ -283,12 +285,11 @@ internal static partial class FileExplorer
             if (result != DialogText.Success)
             {
                 failed = Failure(items, item, result);
-                failedItem = item;
                 break;
             }
 
             done++;
-            ActivePane.Marks.Remove(item.Path);
+            source.Marks.Remove(item.Path);
             if (isMove && FileFavorites.PathChanged(item.Path, path)) favoritesChanged = true;
         }
 
@@ -304,10 +305,9 @@ internal static partial class FileExplorer
                 : Lang.F("{0} copied to {1}", done, ShortPath(target));
         }
 
-        // A copy in the same directory is selected. Else the original stays selected (or the place it was in)
-        var inPlace = !isMove && done > 0 && FileOperations.SamePath(target, ActivePane.Directory);
-        Finish(failed ?? DialogText.Success, inPlace ? path : failedItem?.Path ?? (isMove ? null : items[0].Path),
-            message);
+        // The last one copied or moved is selected where it was put
+        Finish(failed ?? DialogText.Success, done > 0 ? path : null, message);
+        if (_active != sourceNumber) Reload(source);
         if (favoritesChanged) SaveFavorites();
     }
 

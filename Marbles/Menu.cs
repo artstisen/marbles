@@ -1063,7 +1063,9 @@ internal static class Menu
     private static string _modeTitleMemory = string.Empty;
     private static string _modeNoteMemory = string.Empty;
 
-    public static void WriteModeLabel(string title, string note, int recallMode)
+    /// <param name="attention">True to show the label in the attention colors (something is in progress,
+    /// as copying to a directory being selected)</param>
+    public static void WriteModeLabel(string title, string note, int recallMode, bool attention = false)
     {
         // 0 = do nothing
         // 1 = store in memory
@@ -1083,7 +1085,9 @@ internal static class Menu
 
         ModeLabelSaveCursor();
         Tools.CursorTopLeft();
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+        ConsoleColors.SetColors(attention
+            ? ConsoleColors.ColorPreset.AttentionInverted
+            : ConsoleColors.ColorPreset.HighlightInverted);
         Console.WriteLine(" " + title.ToUpper() + " ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         if (!string.IsNullOrEmpty(note))

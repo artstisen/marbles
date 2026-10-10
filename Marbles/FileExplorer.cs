@@ -840,7 +840,8 @@ internal static partial class FileExplorer
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.ClearScreen();
-        Menu.WriteModeLabel(_caption, string.Empty, 0);
+        // While the place to copy or move to is selected, the label stands out
+        Menu.WriteModeLabel(_caption, string.Empty, 0, _pending != null);
         Menu.WriteNameInTopBar(false);
         for (var number = 0; number < shown.Length; number++)
         {
