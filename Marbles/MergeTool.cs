@@ -68,13 +68,12 @@ internal class MergeTool
         Console.WriteLine(" " + DialogText.CaptionsInstructions);
         Tools.CursorDown(1);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.WriteLine(" This tool will merge two existing Marbles data files into a new file.");
-        Console.WriteLine(" The source files must be located within the Marbles \"data\" directory or");
-        Console.WriteLine(" selected subdirectory.");
-        Console.WriteLine(" You will be asked to select each file and type their passwords for decryption.");
-        Console.WriteLine(" The new target file will be saved with encryption in the Marbles \"data\"");
-        Console.WriteLine(" directory with a file name and password of your choosing. The original source");
-        Console.WriteLine(" files remain unchanged after the merge.");
+        WriteParagraph(Lang.T("This tool will merge two existing Marbles data files into a new file. The source " +
+                              "files must be located within the Marbles \"data\" directory or selected subdirectory. " +
+                              "You will be asked to select each file and type their passwords for decryption. The new " +
+                              "target file will be saved with encryption in the Marbles \"data\" directory with a file " +
+                              "name and password of your choosing. The original source files remain unchanged after " +
+                              "the merge."));
         Tools.CursorDown(1);
         // There will be created new ID's for each of the merged entries this discarding old entry IDs
         // All other data will be kept. Clear all merge memory on completion/cancel
@@ -108,7 +107,7 @@ internal class MergeTool
         {
             // ---------- FILE 1 -----------
             TryAgain1:
-            WriteStepInformation(" Step 1: Select source file 1", DialogText.CaptionsMerge);
+            WriteStepInformation(" " + Lang.T("Step 1: Select source file 1"), DialogText.CaptionsMerge);
             Tools.CursorDown(1);
             _result = PageFiles();
             //  Act on result
@@ -117,7 +116,7 @@ internal class MergeTool
                 _sourceFileName1 = _selectedFileName;
                 FileIo.SetFileName(_sourceFileName1);
                 // Enter password and load entries into memory
-                WriteStepInformation(" Step 1: Enter password for source file 1", DialogText.CaptionsMerge);
+                WriteStepInformation(" " + Lang.T("Step 1: Enter password for source file 1"), DialogText.CaptionsMerge);
                 Tools.CursorReturn();
                 Tools.CursorDown(1);
                 Console.Write(" " + DialogText.PasswordColon + " ");
@@ -151,7 +150,7 @@ internal class MergeTool
 
                 //  ---------- FILE 2 -----------
                 TryAgain2:
-                WriteStepInformation(" Step 2: Select source file 2", DialogText.CaptionsMerge);
+                WriteStepInformation(" " + Lang.T("Step 2: Select source file 2"), DialogText.CaptionsMerge);
                 Tools.CursorDown(1);
                 _result = PageFiles();
                 if (_result == 1)
@@ -161,7 +160,7 @@ internal class MergeTool
                     {
                         FileIo.SetFileName(_sourceFileName2);
                         // Enter password and load entries into memory
-                        WriteStepInformation(" Step 2: Enter password for source file 2", DialogText.CaptionsMerge);
+                        WriteStepInformation(" " + Lang.T("Step 2: Enter password for source file 2"), DialogText.CaptionsMerge);
                         Tools.CursorReturn();
                         Tools.CursorDown(1);
                         Console.Write(" " + DialogText.PasswordColon + " ");
@@ -195,7 +194,7 @@ internal class MergeTool
                         do
                         {
                             //  ---------- FILE 3 -----------
-                            WriteStepInformation(" Step 3: Enter target file name", DialogText.CaptionsMerge);
+                            WriteStepInformation(" " + Lang.T("Step 3: Enter target file name"), DialogText.CaptionsMerge);
                             Tools.CursorReturn();
                             Tools.CursorDown(1);
                             Console.Write(" " + DialogText.NameColon + " ");
@@ -215,7 +214,7 @@ internal class MergeTool
                                     // Set as current filename
                                     FileIo.SetFileName(_selectedFileName);
                                     TryAgain3:
-                                    WriteStepInformation(" Step 3: Enter a new password for the target file", DialogText.CaptionsMerge);
+                                    WriteStepInformation(" " + Lang.T("Step 3: Enter a new password for the target file"), DialogText.CaptionsMerge);
                                     Tools.CursorReturn();
                                     Tools.CursorDown(1);
                                     Console.Write(" " + DialogText.EnterNewPasswordColon + " ");
@@ -288,12 +287,12 @@ internal class MergeTool
                                         Init.Log("Merge (S): " + _sourceFileName2, false);
                                         Init.Log("Merge (T): -> " + _selectedFileName, false);
                                         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                                        Console.WriteLine(" Source read 1: " + _sourceEntries1.Count + " (" + _sourceFileName1 + ")");
-                                        Console.WriteLine(" Source read 2: " + _sourceEntries2.Count + " (" + _sourceFileName2 + ")");
+                                        Console.WriteLine(" " + Lang.T("Source read 1:") + " " + _sourceEntries1.Count + " (" + _sourceFileName1 + ")");
+                                        Console.WriteLine(" " + Lang.T("Source read 2:") + " " + _sourceEntries2.Count + " (" + _sourceFileName2 + ")");
                                         Console.WriteLine(new String('-', 30));
-                                        Console.WriteLine(" Target write: " + _targetEntries.Count);
-                                        Console.WriteLine(" File name: " + _selectedFileName);
-                                        Console.WriteLine(" File size: " + FileIo.GetFileSize(true));
+                                        Console.WriteLine(" " + Lang.T("Target write:") + " " + _targetEntries.Count);
+                                        Console.WriteLine(" " + Lang.T("File name:") + " " + _selectedFileName);
+                                        Console.WriteLine(" " + Lang.T("File size:") + " " + FileIo.GetFileSize(true));
                                         Console.WriteLine(new String('=', 30));
                                         Keyboard.AwaitAnyKey();
                                         Tools.RemovePrivileges(false);
@@ -316,7 +315,7 @@ internal class MergeTool
                     }
                     else
                     {
-                        WriteStepAlert("The specified filenames are identical");
+                        WriteStepAlert(Lang.T("The specified filenames are identical"));
                         goto TryAgain2;
                     }
                 }
@@ -346,17 +345,15 @@ internal class MergeTool
         Console.WriteLine(" " + DialogText.CaptionsInstructions);
         Tools.CursorDown(1);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.WriteLine(" This tool will export an existing Marbles data file as XML.");
-        Console.WriteLine(" You will be asked to enter the password for decryption.");
-        Console.WriteLine(" The exported file will be saved in the Marbles \"data\"");
-        Console.WriteLine(" directory (or selected subdirectory) with a file name of");
-        Console.WriteLine(" your choosing.");
+        WriteParagraph(Lang.T("This tool will export an existing Marbles data file as XML. You will be asked to " +
+                              "enter the password for decryption. The exported file will be saved in the Marbles " +
+                              "\"data\" directory (or selected subdirectory) with a file name of your choosing."));
         Tools.CursorDown(1);
         Console.Write(" ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-        Console.Write(" ATTENTION: ");
+        Console.Write(" " + Lang.T("ATTENTION:") + " ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.Write(" Entries are exported as readable text.");
+        Console.Write(" " + Lang.T("Entries are exported as readable text."));
         Tools.CursorReturn();
         Tools.CursorDown(2);
         Tools.CursorRight(1);
@@ -371,7 +368,7 @@ internal class MergeTool
         if (_filesList.Count > 0)
         {
             TryExportAgain1:
-            WriteStepInformation(" Step 1: Select file", DialogText.CaptionsExport);
+            WriteStepInformation(" " + Lang.T("Step 1: Select file"), DialogText.CaptionsExport);
             Tools.CursorDown(1);
             _result = PageFiles();
             //  Act on result
@@ -380,7 +377,7 @@ internal class MergeTool
                 _sourceFileName1 = _selectedFileName;
                 FileIo.SetFileName(_sourceFileName1);
                 // Enter password and load entries into memory
-                WriteStepInformation(" Step 1: Enter password", DialogText.CaptionsExport);
+                WriteStepInformation(" " + Lang.T("Step 1: Enter password"), DialogText.CaptionsExport);
                 Tools.CursorReturn();
                 Tools.CursorDown(1);
                 Console.Write(" " + DialogText.PasswordColon + " ");
@@ -407,7 +404,7 @@ internal class MergeTool
                     // Check that the file name is valid and that the file
                     // does not exist. (test.xml <- add the extension automatically)
                     TryExportAgain2:
-                    WriteStepInformation(" Step 2: Enter export file name", DialogText.CaptionsExport);
+                    WriteStepInformation(" " + Lang.T("Step 2: Enter export file name"), DialogText.CaptionsExport);
                     Tools.CursorReturn();
                     Tools.CursorDown(1);
                     Console.Write(" " + DialogText.NameColon + " ");
@@ -446,8 +443,8 @@ internal class MergeTool
                                     Init.Log("Export (S): " + _sourceFileName1, false);
                                     Init.Log("Export (T): -> " + _selectedFileName, false);
                                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                                    Console.WriteLine(" Target write: " + _sourceEntries1.Count);
-                                    Console.WriteLine(" File name: " + _selectedFileName);
+                                    Console.WriteLine(" " + Lang.T("Target write:") + " " + _sourceEntries1.Count);
+                                    Console.WriteLine(" " + Lang.T("File name:") + " " + _selectedFileName);
                                     Tools.CursorDown(1);
                                     Keyboard.AwaitAnyKey();
                                     // Clear locals
@@ -625,4 +622,13 @@ internal class MergeTool
         }
     }
     #endregion
+
+    // A paragraph wrapped to the width of the window
+    private static void WriteParagraph(string text)
+    {
+        foreach (var line in TextMetrics.Wrap(text, Init.LineWidth - 2))
+        {
+            Console.WriteLine(" " + line);
+        }
+    }
 }

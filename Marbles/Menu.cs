@@ -93,6 +93,20 @@ internal static class Menu
         Tools.CursorTopLeftDown(MenuTop);
     }
 
+    /// <summary>
+    /// The column of the "[LOCKED]" label of the color scheme on the fourth page of the menu
+    /// </summary>
+    internal static int SchemeLabelColumn { get; private set; }
+
+    /// <summary>
+    /// The label of the color scheme: locked or being edited (as wide as the longer of the two)
+    /// </summary>
+    internal static string SchemeLabel(bool editing)
+    {
+        var width = Math.Max(DialogText.SchemeLocked.Length, DialogText.SchemeEditing.Length);
+        return (editing ? DialogText.SchemeEditing : DialogText.SchemeLocked).PadRight(width);
+    }
+
     private static int _manageModePage;
     private static int _viewModePage;
     internal static bool BypassAwaitAction { get; set; }
@@ -124,16 +138,16 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem("N", "New", true);
-                WriteMenuItem("S /", "Search", true);
-                WriteMenuItem("R", "Reselect", true);
-                WriteMenuItem("F", "Favorites " + Entries.GetFavoritesCount(), true);
+                WriteMenuItem("N", Lang.T("New"), true);
+                WriteMenuItem("S /", Lang.T("Search"), true);
+                WriteMenuItem("R", Lang.T("Reselect"), true);
+                WriteMenuItem("F", Lang.T("Favorites") + " " + Entries.GetFavoritesCount(), true);
                 WriteMenuItem("P",
-                    (Actions.PreviewEnabled ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) + " Preview",
+                    (Actions.PreviewEnabled ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) + " " + Lang.T("Preview"),
                     true);
-                WriteMenuItem(":", "Command line", true);
+                WriteMenuItem(":", Lang.T("Command line"), true);
                 WriteMenuItem(":guide", DialogText.QuickGuide, true);
-                WriteMenuItem("X", "Logout", true);
+                WriteMenuItem("X", Lang.T("Logout"), true);
                 Actions.DrawPreview();
                 Vignette.DisplayVignette();
             }
@@ -143,17 +157,17 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem("T", "Top 20", true);
-                WriteMenuItem("M", "Session history " + Entries.GetSessionCountAsString(), true);
-                WriteMenuItem("A", "List all " + Entries.GetEntriesCountAsString(), true);
-                WriteMenuItem("I", "File info", true);
-                WriteMenuItem(":browse", "Browse files", true);
+                WriteMenuItem("T", Lang.T("Top 20"), true);
+                WriteMenuItem("M", Lang.T("Session history") + " " + Entries.GetSessionCountAsString(), true);
+                WriteMenuItem("A", Lang.T("List all") + " " + Entries.GetEntriesCountAsString(), true);
+                WriteMenuItem("I", Lang.T("File info"), true);
+                WriteMenuItem(":browse", Lang.T("Browse files"), true);
                 WriteMenuItem(":number",
                     (TextArea.LineNumbers ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
-                    " Line numbers in the editor", true);
-                WriteMenuItem("D", "Display timestamp", true);
-                WriteMenuItem("?", "Help", true);
-                WriteMenuItem(":about", "About", true);
+                    " " + Lang.T("Line numbers in the editor"), true);
+                WriteMenuItem("D", Lang.T("Display timestamp"), true);
+                WriteMenuItem("?", Lang.T("Help"), true);
+                WriteMenuItem(":about", Lang.T("About"), true);
             }
             else if (_manageModePage == 2)
             {
@@ -161,25 +175,26 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem(":undelete", "Undo deletion", true);
-                WriteMenuItem(":transfer", "Transfer " + Entries.GetTransferState(), true);
-                WriteMenuItem(":import", "Import text file", true);
-                WriteMenuItem(":vignette", "Text vignette", true);
+                WriteMenuItem(":undelete", Lang.T("Undo deletion"), true);
+                WriteMenuItem(":transfer", Lang.T("Transfer") + " " + Entries.GetTransferState(), true);
+                WriteMenuItem(":import", Lang.T("Import text file"), true);
+                WriteMenuItem(":vignette", Lang.T("Text vignette"), true);
                 WriteMenuItem("", "-", true);
-                WriteMenuItem(":size", "Change dimensions " + Init.GetOutputDimensions(), true);
+                WriteMenuItem(":size", Lang.T("Change dimensions") + " " + Init.GetOutputDimensions(), true);
                 WriteMenuItem(":size auto",
                     (Init.AutoSize ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
-                    " Follow the size of the window", true);
+                    " " + Lang.T("Follow the size of the window"), true);
                 WriteMenuItem(":color 1-" + Actions.ColorPresetCount,
-                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] Color preset (no number: next)", true);
+                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] " + Lang.T("Color preset (no number: next)"), true);
                 WriteMenuItem(":logo 1-" + Actions.LogoPresetCount,
-                    "[" + (Logo.GetLogoIndex() + 1) + "] Logo preset (no number: next)", true);
-                WriteMenuItem(":backup", FileIo.GetBackupStatus() + " Toggle Backup", true);
-                WriteMenuItem(":password", "Reset password", true);
-                WriteMenuItem(":defaults", "Default settings", true);
-                WriteMenuItem(":restart", "Restart Marbles", true);
-                WriteMenuItem(":logout", "Logout", true);
-                WriteMenuItem(":q", "Exit", true);
+                    "[" + (Logo.GetLogoIndex() + 1) + "] " + Lang.T("Logo preset (no number: next)"), true);
+                WriteMenuItem(":language", "[" + Lang.Current + "] " + Lang.T("Language: da, de ... (none: next)"), true);
+                WriteMenuItem(":backup", FileIo.GetBackupStatus() + " " + Lang.T("Toggle Backup"), true);
+                WriteMenuItem(":password", Lang.T("Reset password"), true);
+                WriteMenuItem(":defaults", Lang.T("Default settings"), true);
+                WriteMenuItem(":restart", Lang.T("Restart Marbles"), true);
+                WriteMenuItem(":logout", Lang.T("Logout"), true);
+                WriteMenuItem(":q", Lang.T("Exit"), true);
             }
             else if (_manageModePage == 3)
             {
@@ -187,40 +202,41 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem(":scheme", "Unlock color scheme ", false);
+                WriteMenuItem(":scheme", Lang.T("Unlock color scheme") + " ", false);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-                Console.Write("[LOCKED]\n");
+                SchemeLabelColumn = Console.CursorLeft;
+                Console.Write(SchemeLabel(false) + "\n");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, "Text",
+                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, Lang.T("Text"),
                     ConsoleColors.ColorPreset.Normal, true, false);
                 WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
-                    "Logo, login label, directory browser, editor repeat",
+                    Lang.T("Logo, login label, directory browser, editor repeat"),
                     ConsoleColors.ColorPreset.HeaderColor, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, "Dividers and captions",
+                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, Lang.T("Dividers and captions"),
                     ConsoleColors.ColorPreset.Divider, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, "Favorites",
+                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, Lang.T("Favorites"),
                     ConsoleColors.ColorPreset.Favorites, true, false);
                 WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
-                    "Preview title and save state indicator", ConsoleColors.ColorPreset.PreviewTitle, true, false);
+                    Lang.T("Preview title and save state indicator"), ConsoleColors.ColorPreset.PreviewTitle, true, false);
                 WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
-                    "Editor title", ConsoleColors.ColorPreset.EditorTitle, true, false);
+                    Lang.T("Editor title"), ConsoleColors.ColorPreset.EditorTitle, true, false);
                 WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample,
-                    "Highlight and selection indicators", ConsoleColors.ColorPreset.HighlightInverted, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample, "Attention",
+                    Lang.T("Highlight and selection indicators"), ConsoleColors.ColorPreset.HighlightInverted, true, false);
+                WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample, Lang.T("Attention"),
                     ConsoleColors.ColorPreset.AttentionInverted, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample, "Warning",
+                WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample, Lang.T("Warning"),
                     ConsoleColors.ColorPreset.WarningInverted, true, false);
                 WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
-                    "Background ([Default]: the terminal's)", ConsoleColors.ColorPreset.Normal, true,
+                    Lang.T("Background ([Default]: the terminal's)"), ConsoleColors.ColorPreset.Normal, true,
                     false);
-                WriteMenuItem(new string(' ', 2) + "j k / l", "Select/Pick color from a list", true);
-                WriteMenuItem(new string(' ', 2) + "T", "Pick text color (the last three)", true);
-                WriteMenuItem(new string(' ', 2) + "E", "Reset", true);
-                WriteMenuItem(new string(' ', 2) + "Enter/Esc", "Save and exit/Cancel", true);
+                WriteMenuItem(new string(' ', 2) + "j k / l", Lang.T("Select/Pick color from a list"), true);
+                WriteMenuItem(new string(' ', 2) + "T", Lang.T("Pick text color (the last three)"), true);
+                WriteMenuItem(new string(' ', 2) + "E", Lang.T("Reset"), true);
+                WriteMenuItem(new string(' ', 2) + "Enter/Esc", Lang.T("Save and exit/Cancel"), true);
                 WriteMenuItem(":bw",
                     (ConsoleColors.Monochrome ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
-                    " Black and white (no colors)", true);
+                    " " + Lang.T("Black and white (no colors)"), true);
             }
 
 
@@ -240,56 +256,56 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation("1/3"));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem("Enter I", "Edit", true);
-                WriteMenuItem("T", "Title", true);
-                WriteExtendedMenuItem("F", GetFavoriteState(), "Favorite", ConsoleColors.ColorPreset.Favorites,
+                WriteMenuItem("Enter I", Lang.T("Edit"), true);
+                WriteMenuItem("T", Lang.T("Title"), true);
+                WriteExtendedMenuItem("F", GetFavoriteState(), Lang.T("Favorite"), ConsoleColors.ColorPreset.Favorites,
                     true, true, Entries.CurrentEntry);
-                WriteMenuItem("D", "Duplicate", true);
-                WriteMenuItem("S /", "Content search", true);
+                WriteMenuItem("D", Lang.T("Duplicate"), true);
+                WriteMenuItem("S /", Lang.T("Content search"), true);
             }
             else if (_viewModePage == 1)
             {
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation("2/3"));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem(":delete", "Delete", true);
-                WriteMenuItem(":revert", "Revert", true);
-                WriteMenuItem(":transfer", "Transfer " + Entries.GetTransferState(), true);
-                WriteMenuItem(":import", "Import", true);
-                WriteMenuItem(":export", "Export", true);
+                WriteMenuItem(":delete", Lang.T("Delete"), true);
+                WriteMenuItem(":revert", Lang.T("Revert"), true);
+                WriteMenuItem(":transfer", Lang.T("Transfer") + " " + Entries.GetTransferState(), true);
+                WriteMenuItem(":import", Lang.T("Import"), true);
+                WriteMenuItem(":export", Lang.T("Export"), true);
             }
             else if (_viewModePage == 2)
             {
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation("3/3"));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem("N", "New", true);
-                WriteMenuItem("?", "Help", true);
-                WriteMenuItem("X", "Logout", true);
-                WriteMenuItem("Esc :q", "Return", true);
+                WriteMenuItem("N", Lang.T("New"), true);
+                WriteMenuItem("?", Lang.T("Help"), true);
+                WriteMenuItem("X", Lang.T("Logout"), true);
+                WriteMenuItem("Esc :q", Lang.T("Return"), true);
                 WriteMenuItem("", "", true);
             }
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.Edit)
         {
-            WriteMenuItem(":help", "Help", true);
+            WriteMenuItem(":help", Lang.T("Help"), true);
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.Search)
         {
             if (Mode.CurrentRecallMode != Mode.RecallMode.Favorites)
             {
-                WriteMenuItem("j k", "Select", true);
+                WriteMenuItem("j k", Lang.T("Select"), true);
             }
-            WriteMenuItem("1-9+0 :12", "Select by number", true);
-            WriteMenuItem("P", "Toggle favorite/pin", true);
+            WriteMenuItem("1-9+0 :12", Lang.T("Select by number"), true);
+            WriteMenuItem("P", Lang.T("Toggle favorite/pin"), true);
             if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites)
             {
-                WriteMenuItem(":pin", "Pinned color", true);
-                WriteMenuItem("Tab V", "Move pinned (j/k, Esc)", true);
+                WriteMenuItem(":pin", Lang.T("Pinned color"), true);
+                WriteMenuItem("Tab V", Lang.T("Move pinned (j/k, Esc)"), true);
             }
             else
             {
-                WriteMenuItem(":title", "Change title (:delete Delete)", true);
+                WriteMenuItem(":title", Lang.T("Change title (:delete Delete)"), true);
             }
         }
         else

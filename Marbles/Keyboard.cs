@@ -81,7 +81,7 @@ class Shortcut
     {
         _key = key;
         _description = description;
-        _divider = new string('.', (20 - key.Length));
+        _divider = new string('.', Math.Max(1, 20 - key.Length));
         _isHeadline = isHeadline;
     }
 
@@ -89,7 +89,7 @@ class Shortcut
     {
         _key = key;
         _description = description;
-        _divider = new string('.', (width - key.Length));
+        _divider = new string('.', Math.Max(1, width - key.Length));
         _isHeadline = isHeadline;
     }
 

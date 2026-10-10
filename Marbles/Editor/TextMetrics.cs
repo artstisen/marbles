@@ -142,4 +142,27 @@ internal static class TextMetrics
 
         return builder.ToString();
     }
+
+    // Break a text into lines no wider than a number of cells, between words
+    internal static List<string> Wrap(string text, int width)
+    {
+        var lines = new List<string>();
+        var line = string.Empty;
+        foreach (var word in text.Split(' '))
+        {
+            var candidate = line.Length == 0 ? word : line + " " + word;
+            if (line.Length > 0 && TextMetrics.WidthOf(candidate) > width)
+            {
+                lines.Add(line);
+                line = word;
+            }
+            else
+            {
+                line = candidate;
+            }
+        }
+
+        lines.Add(line);
+        return lines;
+    }
 }

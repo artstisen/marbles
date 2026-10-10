@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Languages**: the menus, help, quick guide and messages can be shown in Danish. Choose the language on the Configuration page of the start page, or with `:language da` in the main menu (saved as `language` in the settings file). Commands, keys and the names of the editor modes stay English in all languages. More languages (German, Norwegian, Swedish, Spanish, French) are planned.
 - **`gv`** in the editor selects the last selection again (as in Vim), in the same kind of selection.
 - **Lists**: `:ol` makes the selected lines a numbered list and `:ul` a bulleted list (Markdown). Used again on the same lines, the list marks are removed. Indented lines are numbered as a list of their own.
 - **Visual block** in the editor: `Q` (or `:block`) selects a block, the same columns on each of the lines. `I` and `A` type text in front of or after it on every line, `d` `y` `c` `p` `r` and the case changes work on the block, `$` extends it to the end of each line, and a yanked block is pasted as a block. `:vsel` and `:vline` start the other two kinds of selection, and `v` `V` `Q` switch between them.

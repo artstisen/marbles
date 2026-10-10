@@ -466,7 +466,7 @@ internal static class Actions
         var number = int.TryParse(CommandLine.Argument(command), out var parsedNumber) ? parsedNumber : 0;
         if (CommandLine.Argument(command).Length > 0 &&
             !(CommandLine.Name(command) is "color" or "logo" && number > 0) && command != "size auto" &&
-            CommandLine.Name(command) != "new")
+            CommandLine.Name(command) is not ("new" or "language"))
         {
             CommandLine.ShowUnknown(command);
             Menu.DrawTopMenu(false, true, false);
@@ -574,6 +574,22 @@ internal static class Actions
             case "password":
                 Tools.ResetPasswordRoutine();
                 break;
+            case "language":
+            {
+                // A code selects the language, and without one the next is used
+                var code = CommandLine.Argument(command);
+                if (code.Length == 0) code = Lang.Next(true);
+                if (!Lang.Set(code))
+                {
+                    Menu.StatusMessage(DialogText.LanguageUnknown + string.Join(", ", Lang.Available.Select(l => l.Code)),
+                        true, true, true, DialogText.CaptionsSettings, string.Empty, false);
+                }
+
+                ChangeMenuFocus(2);
+                FileIo.SaveSettings();
+                Menu.DrawTopMenu(false, true, false);
+                break;
+            }
             case "logo":
                 if (number > LogoPresetCount)
                 {
@@ -654,7 +670,7 @@ internal static class Actions
     /// <summary>
     /// The name of a color preset
     /// </summary>
-    internal static string ColorPresetName(int index) => ColorPresetNames[index];
+    internal static string ColorPresetName(int index) => index == 0 ? Lang.T("Default") : ColorPresetNames[index];
 
     // Use a color preset. The index is saved in the settings file
     internal static void SetColorPreset(int index)
@@ -847,9 +863,9 @@ internal static class Actions
         Menu.WriteModeLabel(DialogText.CaptionsColorScheme, string.Empty, 0);
         // Overwrite the "[LOCKED]" label
         Tools.CursorDown(SchemeTop);
-        Tools.CursorRight(36);
+        Tools.CursorRight(Menu.SchemeLabelColumn);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-        Console.Write("[EDITING]");
+        Console.Write(Menu.SchemeLabel(true));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         for (var property = 0; property <= SchemeBackgroundRow; property++)
         {
@@ -922,9 +938,9 @@ internal static class Actions
         Menu.WriteModeLabel(DialogText.CaptionsColorScheme, string.Empty, 0);
         // Overwrite the "[LOCKED]" label
         Tools.CursorDown(SchemeTop);
-        Tools.CursorRight(36);
+        Tools.CursorRight(Menu.SchemeLabelColumn);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-        Console.Write("[EDITING]");
+        Console.Write(Menu.SchemeLabel(true));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.CursorTopLeft();
         ConsoleColors.InitializePreviewColors();
@@ -1061,16 +1077,16 @@ internal static class Actions
         // Take input
         string[] instructions =
         {
-            "Set output dimensions...",
+            Lang.T("Set output dimensions..."),
             "+----+",
             "| " + GetAcceleratedState() + " |",
             "+----+",
-            "Press the arrow keys (or h/j/k/l) to change dimensions",
-            "Press Tab to toggle increment size (x1/x2)",
-            "Press E to reset dimensions",
-            "Press Enter to save",
+            Lang.T("Press the arrow keys (or h/j/k/l) to change dimensions"),
+            Lang.T("Press Tab to toggle increment size (x1/x2)"),
+            Lang.T("Press E to reset dimensions"),
+            Lang.T("Press Enter to save"),
             "",
-            "Press Esc to cancel"
+            Lang.T("Press Esc to cancel")
         };
         var tempC = Keyboard.ToNavigationKey(Keyboard.AwaitAnyKeyWithInstructions(instructions));
         if (tempC.Key == ConsoleKey.Tab)
@@ -1439,13 +1455,13 @@ internal static class Actions
         Console.Write(DialogText.DateChangedColon + Entries.CurrentEntry.DateChanged);
         Tools.LoadCursorPosition(1);
         Tools.CursorDown(2);
-        Console.Write("Words: " + Tools.WordCount(Entries.CurrentEntry.Text).ToString());
+        Console.Write(Lang.T("Words: ") + Tools.WordCount(Entries.CurrentEntry.Text).ToString());
         Tools.LoadCursorPosition(1);
         Tools.CursorDown(3);
-        Console.Write("Chars: " + Tools.CharacterCount(Entries.CurrentEntry.Text));
+        Console.Write(Lang.T("Chars: ") + Tools.CharacterCount(Entries.CurrentEntry.Text));
         Tools.LoadCursorPosition(1);
         Tools.CursorDown(4);
-        Console.Write("Lines: " + Tools.LineCount(Entries.CurrentEntry.Text));
+        Console.Write(Lang.T("Lines: ") + Tools.LineCount(Entries.CurrentEntry.Text));
         Tools.CursorTopLeft();
         Tools.CursorDown(6);
         WriteHorizontalRule(false, DialogText.CaptionsPreview, true, ConsoleColors.ColorPreset.PreviewTitle);
@@ -1614,12 +1630,12 @@ internal static class Actions
                     FileIo.SetBackup(true, backupPath, true);
                     Entries.SaveEntriesToFile();
                     Menu.StatusMessage(DialogText.BackupEnabled, true, true, true, DialogText.CaptionsBackup,
-                        "Path: " + backupPath, false);
+                        Lang.T("Path: ") + backupPath, false);
                 }
                 else
                 {
                     Menu.StatusMessage(DialogText.InvalidBackupPath, true, true, true, DialogText.CaptionsBackup,
-                        "Path: " + backupPath, false);
+                        Lang.T("Path: ") + backupPath, false);
                 }
             }
         }
@@ -1875,7 +1891,7 @@ internal static class Actions
     }
 
     private static string _tempAboutText = string.Empty;
-    private const string TempPageNumber = "Page 1/2";
+    private static string TempPageNumber => Lang.F("Page {0}/{1}", 1, 2);
 
     private static void ShowAbout()
     {
@@ -1919,7 +1935,7 @@ internal static class Actions
         Tools.CursorDown(Init.LineCount - 2);
         Tools.CursorRight(Init.LineWidth - (TempPageNumber.Length + 1));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(TempPageNumber.Replace("1", "2"));
+        Console.Write(Lang.F("Page {0}/{1}", 2, 2));
         Tools.CursorReturn();
         Tools.CursorRight();
         Keyboard.AwaitAnyKey();
@@ -2264,15 +2280,15 @@ internal static class Actions
     {
         if (_sortOption == 1)
         {
-            return DialogText.SortColon + " Date changed " + DialogText.TabBrackets;
+            return DialogText.SortColon + " " + Lang.T("Date changed") + " " + DialogText.TabBrackets;
         }
         else if (_sortOption == 2)
         {
-            return DialogText.SortColon + " Title " + DialogText.TabBrackets;
+            return DialogText.SortColon + " " + Lang.T("Title") + " " + DialogText.TabBrackets;
         }
         else
         {
-            return DialogText.SortColon + " Date created " + DialogText.TabBrackets;
+            return DialogText.SortColon + " " + Lang.T("Date created") + " " + DialogText.TabBrackets;
         }
     }
 
@@ -2827,7 +2843,7 @@ internal static class Actions
 
             // Write page-number
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            _tempPaginationText = "Page " + (page + 1) + " of " + _resultPages.Count;
+            _tempPaginationText = Lang.F("Page {0} of {1}", page + 1, _resultPages.Count);
             if (_resultPages.Count > 1)
             {
                 Tools.CursorRight(Init.LineWidth - ((_tempPaginationText.Length + TempPaginationText2.Length)));

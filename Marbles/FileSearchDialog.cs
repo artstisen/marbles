@@ -20,8 +20,11 @@ internal static class FileSearchDialog
     private const int RowCount = 6;
 
     private const int InnerWidth = 62; // Between the borders
-    private const int LabelWidth = 15;
-    private const int FieldWidth = InnerWidth - LabelWidth - 7;
+    // The labels take the room they need in the language in use
+    private static int LabelWidth =>
+        Math.Max(15, new[] { DialogText.SearchName, DialogText.SearchText, DialogText.ReplaceWhere }.Max(l => l.Length) + 1);
+
+    private static int FieldWidth => InnerWidth - LabelWidth - 7;
     private const int MaxTextLength = 200;
 
     /// <summary>

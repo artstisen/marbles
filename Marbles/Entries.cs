@@ -599,7 +599,7 @@ internal static class Entries
                     DialogText.TransferB + " " + GetTransferState(),
                     DialogText.TransferC,
                     DialogText.SelectTransferOptionEsc + ReturnNewLineCharString + ReturnNewLineCharString +
-                    " Adding: " + Tools.TruncateString(CurrentEntry.Title, 60, true), true, ConsoleKey.Enter,
+                    " " + Lang.T("Adding: ") + Tools.TruncateString(CurrentEntry.Title, 60, true), true, ConsoleKey.Enter,
                     ConsoleKey.A,
                     ConsoleKey.B);
                 switch (selection)
@@ -656,12 +656,11 @@ internal static class Entries
             if (CurrentEntryExists())
             {
                 if (Menu.YesNoPrompt(DialogText.Transfer, DialogText.CreateTransfer,
-                        "This feature will store a protected collection of cloned entries in memory" +
-                        NewLineCharString +
-                        " for transfer between data files within the current session. The original" +
-                        NewLineCharString +
-                        " entries will remain untouched." + NewLineCharString + NewLineCharString +
-                        " Adding: " + Tools.TruncateString(CurrentEntry.Title, 60, true), false))
+                        Lang.T("This feature will store a protected collection of cloned entries in memory\n" +
+                               "for transfer between data files within the current session. The original\n" +
+                               "entries will remain untouched.").Replace("\n", NewLineCharString + " ") +
+                        NewLineCharString + NewLineCharString +
+                        " " + Lang.T("Adding: ") + Tools.TruncateString(CurrentEntry.Title, 60, true), false))
                 {
                     // Create transfer key
                     CreateTransfer();
@@ -669,7 +668,7 @@ internal static class Entries
             }
             else
             {
-                Menu.StatusMessage("Please select an entry to transfer...", true, true, true, DialogText.Transfer,
+                Menu.StatusMessage(Lang.T("Please select an entry to transfer..."), true, true, true, DialogText.Transfer,
                     string.Empty,
                     false);
             }
@@ -684,7 +683,7 @@ internal static class Entries
             if (!Tools.IsValid((_transferKey)))
             {
                 Tools.ClearScreen();
-                Menu.WriteModeLabel(DialogText.Transfer, "Create a security key (password) to protect the transfer..." +
+                Menu.WriteModeLabel(DialogText.Transfer, Lang.T("Create a security key (password) to protect the transfer...") +
                                                          NewLineCharString +
                                                          " " + DialogText.PressEscToExitS, 0);
                 Tools.CursorDown(4);
@@ -706,20 +705,20 @@ internal static class Entries
                 if (!TransferEntryExists(CurrentEntry))
                 {
                     _transferEntry.Add(CloneEntry(CurrentEntry, true));
-                    Menu.StatusMessage("Entry collected for transfer " + GetTransferState(), true, true, true,
+                    Menu.StatusMessage(Lang.T("Entry collected for transfer") + " " + GetTransferState(), true, true, true,
                         DialogText.Transfer, string.Empty,
                         false);
                 }
                 else
                 {
-                    Menu.StatusMessage("Canceled: Entry already added", true, true, true, DialogText.Transfer,
+                    Menu.StatusMessage(Lang.T("Canceled: Entry already added"), true, true, true, DialogText.Transfer,
                         string.Empty,
                         false);
                 }
             }
             else
             {
-                Menu.StatusMessage("Transfer key must be between 4 and 16 characters long", true, true, true,
+                Menu.StatusMessage(Lang.T("Transfer key must be between 4 and 16 characters long"), true, true, true,
                     DialogText.Transfer, string.Empty, false);
                 _transferKey = string.Empty;
                 TransferEntry();
@@ -747,7 +746,7 @@ internal static class Entries
         {
             // Ask for key and add transfer to current collection
             Tools.ClearScreen();
-            Menu.WriteModeLabel(DialogText.Transfer, "Enter key to complete the transfer..." + NewLineCharString +
+            Menu.WriteModeLabel(DialogText.Transfer, Lang.T("Enter key to complete the transfer...") + NewLineCharString +
                                                      " " + DialogText.PressEscToExitS, 0);
             Tools.CursorDown(4);
             Console.Write(" " + DialogText.KeyColon + " ");
@@ -768,13 +767,13 @@ internal static class Entries
                 }
 
                 SaveEntriesToFile();
-                Menu.StatusMessage("Transfer complete", true, true, true,
+                Menu.StatusMessage(Lang.T("Transfer complete"), true, true, true,
                     DialogText.Transfer, string.Empty, false);
             }
             else
             {
                 // Invalid key...
-                Menu.StatusMessage("Invalid key. Please try again...", true, true, true,
+                Menu.StatusMessage(Lang.T("Invalid key. Please try again..."), true, true, true,
                     DialogText.Transfer, string.Empty, false);
                 TransferEntry();
             }

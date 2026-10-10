@@ -11,7 +11,7 @@ public static class FileActions
         Menu.WriteNameInTopBar(true);
         Tools.CursorDown(3);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.WriteLine(" Working directory and file name:");
+        Console.WriteLine(Lang.T(" Working directory and file name:"));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         if (FileBrowser.FilesInDirectory() == 0)
         {
@@ -23,23 +23,23 @@ public static class FileActions
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(" File size: ");
+        Console.Write(Lang.T(" File size: "));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Console.Write(FileIo.GetFileSize(true) + Environment.NewLine);
         if (showEntryCount)
         {
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(" Entry count: ");
+            Console.Write(Lang.T(" Entry count: "));
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(Entries.GetEntriesCount() + Environment.NewLine);
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.WriteLine(" Absolute path:");
+        Console.WriteLine(Lang.T(" Absolute path:"));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Console.WriteLine(" " + FileIo.GetAbsolutePath() + Environment.NewLine + Environment.NewLine);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.WriteLine(" Backup directory:");
+        Console.WriteLine(Lang.T(" Backup directory:"));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Console.WriteLine(" " + FileIo.GetBackupPathForDisplay(false) + Environment.NewLine);
         Tools.CursorDown();
@@ -87,7 +87,7 @@ public static class FileActions
         {
             // Ask for year
             if (!IsoDateTime.SelectYear()) return false;
-            title = "Calendar-" + IsoDateTime.CalendarYear;
+            title = Lang.T("Calendar") + "-" + IsoDateTime.CalendarYear;
         }
 
         Tools.ClearScreen();

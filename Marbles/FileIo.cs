@@ -372,11 +372,11 @@ internal static class FileIo
                     {
                         if (byteSize >= 1024)
                         {
-                            return byteSize.ToString() + " bytes (" + FileSizeFormatter.FormatSize(byteSize) + ")";
+                            return Lang.F("{0} bytes ({1})", byteSize, FileSizeFormatter.FormatSize(byteSize));
                         }
                         else
                         {
-                            return byteSize.ToString() + " bytes";
+                            return Lang.F("{0} bytes", byteSize);
                         }
                     }
                     else
@@ -992,6 +992,8 @@ internal static class FileIo
         _tempSettings += "browsedual=" + (FileExplorer.DualPane ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Color Markdown, HTML, CSS, JavaScript and JSON files in the editor (the editor command :syntax turns
         // the colors on and off)
+        // The language of the texts (en, da, de, nb, sv, es, fr)
+        _tempSettings += "language=" + Lang.Current + Entries.NewLineChar;
         _tempSettings += "syntaxcolors=" + (SyntaxHighlighter.ColorFiles ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Line numbers in the editor (the editor command :number turns them on and off)
         _tempSettings += "linenumbers=" + (TextArea.LineNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
@@ -1106,6 +1108,7 @@ internal static class FileIo
         Init.AutoSize = Tools.TrimToLower(Get("autosize")) == DialogText.BTrue;
         Actions.PreviewEnabled = Tools.TrimToLower(Get("preview")) == DialogText.BTrue;
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
+        Lang.Set(Get("language"));
         // On unless turned off
         // (named "mdcolors" in an earlier version)
         SyntaxHighlighter.ColorFiles = Tools.TrimToLower(Get("syntaxcolors")) != DialogText.BFalse &&
@@ -1284,8 +1287,7 @@ internal class LoadStatus
 public static class FileSizeFormatter
 {
     // Load all suffixes in an array  
-    private static readonly string[] Suffixes =
-        {" bytes", " kB", " MB", " GB", " TB", " PB"};
+    private static string[] Suffixes => new[] { " " + Lang.T("bytes"), " kB", " MB", " GB", " TB", " PB" };
 
     public static string FormatSize(long bytes)
     {

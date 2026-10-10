@@ -379,7 +379,7 @@ internal static class Tools
             new("R/Y", DialogText.Refresh + "/" + DialogText.Restart, false, 13),
             new("G/S", DialogText.Log + "/" + FileIo.SettingsFileName, false, 13),
             new("U", DialogText.QuickGuide, false, 13),
-            new("? / Q", "Help/" + DialogText.Exit, false, 13)
+            new("? / Q", Lang.T("Help") + "/" + DialogText.Exit, false, 13)
         };
         Menu.FloatingMenu(DialogText.CaptionsOptions, tempShortcuts, 9, 14, false);
 
@@ -699,7 +699,7 @@ internal static class Tools
     {
         if (Menu.YesNoPrompt(DialogText.Restart, DialogText.RestartYn, string.Empty, true))
         {
-            Init.Log(" *** " + DialogText.Restart + " *** ", false);
+            Init.Log(" *** Restart *** ", false);
             RemovePrivileges(true);
             ClearEditorHelpData();
             // Clear transfer entry
@@ -718,7 +718,7 @@ internal static class Tools
     /// </summary>
     internal static void RestartFromStartPage()
     {
-        Init.Log(" *** " + DialogText.Restart + " *** ", false);
+        Init.Log(" *** Restart *** ", false);
         RemovePrivileges(true);
         ClearEditorHelpData();
         Entries.ClearTransfer(false);
@@ -729,7 +729,7 @@ internal static class Tools
 
     internal static void ColdRestart()
     {
-        Init.Log(" *** " + DialogText.Restart + " *** ", false);
+        Init.Log(" *** Restart *** ", false);
         RemovePrivileges(true);
         ClearEditorHelpData();
         // Clear transfer entry
@@ -885,7 +885,7 @@ internal static class Tools
                 Console.Write(" " + TruncateString(FileIo.GetFileName(), 35, true) + " ");
                 // Write file size
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-                Console.Write(" Move ");
+                Console.Write(" " + Lang.T("Move") + " ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Console.Write(" -->");
             }
@@ -948,7 +948,7 @@ internal static class Tools
                 {
                     Console.Write(" ");
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                    Console.Write(" <-- Enter ");
+                    Console.Write(" <-- Enter "); // English: the name of the key
                 }
             }
 
@@ -1323,238 +1323,238 @@ internal static class Tools
         {
             _shortcutList = new List<Shortcut>();
             // Start by collecting all shortcuts
-            _shortcutList.Add(new Shortcut(string.Empty, "Keyboard Functions", true));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Keyboard Functions"), true));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionStart, true));
-            _shortcutList.Add(new Shortcut("j k 1-5", "Select", false));
-            _shortcutList.Add(new Shortcut("gg G", "First/Last (also in Configuration)", false));
-            _shortcutList.Add(new Shortcut("Enter", "Open the selected", false));
-            _shortcutList.Add(new Shortcut("  1", "Note Management: the login page", false));
-            _shortcutList.Add(new Shortcut("  2", "Text Editor/File Management: the file browser", false));
-            _shortcutList.Add(new Shortcut("  3", "Configuration: startup and basic settings", false));
-            _shortcutList.Add(new Shortcut("  4", "Quick guide: a short introduction", false));
-            _shortcutList.Add(new Shortcut("  5", "Exit Marbles (without asking)", false));
-            _shortcutList.Add(new Shortcut("Q Esc", "Exit Marbles, asking first (Configuration: Back)", false));
-            _shortcutList.Add(new Shortcut("  Configuration", "j k or the number of the row: Select", false));
-            _shortcutList.Add(new Shortcut("Enter Space", "Change the selected setting", false));
-            _shortcutList.Add(new Shortcut("l h", "Next/Previous color scheme or logo", false));
-            _shortcutList.Add(new Shortcut("  View log", "/text only shows lines containing \"text\"", false));
+            _shortcutList.Add(new Shortcut("j k 1-5", Lang.T("Select"), false));
+            _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last (also in Configuration)"), false));
+            _shortcutList.Add(new Shortcut("Enter", Lang.T("Open the selected"), false));
+            _shortcutList.Add(new Shortcut("  1", Lang.T("Note Management: the login page"), false));
+            _shortcutList.Add(new Shortcut("  2", Lang.T("Text Editor/File Management: the file browser"), false));
+            _shortcutList.Add(new Shortcut("  3", Lang.T("Configuration: startup and basic settings"), false));
+            _shortcutList.Add(new Shortcut("  4", Lang.T("Quick guide: a short introduction"), false));
+            _shortcutList.Add(new Shortcut("  5", Lang.T("Exit Marbles (without asking)"), false));
+            _shortcutList.Add(new Shortcut("Q Esc", Lang.T("Exit Marbles, asking first (Configuration: Back)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("j k or the number of the row: Select"), false));
+            _shortcutList.Add(new Shortcut("Enter Space", Lang.T("Change the selected setting"), false));
+            _shortcutList.Add(new Shortcut("l h", Lang.T("Next/Previous color scheme or logo"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("View log"), Lang.T("/text only shows lines containing \"text\""), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogin, true));
-            _shortcutList.Add(new Shortcut("Enter", "Log in with the password typed", false));
-            _shortcutList.Add(new Shortcut("Left Right Tab", "Select a data file", false));
-            _shortcutList.Add(new Shortcut("Up Down", "Select a directory", false));
-            _shortcutList.Add(new Shortcut("Space", "Move the data file to another directory", false));
-            _shortcutList.Add(new Shortcut("Esc", "Clear the password. When empty: Options", false));
-            _shortcutList.Add(new Shortcut("Esc I", "Information about the data file", false));
-            _shortcutList.Add(new Shortcut("Esc N", "New data file", false));
-            _shortcutList.Add(new Shortcut("Esc X C D", "Rename/Copy/Delete the data file", false));
-            _shortcutList.Add(new Shortcut("Esc M", "Merge two data files, or export one as XML", false));
-            _shortcutList.Add(new Shortcut("Esc F", "Browse and edit text files", false));
-            _shortcutList.Add(new Shortcut("Esc T", "Select mode (notes/text editor/startup)", false));
-            _shortcutList.Add(new Shortcut("Esc h l j k", "Select data file/directory", false));
-            _shortcutList.Add(new Shortcut("Esc R Y", "Refresh the page/Restart Marbles", false));
-            _shortcutList.Add(new Shortcut("Esc G S", "Show the log/Edit settings.ini", false));
-            _shortcutList.Add(new Shortcut("Esc U", "Quick guide: a short introduction", false));
-            _shortcutList.Add(new Shortcut("Esc ?", "Show this help", false));
-            _shortcutList.Add(new Shortcut("Esc Q", "Exit Marbles", false));
+            _shortcutList.Add(new Shortcut("Enter", Lang.T("Log in with the password typed"), false));
+            _shortcutList.Add(new Shortcut("Left Right Tab", Lang.T("Select a data file"), false));
+            _shortcutList.Add(new Shortcut("Up Down", Lang.T("Select a directory"), false));
+            _shortcutList.Add(new Shortcut("Space", Lang.T("Move the data file to another directory"), false));
+            _shortcutList.Add(new Shortcut("Esc", Lang.T("Clear the password. When empty: Options"), false));
+            _shortcutList.Add(new Shortcut("Esc I", Lang.T("Information about the data file"), false));
+            _shortcutList.Add(new Shortcut("Esc N", Lang.T("New data file"), false));
+            _shortcutList.Add(new Shortcut("Esc X C D", Lang.T("Rename/Copy/Delete the data file"), false));
+            _shortcutList.Add(new Shortcut("Esc M", Lang.T("Merge two data files, or export one as XML"), false));
+            _shortcutList.Add(new Shortcut("Esc F", Lang.T("Browse and edit text files"), false));
+            _shortcutList.Add(new Shortcut("Esc T", Lang.T("Select mode (notes/text editor/startup)"), false));
+            _shortcutList.Add(new Shortcut("Esc h l j k", Lang.T("Select data file/directory"), false));
+            _shortcutList.Add(new Shortcut("Esc R Y", Lang.T("Refresh the page/Restart Marbles"), false));
+            _shortcutList.Add(new Shortcut("Esc G S", Lang.T("Show the log/Edit settings.ini"), false));
+            _shortcutList.Add(new Shortcut("Esc U", Lang.T("Quick guide: a short introduction"), false));
+            _shortcutList.Add(new Shortcut("Esc ?", Lang.T("Show this help"), false));
+            _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Exit Marbles"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
-            _shortcutList.Add(new Shortcut("h l", "Previous/Next page (as Left/Right)", false));
-            _shortcutList.Add(new Shortcut("j k", "Select in lists/Scroll text (as Down/Up)", false));
-            _shortcutList.Add(new Shortcut("P", "Main menu: Preview of the last edited entries", false));
-            _shortcutList.Add(new Shortcut("gg G", "First/Last (page, entry or text)", false));
-            _shortcutList.Add(new Shortcut("/", "Search", false));
-            _shortcutList.Add(new Shortcut("?", "Show this help", false));
-            _shortcutList.Add(new Shortcut(":", "Command line (commands are shown in the menus)", false));
-            _shortcutList.Add(new Shortcut("  Tab", "Complete the command (again: the next, Shift: back)", false));
-            _shortcutList.Add(new Shortcut(":q", "Close/Return (in the main menu: Exit Marbles)", false));
-            _shortcutList.Add(new Shortcut(":qa", "Exit Marbles", false));
-            _shortcutList.Add(new Shortcut(":new :new Title", "New entry (asks for the title if not given)", false));
-            _shortcutList.Add(new Shortcut(":logout", "Logout", false));
-            _shortcutList.Add(new Shortcut(":guide", "Main menu: Quick guide (a short introduction)", false));
-            _shortcutList.Add(new Shortcut("Tab v", "Favorites: Move the pinned entry (j k, then Esc)", false));
-            _shortcutList.Add(new Shortcut(":pin", "Favorites: Pick the color of the pinned entry", false));
-            _shortcutList.Add(new Shortcut("Esc", "Return/Cancel", false));
-            _shortcutList.Add(new Shortcut(":browse", "Browse files (opening a file logs out)", false));
+            _shortcutList.Add(new Shortcut("h l", Lang.T("Previous/Next page (as Left/Right)"), false));
+            _shortcutList.Add(new Shortcut("j k", Lang.T("Select in lists/Scroll text (as Down/Up)"), false));
+            _shortcutList.Add(new Shortcut("P", Lang.T("Main menu: Preview of the last edited entries"), false));
+            _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last (page, entry or text)"), false));
+            _shortcutList.Add(new Shortcut("/", Lang.T("Search"), false));
+            _shortcutList.Add(new Shortcut("?", Lang.T("Show this help"), false));
+            _shortcutList.Add(new Shortcut(":", Lang.T("Command line (commands are shown in the menus)"), false));
+            _shortcutList.Add(new Shortcut("  Tab", Lang.T("Complete the command (again: the next, Shift: back)"), false));
+            _shortcutList.Add(new Shortcut(":q", Lang.T("Close/Return (in the main menu: Exit Marbles)"), false));
+            _shortcutList.Add(new Shortcut(":qa", Lang.T("Exit Marbles"), false));
+            _shortcutList.Add(new Shortcut(":new :new Title", Lang.T("New entry (asks for the title if not given)"), false));
+            _shortcutList.Add(new Shortcut(":logout", Lang.T("Logout"), false));
+            _shortcutList.Add(new Shortcut(":guide", Lang.T("Main menu: Quick guide (a short introduction)"), false));
+            _shortcutList.Add(new Shortcut("Tab v", Lang.T("Favorites: Move the pinned entry (j k, then Esc)"), false));
+            _shortcutList.Add(new Shortcut(":pin", Lang.T("Favorites: Pick the color of the pinned entry"), false));
+            _shortcutList.Add(new Shortcut("Esc", Lang.T("Return/Cancel"), false));
+            _shortcutList.Add(new Shortcut(":browse", Lang.T("Browse files (opening a file logs out)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFiles, true));
-            _shortcutList.Add(new Shortcut("j k", "Select (as Down/Up)", false));
-            _shortcutList.Add(new Shortcut("gg G", "First/Last", false));
-            _shortcutList.Add(new Shortcut("PgUp PgDn", "One page up/down", false));
-            _shortcutList.Add(new Shortcut("l Enter", "Open the directory or file", false));
-            _shortcutList.Add(new Shortcut("h - Backspace", "Go to the directory above", false));
-            _shortcutList.Add(new Shortcut("/text", "Only show names containing \"text\" (Esc: all)", false));
-            _shortcutList.Add(new Shortcut("Tab", "Go to the other pane", false));
-            _shortcutList.Add(new Shortcut("T :panes", "Show two panes or one", false));
-            _shortcutList.Add(new Shortcut("N :new name", "Create a new file and open it", false));
-            _shortcutList.Add(new Shortcut("I :info", "Show type, size, dates and path", false));
-            _shortcutList.Add(new Shortcut("A :mkdir name", "Create a new directory", false));
-            _shortcutList.Add(new Shortcut("X :rename name", "Rename the file or directory", false));
-            _shortcutList.Add(new Shortcut("Y :duplicate", "Make a copy in the same directory", false));
-            _shortcutList.Add(new Shortcut("C :copy", "Copy: go to the directory, then S (Esc cancels)", false));
-            _shortcutList.Add(new Shortcut("M :move", "Move: go to the directory, then S (Esc cancels)", false));
-            _shortcutList.Add(new Shortcut("  Two panes", "C and M go to the other pane: S copies to it", false));
-            _shortcutList.Add(new Shortcut("D :delete", "Delete (asks first, cannot be undone)", false));
-            _shortcutList.Add(new Shortcut("P :fav", "Add to/Remove from the favorites (*)", false));
-            _shortcutList.Add(new Shortcut("F :favorites", "Show the favorites", false));
-            _shortcutList.Add(new Shortcut("S :find", "Search for files by name and by text", false));
-            _shortcutList.Add(new Shortcut("R", "Refresh", false));
-            _shortcutList.Add(new Shortcut(":cd path", "Go to a directory", false));
-            _shortcutList.Add(new Shortcut(":home", "Go to the Marbles data directory", false));
-            _shortcutList.Add(new Shortcut(":", "Command line (Tab completes the command)", false));
-            _shortcutList.Add(new Shortcut("Esc Q :q", "Close the file browser", false));
-            _shortcutList.Add(new Shortcut("  Text files", "Opened in the editor. They are NOT encrypted", false));
-            _shortcutList.Add(new Shortcut("  Saving", "As UTF-8, with the line endings of the file", false));
-            _shortcutList.Add(new Shortcut("  Not UTF-8", "Can be converted (replace file or save copy)", false));
-            _shortcutList.Add(new Shortcut("  Data files", "Opening one selects it on the login page", false));
+            _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
+            _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last"), false));
+            _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("One page up/down"), false));
+            _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the directory or file"), false));
+            _shortcutList.Add(new Shortcut("h - Backspace", Lang.T("Go to the directory above"), false));
+            _shortcutList.Add(new Shortcut("/text", Lang.T("Only show names containing \"text\" (Esc: all)"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Go to the other pane"), false));
+            _shortcutList.Add(new Shortcut("T :panes", Lang.T("Show two panes or one"), false));
+            _shortcutList.Add(new Shortcut("N :new name", Lang.T("Create a new file and open it"), false));
+            _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
+            _shortcutList.Add(new Shortcut("A :mkdir name", Lang.T("Create a new directory"), false));
+            _shortcutList.Add(new Shortcut("X :rename name", Lang.T("Rename the file or directory"), false));
+            _shortcutList.Add(new Shortcut("Y :duplicate", Lang.T("Make a copy in the same directory"), false));
+            _shortcutList.Add(new Shortcut("C :copy", Lang.T("Copy: go to the directory, then S (Esc cancels)"), false));
+            _shortcutList.Add(new Shortcut("M :move", Lang.T("Move: go to the directory, then S (Esc cancels)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Two panes"), Lang.T("C and M go to the other pane: S copies to it"), false));
+            _shortcutList.Add(new Shortcut("D :delete", Lang.T("Delete (asks first, cannot be undone)"), false));
+            _shortcutList.Add(new Shortcut("P :fav", Lang.T("Add to/Remove from the favorites (*)"), false));
+            _shortcutList.Add(new Shortcut("F :favorites", Lang.T("Show the favorites"), false));
+            _shortcutList.Add(new Shortcut("S :find", Lang.T("Search for files by name and by text"), false));
+            _shortcutList.Add(new Shortcut("R", Lang.T("Refresh"), false));
+            _shortcutList.Add(new Shortcut(":cd path", Lang.T("Go to a directory"), false));
+            _shortcutList.Add(new Shortcut(":home", Lang.T("Go to the Marbles data directory"), false));
+            _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("Esc Q :q", Lang.T("Close the file browser"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Text files"), Lang.T("Opened in the editor. They are NOT encrypted"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Saving"), Lang.T("As UTF-8, with the line endings of the file"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Not UTF-8"), Lang.T("Can be converted (replace file or save copy)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Data files"), Lang.T("Opening one selects it on the login page"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionSearch, true));
-            _shortcutList.Add(new Shortcut("  Name", "Part of the name, or with * and ? (*.md)", false));
-            _shortcutList.Add(new Shortcut("  Text in files", "Text files containing the text", false));
-            _shortcutList.Add(new Shortcut("  Regular expr.", "Name and text are regular expressions", false));
-            _shortcutList.Add(new Shortcut("j k gg G", "Select in the list of files found", false));
-            _shortcutList.Add(new Shortcut("l Enter", "Open the file (at the line found)", false));
-            _shortcutList.Add(new Shortcut("B :goto", "Show the file in the file browser", false));
-            _shortcutList.Add(new Shortcut("I :info", "Show type, size, dates and path", false));
-            _shortcutList.Add(new Shortcut("P :fav", "Add to/Remove from the favorites (*)", false));
-            _shortcutList.Add(new Shortcut("/text", "Only show the files with \"text\" (Esc: all)", false));
-            _shortcutList.Add(new Shortcut("S :find", "Search again", false));
-            _shortcutList.Add(new Shortcut(":", "Command line (Tab completes the command)", false));
-            _shortcutList.Add(new Shortcut("Esc Q h -", "Back to the file browser", false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Name"), Lang.T("Part of the name, or with * and ? (*.md)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Text in files"), Lang.T("Text files containing the text"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Regular expr."), Lang.T("Name and text are regular expressions"), false));
+            _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select in the list of files found"), false));
+            _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file (at the line found)"), false));
+            _shortcutList.Add(new Shortcut("B :goto", Lang.T("Show the file in the file browser"), false));
+            _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
+            _shortcutList.Add(new Shortcut("P :fav", Lang.T("Add to/Remove from the favorites (*)"), false));
+            _shortcutList.Add(new Shortcut("/text", Lang.T("Only show the files with \"text\" (Esc: all)"), false));
+            _shortcutList.Add(new Shortcut("S :find", Lang.T("Search again"), false));
+            _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("Esc Q h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFavorites, true));
-            _shortcutList.Add(new Shortcut("j k gg G", "Select", false));
-            _shortcutList.Add(new Shortcut("l Enter", "Open the file (a directory: go to it)", false));
-            _shortcutList.Add(new Shortcut("B :goto", "Show the file in the file browser", false));
-            _shortcutList.Add(new Shortcut("Tab v", "Move the favorite or folder (j k, then Esc)", false));
-            _shortcutList.Add(new Shortcut("A :folder name", "New folder (a group of favorites)", false));
-            _shortcutList.Add(new Shortcut("l Enter", "On a folder: Open/Close it", false));
-            _shortcutList.Add(new Shortcut(":expand", "Open all the folders", false));
-            _shortcutList.Add(new Shortcut(":collapse", "Close all the folders", false));
-            _shortcutList.Add(new Shortcut("X :rename name", "Rename the folder", false));
-            _shortcutList.Add(new Shortcut("Space", "Mark/Unmark the favorite (several can be marked)", false));
-            _shortcutList.Add(new Shortcut("M :move", "Move the marked (or selected) to a folder", false));
-            _shortcutList.Add(new Shortcut("  Marked", "D removes them all. Esc clears the marks", false));
-            _shortcutList.Add(new Shortcut("  Into a folder", "M, or move the favorite onto the folder", false));
-            _shortcutList.Add(new Shortcut("  Out of a folder", "Move it past the first or last in it", false));
-            _shortcutList.Add(new Shortcut("C :color", "Pick the text color of the favorite", false));
-            _shortcutList.Add(new Shortcut("I :info", "Show type, size, dates and path", false));
-            _shortcutList.Add(new Shortcut("P D :remove", "Remove the favorite or folder (files stay)", false));
-            _shortcutList.Add(new Shortcut("/text", "Only show paths containing \"text\" (Esc: all)", false));
-            _shortcutList.Add(new Shortcut("u :undo", "Put back what was removed last", false));
-            _shortcutList.Add(new Shortcut(":", "Command line (Tab completes the command)", false));
-            _shortcutList.Add(new Shortcut("Esc Q F h -", "Back to the file browser", false));
-            _shortcutList.Add(new Shortcut("  The list", "Kept in favorites.txt in the data directory", false));
+            _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
+            _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file (a directory: go to it)"), false));
+            _shortcutList.Add(new Shortcut("B :goto", Lang.T("Show the file in the file browser"), false));
+            _shortcutList.Add(new Shortcut("Tab v", Lang.T("Move the favorite or folder (j k, then Esc)"), false));
+            _shortcutList.Add(new Shortcut("A :folder name", Lang.T("New folder (a group of favorites)"), false));
+            _shortcutList.Add(new Shortcut("l Enter", Lang.T("On a folder: Open/Close it"), false));
+            _shortcutList.Add(new Shortcut(":expand", Lang.T("Open all the folders"), false));
+            _shortcutList.Add(new Shortcut(":collapse", Lang.T("Close all the folders"), false));
+            _shortcutList.Add(new Shortcut("X :rename name", Lang.T("Rename the folder"), false));
+            _shortcutList.Add(new Shortcut("Space", Lang.T("Mark/Unmark the favorite (several can be marked)"), false));
+            _shortcutList.Add(new Shortcut("M :move", Lang.T("Move the marked (or selected) to a folder"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Marked"), Lang.T("D removes them all. Esc clears the marks"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Into a folder"), Lang.T("M, or move the favorite onto the folder"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Out of a folder"), Lang.T("Move it past the first or last in it"), false));
+            _shortcutList.Add(new Shortcut("C :color", Lang.T("Pick the text color of the favorite"), false));
+            _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
+            _shortcutList.Add(new Shortcut("P D :remove", Lang.T("Remove the favorite or folder (files stay)"), false));
+            _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
+            _shortcutList.Add(new Shortcut("u :undo", Lang.T("Put back what was removed last"), false));
+            _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("Esc Q F h -", Lang.T("Back to the file browser"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.T("Kept in favorites.txt in the data directory"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionEditor, true));
-            _shortcutList.Add(new Shortcut(string.Empty, "Modes", true));
-            _shortcutList.Add(new Shortcut("Esc", "Normal mode (navigate and give commands)", false));
-            _shortcutList.Add(new Shortcut("i a", "Insert mode before/after the cursor", false));
-            _shortcutList.Add(new Shortcut("I A", "Insert mode at line start/end", false));
-            _shortcutList.Add(new Shortcut("o O", "Insert mode on a new line below/above", false));
-            _shortcutList.Add(new Shortcut("v V Q", "Visual mode (select text/lines/a block)", false));
-            _shortcutList.Add(new Shortcut(":vsel :vline", "Select text/lines (as v and V)", false));
-            _shortcutList.Add(new Shortcut(":block", "Select a block (as Q)", false));
-            _shortcutList.Add(new Shortcut("gv", "Select the last selection again", false));
-            _shortcutList.Add(new Shortcut(":", "Command line (type a command, press Enter)", false));
-            _shortcutList.Add(new Shortcut("  Tab", "Complete the command (again: the next, Shift: back)", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Save and close", true));
-            _shortcutList.Add(new Shortcut(":w", "Save", false));
-            _shortcutList.Add(new Shortcut(":wq :x ZZ", "Save and close editor", false));
-            _shortcutList.Add(new Shortcut(":q Esc", "Close editor (asks to save changes)", false));
-            _shortcutList.Add(new Shortcut(":q! ZQ", "Close editor without saving", false));
-            _shortcutList.Add(new Shortcut(":e :e!", "Text files: Read the file again (!: drop changes)", false));
-            _shortcutList.Add(new Shortcut(":help", "Show this help", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Moving the cursor (Normal and Visual mode)", true));
-            _shortcutList.Add(new Shortcut("h j k l", "Left/Down/Up/Right (as the arrow keys)", false));
-            _shortcutList.Add(new Shortcut("w b e", "Next word/Previous word/End of word", false));
-            _shortcutList.Add(new Shortcut("W B E", "As above, words separated by blank space", false));
-            _shortcutList.Add(new Shortcut("0 _ $", "Line start/First character/Line end", false));
-            _shortcutList.Add(new Shortcut("gg G", "Document top/Document end", false));
-            _shortcutList.Add(new Shortcut("5G :5", "Go to line 5", false));
-            _shortcutList.Add(new Shortcut("{ }", "Previous/Next blank line", false));
-            _shortcutList.Add(new Shortcut("f. t.", "To/Before next \".\" on line (F T: backwards)", false));
-            _shortcutList.Add(new Shortcut("; ,", "Repeat f/t forwards/backwards", false));
-            _shortcutList.Add(new Shortcut("PgUp PgDn", "Move one page up/down", false));
-            _shortcutList.Add(new Shortcut("CTRL+U CTRL+D", "Move half a page up/down", false));
-            _shortcutList.Add(new Shortcut("zt zz zb", "Scroll cursor row to top/center/bottom", false));
-            _shortcutList.Add(new Shortcut("5j 3w ...", "A number repeats a movement or command", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Search", true));
-            _shortcutList.Add(new Shortcut("/text ?text", "Search forwards/backwards", false));
-            _shortcutList.Add(new Shortcut("/\\d+", "Regular expressions can be used", false));
-            _shortcutList.Add(new Shortcut("/Text", "Uppercase letters make the search match case", false));
-            _shortcutList.Add(new Shortcut("n N", "Next/Previous match", false));
-            _shortcutList.Add(new Shortcut("*", "Search for the word under the cursor", false));
-            _shortcutList.Add(new Shortcut("Esc :noh", "Remove search highlighting (Esc again closes)", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Spell checking", true));
-            _shortcutList.Add(new Shortcut(":spell", "Mark the misspelled words", false));
-            _shortcutList.Add(new Shortcut(":spell da,en", "As above, and set the languages", false));
-            _shortcutList.Add(new Shortcut(":nospell", "Remove the marks", false));
-            _shortcutList.Add(new Shortcut("]s :spellnext", "Next misspelled word", false));
-            _shortcutList.Add(new Shortcut("[s :spellprev", "Previous misspelled word", false));
-            _shortcutList.Add(new Shortcut("z= :suggest", "Suggest spellings for the word", false));
-            _shortcutList.Add(new Shortcut("zg :spelladd", "Add the word to the word list", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Replace (command line)", true));
-            _shortcutList.Add(new Shortcut(":replace", "Fill in a box instead of writing the command", false));
-            _shortcutList.Add(new Shortcut(":s/old/new/", "Replace first \"old\" on the line with \"new\"", false));
-            _shortcutList.Add(new Shortcut(":s/old/new/g", "Replace all on the line", false));
-            _shortcutList.Add(new Shortcut(":%s/old/new/g", "Replace all in the document", false));
-            _shortcutList.Add(new Shortcut(":2,9s/old/new/g", "Replace all on line 2 to 9", false));
-            _shortcutList.Add(new Shortcut("V ... :s/old/new/g", "Replace all on the selected lines", false));
-            _shortcutList.Add(new Shortcut("  & \\1 \\n", "In \"new\": the match/group 1/line break", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Editing (Normal mode)", true));
-            _shortcutList.Add(new Shortcut("x X", "Delete character under/before the cursor", false));
-            _shortcutList.Add(new Shortcut("r.", "Replace character with \".\"", false));
-            _shortcutList.Add(new Shortcut("d c y", "Delete/Change/Yank (copy) + movement:", false));
-            _shortcutList.Add(new Shortcut("  dw d$ dG", "Delete word/to line end/to document end", false));
-            _shortcutList.Add(new Shortcut("  cw ciw ci\"", "Change word/whole word/text in quotes", false));
-            _shortcutList.Add(new Shortcut("  yy dd cc", "Yank/Delete/Change line (3dd: 3 lines)", false));
-            _shortcutList.Add(new Shortcut("D C Y", "Delete/Change to line end, Yank line", false));
-            _shortcutList.Add(new Shortcut("p P", "Paste after/before the cursor", false));
-            _shortcutList.Add(new Shortcut("J", "Join line with the next", false));
-            _shortcutList.Add(new Shortcut(">> <<", "Indent/Unindent line", false));
-            _shortcutList.Add(new Shortcut("~", "Switch case of character", false));
-            _shortcutList.Add(new Shortcut("gUU guu", "Line to UPPERCASE/lowercase", false));
-            _shortcutList.Add(new Shortcut("gUw guw", "Word to UPPERCASE/lowercase", false));
-            _shortcutList.Add(new Shortcut("u", "Undo (" + TextBuffer.MaxUndoSteps + " steps)", false));
-            _shortcutList.Add(new Shortcut("U CTRL+R", "Redo", false));
-            _shortcutList.Add(new Shortcut(".", "Repeat last change", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Visual mode (select with the movement keys)", true));
-            _shortcutList.Add(new Shortcut("d y c", "Delete/Yank/Change selection", false));
-            _shortcutList.Add(new Shortcut("p", "Replace selection with pasted text", false));
-            _shortcutList.Add(new Shortcut("U u ~", "Selection to UPPERCASE/lowercase/switch", false));
-            _shortcutList.Add(new Shortcut("> <", "Indent/Unindent the selected lines", false));
-            _shortcutList.Add(new Shortcut("J K", "V-LINE: Move the selected lines down/up", false));
-            _shortcutList.Add(new Shortcut("J", "VISUAL: Join the selected lines", false));
-            _shortcutList.Add(new Shortcut("iw i\" i(", "Select word/text in quotes/in brackets", false));
-            _shortcutList.Add(new Shortcut("o", "Move cursor to other end of selection", false));
-            _shortcutList.Add(new Shortcut("v V Q", "Switch to text/lines/block (again: leave)", false));
-            _shortcutList.Add(new Shortcut("gv", "Select the last selection again", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Visual block (Q: the same columns on each line)", true));
-            _shortcutList.Add(new Shortcut("$", "The block goes to the end of each line", false));
-            _shortcutList.Add(new Shortcut("I A", "Type before/after the block on each line", false));
-            _shortcutList.Add(new Shortcut("d y c", "Delete/Yank/Change the block", false));
-            _shortcutList.Add(new Shortcut("D Y C", "The same, to the end of each line", false));
-            _shortcutList.Add(new Shortcut("p", "Paste (a yanked block is pasted as a block)", false));
-            _shortcutList.Add(new Shortcut("r", "Replace each character with the one typed", false));
-            _shortcutList.Add(new Shortcut("U u ~", "UPPERCASE/lowercase/switch case", false));
-            _shortcutList.Add(new Shortcut("O o", "Other corner on the line/Opposite corner", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Insert mode", true));
-            _shortcutList.Add(new Shortcut("Tab", "Insert blank space x " + EditorEngine.TabWidth, false));
-            _shortcutList.Add(new Shortcut("CTRL+W", "Delete word before the cursor", false));
-            _shortcutList.Add(new Shortcut("CTRL+U", "Delete line before the cursor", false));
-            _shortcutList.Add(new Shortcut("CTRL+R", "Paste current memory string", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "String Memory (limit: " + MaxLineMemoryCount + " strings)", true));
-            _shortcutList.Add(new Shortcut("y d c", "Yanked/deleted text is added to memory", false));
-            _shortcutList.Add(new Shortcut("CTRL+P CTRL+N", "Select previous/next memory string", false));
-            _shortcutList.Add(new Shortcut(":reg", "Show current memory string", false));
-            _shortcutList.Add(new Shortcut(":putall", "Insert all memory strings", false));
-            _shortcutList.Add(new Shortcut(":regclear", "Clear string memory", false));
-            _shortcutList.Add(new Shortcut(string.Empty, "Other commands", true));
-            _shortcutList.Add(new Shortcut(":ts", "Insert ISO timestamp (YYYY-MM-DD HH:MM:SS)", false));
-            _shortcutList.Add(new Shortcut(":cal", "Insert calendar...", false));
-            _shortcutList.Add(new Shortcut(":pw", "Insert generated strong password", false));
-            _shortcutList.Add(new Shortcut(":trim", "Trim blank space (line start/end)", false));
-            _shortcutList.Add(new Shortcut(":ol :ul", "Numbered/Bulleted list (selected lines)", false));
-            _shortcutList.Add(new Shortcut(":syntax", "Colors on/off (md html css js json xml files: on)", false));
-            _shortcutList.Add(new Shortcut(":syntax html", "Color as html (or md, css, js, json, xml)", false));
-            _shortcutList.Add(new Shortcut(":number :nu", "Line numbers on/off", false));
-            _shortcutList.Add(new Shortcut(":%y :%d :2,9d", "Yank all/Delete all/Delete line 2 to 9", false));
-            _shortcutList.Add(new Shortcut(":clear", "Clear all", false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Modes"), true));
+            _shortcutList.Add(new Shortcut("Esc", Lang.T("Normal mode (navigate and give commands)"), false));
+            _shortcutList.Add(new Shortcut("i a", Lang.T("Insert mode before/after the cursor"), false));
+            _shortcutList.Add(new Shortcut("I A", Lang.T("Insert mode at line start/end"), false));
+            _shortcutList.Add(new Shortcut("o O", Lang.T("Insert mode on a new line below/above"), false));
+            _shortcutList.Add(new Shortcut("v V Q", Lang.T("Visual mode (select text/lines/a block)"), false));
+            _shortcutList.Add(new Shortcut(":vsel :vline", Lang.T("Select text/lines (as v and V)"), false));
+            _shortcutList.Add(new Shortcut(":block", Lang.T("Select a block (as Q)"), false));
+            _shortcutList.Add(new Shortcut("gv", Lang.T("Select the last selection again"), false));
+            _shortcutList.Add(new Shortcut(":", Lang.T("Command line (type a command, press Enter)"), false));
+            _shortcutList.Add(new Shortcut("  Tab", Lang.T("Complete the command (again: the next, Shift: back)"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Save and close"), true));
+            _shortcutList.Add(new Shortcut(":w", Lang.T("Save"), false));
+            _shortcutList.Add(new Shortcut(":wq :x ZZ", Lang.T("Save and close editor"), false));
+            _shortcutList.Add(new Shortcut(":q Esc", Lang.T("Close editor (asks to save changes)"), false));
+            _shortcutList.Add(new Shortcut(":q! ZQ", Lang.T("Close editor without saving"), false));
+            _shortcutList.Add(new Shortcut(":e :e!", Lang.T("Text files: Read the file again (!: drop changes)"), false));
+            _shortcutList.Add(new Shortcut(":help", Lang.T("Show this help"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Moving the cursor (Normal and Visual mode)"), true));
+            _shortcutList.Add(new Shortcut("h j k l", Lang.T("Left/Down/Up/Right (as the arrow keys)"), false));
+            _shortcutList.Add(new Shortcut("w b e", Lang.T("Next word/Previous word/End of word"), false));
+            _shortcutList.Add(new Shortcut("W B E", Lang.T("As above, words separated by blank space"), false));
+            _shortcutList.Add(new Shortcut("0 _ $", Lang.T("Line start/First character/Line end"), false));
+            _shortcutList.Add(new Shortcut("gg G", Lang.T("Document top/Document end"), false));
+            _shortcutList.Add(new Shortcut("5G :5", Lang.T("Go to line 5"), false));
+            _shortcutList.Add(new Shortcut("{ }", Lang.T("Previous/Next blank line"), false));
+            _shortcutList.Add(new Shortcut("f. t.", Lang.T("To/Before next \".\" on line (F T: backwards)"), false));
+            _shortcutList.Add(new Shortcut("; ,", Lang.T("Repeat f/t forwards/backwards"), false));
+            _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("Move one page up/down"), false));
+            _shortcutList.Add(new Shortcut("CTRL+U CTRL+D", Lang.T("Move half a page up/down"), false));
+            _shortcutList.Add(new Shortcut("zt zz zb", Lang.T("Scroll cursor row to top/center/bottom"), false));
+            _shortcutList.Add(new Shortcut("5j 3w ...", Lang.T("A number repeats a movement or command"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Search"), true));
+            _shortcutList.Add(new Shortcut("/text ?text", Lang.T("Search forwards/backwards"), false));
+            _shortcutList.Add(new Shortcut("/\\d+", Lang.T("Regular expressions can be used"), false));
+            _shortcutList.Add(new Shortcut("/Text", Lang.T("Uppercase letters make the search match case"), false));
+            _shortcutList.Add(new Shortcut("n N", Lang.T("Next/Previous match"), false));
+            _shortcutList.Add(new Shortcut("*", Lang.T("Search for the word under the cursor"), false));
+            _shortcutList.Add(new Shortcut("Esc :noh", Lang.T("Remove search highlighting (Esc again closes)"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Spell checking"), true));
+            _shortcutList.Add(new Shortcut(":spell", Lang.T("Mark the misspelled words"), false));
+            _shortcutList.Add(new Shortcut(":spell da,en", Lang.T("As above, and set the languages"), false));
+            _shortcutList.Add(new Shortcut(":nospell", Lang.T("Remove the marks"), false));
+            _shortcutList.Add(new Shortcut("]s :spellnext", Lang.T("Next misspelled word"), false));
+            _shortcutList.Add(new Shortcut("[s :spellprev", Lang.T("Previous misspelled word"), false));
+            _shortcutList.Add(new Shortcut("z= :suggest", Lang.T("Suggest spellings for the word"), false));
+            _shortcutList.Add(new Shortcut("zg :spelladd", Lang.T("Add the word to the word list"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Replace (command line)"), true));
+            _shortcutList.Add(new Shortcut(":replace", Lang.T("Fill in a box instead of writing the command"), false));
+            _shortcutList.Add(new Shortcut(":s/old/new/", Lang.T("Replace first \"old\" on the line with \"new\""), false));
+            _shortcutList.Add(new Shortcut(":s/old/new/g", Lang.T("Replace all on the line"), false));
+            _shortcutList.Add(new Shortcut(":%s/old/new/g", Lang.T("Replace all in the document"), false));
+            _shortcutList.Add(new Shortcut(":2,9s/old/new/g", Lang.T("Replace all on line 2 to 9"), false));
+            _shortcutList.Add(new Shortcut("V ... :s/old/new/g", Lang.T("Replace all on the selected lines"), false));
+            _shortcutList.Add(new Shortcut("  & \\1 \\n", Lang.T("In \"new\": the match/group 1/line break"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Editing (Normal mode)"), true));
+            _shortcutList.Add(new Shortcut("x X", Lang.T("Delete character under/before the cursor"), false));
+            _shortcutList.Add(new Shortcut("r.", Lang.T("Replace character with \".\""), false));
+            _shortcutList.Add(new Shortcut("d c y", Lang.T("Delete/Change/Yank (copy) + movement:"), false));
+            _shortcutList.Add(new Shortcut("  dw d$ dG", Lang.T("Delete word/to line end/to document end"), false));
+            _shortcutList.Add(new Shortcut("  cw ciw ci\"", Lang.T("Change word/whole word/text in quotes"), false));
+            _shortcutList.Add(new Shortcut("  yy dd cc", Lang.T("Yank/Delete/Change line (3dd: 3 lines)"), false));
+            _shortcutList.Add(new Shortcut("D C Y", Lang.T("Delete/Change to line end, Yank line"), false));
+            _shortcutList.Add(new Shortcut("p P", Lang.T("Paste after/before the cursor"), false));
+            _shortcutList.Add(new Shortcut("J", Lang.T("Join line with the next"), false));
+            _shortcutList.Add(new Shortcut(">> <<", Lang.T("Indent/Unindent line"), false));
+            _shortcutList.Add(new Shortcut("~", Lang.T("Switch case of character"), false));
+            _shortcutList.Add(new Shortcut("gUU guu", Lang.T("Line to UPPERCASE/lowercase"), false));
+            _shortcutList.Add(new Shortcut("gUw guw", Lang.T("Word to UPPERCASE/lowercase"), false));
+            _shortcutList.Add(new Shortcut("u", Lang.F("Undo ({0} steps)", TextBuffer.MaxUndoSteps), false));
+            _shortcutList.Add(new Shortcut("U CTRL+R", Lang.T("Redo"), false));
+            _shortcutList.Add(new Shortcut(".", Lang.T("Repeat last change"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Visual mode (select with the movement keys)"), true));
+            _shortcutList.Add(new Shortcut("d y c", Lang.T("Delete/Yank/Change selection"), false));
+            _shortcutList.Add(new Shortcut("p", Lang.T("Replace selection with pasted text"), false));
+            _shortcutList.Add(new Shortcut("U u ~", Lang.T("Selection to UPPERCASE/lowercase/switch"), false));
+            _shortcutList.Add(new Shortcut("> <", Lang.T("Indent/Unindent the selected lines"), false));
+            _shortcutList.Add(new Shortcut("J K", Lang.T("V-LINE: Move the selected lines down/up"), false));
+            _shortcutList.Add(new Shortcut("J", Lang.T("VISUAL: Join the selected lines"), false));
+            _shortcutList.Add(new Shortcut("iw i\" i(", Lang.T("Select word/text in quotes/in brackets"), false));
+            _shortcutList.Add(new Shortcut("o", Lang.T("Move cursor to other end of selection"), false));
+            _shortcutList.Add(new Shortcut("v V Q", Lang.T("Switch to text/lines/block (again: leave)"), false));
+            _shortcutList.Add(new Shortcut("gv", Lang.T("Select the last selection again"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Visual block (Q: the same columns on each line)"), true));
+            _shortcutList.Add(new Shortcut("$", Lang.T("The block goes to the end of each line"), false));
+            _shortcutList.Add(new Shortcut("I A", Lang.T("Type before/after the block on each line"), false));
+            _shortcutList.Add(new Shortcut("d y c", Lang.T("Delete/Yank/Change the block"), false));
+            _shortcutList.Add(new Shortcut("D Y C", Lang.T("The same, to the end of each line"), false));
+            _shortcutList.Add(new Shortcut("p", Lang.T("Paste (a yanked block is pasted as a block)"), false));
+            _shortcutList.Add(new Shortcut("r", Lang.T("Replace each character with the one typed"), false));
+            _shortcutList.Add(new Shortcut("U u ~", Lang.T("UPPERCASE/lowercase/switch case"), false));
+            _shortcutList.Add(new Shortcut("O o", Lang.T("Other corner on the line/Opposite corner"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Insert mode"), true));
+            _shortcutList.Add(new Shortcut("Tab", Lang.F("Insert blank space x {0}", EditorEngine.TabWidth), false));
+            _shortcutList.Add(new Shortcut("CTRL+W", Lang.T("Delete word before the cursor"), false));
+            _shortcutList.Add(new Shortcut("CTRL+U", Lang.T("Delete line before the cursor"), false));
+            _shortcutList.Add(new Shortcut("CTRL+R", Lang.T("Paste current memory string"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.F("String Memory (limit: {0} strings)", MaxLineMemoryCount), true));
+            _shortcutList.Add(new Shortcut("y d c", Lang.T("Yanked/deleted text is added to memory"), false));
+            _shortcutList.Add(new Shortcut("CTRL+P CTRL+N", Lang.T("Select previous/next memory string"), false));
+            _shortcutList.Add(new Shortcut(":reg", Lang.T("Show current memory string"), false));
+            _shortcutList.Add(new Shortcut(":putall", Lang.T("Insert all memory strings"), false));
+            _shortcutList.Add(new Shortcut(":regclear", Lang.T("Clear string memory"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Other commands"), true));
+            _shortcutList.Add(new Shortcut(":ts", Lang.T("Insert ISO timestamp (YYYY-MM-DD HH:MM:SS)"), false));
+            _shortcutList.Add(new Shortcut(":cal", Lang.T("Insert calendar..."), false));
+            _shortcutList.Add(new Shortcut(":pw", Lang.T("Insert generated strong password"), false));
+            _shortcutList.Add(new Shortcut(":trim", Lang.T("Trim blank space (line start/end)"), false));
+            _shortcutList.Add(new Shortcut(":ol :ul", Lang.T("Numbered/Bulleted list (selected lines)"), false));
+            _shortcutList.Add(new Shortcut(":syntax", Lang.T("Colors on/off (md html css js json xml files: on)"), false));
+            _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md, css, js, json, xml)"), false));
+            _shortcutList.Add(new Shortcut(":number :nu", Lang.T("Line numbers on/off"), false));
+            _shortcutList.Add(new Shortcut(":%y :%d :2,9d", Lang.T("Yank all/Delete all/Delete line 2 to 9"), false));
+            _shortcutList.Add(new Shortcut(":clear", Lang.T("Clear all"), false));
         }
 
         ShowHelp(topic);
@@ -1629,7 +1629,7 @@ internal static class Tools
             var page = top >= maxTop ? pages : top / pageSize + 1;
             SetCursorEx(Init.LineCount - 1, 0);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(" Page " + page + " of " + pages + " ");
+            Console.Write(" " + Lang.F("Page {0} of {1}", page, pages) + " ");
             if (message.Length > 0)
             {
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
@@ -1739,13 +1739,16 @@ internal static class Tools
         Tools.CursorTopLeftDown(6);
         //  automatically). You can copy the data directory or the entire Marbles directory\n <- Max line length
         // --------------------------------------------------------------------------------
-        string welcomeText = " Welcome to " + DialogText.ApplicationName + "\n\n" +
-                             " Your notes and settings are stored in the \"data\" directory, located alongside\n" +
-                             " the Marbles program files (the program automatically creates this directory).\n" +
-                             " You can copy the data directory or the entire Marbles directory to a backup,\n" +
-                             " portable or cloud media if necessary, or enable automatic backup to a\n" +
-                             " secondary location. Marbles uses AES-256 file encryption.\n\n" +
-                             " CAUTION: It is not possible to recover your notes if you forget your password.";
+        string Paragraph(string text) => " " + string.Join("\n ", TextMetrics.Wrap(text, Init.LineWidth - 2));
+        string welcomeText = " " + Lang.F("Welcome to {0}", DialogText.ApplicationName) + "\n\n" +
+                             Paragraph(Lang.T("Your notes and settings are stored in the \"data\" directory, located " +
+                                              "alongside the Marbles program files (the program automatically creates " +
+                                              "this directory). You can copy the data directory or the entire Marbles " +
+                                              "directory to a backup, portable or cloud media if necessary, or enable " +
+                                              "automatic backup to a secondary location. Marbles uses AES-256 file " +
+                                              "encryption.")) + "\n\n" +
+                             Paragraph(Lang.T("CAUTION: It is not possible to recover your notes if you forget your " +
+                                              "password."));
 
         int tempPreviewLineCounter = 0;
         string[] tempOutput = Tools.SplitStringOnNewLine(welcomeText, false);
@@ -1770,10 +1773,10 @@ internal static class Tools
 
     public static void DisplayDateTime()
     {
-        string title = "Timestamp";
+        string title = Lang.T("Timestamp");
         string output = " " + IsoDateTime.GetDateTimeNow() + " ";
         string output2 = " " + IsoDateTime.GetDateTimeNowCompressed(string.Empty) + " ";
-        string output3 = " Week " + IsoDateTime.GetIso8601WeekNumber(DateTime.Now);
+        string output3 = " " + Lang.F("Week {0}", IsoDateTime.GetIso8601WeekNumber(DateTime.Now));
         int boxHeight = 6;
         int boxWidth = output.Length + 4;
         SaveCursorPosition(5);
@@ -1888,14 +1891,14 @@ internal static class Tools
             if (Init.AutoSize)
             {
                 // The window is smaller than the smallest dimensions that can be used
-                Console.WriteLine("(Dimensions must be at least " + Init.MinLineWidth + "x" + Init.MinLineCount + ")");
+                Console.WriteLine("(" + Lang.F("Dimensions must be at least {0}", Init.MinLineWidth + "x" + Init.MinLineCount) + ")");
                 Console.WriteLine(DialogText.EnlargeWindow);
                 Console.ReadKey(true);
                 Init.ApplyAutoSize();
             }
             else
             {
-                Console.WriteLine("(Dimensions must be at least " + Init.LineWidth + "x" + Init.LineCount + ")");
+                Console.WriteLine("(" + Lang.F("Dimensions must be at least {0}", Init.LineWidth + "x" + Init.LineCount) + ")");
                 Console.WriteLine(DialogText.FitOutputDimensions);
                 _keyInfo = Console.ReadKey(true);
                 if (_keyInfo.Key == ConsoleKey.Y)

@@ -52,7 +52,7 @@ public static class IsoDateTime
     public static string ConfigureCalendar()
     {
         Tools.ClearScreen();
-        Menu.WriteModeLabel("Calendar", "Select options and press Enter (Esc to exit)", 0);
+        Menu.WriteModeLabel(Lang.T("Calendar"), Lang.T("Select options and press Enter (Esc to exit)"), 0);
         if (DrawCalendarSelector())
         {
             Tools.ClearScreen();
@@ -219,15 +219,15 @@ public static class IsoDateTime
         if (count is >= 1 and <= 6)
         {
             if (count == 1)
-                return count + " month";
+                return Lang.T("1 month");
             else
             {
-                return count + " months";
+                return Lang.F("{0} months", count);
             }
         }
         else
         {
-            return "Year";
+            return Lang.T("Year");
         }
     }
 
@@ -240,30 +240,31 @@ public static class IsoDateTime
         {
             var date = new DateTime(year, month, 1);
             var daysInMonth = DateTime.DaysInMonth(year, month);
-            var monthName = date.ToString("MMMM", CultureInfo.InvariantCulture);
-            title = (monthName + new string(' ', (10 - monthName.Length)) + date.Year);
+            var monthName = Lang.T(date.ToString("MMMM", CultureInfo.InvariantCulture)); // Listed in Lang.Names
+            title = (monthName + new string(' ', Math.Max(1, 10 - monthName.Length)) + date.Year);
             output.Append("*** " + title + " ***" +
                           "\n");
-            // DayOfWeek enumeration is not localized (always english)
+            // DayOfWeek enumeration is not localized (always english): the short names are translated
             for (int i = 0; i < daysInMonth; i++)
             {
                 var weekNumber = GetIso8601WeekNumber(date.AddDays(i));
                 if (date.AddDays(i).DayOfWeek == DayOfWeek.Monday)
                 {
-                    output.Append("-- Week " + weekNumber + "\n"); 
+                    output.Append("-- " + Lang.F("Week {0}", weekNumber) + "\n");
                 }
                 
                 // Calculate week number range if 1 month
                 if (count == 1 && i == 0)
                 {
-                    weekNumberFirstLast = "[week " + weekNumber.ToString("00");
+                    weekNumberFirstLast = "[" + Lang.F("week {0}", weekNumber.ToString("00"));
                 }
                 else if (count == 1 && i == daysInMonth - 1)
                 {
                     weekNumberFirstLast += "-" + weekNumber.ToString("00") + "]";
                 }
 
-                output.Append((i + 1).ToString("00") + " " + date.AddDays(i).DayOfWeek.ToString()[..3] + "\n");
+                // The short names of the days are listed in Lang.Names
+                output.Append((i + 1).ToString("00") + " " + Lang.T(date.AddDays(i).DayOfWeek.ToString()[..3]) + "\n");
             }
 
             // Keep it within 12 months
@@ -285,7 +286,7 @@ public static class IsoDateTime
     internal static bool SelectYear()
     {
         Tools.ClearScreen();
-        Menu.WriteModeLabel("Calendar", "Select year and press Enter (Esc to exit)", 0);
+        Menu.WriteModeLabel(Lang.T("Calendar"), Lang.T("Select year and press Enter (Esc to exit)"), 0);
         return DrawYearSelector();
     }
 

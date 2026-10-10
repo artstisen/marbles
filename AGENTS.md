@@ -13,6 +13,15 @@ Every place with a command line (main menu, entry view, lists of entries, file b
 - `CommandTests` compares the tables with the code that runs the commands (it reads the source files), and fails with the names that differ. If the code that runs the commands of a place is moved or restructured, update where that test looks
 - Also add the command to the help (`Tools.cs`, the section of the place) and to the guide that covers it
 
+## Texts and languages
+Text shown to the user is written in English in the code and given to `Lang.T("...")`, or `Lang.F("... {0} ...", value)` when it has values in it. The other languages are files in `Marbles/Lang/` (`da.txt` ...), built into the program.
+
+- Write the whole text in the call, as one text: `Lang.F("{0} files found", count)`, not `count + " files found"` (word order differs between languages), and not `Lang.T(condition ? "a" : "b")` (write two calls). A name made while running (a color, a month) is listed in `Lang.Names`
+- What stays English in all languages: commands, keys, the names of the editor modes (NORMAL, INSERT, VISUAL ...), the settings file, the log, and the guides. Keys are not translated in key hints either (`j/k Select`: only `Select` is)
+- After adding or changing texts, run `python tools/langfile.py da` (and for each other language file): new texts get an empty translation, which is shown in English until it is filled in. Then translate them
+- `LangTests` checks the language files against the code (missing or unknown texts, placeholders, keys, blank space) and fails on text written to the screen without `Lang.T`. A line that is meant to stay English gets a comment containing "English"
+- Text that is kept (a field, a list made at startup) is not translated when the language changes: look it up when it is shown
+
 ## Checks before a change is done
 - `dotnet test Marbles.sln` passes
 - The change is tried in the running program, not only in tests
@@ -23,7 +32,7 @@ Every place with a command line (main menu, entry view, lists of entries, file b
 - Source files are UTF-8 with BOM and CRLF line endings. Markdown files have LF
 - No dependencies besides .NET itself
 - `EditorEngine`, `TextBuffer`, the highlighters and `CommandCompletion` do not touch the console, so they can be tested. Keep it that way: drawing belongs in `TextArea` and the pages
-- Text shown to the user is kept in `DialogText`
+- Text shown to the user is kept in `DialogText` (or written in a `Lang.T` call where it is used)
 - The log (`EventLog`) can be read without a password: never log titles, the text of notes, search texts or passwords. Commands are logged by name only
 - The encryption (AES-256-GCM, PBKDF2-HMAC-SHA256) is not to be changed without it being asked for
 

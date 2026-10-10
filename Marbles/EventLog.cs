@@ -137,9 +137,9 @@ internal static class EventLog
             Menu.WriteModeLabel(DialogText.LogReview, string.Empty, 0);
             Tools.SetCursorEx(1, 1);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(lines.Count + (lines.Count == 1 ? DialogText.LogLine : DialogText.LogLines) +
-                          (filter.Length > 0 ? DialogText.LogOf + Lines.Count + DialogText.LogFiltered + filter : "") +
-                          (_removed > 0 ? " (" + _removed + DialogText.LogRemoved + ")" : ""));
+            Console.Write((lines.Count == 1 ? Lang.F("{0} line", lines.Count) : Lang.F("{0} lines", lines.Count)) +
+                          (filter.Length > 0 ? " " + Lang.F("of {0} containing: {1}", Lines.Count, filter) : "") +
+                          (_removed > 0 ? " (" + Lang.F("{0} older lines removed", _removed) + ")" : ""));
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             for (var row = 0; row < pageSize && top + row < rows.Count; row++)
             {
@@ -166,7 +166,7 @@ internal static class EventLog
             var page = top >= maxTop ? pages : top / pageSize + 1;
             Tools.SetCursorEx(Init.LineCount - 1, 0);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(" Page " + page + " of " + pages + " " + DialogText.LogKeys);
+            Console.Write(" " + Lang.F("Page {0} of {1}", page, pages) + " " + DialogText.LogKeys);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
 
             var key = Console.ReadKey(true);

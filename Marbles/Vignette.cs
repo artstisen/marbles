@@ -5,10 +5,10 @@ internal static class Vignette
     #region Vignette check/display
     private const byte VignetteHeight = 15;
     private const byte VignetteWidth = 42; // 42 will equal 40 in content char count
-    private const string VignetteExText = "Your text here...";
+    private static string VignetteExText => Lang.T("Your text here...");
     private const string VignetteExTitle = "VIGNETTE";
     private const string VignetteName = "[#vignette]";
-    private const string VignetteText = VignetteExTitle + " " + Entries.NewLineCharString + Entries.NewLineCharString + VignetteExText;
+    private static string VignetteText => VignetteExTitle + " " + Entries.NewLineCharString + Entries.NewLineCharString + VignetteExText;
     private static bool _vignetteEnabled = true;
     private static string _vignetteText = string.Empty;
                                     
@@ -118,10 +118,11 @@ internal static class Vignette
         // Calendar related
         if (FileActions.CurrentFileType == FileActions.FileType.Calendar)
         {
-            Entries.NewEntry("Calendar info " + VignetteName, Entries.NewLineCharString + "Press F to view calendar" +
-                                                              Entries.NewLineCharString + new string('-', 24) +
-                                                              Entries.NewLineCharString + "Type [:pin 1-3] to change" +
-                                                              Entries.NewLineCharString + "entry color...");
+            Entries.NewEntry(Lang.T("Calendar info") + " " + VignetteName,
+                Entries.NewLineCharString + Lang.T("Press F to view calendar") +
+                Entries.NewLineCharString + new string('-', 24) +
+                Entries.NewLineCharString + Lang.T("Type [:pin 1-3] to change") +
+                Entries.NewLineCharString + Lang.T("entry color..."));
         }
         else
         {

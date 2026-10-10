@@ -16,52 +16,74 @@ internal static class QuickGuide
     }
 
     private const int KeyWidth = 16;
+    private const int ItemIndent = 3 + KeyWidth + 1; // Where the text of an item starts
 
-    private static readonly (Kind Kind, string Key, string Text)[] Lines =
+    // The guide in the language in use: each item is one paragraph, wrapped to the width of the window.
+    // The keys and the names of the editor modes are the same in all languages
+    private static List<(Kind Kind, string Key, string Text)> Paragraphs() => new()
     {
-        (Kind.Title, "", "Quick guide"),
+        (Kind.Title, "", Lang.T("Quick guide")),
         (Kind.Text, "", ""),
-        (Kind.Heading, "", "Marbles has two parts, selected on the start page"),
-        (Kind.Item, "Note Management", "Your notes, kept in a data file that is encrypted with"),
-        (Kind.Item, "", "your password. Log in, then press N for a new note,"),
-        (Kind.Item, "", "S or / to search and F for your favorites."),
-        (Kind.Item, "Text Editor", "A file browser for ordinary text and code files (they"),
-        (Kind.Item, "", "are not encrypted). Enter opens a file in the editor."),
-        (Kind.Item, "", "Manage files and organize favorites."),
+        (Kind.Heading, "", Lang.T("Marbles has two parts, selected on the start page")),
+        (Kind.Item, Lang.T("Note Management"), Lang.T("Your notes, kept in a data file that is encrypted with your password. " +
+                                                       "Log in, then press N for a new note, S or / to search and F for " +
+                                                       "your favorites.")),
+        (Kind.Item, Lang.T("Text Editor"), Lang.T("A file browser for ordinary text and code files (they are not " +
+                                                   "encrypted). Enter opens a file in the editor. Manage files and " +
+                                                   "organize favorites.")),
         (Kind.Text, "", ""),
-        (Kind.Heading, "", "Moving around (the same keys everywhere)"),
-        (Kind.Item, "j  k", "Down/Up. The arrow keys work too"),
-        (Kind.Item, "h  l", "Left/Right: the previous/next page, or back/open"),
-        (Kind.Item, "gg  G", "The first/last"),
-        (Kind.Item, "/", "Search or filter"),
-        (Kind.Item, ":", "Type a command, like :new or :q (the menus show them)"),
-        (Kind.Item, "Esc", "Back, cancel or close"),
-        (Kind.Item, "?", "Help: the keys of the page you are on"),
+        (Kind.Heading, "", Lang.T("Moving around (the same keys everywhere)")),
+        (Kind.Item, "j  k", Lang.T("Down/Up. The arrow keys work too")),
+        (Kind.Item, "h  l", Lang.T("Left/Right: the previous/next page, or back/open")),
+        (Kind.Item, "gg  G", Lang.T("The first/last")),
+        (Kind.Item, "/", Lang.T("Search or filter")),
+        (Kind.Item, ":", Lang.T("Type a command, like :new or :q (the menus show them)")),
+        (Kind.Item, "Esc", Lang.T("Back, cancel or close")),
+        (Kind.Item, "?", Lang.T("Help: the keys of the page you are on")),
         (Kind.Text, "", ""),
-        (Kind.Heading, "", "The editor has modes, shown at the bottom left"),
-        (Kind.Item, "NORMAL", "Keys move the cursor and give commands. You start here"),
-        (Kind.Item, "INSERT", "Keys type text. Press i to type, and Esc when done"),
-        (Kind.Item, "VISUAL", "Select text: press v (V for whole lines, Q a block), move,"),
-        (Kind.Item, "", "then y to copy or d to delete"),
+        (Kind.Heading, "", Lang.T("The editor has modes, shown at the bottom left")),
+        (Kind.Item, "NORMAL", Lang.T("Keys move the cursor and give commands. You start here")),
+        (Kind.Item, "INSERT", Lang.T("Keys type text. Press i to type, and Esc when done")),
+        (Kind.Item, "VISUAL", Lang.T("Select text: press v (V for whole lines, Q a block), move, then y to copy " +
+                                     "or d to delete")),
         (Kind.Text, "", ""),
-        (Kind.Heading, "", "The few editor keys you need to begin (in NORMAL mode)"),
-        (Kind.Item, "i", "Type text (Esc when done)"),
-        (Kind.Item, ":w", "Save"),
-        (Kind.Item, ":q  or  Esc", "Close the editor (asks if there are unsaved changes)"),
-        (Kind.Item, "u", "Undo"),
-        (Kind.Item, "dd  yy  p", "Delete a line / Copy a line / Paste"),
-        (Kind.Item, "/text", "Search (n: the next match)"),
+        (Kind.Heading, "", Lang.T("The few editor keys you need to begin (in NORMAL mode)")),
+        (Kind.Item, "i", Lang.T("Type text (Esc when done)")),
+        (Kind.Item, ":w", Lang.T("Save")),
+        (Kind.Item, ":q  " + Lang.T("or") + "  Esc", Lang.T("Close the editor (asks if there are unsaved changes)")),
+        (Kind.Item, "u", Lang.T("Undo")),
+        (Kind.Item, "dd  yy  p", Lang.T("Delete a line / Copy a line / Paste")),
+        (Kind.Item, "/text", Lang.T("Search (n: the next match)")),
         (Kind.Text, "", ""),
-        (Kind.Heading, "", "Commands"),
-        (Kind.Item, ":guide  :w  ...", "A word with a colon in front is a command: press : and"),
-        (Kind.Item, "", "type the word, then Enter (Esc cancels). Commands can be"),
-        (Kind.Item, "", "given on most pages. The menus and the help show them."),
-        (Kind.Item, "Tab", "Completes the command you are typing. Press it again"),
-        (Kind.Item, "", "for the next command that starts the same."),
+        (Kind.Heading, "", Lang.T("Commands")),
+        (Kind.Item, ":guide  :w  ...", Lang.T("A word with a colon in front is a command: press : and type the " +
+                                              "word, then Enter (Esc cancels). Commands can be given on most " +
+                                              "pages. The menus and the help show them.")),
+        (Kind.Item, "Tab", Lang.T("Completes the command you are typing. Press it again for the next command " +
+                                  "that starts the same.")),
         (Kind.Text, "", ""),
-        (Kind.Text, "", "There is much more. Press ? on any page, or type :help in the editor,"),
-        (Kind.Text, "", "to see the keys that can be used there.")
+        (Kind.Text, "", Lang.T("There is much more. Press ? on any page, or type :help in the editor, to see the " +
+                               "keys that can be used there."))
     };
+
+    /// <summary>
+    /// The lines of the guide, with the paragraphs wrapped to a width
+    /// </summary>
+    internal static List<(int Kind, string Key, string Text)> Lines(int width)
+    {
+        var lines = new List<(int Kind, string Key, string Text)>();
+        foreach (var (kind, key, text) in Paragraphs())
+        {
+            var indent = kind == Kind.Item ? ItemIndent : 1;
+            var parts = TextMetrics.Wrap(text, Math.Max(20, width - indent - 1));
+            for (var i = 0; i < parts.Count; i++)
+            {
+                lines.Add(((int)kind, i == 0 ? key : string.Empty, parts[i]));
+            }
+        }
+
+        return lines;
+    }
 
     /// <summary>
     /// Show the guide until it is closed. The page that was shown must be drawn again afterwards
@@ -74,20 +96,21 @@ internal static class QuickGuide
         {
             Init.ApplyAutoSize();
             var pageSize = Math.Max(1, Init.LineCount - 1);
-            var maxTop = Math.Max(0, Lines.Length - pageSize);
+            var lines = Lines(Init.LineWidth);
+            var maxTop = Math.Max(0, lines.Count - pageSize);
             top = Math.Clamp(top, 0, maxTop);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Tools.ClearScreen();
-            for (var row = 0; row < pageSize && top + row < Lines.Length; row++)
+            for (var row = 0; row < pageSize && top + row < lines.Count; row++)
             {
-                DrawLine(row, Lines[top + row]);
+                DrawLine(row, lines[top + row]);
             }
 
-            var pages = Math.Max(1, (Lines.Length + pageSize - 1) / pageSize);
+            var pages = Math.Max(1, (lines.Count + pageSize - 1) / pageSize);
             var page = top >= maxTop ? pages : top / pageSize + 1;
             Tools.SetCursorEx(Init.LineCount - 1, 0);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(" Page " + page + " of " + pages + " " + DialogText.QuickGuideKeys);
+            Console.Write(" " + Lang.F("Page {0} of {1}", page, pages) + " " + DialogText.QuickGuideKeys);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
 
             var key = Console.ReadKey(true);
@@ -128,10 +151,10 @@ internal static class QuickGuide
         Tools.ClearScreen();
     }
 
-    private static void DrawLine(int row, (Kind Kind, string Key, string Text) line)
+    private static void DrawLine(int row, (int Kind, string Key, string Text) line)
     {
         Tools.SetCursorEx(row, 0);
-        switch (line.Kind)
+        switch ((Kind)line.Kind)
         {
             case Kind.Title:
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);

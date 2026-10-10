@@ -469,7 +469,7 @@ internal sealed partial class EditorEngine
 
                 var line = Math.Min(first, Buffer.LineCount - 1);
                 Cursor = new TextPos(line, FirstNonBlank(line));
-                if (count > 2) Message = count + " fewer lines";
+                if (count > 2) Message = Lang.F("{0} fewer lines", count);
                 break;
             case 'c':
                 StoreRegister(Buffer.GetText(start, end), true, false);
@@ -480,7 +480,7 @@ internal sealed partial class EditorEngine
             case 'y':
                 StoreRegister(Buffer.GetText(start, end), true, false);
                 Cursor = new TextPos(first, Cursor.Col);
-                if (count > 2) Message = count + " lines yanked";
+                if (count > 2) Message = Lang.F("{0} lines yanked", count);
                 break;
             case '>':
                 for (var i = first; i <= last; i++)
@@ -820,7 +820,7 @@ internal sealed partial class EditorEngine
     {
         if (_lastSelection == null)
         {
-            Message = "No selection yet";
+            Message = Lang.T("No selection yet");
             return;
         }
 
@@ -1106,7 +1106,7 @@ internal sealed partial class EditorEngine
             }
             else
             {
-                Message = "Already at oldest change";
+                Message = Lang.T("Already at oldest change");
                 break;
             }
         }
@@ -1124,7 +1124,7 @@ internal sealed partial class EditorEngine
             }
             else
             {
-                Message = "Already at newest change";
+                Message = Lang.T("Already at newest change");
                 break;
             }
         }
@@ -1252,14 +1252,15 @@ internal sealed partial class EditorEngine
     {
         if (!Tools.HasLineMemory())
         {
-            Message = "String memory is empty";
+            Message = Lang.T("String memory is empty");
             return;
         }
 
         var text = Tools.GetCurrentLineFromLineMemory();
         var preview = Tools.TruncateString(text.TrimEnd(TextBuffer.NewLine).Replace(TextBuffer.NewLine, ' '), 40, true);
-        Message = "String " + Tools.GetLineMemoryPosition() + (text.EndsWith(TextBuffer.NewLine) ? " (lines): " : ": ") +
-                  preview;
+        Message = text.EndsWith(TextBuffer.NewLine)
+            ? Lang.F("String {0} (lines): {1}", Tools.GetLineMemoryPosition(), preview)
+            : Lang.F("String {0}: {1}", Tools.GetLineMemoryPosition(), preview);
     }
 
     #endregion

@@ -27,8 +27,11 @@ internal static class ReplaceDialog
     private const int RowCount = 6;
 
     private const int InnerWidth = 58; // Between the borders
-    private const int LabelWidth = 15;
-    private const int FieldWidth = InnerWidth - LabelWidth - 7;
+    // The labels take the room they need in the language in use
+    private static int LabelWidth =>
+        Math.Max(15, new[] { DialogText.ReplaceFind, DialogText.ReplaceWith, DialogText.ReplaceWhere }.Max(l => l.Length) + 1);
+
+    private static int FieldWidth => InnerWidth - LabelWidth - 7;
     private const int MaxTextLength = 200;
 
     /// <summary>

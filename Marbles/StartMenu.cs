@@ -30,7 +30,8 @@ internal static class StartMenu
     private const int FirstRow = 8;
     private const int Left = 3;
 
-    private static readonly string[] Choices =
+    // In the language in use
+    private static string[] Choices => new[]
         {
             DialogText.StartNotes, DialogText.StartEditor, DialogText.StartConfiguration, DialogText.QuickGuide,
             DialogText.StartExit
@@ -149,6 +150,7 @@ internal static class StartMenu
         StartNotes,
         StartEditor,
         Monochrome,
+        Language,
         ColorScheme,
         Logo,
         AutoSize,
@@ -166,6 +168,7 @@ internal static class StartMenu
         {
             Setting.StartSelect, Setting.StartNotes, Setting.StartEditor, Setting.Monochrome
         };
+        settings.Add(Setting.Language);
         if (!ConsoleColors.Monochrome) settings.Add(Setting.ColorScheme);
         settings.Add(Setting.Logo);
         settings.Add(Setting.AutoSize);
@@ -188,11 +191,11 @@ internal static class StartMenu
             Setting.StartNotes => Check(Mode == StartMode.Notes) + DialogText.StartConfigNotes,
             Setting.StartEditor => Check(Mode == StartMode.Editor) + DialogText.StartConfigEditor,
             Setting.Monochrome => Check(ConsoleColors.Monochrome) + DialogText.ConfigMonochrome,
-            Setting.ColorScheme => indent + DialogText.ConfigColorScheme + (ConsoleColors.GetColorPresetIndex() + 1) +
-                                   DialogText.ConfigOf + Actions.ColorPresetCount + " (" +
+            Setting.Language => indent + DialogText.ConfigLanguage + Lang.CurrentName,
+            Setting.ColorScheme => indent + Lang.F("Color scheme: {0} of {1}", ConsoleColors.GetColorPresetIndex() + 1,
+                                       Actions.ColorPresetCount) + " (" +
                                    Actions.ColorPresetName(ConsoleColors.GetColorPresetIndex()) + ")",
-            Setting.Logo => indent + DialogText.ConfigLogo + (Logo.GetLogoIndex() + 1) + DialogText.ConfigOf +
-                            Actions.LogoPresetCount,
+            Setting.Logo => indent + Lang.F("Logo: {0} of {1}", Logo.GetLogoIndex() + 1, Actions.LogoPresetCount),
             Setting.AutoSize => Check(Init.AutoSize) + DialogText.ConfigAutoSize,
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
@@ -285,7 +288,7 @@ internal static class StartMenu
                 ChangeSetting(settings[selected], true);
             }
             else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow &&
-                     settings[selected] is Setting.ColorScheme or Setting.Logo)
+                     settings[selected] is Setting.ColorScheme or Setting.Logo or Setting.Language)
             {
                 // The previous color scheme or logo
                 ChangeSetting(settings[selected], false);
@@ -318,6 +321,9 @@ internal static class StartMenu
                 break;
             case Setting.Monochrome:
                 ConsoleColors.Monochrome = !ConsoleColors.Monochrome;
+                break;
+            case Setting.Language:
+                Lang.Set(Lang.Next(next));
                 break;
             case Setting.ColorScheme:
             {

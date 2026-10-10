@@ -59,10 +59,10 @@ internal static partial class FileExplorer
         _foundIndex = 0;
         _foundTop = 0;
         _foundFilter = string.Empty;
-        _foundSummary = _found.Count + (_found.Count == 1 ? DialogText.SearchFoundOne : DialogText.SearchFound) +
+        _foundSummary = (_found.Count == 1 ? Lang.F("{0} file found", 1) : Lang.F("{0} files found", _found.Count)) +
                         (outcome.Capped ? DialogText.SearchCapped : string.Empty) +
                         (outcome.Stopped ? DialogText.SearchStopped : string.Empty) +
-                        (outcome.Unreadable > 0 ? " (" + outcome.Unreadable + DialogText.SearchUnreadable + ")" : "");
+                        (outcome.Unreadable > 0 ? " (" + Lang.F("{0} directories could not be read", outcome.Unreadable) + ")" : "");
         _foundMessage = string.Empty;
     }
 
@@ -351,7 +351,7 @@ internal static partial class FileExplorer
         Menu.WriteModeLabel(DialogText.SearchResultCaption, string.Empty, 0);
         Menu.WriteNameInTopBar(false);
         // What was found, and where
-        var header = _foundSummary + DialogText.SearchFoundIn;
+        var header = _foundSummary + " " + Lang.T("in") + " ";
         var room = Init.LineWidth - 2 - header.Length;
         var root = _foundRoot;
         if (room > 8 && root.Length > room) root = "..." + root[^(room - 3)..];

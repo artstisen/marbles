@@ -19,7 +19,8 @@ internal static class ColorPicker
     internal static string Name(ConsoleColor color)
     {
         var name = color.ToString();
-        return name.StartsWith("Dark", StringComparison.Ordinal) && name.Length > 4 ? "Dark " + name[4..] : name;
+        // The names are listed in Lang.Names
+        return Lang.T(name.StartsWith("Dark", StringComparison.Ordinal) && name.Length > 4 ? "Dark " + name[4..] : name);
     }
 
     /// <summary>

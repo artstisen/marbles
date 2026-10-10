@@ -19,6 +19,7 @@ Marbles is operated in the style of Vim: the editor has Normal, Insert and Visua
 - Application type: Text mode
 - Box drawing: ASCII
 - Console I/O encoding: UTF-8
+- Languages: English and Danish (the commands and keys are the same in all languages)
 - Date/time format: ISO 8601
 - File encryption: AES-256-GCM, with the key derived from the password using PBKDF2-HMAC-SHA256
 - Software license: MIT

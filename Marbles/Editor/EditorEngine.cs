@@ -616,7 +616,7 @@ internal sealed partial class EditorEngine
         // Commands may start with the lines to work on, like ":%s/a/b/" or ":2,5d"
         if (!ParseRange(ref command, out var range))
         {
-            SetError("Invalid range");
+            SetError(Lang.T("Invalid range"));
             return;
         }
 
@@ -654,7 +654,7 @@ internal sealed partial class EditorEngine
             }
             else
             {
-                SetError("Not an editor command: " + command);
+                SetError(Lang.T("Not an editor command: ") + command);
             }
 
             return;
@@ -817,7 +817,7 @@ internal sealed partial class EditorEngine
                 ApplyOperatorToLines('y', Cursor.Line, Cursor.Line);
                 break;
             default:
-                SetError("Not an editor command: " + command);
+                SetError(Lang.T("Not an editor command: ") + command);
                 break;
         }
     }
@@ -999,7 +999,7 @@ internal sealed partial class EditorEngine
         }
         else
         {
-            SetError("Pattern not found: " + pattern);
+            SetError(Lang.T("Pattern not found: ") + pattern);
         }
     }
 
@@ -1050,7 +1050,7 @@ internal sealed partial class EditorEngine
         }
         catch (RegexMatchTimeoutException)
         {
-            SetError("Search took too long");
+            SetError(Lang.T("Search took too long"));
         }
 
         return false;
@@ -1089,13 +1089,13 @@ internal sealed partial class EditorEngine
         var flags = parts.Count > 2 ? parts[2].Trim() : string.Empty;
         if (pattern.Length == 0)
         {
-            SetError("No previous search");
+            SetError(Lang.T("No previous search"));
             return;
         }
 
         if (flags.Any(flag => flag is not ('g' or 'i' or 'I')))
         {
-            SetError("Unknown flags: " + flags);
+            SetError(Lang.T("Unknown flags: ") + flags);
             return;
         }
 
@@ -1165,19 +1165,20 @@ internal sealed partial class EditorEngine
         }
         catch (RegexMatchTimeoutException)
         {
-            SetError("Search took too long");
+            SetError(Lang.T("Search took too long"));
             return;
         }
 
         if (substitutions == 0)
         {
-            SetError("Pattern not found: " + shownPattern);
+            SetError(Lang.T("Pattern not found: ") + shownPattern);
             return;
         }
 
         if (cursorLine >= 0) GoToLine(cursorLine);
-        Message = substitutions + (substitutions == 1 ? " substitution on " : " substitutions on ") + lines +
-                  (lines == 1 ? " line" : " lines");
+        Message = Lang.F("{0} on {1}",
+            substitutions == 1 ? Lang.T("1 substitution") : Lang.F("{0} substitutions", substitutions),
+            lines == 1 ? Lang.T("1 line") : Lang.F("{0} lines", lines));
     }
 
     // Split a text at a separator character, except where it is escaped with a backslash

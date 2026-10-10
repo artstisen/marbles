@@ -15,4 +15,9 @@
         <InternalsVisibleTo Include="Marbles.Tests" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- The translations of the texts (see Lang.cs) -->
+        <EmbeddedResource Include="Lang\*.txt" LogicalName="Marbles.Lang.%(Filename).txt" />
+    </ItemGroup>
+
 </Project>

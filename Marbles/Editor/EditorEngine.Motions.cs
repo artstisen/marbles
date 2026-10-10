@@ -348,7 +348,7 @@ internal sealed partial class EditorEngine
             {
                 if (_lastSearch.Length == 0)
                 {
-                    SetError("No previous search");
+                    SetError(Lang.T("No previous search"));
                     return false;
                 }
 
@@ -357,7 +357,7 @@ internal sealed partial class EditorEngine
                 while (n-- > 0)
                 {
                     if (FindNext(pos, forward, out pos)) continue;
-                    SetError("Pattern not found: " + _lastSearch);
+                    SetError(Lang.T("Pattern not found: ") + _lastSearch);
                     return false;
                 }
 

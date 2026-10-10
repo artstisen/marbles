@@ -427,7 +427,7 @@ public class SpellTests : IDisposable
         Assert.True(editor.IsSpellOn);
         Assert.Equal("xx", editor.SpellLanguages);
         Assert.Equal(new List<(int, int)> { (0, 4) }, editor.Misspelled(0));
-        Assert.Contains("1" + DialogText.SpellCount, editor.Message);
+        Assert.Contains("1 misspelled", editor.Message);
 
         editor.Type(":nospell<CR>");
         Assert.False(editor.IsSpellOn);

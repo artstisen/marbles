@@ -10,226 +10,226 @@ internal static class DialogText
 
     //                                                                                \n <- Max line length
     //-----------------------------------------------------------------------------
-    public const string About = "Marbles is written in C# and uses UTF-8 console I/O encoding and AES-256\n" +
-                                "data encryption. Your notes and settings are stored in the \"data\" directory\n" +
-                                "which is located alongside the Marbles program files. You can copy the data\n" +
-                                "directory or the entire Marbles directory to any backup/portable/cloud medium\n" +
-                                "if needed, or enable automatic backup to a secondary location." +
-                                "\n\n" +
-                                //-----------------------------------------------------------------------------
-                                "CAUTION: It is not possible to recover your notes if you forget your\n" + 
-                                "password.\n" +
-                                "This application is cross-platform software that can run on different\n" +
-                                "systems. Due to the difference between terminal programs and their\n" +
-                                "tradition of using specific keyboard shortcuts for built-in functions,\n" +
-                                "Marbles is operated with plain keys and commands in the style of Vim.\n" +
-                                "Press ? for help.";
+    public static string About => Lang.T(
+        "Marbles is written in C# and uses UTF-8 console I/O encoding and AES-256\n" +
+        "data encryption. Your notes and settings are stored in the \"data\" directory\n" +
+        "which is located alongside the Marbles program files. You can copy the data\n" +
+        "directory or the entire Marbles directory to any backup/portable/cloud medium\n" +
+        "if needed, or enable automatic backup to a secondary location.\n\n" +
+        "CAUTION: It is not possible to recover your notes if you forget your\n" +
+        "password.\n" +
+        "This application is cross-platform software that can run on different\n" +
+        "systems. Due to the difference between terminal programs and their\n" +
+        "tradition of using specific keyboard shortcuts for built-in functions,\n" +
+        "Marbles is operated with plain keys and commands in the style of Vim.\n" +
+        "Press ? for help.");
 
     //                                                                                \n <- Max line length
     // --------------------------------------------------------------------------------
-    public const string MultipleInstances =
-        "TIP: Run multiple instances of Marbles using folder duplicates with different\n" +
+    public static string MultipleInstances => Lang.T("TIP: Run multiple instances of Marbles using folder duplicates with different\n" +
         "names. Change color settings or use vignettes to distinguish between\n" +
         "instances. Running multiple instances from the same folder can overwrite\n" +
-        "notes and application settings when sharing the same pool of data.\n";
+        "notes and application settings when sharing the same pool of data.\n");
 
 
     // Mode labels and Caption
-    public const string LogReview = "Log review";
-    public const string CaptionsMergeExport = "Merge/Export";
-    public const string CaptionsMerge = "Merge";
-    public const string CaptionsLogin = "Login";
-    public const string NewPassword = "New password";
-    public const string CaptionsPassword = "Password";
-    public const string TitleResetPassword = "Reset password";
-    public const string TitleSearch = "Search";
-    public const string CaptionsSettings = "Settings";
-    public const string CaptionsOptions = "Options";
-    public const string CaptionsMoreOptions = "More options";
-    public const string CaptionsColorScheme = "Edit color scheme";
-    public const string CaptionsExport = "Export";
-    public const string CaptionsImport = "Import";
-    public const string CaptionsBackup = "Backup";
-    public const string CaptionsInstructions = "Instructions";
-    public const string CaptionsPreview = "PREVIEW";
-    public const string CaptionsInfo = "INFO";
-    public const string CaptionsRecall = "RECALL";
-    public const string CaptionsClear = "CLEAR";
-    public const string CaptionsEdit = "EDIT";
-    public const string CaptionsTop20 = "TOP 20";
-    public const string CaptionsFavorites = "FAVORITES";
-    public const string CaptionsSession = "SESSION HISTORY";
-    public const string CaptionsSearch = "Search";
-    public const string CaptionsAll = "ALL";
-    public const string EditTitle = "Edit title";
-    public const string CaptionsDelete = "Delete";
-    public const string CaptionsDuplicate = "Duplicate";
-    public const string CaptionsRevert = "Revert";
-    public const string CaptionsRestore = "Restore";
-    public const string CaptionsStringMemory = "String memory";
-    public const string CaptionsRanking = "Move pinned";
-    public const string MovePinnedKeys = "MOVE | j/k Move the entry up/down | Esc Done";
-    public const string CaptionsColorize = "Set color";
-    public const string PinColorCaption = "Pinned color";
-    public const string ColorDefault = "[Default]";
+    public static string LogReview => Lang.T("Log review");
+    public static string CaptionsMergeExport => Lang.T("Merge/Export");
+    public static string CaptionsMerge => Lang.T("Merge");
+    public static string CaptionsLogin => Lang.T("Login");
+    public static string NewPassword => Lang.T("New password");
+    public static string CaptionsPassword => Lang.T("Password");
+    public static string TitleResetPassword => Lang.T("Reset password");
+    public static string TitleSearch => Lang.T("Search");
+    public static string CaptionsSettings => Lang.T("Settings");
+    public static string CaptionsOptions => Lang.T("Options");
+    public static string CaptionsMoreOptions => Lang.T("More options");
+    public static string CaptionsColorScheme => Lang.T("Edit color scheme");
+    public static string CaptionsExport => Lang.T("Export");
+    public static string CaptionsImport => Lang.T("Import");
+    public static string CaptionsBackup => Lang.T("Backup");
+    public static string CaptionsInstructions => Lang.T("Instructions");
+    public static string CaptionsPreview => Lang.T("PREVIEW");
+    public static string CaptionsInfo => Lang.T("INFO");
+    public static string CaptionsRecall => Lang.T("RECALL");
+    public static string CaptionsClear => Lang.T("CLEAR");
+    public static string CaptionsEdit => Lang.T("EDIT");
+    public static string CaptionsTop20 => Lang.T("TOP 20");
+    public static string CaptionsFavorites => Lang.T("FAVORITES");
+    public static string CaptionsSession => Lang.T("SESSION HISTORY");
+    public static string CaptionsSearch => Lang.T("Search");
+    public static string CaptionsAll => Lang.T("ALL");
+    public static string EditTitle => Lang.T("Edit title");
+    public static string CaptionsDelete => Lang.T("Delete");
+    public static string CaptionsDuplicate => Lang.T("Duplicate");
+    public static string CaptionsRevert => Lang.T("Revert");
+    public static string CaptionsRestore => Lang.T("Restore");
+    public static string CaptionsStringMemory => Lang.T("String memory");
+    public static string CaptionsRanking => Lang.T("Move pinned");
+    public static string MovePinnedKeys => Lang.T("MOVE | j/k Move the entry up/down | Esc Done");
+    public static string CaptionsColorize => Lang.T("Set color");
+    public static string PinColorCaption => Lang.T("Pinned color");
+    public static string ColorDefault => Lang.T("[Default]");
 
     // The find-and-replace box of the editor
-    public const string ReplaceCaption = "Replace";
-    public const string ReplaceFind = "Find:";
-    public const string ReplaceWith = "Replace with:";
-    public const string ReplaceMatchCase = "Match case";
-    public const string ReplaceRegex = "Regular expression";
-    public const string ReplaceWhere = "Where:";
-    public const string ReplaceWholeText = "Whole text";
-    public const string ReplaceCurrentLine = "Current line";
-    public const string ReplaceSelectedLines = "Selected lines";
-    public const string ReplaceRun = "Replace all";
-    public const string ReplaceKeys = "Enter/Space Edit or change | j/k Select | Esc Cancel";
-    public const string ColorCaption = "Color";
-    public const string TextColorCaption = "Text color";
-    public const string BackgroundCaption = "Background";
+    public static string ReplaceCaption => Lang.T("Replace");
+    public static string ReplaceFind => Lang.T("Find:");
+    public static string ReplaceWith => Lang.T("Replace with:");
+    public static string ReplaceMatchCase => Lang.T("Match case");
+    public static string ReplaceRegex => Lang.T("Regular expression");
+    public static string ReplaceWhere => Lang.T("Where:");
+    public static string ReplaceWholeText => Lang.T("Whole text");
+    public static string ReplaceCurrentLine => Lang.T("Current line");
+    public static string ReplaceSelectedLines => Lang.T("Selected lines");
+    public static string ReplaceRun => Lang.T("Replace all");
+    public static string ReplaceKeys => Lang.T("Enter/Space Edit or change | j/k Select | Esc Cancel");
+    public static string ColorCaption => Lang.T("Color");
+    public static string TextColorCaption => Lang.T("Text color");
+    public static string BackgroundCaption => Lang.T("Background");
     public const string BackgroundDefault = "default"; // The setting for the background of the terminal
-    public const string Favorites = "Favorites";
-    public const string Session = "Session";
-    public const string New = "New";
-    public const string NewFile = "New file";
-    public const string RenameFile = "Rename file";
-    public const string CopyFile = "Copy file";
-    public const string MoveFile = "Move file";
-    public const string DeleteFile = "Delete file";
-    public const string MergeFiles = "Merge/Export";
-    public const string Transfer = "Transfer";
-    public const string FileInfo = "Info";
-    public const string Save = "Save";
-    public const string Restart = "Restart";
-    public const string Clear = "Clear";
-    public const string Log = "Log";
-    public const string Refresh = "Refresh";
-    public const string Exit = "Exit";
-    public const string Title = "Title";
-    public const string Select = "Select";
-    public const string SortColon = "Sort:";
+    public static string Favorites => Lang.T("Favorites");
+    public static string Session => Lang.T("Session");
+    public static string New => Lang.T("New");
+    public static string NewFile => Lang.T("New file");
+    public static string RenameFile => Lang.T("Rename file");
+    public static string CopyFile => Lang.T("Copy file");
+    public static string MoveFile => Lang.T("Move file");
+    public static string DeleteFile => Lang.T("Delete file");
+    public static string MergeFiles => Lang.T("Merge/Export");
+    public static string Transfer => Lang.T("Transfer");
+    public static string FileInfo => Lang.T("Info");
+    public static string Save => Lang.T("Save");
+    public static string Restart => Lang.T("Restart");
+    public static string Clear => Lang.T("Clear");
+    public static string Log => Lang.T("Log");
+    public static string Refresh => Lang.T("Refresh");
+    public static string Exit => Lang.T("Exit");
+    public static string Title => Lang.T("Title");
+    public static string Select => Lang.T("Select");
+    public static string SortColon => Lang.T("Sort:");
     public const string TabBrackets = "(Tab)";
-    public const string SortOptionDateChanged = "Date changed";
-    public const string FavoritesSortColumn = "Date changed/Custom";
-    public const string CaptionsKeyError = "Keyboard";
+    public static string SortOptionDateChanged => Lang.T("Date changed");
+    public static string FavoritesSortColumn => Lang.T("Date changed/Custom");
+    public static string CaptionsKeyError => Lang.T("Keyboard");
 
     // Mode texts
-    public const string EnterQueryForSearch = "Enter query and press Enter";
-    public const string EditTitleAndPressEnter = "Change title and press Enter";
-    public const string EnterTitleAndPressEnter = "Enter title and press Enter";
-    public const string EnterFileNameAndPressEnter = "Enter file name and press Enter";
-    public const string ChangeFileNameAndPressEnter = "Change file name and press Enter";
-    public const string EnterPathAndPressEnter = "Enter absolute directory path and press Enter";
+    public static string EnterQueryForSearch => Lang.T("Enter query and press Enter");
+    public static string EditTitleAndPressEnter => Lang.T("Change title and press Enter");
+    public static string EnterTitleAndPressEnter => Lang.T("Enter title and press Enter");
+    public static string EnterFileNameAndPressEnter => Lang.T("Enter file name and press Enter");
+    public static string ChangeFileNameAndPressEnter => Lang.T("Change file name and press Enter");
+    public static string EnterPathAndPressEnter => Lang.T("Enter absolute directory path and press Enter");
 
     public const string Escape = "Esc";
     public const string Spacebar = "Spacebar";
 
     // Indicators/Misc. texts
-    public const string DocumentScroll = " (Press j/k to scroll, Spacebar/b for page down/up) ";
-    public const string TitleCopyText = " (copy)";
-    public const string InitNoData = "No data";
+    public static string DocumentScroll => Lang.T(" (Press j/k to scroll, Spacebar/b for page down/up) ");
+    public static string TitleCopyText => Lang.T(" (copy)");
+    public static string InitNoData => Lang.T("No data");
     public const string CheckedSetting = "[x]";
     public const string UnCheckedSetting = "[ ]";
-    public const string NotAvailable = "N/A";
-    public const string SavIndicator = "Unsaved";
+    public static string NotAvailable => Lang.T("N/A");
+    public static string SavIndicator => Lang.T("Unsaved");
 
-    public const string ExtExample = "[Example]";
+    public static string ExtExample => Lang.T("[Example]");
+    public static string SchemeLocked => Lang.T("[LOCKED]");
+    public static string SchemeEditing => Lang.T("[EDITING]");
     public const string PaginationLeftRight = "<- ->";
-    public const string BrowseUpDown = "Up/Down";
-    public const string ExtSelectDataFile = "File";
-    public const string ExtSelectDirectory = "Directory";
-    public const string HitAnyKeyToContinue = "[Press any key to continue]";
-    public const string HitAnyKeyOrEscape = "[Press a key to continue/Esc to exit]";
-    public const string PressEscToExitP = "(Press Esc to exit)";
-    public const string PressEscToExitS = "[Press Esc to exit]";
-    public const string PressEscSpaceToExit = "[Press Esc or Spacebar to cancel]";
+    public static string BrowseUpDown => Lang.T("Up/Down");
+    public static string ExtSelectDataFile => Lang.T("File");
+    public static string ExtSelectDirectory => Lang.T("Directory");
+    public static string HitAnyKeyToContinue => Lang.T("[Press any key to continue]");
+    public static string HitAnyKeyOrEscape => Lang.T("[Press a key to continue/Esc to exit]");
+    public static string PressEscToExitP => Lang.T("(Press Esc to exit)");
+    public static string PressEscToExitS => Lang.T("[Press Esc to exit]");
+    public static string PressEscSpaceToExit => Lang.T("[Press Esc or Spacebar to cancel]");
 
     // Yes/No dialogs
-    private const string YesNo = "[Y] Yes  [N] No";
-    private const string YesNoCancel = "[Y] Yes  [N] No  [Esc] Cancel";
-    public const string YesContinue = "[E] Yes (continue editing)";
-    public const string SaveQuestion = "Save changes?";
-    public const string SaveChoiceYes = "Y    Yes, save and close";
-    public const string SaveChoiceNo = "N    No, close without saving";
-    public const string SaveChoiceContinue = "E    Save and continue editing";
-    public const string SaveChoiceCancel = "Esc  Cancel (continue editing)";
-    private const string YesPinnedNo = "[Y] Yes  [P] Pinned  [N] No";
-    private const string YesNoPinned = "[Y] Yes  [N] No  [P] Pin";
+    private static string YesNo => Lang.T("[Y] Yes  [N] No");
+    private static string YesNoCancel => Lang.T("[Y] Yes  [N] No  [Esc] Cancel");
+    public static string YesContinue => Lang.T("[E] Yes (continue editing)");
+    public static string SaveQuestion => Lang.T("Save changes?");
+    public static string SaveChoiceYes => Lang.T("Y    Yes, save and close");
+    public static string SaveChoiceNo => Lang.T("N    No, close without saving");
+    public static string SaveChoiceContinue => Lang.T("E    Save and continue editing");
+    public static string SaveChoiceCancel => Lang.T("Esc  Cancel (continue editing)");
+    private static string YesPinnedNo => Lang.T("[Y] Yes  [P] Pinned  [N] No");
+    private static string YesNoPinned => Lang.T("[Y] Yes  [N] No  [P] Pin");
 
     // -------------------------------------------------------------------
-    //public const string NewFileYn = "Create a new file? " + YesNo;
-    public const string RenameFileYn = "Rename selected file? " + YesNo;
-    public const string CopyFileYn = "Copy selected file? " + YesNo;
-    public const string MoveFileYn = "Move selected file? " + YesNo;
-    public const string DeleteFileYn = "Delete selected file? " + YesNo;
-    public const string CreateTransfer = "Prepare transfer? " + YesNo;
+    //public static string NewFileYn => Lang.T("Create a new file?") + " " + YesNo;
+    public static string RenameFileYn => Lang.T("Rename selected file?") + " " + YesNo;
+    public static string CopyFileYn => Lang.T("Copy selected file?") + " " + YesNo;
+    public static string MoveFileYn => Lang.T("Move selected file?") + " " + YesNo;
+    public static string DeleteFileYn => Lang.T("Delete selected file?") + " " + YesNo;
+    public static string CreateTransfer => Lang.T("Prepare transfer?") + " " + YesNo;
 
-    public const string SaveChangesYnCancel = "Save changes? " + YesNoCancel;
-    public const string SaveChangesYn = "Save changes? " + YesNo;
-    public const string ExitYn = "Exit? " + YesNo;
-    public const string RestartYn = "Restart Marbles? " + YesNo;
-    public const string ReplaceFileYn = "The file exists. Replace it? " + YesNo;
-    public const string DeleteEntryYn = "Delete entry? " + YesNo;
-    public const string DeleteEntryYnConfirm = "Confirm deletion: " + YesNo;
-    public const string DuplicateEntryYn = "Duplicate entry? " + YesNo;
-    public const string ClearTextYn = "Clear text? " + YesNo;
-    public const string RevertEditYn = "Revert to previous edit? " + YesNo;
-    public const string RestoreDeletedYn = "Undo last deletion? " + YesNo;
-    public const string ResetPassword = "Reset password? " + YesNo;
-    public const string ResetOutputDimensions = "Reset " + ApplicationName + " output dimensions? " + YesNo;
-    public const string FitOutputDimensions = "Follow the size of the terminal window (automatic size)? " + YesNo;
-    public const string EnlargeWindow = "Make the terminal window larger and press a key";
-    public const string ResetSettings = "Revert to default settings? " + YesNo;
-    public const string RemoveFavoriteYn = "Remove from favorites? " + YesNo;
-    public const string RemoveFavoriteOrPinYn = "Remove from favorites? " + YesNoPinned;
-    public const string AddFavoriteYn = "Add to favorites? " + YesPinnedNo;
-    public const string ImportYn = "Import a text file as a new entry? " + YesNo;
-    public const string BackupYn = "Set backup directory? " + YesNo;
-    public const string BackupDisableYn = "Disable backup? " + YesNo;
-    public const string DiscardTransferCollection = "Discard transfer? " + YesNo;
-    public const string ClearStringMemory = "Clear string memory? " + YesNo;
+    public static string SaveChangesYnCancel => Lang.T("Save changes?") + " " + YesNoCancel;
+    public static string SaveChangesYn => Lang.T("Save changes?") + " " + YesNo;
+    public static string ExitYn => Lang.T("Exit?") + " " + YesNo;
+    public static string RestartYn => Lang.T("Restart Marbles?") + " " + YesNo;
+    public static string ReplaceFileYn => Lang.T("The file exists. Replace it?") + " " + YesNo;
+    public static string DeleteEntryYn => Lang.T("Delete entry?") + " " + YesNo;
+    public static string DeleteEntryYnConfirm => Lang.T("Confirm deletion:") + " " + YesNo;
+    public static string DuplicateEntryYn => Lang.T("Duplicate entry?") + " " + YesNo;
+    public static string ClearTextYn => Lang.T("Clear text?") + " " + YesNo;
+    public static string RevertEditYn => Lang.T("Revert to previous edit?") + " " + YesNo;
+    public static string RestoreDeletedYn => Lang.T("Undo last deletion?") + " " + YesNo;
+    public static string ResetPassword => Lang.T("Reset password?") + " " + YesNo;
+    public static string ResetOutputDimensions => Lang.F("Reset {0} output dimensions?", ApplicationName) + " " + YesNo;
+    public static string FitOutputDimensions => Lang.T("Follow the size of the terminal window (automatic size)?") + " " + YesNo;
+    public static string EnlargeWindow => Lang.T("Make the terminal window larger and press a key");
+    public static string ResetSettings => Lang.T("Revert to default settings?") + " " + YesNo;
+    public static string RemoveFavoriteYn => Lang.T("Remove from favorites?") + " " + YesNo;
+    public static string RemoveFavoriteOrPinYn => Lang.T("Remove from favorites?") + " " + YesNoPinned;
+    public static string AddFavoriteYn => Lang.T("Add to favorites?") + " " + YesPinnedNo;
+    public static string ImportYn => Lang.T("Import a text file as a new entry?") + " " + YesNo;
+    public static string BackupYn => Lang.T("Set backup directory?") + " " + YesNo;
+    public static string BackupDisableYn => Lang.T("Disable backup?") + " " + YesNo;
+    public static string DiscardTransferCollection => Lang.T("Discard transfer?") + " " + YesNo;
+    public static string ClearStringMemory => Lang.T("Clear string memory?") + " " + YesNo;
 
     // Selection dialogs
-    public const string MergeExportA = "Press [A] to merge";
-    public const string MergeExportB = "Press [B] to export";
-    public const string MergeExportC = "Press [Esc] to cancel";
-    public const string NewFileA = "[A] Standard data file (default)";
-    public const string NewFileB = "[B] Calendar";
-    public const string NewFileC = "[Esc] Cancel";
-    public const string TransferA = "[Enter] Add to current transfer";
-    public const string TransferB = "[A] Complete transfer";
-    public const string TransferC = "[B] Discard transfer";
-    public const string TransferD = "[Esc] Cancel";
+    public static string MergeExportA => Lang.T("Press [A] to merge");
+    public static string MergeExportB => Lang.T("Press [B] to export");
+    public static string MergeExportC => Lang.T("Press [Esc] to cancel");
+    public static string NewFileA => Lang.T("[A] Standard data file (default)");
+    public static string NewFileB => Lang.T("[B] Calendar");
+    public static string NewFileC => Lang.T("[Esc] Cancel");
+    public static string TransferA => Lang.T("[Enter] Add to current transfer");
+    public static string TransferB => Lang.T("[A] Complete transfer");
+    public static string TransferC => Lang.T("[B] Discard transfer");
+    public static string TransferD => Lang.T("[Esc] Cancel");
 
-    public const string ImportYnNote = "The file is selected in the file browser.";
-    public const string ExportedTo = "Saved as ";
-    public const string SelectOption = "Select option...";
-    public const string SelectFileOption = "Select file preset";
-    public const string SelectTransferOption = "Select transfer option";
-    public const string SelectTransferOptionEsc = "Select transfer option " + PressEscToExitP;
-    public const string CanNotBeUndone = "This action can not be undone!";
-    public const string FileMoveInstructions = "Move file: Select target directory and press Enter...";
-    public const string PinnedEntryPosition = "Only pinned entries can change position";
-    public const string PinnedEntryColors = "Only pinned entries can change color";
+    public static string ImportYnNote => Lang.T("The file is selected in the file browser.");
+    public static string ExportedTo => Lang.T("Saved as ");
+    public static string SelectOption => Lang.T("Select option...");
+    public static string SelectFileOption => Lang.T("Select file preset");
+    public static string SelectTransferOption => Lang.T("Select transfer option");
+    public static string SelectTransferOptionEsc => Lang.T("Select transfer option") + " " + PressEscToExitP;
+    public static string CanNotBeUndone => Lang.T("This action can not be undone!");
+    public static string FileMoveInstructions => Lang.T("Move file: Select target directory and press Enter...");
+    public static string PinnedEntryPosition => Lang.T("Only pinned entries can change position");
+    public static string PinnedEntryColors => Lang.T("Only pinned entries can change color");
 
     // Input/Output/Information
-    public const string TitleColon = "Title:";
-    public const string NameColon = "Name:";
-    public const string FileColon = "File:";
-    public const string KeyColon = "Key:";
-    public const string PathColon = "Path: ";
-    public const string SearchColon = "Search:";
-    public const string DateCreatedColon = "Created: ";
-    public const string DateChangedColon = "Changed: ";
-    public const string EnterNewPasswordColon = "Create new password:";
-    public const string RepeatNewPasswordColon = "Repeat new password:";
-    public const string EnterCurrentPasswordColon = "Enter current password:";
-    public const string PasswordColon = "Password:";
+    public static string TitleColon => Lang.T("Title:");
+    public static string NameColon => Lang.T("Name:");
+    public static string FileColon => Lang.T("File:");
+    public static string KeyColon => Lang.T("Key:");
+    public static string PathColon => Lang.T("Path: ");
+    public static string SearchColon => Lang.T("Search:");
+    public static string DateCreatedColon => Lang.T("Created: ");
+    public static string DateChangedColon => Lang.T("Changed: ");
+    public static string EnterNewPasswordColon => Lang.T("Create new password:");
+    public static string RepeatNewPasswordColon => Lang.T("Repeat new password:");
+    public static string EnterCurrentPasswordColon => Lang.T("Enter current password:");
+    public static string PasswordColon => Lang.T("Password:");
 
-    public const string CurrentBackupPathColon = "Current path: ";
+    public static string CurrentBackupPathColon => Lang.T("Current path: ");
 
-    public const string AttentionColon = "Attention: ";
+    public static string AttentionColon => Lang.T("Attention: ");
 
     // Log
     public const string InitInitializing = "Initializing...";
@@ -249,250 +249,227 @@ internal static class DialogText
     public const string DefaultSettings = "Default settings";
 
     // Merge tool
-    public const string MergeCompleted = "Merge completed";
-    public const string ExportCompleted = "Export completed";
-    public const string Summary = "Summary";
+    public static string MergeCompleted => Lang.T("Merge completed");
+    public static string ExportCompleted => Lang.T("Export completed");
+    public static string Summary => Lang.T("Summary");
 
     // Status messages (styled)
-    public const string NoEntrySelected = "No entry selected";
-    public const string PasswordLength = "Password must be between 8 and 128 characters long";
-    public const string PasswordMismatch = "The two passwords do not match";
-    public const string InvalidPasswordDot = "Invalid password."; // Must have period.
-    public const string InvalidPassword = "Invalid password";
-    public const string CapsLockNotice = "Make sure Caps Lock is not enabled.";
-    public const string PasswordCreated = "Password created";
-    public const string InvalidFileName = "Invalid file name";
-    public const string NoRecallHistoryFound = "No recall history found";
-    public const string NoBackupFound = "No edit history to revert to";
-    public const string NoDeletionBackupFound = "No restore data available";
-    public const string UnableToCompleteRestore = "Unable to complete restore";
-    public const string EntryRestored = "Edit reverted";
-    public const string DeletionRestored = "Deletion restored";
-    public const string NoEntriesFound = "No entries found";
-    public const string NoFavoritesFound = "No favorites found";
-    public const string NoSessionData = "No session data";
-    public const string NoEntriesSelected = "No entries selected";
-    public const string EntryDeleted = "Entry deleted";
-    public const string FileDeleted = "File deleted";
-    public const string BackupDisabled = "Backup disabled";
-    public const string BackupEnabled = "Backup enabled";
-    public const string Saving = "Saving...";
-    public const string FileNoEntries = "File contains no entries";
-    public const string InvalidBackupPath = "Invalid backup path";
+    public static string NoEntrySelected => Lang.T("No entry selected");
+    public static string PasswordLength => Lang.T("Password must be between 8 and 128 characters long");
+    public static string PasswordMismatch => Lang.T("The two passwords do not match");
+    public static string InvalidPasswordDot => Lang.T("Invalid password."); // Must have period.
+    public static string InvalidPassword => Lang.T("Invalid password");
+    public static string CapsLockNotice => Lang.T("Make sure Caps Lock is not enabled.");
+    public static string PasswordCreated => Lang.T("Password created");
+    public static string InvalidFileName => Lang.T("Invalid file name");
+    public static string NoRecallHistoryFound => Lang.T("No recall history found");
+    public static string NoBackupFound => Lang.T("No edit history to revert to");
+    public static string NoDeletionBackupFound => Lang.T("No restore data available");
+    public static string UnableToCompleteRestore => Lang.T("Unable to complete restore");
+    public static string EntryRestored => Lang.T("Edit reverted");
+    public static string DeletionRestored => Lang.T("Deletion restored");
+    public static string NoEntriesFound => Lang.T("No entries found");
+    public static string NoFavoritesFound => Lang.T("No favorites found");
+    public static string NoSessionData => Lang.T("No session data");
+    public static string NoEntriesSelected => Lang.T("No entries selected");
+    public static string EntryDeleted => Lang.T("Entry deleted");
+    public static string FileDeleted => Lang.T("File deleted");
+    public static string BackupDisabled => Lang.T("Backup disabled");
+    public static string BackupEnabled => Lang.T("Backup enabled");
+    public static string Saving => Lang.T("Saving...");
+    public static string FileNoEntries => Lang.T("File contains no entries");
+    public static string InvalidBackupPath => Lang.T("Invalid backup path");
 
     // Un-styled status messages
-    public const string LoadComplete = "Load complete.";
-    public const string Loading = "Loading...";
-    public const string Reading = "Reading...";
+    public static string LoadComplete => Lang.T("Load complete.");
+    public static string Loading => Lang.T("Loading...");
+    public static string Reading => Lang.T("Reading...");
 
     // File browser
-    public const string CaptionsFiles = "Files";
-    public const string BrowseFilesSelectMode = "Files/Select mode";
+    public static string CaptionsFiles => Lang.T("Files");
+    public static string BrowseFilesSelectMode => Lang.T("Files/Select mode");
 
     // The page shown at startup
-    public const string StartSelectMode = "Select mode";
-    public const string StartNotes = "Note Management (encrypted notes)";
-    public const string StartEditor = "Text Editor/File Management";
-    public const string StartConfiguration = "Configuration";
-    public const string StartExit = "Exit";
-    public const string QuickGuide = "Quick guide";
-    public const string QuickGuideKeys = "| h/l Page | j/k Line | ? All keys | Esc Close";
-    public const string CopyDeleteFile = "Copy/Delete file";
-    public const string StartConfigSelect = "Show choices on startup";
-    public const string StartConfigNotes = "Start in Note Management";
-    public const string StartConfigEditor = "Start in Text Editor (file browser)";
-    public const string StartKeys = "j/k 1-5 Select | Enter Open | ? Help | Q Exit";
-    public const string StartConfigKeys = "j/k 1-9 Select | Enter/Space Change | h/l Previous/Next | Esc Back";
-    public const string ConfigMonochrome = "Black and white (no colors)";
-    public const string ConfigColorScheme = "Color scheme: ";
-    public const string ConfigLogo = "Logo: ";
-    public const string ConfigOf = " of ";
-    public const string ConfigAutoSize = "Automatic size (follow the terminal window)";
-    public const string ConfigSize = "Size: ";
-    public const string ConfigSizeNote = " (Enter: Change)";
-    public const string ConfigLineNumbers = "Line numbers in the editor";
-    public const string ConfigReset = "Reset all settings";
-    public const string ConfigRestart = "Restart Marbles";
-    public const string ConfigViewLog = "View log";
+    public static string StartSelectMode => Lang.T("Select mode");
+    public static string StartNotes => Lang.T("Note Management (encrypted notes)");
+    public static string StartEditor => Lang.T("Text Editor/File Management");
+    public static string StartConfiguration => Lang.T("Configuration");
+    public static string StartExit => Lang.T("Exit");
+    public static string QuickGuide => Lang.T("Quick guide");
+    public static string QuickGuideKeys => Lang.T("| h/l Page | j/k Line | ? All keys | Esc Close");
+    public static string CopyDeleteFile => Lang.T("Copy/Delete file");
+    public static string StartConfigSelect => Lang.T("Show choices on startup");
+    public static string StartConfigNotes => Lang.T("Start in Note Management");
+    public static string StartConfigEditor => Lang.T("Start in Text Editor (file browser)");
+    public static string StartKeys => Lang.T("j/k 1-5 Select | Enter Open | ? Help | Q Exit");
+    public static string StartConfigKeys => Lang.T("j/k 1-9 Select | Enter/Space Change | h/l Previous/Next | Esc Back");
+    public static string ConfigMonochrome => Lang.T("Black and white (no colors)");
+    public static string ConfigAutoSize => Lang.T("Automatic size (follow the terminal window)");
+    public static string ConfigSize => Lang.T("Size: ");
+    public static string ConfigSizeNote => Lang.T(" (Enter: Change)");
+    public static string ConfigLineNumbers => Lang.T("Line numbers in the editor");
+    public static string ConfigReset => Lang.T("Reset all settings");
+    public static string ConfigRestart => Lang.T("Restart Marbles");
+    public static string ConfigViewLog => Lang.T("View log");
+    public static string ConfigLanguage => Lang.T("Language: ");
+    public static string LanguageUnknown => Lang.T("Languages: ");
 
-    public const string EditorReloaded = "Read from the file again";
-    public const string EditorReloadUnsaved = "Unsaved changes (:e! reads the file anyway)";
-    public const string EditorReloadFilesOnly = "Only text files can be read again";
-    public const string LineNumbersOn = "Line numbers on";
-    public const string LineNumbersOff = "Line numbers off";
-    public const string SyntaxOn = "Colors on: ";
-    public const string SyntaxOff = "Colors off";
-    public const string SyntaxUnknown = "Use md, html, css, js, json or xml, not: ";
+    public static string EditorReloaded => Lang.T("Read from the file again");
+    public static string EditorReloadUnsaved => Lang.T("Unsaved changes (:e! reads the file anyway)");
+    public static string EditorReloadFilesOnly => Lang.T("Only text files can be read again");
+    public static string LineNumbersOn => Lang.T("Line numbers on");
+    public static string LineNumbersOff => Lang.T("Line numbers off");
+    public static string SyntaxOn => Lang.T("Colors on: ");
+    public static string SyntaxOff => Lang.T("Colors off");
+    public static string SyntaxUnknown => Lang.T("Use md, html, css, js, json or xml, not: ");
 
     // The log
-    public const string LogLines = " lines";
-    public const string LogLine = " line";
-    public const string LogOf = " of ";
-    public const string LogFiltered = " containing: ";
-    public const string LogRemoved = " older lines removed";
-    public const string LogKeys = "| h/l Page | j/k Line | gg G First/Last | /text Filter | Esc Close";
+    public static string LogKeys => Lang.T("| h/l Page | j/k Line | gg G First/Last | /text Filter | Esc Close");
     public const string LogCommand = "Command";
     public const string LogEditorCommand = "Editor";
     public const string LogFilesCommand = "Files";
     public const string LogFile = "File: ";
-    public const string MonochromeIsOn = "Black and white is on: turn it off (:bw) to use the color scheme";
-    public const string Drives = "Drives";
+    public static string MonochromeIsOn => Lang.T("Black and white is on: turn it off (:bw) to use the color scheme");
+    public static string Drives => Lang.T("Drives");
     public const string DirectoryMark = "<DIR>";
-    public const string DataFileMark = "[Data file]";
-    public const string FileBrowserKeys = "j/k Select | l Open | h Up | / Filter | F Faves | ? Help | Esc Close";
+    public static string DataFileMark => Lang.T("[Data file]");
+    public static string FileBrowserKeys => Lang.T("j/k Select | l Open | h Up | / Filter | F Faves | ? Help | Esc Close");
 
-    public const string FileBrowserDualKeys = "Tab Pane | l Open | h Up | / Filter | F Faves | ? Help | Esc Close";
-    public const string PaneLabel = "PANE ";
-    public const string FileTargetDualKeys = "Tab Pane | l Open | h Up | / Filter | S {0} | Esc Cancel";
-    public const string FileTargetKeys = "j/k Select | l Open | h Up | / Filter | S {0} | Esc Cancel";
-    public const string FileCopyHere = "Copy here";
-    public const string FileMoveHere = "Move here";
-    public const string FileSelectTarget = "Go to the directory and press S (Esc cancels)";
+    public static string FileBrowserDualKeys => Lang.T("Tab Pane | l Open | h Up | / Filter | F Faves | ? Help | Esc Close");
+    public static string FileTargetDualKeys => Lang.T("Tab Pane | l Open | h Up | / Filter | S {0} | Esc Cancel");
+    public static string FileTargetKeys => Lang.T("j/k Select | l Open | h Up | / Filter | S {0} | Esc Cancel");
+    public static string FileCopyHere => Lang.T("Copy here");
+    public static string FileMoveHere => Lang.T("Move here");
+    public static string FileSelectTarget => Lang.T("Go to the directory and press S (Esc cancels)");
 
     // File management in the file browser
-    public const string NewDirectory = "New directory";
-    public const string DeleteDirectory = "Delete directory";
-    public const string DeleteNamedYn = "Delete \"{0}\"? " + YesNo;
-    public const string DeleteFileNote = "The file cannot be recovered";
-    public const string DeleteDataFileNote = "A Marbles data file with your notes. It cannot be recovered";
-    public const string DeleteEmptyDirectoryNote = "The directory is empty";
-    public const string DeleteDirectoryNote = "With all its content: ";
-    public const string DeleteDirectoryFiles = " files and ";
-    public const string DeleteDirectoryDirectories = " directories. They cannot be recovered";
-    public const string FileItemDeleted = "Deleted: ";
-    public const string FileCopyTo = "Copy to: ";
-    public const string FileMoveTo = "Move to: ";
-    public const string FileCopied = "Copied to ";
-    public const string FileMoved = "Moved to ";
-    public const string FileCopying = "Copying (Esc: Cancel): ";
-    public const string FileCanceled = "Canceled";
-    public const string FileIntoItself = "A directory cannot be copied or moved into itself";
-    public const string FileAlreadyThere = "It is already in that directory";
-    public const string FileUsedByMarbles = "Used by Marbles: it cannot be renamed, moved or deleted here";
+    public static string NewDirectory => Lang.T("New directory");
+    public static string DeleteDirectory => Lang.T("Delete directory");
+    public static string DeleteNamedYn => Lang.T("Delete \"{0}\"?") + " " + YesNo;
+    public static string DeleteFileNote => Lang.T("The file cannot be recovered");
+    public static string DeleteDataFileNote => Lang.T("A Marbles data file with your notes. It cannot be recovered");
+    public static string DeleteEmptyDirectoryNote => Lang.T("The directory is empty");
+    public static string FileItemDeleted => Lang.T("Deleted: ");
+    public static string FileCopyTo => Lang.T("Copy to: ");
+    public static string FileMoveTo => Lang.T("Move to: ");
+    public static string FileCopied => Lang.T("Copied to ");
+    public static string FileMoved => Lang.T("Moved to ");
+    public static string FileCopying => Lang.T("Copying (Esc: Cancel): ");
+    public static string FileCanceled => Lang.T("Canceled");
+    public static string FileIntoItself => Lang.T("A directory cannot be copied or moved into itself");
+    public static string FileAlreadyThere => Lang.T("It is already in that directory");
+    public static string FileUsedByMarbles => Lang.T("Used by Marbles: it cannot be renamed, moved or deleted here");
 
     // Information about a file in the file browser
-    public const string InfoCaptionFile = "File info";
-    public const string InfoCaptionDirectory = "Directory info";
-    public const string InfoName = "Name:";
-    public const string InfoType = "Type:";
-    public const string InfoSize = "Size:";
-    public const string InfoContent = "Content:";
-    public const string InfoFiles = " files, ";
-    public const string InfoDirectories = " directories";
-    public const string InfoCreated = "Created:";
-    public const string InfoChanged = "Changed:";
-    public const string InfoFavorite = "Favorite:";
-    public const string InfoFavoriteYes = "Yes";
-    public const string InfoPath = "Path:";
-    public const string InfoTypeDirectory = "Directory";
-    public const string InfoTypeDataFile = "Marbles data file (encrypted notes)";
-    public const string InfoTypeFile = " file";
-    public const string InfoTypeNoExtension = "File";
-    public const string InfoTypeLink = ", link to ";
-    public const string InfoTypeReadOnly = ", read-only";
+    public static string InfoCaptionFile => Lang.T("File info");
+    public static string InfoCaptionDirectory => Lang.T("Directory info");
+    public static string InfoName => Lang.T("Name:");
+    public static string InfoType => Lang.T("Type:");
+    public static string InfoSize => Lang.T("Size:");
+    public static string InfoContent => Lang.T("Content:");
+    public static string InfoCreated => Lang.T("Created:");
+    public static string InfoChanged => Lang.T("Changed:");
+    public static string InfoFavorite => Lang.T("Favorite:");
+    public static string InfoFavoriteYes => Lang.T("Yes");
+    public static string InfoPath => Lang.T("Path:");
+    public static string InfoTypeDirectory => Lang.T("Directory");
+    public static string InfoTypeDataFile => Lang.T("Marbles data file (encrypted notes)");
+    public static string InfoTypeNoExtension => Lang.T("File");
+    public static string InfoTypeReadOnly => Lang.T(", read-only");
 
     // Searching for files in the file browser
-    public const string SearchCaption = "Search files";
-    public const string SearchResultCaption = "Files found";
-    public const string HelpSectionSearch = "File browser search";
-    public const string SearchIn = "In: ";
-    public const string SearchName = "Name:";
-    public const string SearchText = "Text in files:";
-    public const string SearchSubfolders = "This directory and its subfolders";
-    public const string SearchThisDirectory = "This directory only";
-    public const string SearchRun = "Search";
-    public const string SearchNothing = "Write a name or a text to search for";
-    public const string SearchInvalidPattern = "Not a regular expression: ";
-    public const string SearchProgress = "Searching (Esc: Stop), {0} found: ";
-    public const string SearchFound = " files found";
-    public const string SearchFoundOne = " file found";
-    public const string SearchFoundIn = " in ";
-    public const string SearchCapped = " (the search stops at this number)";
-    public const string SearchStopped = " (stopped)";
-    public const string SearchUnreadable = " directories could not be read";
-    public const string SearchResultKeys = "Enter Open | B Show | I Info | P Fave | S Search | / Filter | Esc Close";
+    public static string SearchCaption => Lang.T("Search files");
+    public static string SearchResultCaption => Lang.T("Files found");
+    public static string HelpSectionSearch => Lang.T("File browser search");
+    public static string SearchIn => Lang.T("In: ");
+    public static string SearchName => Lang.T("Name:");
+    public static string SearchText => Lang.T("Text in files:");
+    public static string SearchSubfolders => Lang.T("This directory and its subfolders");
+    public static string SearchThisDirectory => Lang.T("This directory only");
+    public static string SearchRun => Lang.T("Search");
+    public static string SearchNothing => Lang.T("Write a name or a text to search for");
+    public static string SearchInvalidPattern => Lang.T("Not a regular expression: ");
+    public static string SearchProgress => Lang.T("Searching (Esc: Stop), {0} found: ");
+    public static string SearchCapped => Lang.T(" (the search stops at this number)");
+    public static string SearchStopped => Lang.T(" (stopped)");
+    public static string SearchResultKeys => Lang.T("Enter Open | B Show | I Info | P Fave | S Search | / Filter | Esc Close");
 
     // The favorites of the file browser
-    public const string CaptionsFileFavorites = "Favorite files";
-    public const string HelpSectionFavorites = "File browser favorites";
-    public const string FavoritesHeader = "Files and directories marked as favorites (P in the file browser)";
-    public const string FavoritesEmpty = "No favorites yet: press P on a file or directory in the file browser";
-    public const string FavoritesExpanded = "All folders are open";
-    public const string FavoritesCollapsed = "All folders are closed";
-    public const string FavoritesNoFolders = "There are no folders";
-    public const string FavoritesKeys = "Enter Open | B Show | A Folder | V Move | C Color | P Remove | Esc Close";
-    public const string FavoriteAdded = "Added to the favorites";
-    public const string FavoriteRemoved = "Removed from the favorites";
-    public const string FavoriteMissing = "(missing)";
-    public const string FavoriteMoveFiltered = "Remove the filter (Esc) to move favorites and add folders";
-    public const string FavoriteNewFolder = "New folder";
-    public const string FavoriteNoFolder = "(No folder)";
-    public const string FavoriteMoveOne = "Move to folder";
-    public const string FavoriteMoveMany = "Move {0} favorites to folder";
-    public const string FavoriteMovedOne = "Moved to: ";
-    public const string FavoriteMovedMany = "{0} favorites moved to: ";
-    public const string FavoriteMarked = " marked";
-    public const string FavoriteMarkFolder = "Only favorites can be marked and moved to a folder (not folders)";
-    public const string FavoritesMarkedKeys = "Space Mark | M To folder | D Remove | Esc Clear the marks";
-    public const string FavoriteRemoveCaption = "Remove favorites";
-    public const string FavoriteRemoveManyYn = "Remove the {0} marked favorites from the list? " + YesNo;
-    public const string FavoriteRemoveNote = "The files stay where they are";
-    public const string FavoriteRemovedMany = "{0} removed from the favorites (u: Undo)";
-    public const string FavoriteRenameFolder = "Rename folder";
-    public const string FavoriteDeleteFolder = "Remove folder";
-    public const string FavoriteDeleteFolderNote = "The {0} favorites in it are removed from the list too (the files stay)";
-    public const string FavoriteFolderRemoved = "Removed the folder: ";
-    public const string FavoriteFolderName = "The name cannot be used for a folder";
-    public const string FavoriteFolderCount = " favorites";
-    public const string FavoriteFolderOne = " favorite";
-    public const string FavoriteDeleteFolderNoteOne = "The favorite in it is removed from the list too (the file stays)";
-    public const string FavoriteNothingToUndo = "Nothing to undo";
-    public const string FavoriteRestored = "Put back in the favorites";
-    public const string FavoriteRenameFile = "Only folders are renamed here. B shows the file, where X renames it";
-    public const string HelpSectionFiles = "File browser";
-    public const string HelpKeys = "| h/l Page | j/k Line | /text Search | n/N Next/Previous | Esc Close";
-    public const string HelpKeysTopic = "| h/l Page | j/k Line | / Search | n/N Next | ? All keys | Esc Close";
-    public const string HelpKeysAll = "| h/l Page | j/k Line | / Search | n/N Next | ? This page | Esc Close";
-    public const string HelpSectionStart = "Start page";
-    public const string HelpSectionLogin = "Login page";
-    public const string HelpSectionMenus = "Menus and lists";
-    public const string HelpSectionEditor = "Editor";
-    public const string HelpNotFound = "Not found: ";
-    public const string NotEncrypted = "[Not encrypted]";
-    public const string FilePickKeys = "j/k Select | l/Enter Open/Select file | h Up | / Filter | Esc Cancel";
-    public const string DirectoryPickKeys = "j/k Select | l/Enter Open | h Up | S Select this directory | Esc Cancel";
-    public const string PreviewCaption = "Last edited (j/k, Enter: Open)";
-    public const string FileTooLarge = "The file is too large to open (the limit is 10 MB)";
-    public const string FileNotText = "This is not a text file";
-    public const string DirectoryNotFound = "Directory not found";
-    public const string NotUtf8 = "This file is not UTF-8. It is read as ";
-    public const string NotUtf8Note = "Files are saved as UTF-8.";
-    public const string ConvertReplace = "[A] Convert to UTF-8 and replace the file when saving";
-    public const string ConvertCopy = "[B] Convert to UTF-8 and save as a copy (the file is left as it is)";
-    public const string ConvertCancel = "[Esc] Cancel";
-    public const string CopyDataFileYn = "Copy the data file to the data directory? " + YesNo;
-    public const string CopyDataFileNote = "Data files are opened from the Marbles data directory.";
+    public static string CaptionsFileFavorites => Lang.T("Favorite files");
+    public static string HelpSectionFavorites => Lang.T("File browser favorites");
+    public static string FavoritesHeader => Lang.T("Files and directories marked as favorites (P in the file browser)");
+    public static string FavoritesEmpty => Lang.T("No favorites yet: press P on a file or directory in the file browser");
+    public static string FavoritesExpanded => Lang.T("All folders are open");
+    public static string FavoritesCollapsed => Lang.T("All folders are closed");
+    public static string FavoritesNoFolders => Lang.T("There are no folders");
+    public static string FavoritesKeys => Lang.T("Enter Open | B Show | A Folder | V Move | C Color | P Remove | Esc Close");
+    public static string FavoriteAdded => Lang.T("Added to the favorites");
+    public static string FavoriteRemoved => Lang.T("Removed from the favorites");
+    public static string FavoriteMissing => Lang.T("(missing)");
+    public static string FavoriteMoveFiltered => Lang.T("Remove the filter (Esc) to move favorites and add folders");
+    public static string FavoriteNewFolder => Lang.T("New folder");
+    public static string FavoriteNoFolder => Lang.T("(No folder)");
+    public static string FavoriteMoveOne => Lang.T("Move to folder");
+    public static string FavoriteMoveMany => Lang.T("Move {0} favorites to folder");
+    public static string FavoriteMovedOne => Lang.T("Moved to: ");
+    public static string FavoriteMovedMany => Lang.T("{0} favorites moved to: ");
+    public static string FavoriteMarkFolder => Lang.T("Only favorites can be marked and moved to a folder (not folders)");
+    public static string FavoritesMarkedKeys => Lang.T("Space Mark | M To folder | D Remove | Esc Clear the marks");
+    public static string FavoriteRemoveCaption => Lang.T("Remove favorites");
+    public static string FavoriteRemoveManyYn => Lang.T("Remove the {0} marked favorites from the list?") + " " + YesNo;
+    public static string FavoriteRemoveNote => Lang.T("The files stay where they are");
+    public static string FavoriteRemovedMany => Lang.T("{0} removed from the favorites (u: Undo)");
+    public static string FavoriteRenameFolder => Lang.T("Rename folder");
+    public static string FavoriteDeleteFolder => Lang.T("Remove folder");
+    public static string FavoriteDeleteFolderNote => Lang.T("The {0} favorites in it are removed from the list too (the files stay)");
+    public static string FavoriteFolderRemoved => Lang.T("Removed the folder: ");
+    public static string FavoriteFolderName => Lang.T("The name cannot be used for a folder");
+    public static string FavoriteDeleteFolderNoteOne => Lang.T("The favorite in it is removed from the list too (the file stays)");
+    public static string FavoriteNothingToUndo => Lang.T("Nothing to undo");
+    public static string FavoriteRestored => Lang.T("Put back in the favorites");
+    public static string FavoriteRenameFile => Lang.T("Only folders are renamed here. B shows the file, where X renames it");
+    public static string HelpSectionFiles => Lang.T("File browser");
+    public static string HelpKeys => Lang.T("| h/l Page | j/k Line | /text Search | n/N Next/Previous | Esc Close");
+    public static string HelpKeysTopic => Lang.T("| h/l Page | j/k Line | / Search | n/N Next | ? All keys | Esc Close");
+    public static string HelpKeysAll => Lang.T("| h/l Page | j/k Line | / Search | n/N Next | ? This page | Esc Close");
+    public static string HelpSectionStart => Lang.T("Start page");
+    public static string HelpSectionLogin => Lang.T("Login page");
+    public static string HelpSectionMenus => Lang.T("Menus and lists");
+    public static string HelpSectionEditor => Lang.T("Editor");
+    public static string HelpNotFound => Lang.T("Not found: ");
+    public static string NotEncrypted => Lang.T("[Not encrypted]");
+    public static string FilePickKeys => Lang.T("j/k Select | l/Enter Open/Select file | h Up | / Filter | Esc Cancel");
+    public static string DirectoryPickKeys => Lang.T("j/k Select | l/Enter Open | h Up | S Select this directory | Esc Cancel");
+    public static string PreviewCaption => Lang.T("Last edited (j/k, Enter: Open)");
+    public static string FileTooLarge => Lang.T("The file is too large to open (the limit is 10 MB)");
+    public static string FileNotText => Lang.T("This is not a text file");
+    public static string DirectoryNotFound => Lang.T("Directory not found");
+    public static string NotUtf8Note => Lang.T("Files are saved as UTF-8.");
+    public static string ConvertReplace => Lang.T("[A] Convert to UTF-8 and replace the file when saving");
+    public static string ConvertCopy => Lang.T("[B] Convert to UTF-8 and save as a copy (the file is left as it is)");
+    public static string ConvertCancel => Lang.T("[Esc] Cancel");
+    public static string CopyDataFileYn => Lang.T("Copy the data file to the data directory?") + " " + YesNo;
+    public static string CopyDataFileNote => Lang.T("Data files are opened from the Marbles data directory.");
 
     // Spell checking
-    public const string SpellFileInvalid = "Not a spell file that can be used (a UTF-8 .spl file is needed)";
-    public const string SpellFileNotFound = "Spell file not found: ";
-    public const string SpellNoLanguage = "No language given";
-    public const string SpellNoWord = "No word to add";
-    public const string SpellOff = "Spell checking is off (turn it on with :spell)";
-    public const string SpellOn = "Spell checking: ";
-    public const string SpellTurnedOff = "Spell checking off";
-    public const string SpellNoMore = "No misspelled words found";
-    public const string SpellNoSuggestions = "No suggestions for: ";
-    public const string SpellWordAdded = "Added to the word list: ";
-    public const string SpellSuggestions = "Spelling";
-    public const string SpellCount = " misspelled";
-    public const string SpellAddWord = "Add to word list";
+    public static string SpellFileInvalid => Lang.T("Not a spell file that can be used (a UTF-8 .spl file is needed)");
+    public static string SpellFileNotFound => Lang.T("Spell file not found: ");
+    public static string SpellNoLanguage => Lang.T("No language given");
+    public static string SpellNoWord => Lang.T("No word to add");
+    public static string SpellOff => Lang.T("Spell checking is off (turn it on with :spell)");
+    public static string SpellOn => Lang.T("Spell checking: ");
+    public static string SpellTurnedOff => Lang.T("Spell checking off");
+    public static string SpellNoMore => Lang.T("No misspelled words found");
+    public static string SpellNoSuggestions => Lang.T("No suggestions for: ");
+    public static string SpellWordAdded => Lang.T("Added to the word list: ");
+    public static string SpellSuggestions => Lang.T("Spelling");
+    public static string SpellAddWord => Lang.T("Add to word list");
     public const string SpellStatus = "SPELL";
 
     // Command line
-    public const string NotACommand = "Not a command: ";
+    public static string NotACommand => Lang.T("Not a command: ");
     public const string CommandPrompt = "COMMAND:"; // Shown in front of a command being typed
-    public const string SelectFileDirectory = "File/Directory";
+    public static string SelectFileDirectory => Lang.T("File/Directory");
 
     // Editor status line
     public const string EditorModeNormal = "-- NORMAL --";
@@ -501,32 +478,32 @@ internal static class DialogText
     public const string EditorModeVisualLine = "-- V-LINE --";
     public const string EditorModeVisualBlock = "-- V-BLOCK --";
     public const string EditorMemory = "mem";
-    public const string EditorSaved = "Saved";
-    public const string EditorNoChanges = "No changes to save";
+    public static string EditorSaved => Lang.T("Saved");
+    public static string EditorNoChanges => Lang.T("No changes to save");
 
     // Legacy data file conversion
-    public const string LegacyFileConverted = "Data file converted to the current file format";
-    public const string LegacyFileCopyColon = "A copy of the original data file was kept as: ";
-    public const string LegacyFileNotConverted = "Unable to convert the data file to the current file format:";
+    public static string LegacyFileConverted => Lang.T("Data file converted to the current file format");
+    public static string LegacyFileCopyColon => Lang.T("A copy of the original data file was kept as: ");
+    public static string LegacyFileNotConverted => Lang.T("Unable to convert the data file to the current file format:");
 
     // Error messages
-    public const string ErrorDuplicatingEntry = "Error: Unable to duplicate entry.";
-    public const string FileNotFound = "File not found.";
-    public const string NoFiles = "No files in directory.";
+    public static string ErrorDuplicatingEntry => Lang.T("Error: Unable to duplicate entry.");
+    public static string FileNotFound => Lang.T("File not found.");
+    public static string NoFiles => Lang.T("No files in directory.");
     public const string EmptyDirectory = "(0)";
-    public const string NoDataFiles = "[No data files]";
-    public const string ErrorReadingFile = "Error reading file.";
-    public const string ErrorDataDamaged = "The content of the data file is damaged and cannot be read.";
-    public const string ErrorSortingList = "Error sorting list...";
-    public const string StatusUnableToSave = "Error: Unable to save changes.";
-    public const string ErrorUnableToCompleteRequest = "Error: Unable to complete request.";
-    public const string ErrorMovingFile = "Unable to move file. Action aborted.";
-    public const string ErrorFileAlreadyExist = "A file with the same name already exists in the target location.";
-    public const string SelectTargetDirectory = "Please select a valid target directory...";
-    public const string StatusUnableToSaveBackup = "Error: Unable to save backup (path invalid). Backup disabled.";
-    public const string ErrorBufferSize = "Attention: Unable to use specified output dimensions. Reverting to default.";
-    public const string ErrorClientSize = "Current terminal dimensions are unsupported.";
-    public const string ErrorUnsupportedAction = "Action unsupported.";
+    public static string NoDataFiles => Lang.T("[No data files]");
+    public static string ErrorReadingFile => Lang.T("Error reading file.");
+    public static string ErrorDataDamaged => Lang.T("The content of the data file is damaged and cannot be read.");
+    public static string ErrorSortingList => Lang.T("Error sorting list...");
+    public static string StatusUnableToSave => Lang.T("Error: Unable to save changes.");
+    public static string ErrorUnableToCompleteRequest => Lang.T("Error: Unable to complete request.");
+    public static string ErrorMovingFile => Lang.T("Unable to move file. Action aborted.");
+    public static string ErrorFileAlreadyExist => Lang.T("A file with the same name already exists in the target location.");
+    public static string SelectTargetDirectory => Lang.T("Please select a valid target directory...");
+    public static string StatusUnableToSaveBackup => Lang.T("Error: Unable to save backup (path invalid). Backup disabled.");
+    public static string ErrorBufferSize => Lang.T("Attention: Unable to use specified output dimensions. Reverting to default.");
+    public static string ErrorClientSize => Lang.T("Current terminal dimensions are unsupported.");
+    public static string ErrorUnsupportedAction => Lang.T("Action unsupported.");
 
 
     // Technical (internal identifiers) DO NOT CHANGE

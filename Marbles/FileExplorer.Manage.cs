@@ -350,8 +350,8 @@ internal static partial class FileExplorer
             var (files, directories) = FileOperations.Count(item.Path);
             note = files + directories == 0
                 ? DialogText.DeleteEmptyDirectoryNote
-                : DialogText.DeleteDirectoryNote + files + DialogText.DeleteDirectoryFiles + directories +
-                  DialogText.DeleteDirectoryDirectories;
+                : Lang.F("With all its content: {0} files and {1} directories. They cannot be recovered", files,
+                    directories);
         }
         else
         {
@@ -388,12 +388,12 @@ internal static partial class FileExplorer
             if (item.IsDirectory)
             {
                 var (files, directories) = FileOperations.Count(item.Path);
-                rows.Add((DialogText.InfoContent, files + DialogText.InfoFiles + directories + DialogText.InfoDirectories));
+                rows.Add((DialogText.InfoContent, Lang.F("{0} files, {1} directories", files, directories)));
             }
             else
             {
                 rows.Add((DialogText.InfoSize, FileSizeFormatter.FormatSize(item.Size) +
-                                               (item.Size >= 1024 ? " (" + item.Size.ToString("N0") + " bytes)" : "")));
+                                               (item.Size >= 1024 ? " (" + Lang.F("{0} bytes", item.Size.ToString("N0")) + ")" : "")));
             }
 
             rows.Add((DialogText.InfoCreated, info.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")));
@@ -449,9 +449,9 @@ internal static partial class FileExplorer
     {
         var type = item.IsDirectory ? DialogText.InfoTypeDirectory :
             IsDataFile(item) ? DialogText.InfoTypeDataFile :
-            info.Extension.Length > 1 ? info.Extension[1..].ToUpperInvariant() + DialogText.InfoTypeFile :
+            info.Extension.Length > 1 ? Lang.F("{0} file", info.Extension[1..].ToUpperInvariant()) :
             DialogText.InfoTypeNoExtension;
-        if (info.LinkTarget != null) type += DialogText.InfoTypeLink + info.LinkTarget;
+        if (info.LinkTarget != null) type += Lang.F(", link to {0}", info.LinkTarget);
         if ((info.Attributes & FileAttributes.ReadOnly) != 0 && !item.IsDirectory) type += DialogText.InfoTypeReadOnly;
         return type;
     }

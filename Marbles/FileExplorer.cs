@@ -545,7 +545,8 @@ internal static partial class FileExplorer
             // Ask how to convert the file
             var selection = Menu.SelectionPrompt(DialogText.CaptionsFiles, DialogText.ConvertReplace,
                 DialogText.ConvertCopy, DialogText.ConvertCancel,
-                DialogText.NotUtf8 + file.EncodingName + ". " + DialogText.NotUtf8Note, false, ConsoleKey.A,
+                Lang.F("This file is not UTF-8. It is read as {0}.", file.EncodingName) + " " + DialogText.NotUtf8Note,
+                false, ConsoleKey.A,
                 ConsoleKey.B, ConsoleKey.Escape);
             if (selection == 1)
             {
@@ -878,11 +879,11 @@ internal static partial class FileExplorer
         if (HasFocus(number))
         {
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-            Console.Write(" " + DialogText.PaneLabel + (number + 1) + " ");
+            Console.Write(" " + Lang.F("PANE {0}", number + 1) + " ");
         }
         else
         {
-            Console.Write(" " + DialogText.PaneLabel.ToLowerInvariant() + (number + 1) + " ");
+            Console.Write(" " + Lang.F("PANE {0}", number + 1).ToLowerInvariant() + " ");
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

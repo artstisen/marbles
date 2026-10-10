@@ -697,7 +697,7 @@ internal static partial class FileExplorer
             var isDirectory = !favorite.IsFolder && Directory.Exists(favorite.Path);
             var exists = favorite.IsFolder || isDirectory || File.Exists(favorite.Path);
             var count = favorite.IsFolder ? FileFavorites.FolderCount(_favorites[index]) : 0;
-            var info = favorite.IsFolder ? count + (count == 1 ? DialogText.FavoriteFolderOne : DialogText.FavoriteFolderCount) :
+            var info = favorite.IsFolder ? (count == 1 ? Lang.T("1 favorite") : Lang.F("{0} favorites", count)) :
                 !exists ? DialogText.FavoriteMissing :
                 isDirectory ? DialogText.DirectoryMark : FileSizeFormatter.FormatSize(new FileInfo(favorite.Path).Length);
             DrawFavoritePointer(index, index == _favoriteIndex);
@@ -794,7 +794,7 @@ internal static partial class FileExplorer
         Console.Write(new string('-', Init.LineWidth));
         var status = " " + (_favorites.Count == 0 ? 0 : _favoriteIndex + 1) + "/" + _favorites.Count + " ";
         if (_favoriteFilter.Length > 0) status += "/" + _favoriteFilter + " ";
-        if (_favoriteMarks.Count > 0) status = " " + _favoriteMarks.Count + DialogText.FavoriteMarked + " -" + status;
+        if (_favoriteMarks.Count > 0) status = " " + Lang.F("{0} marked", _favoriteMarks.Count) + " -" + status;
         Tools.SetCursorEx(Init.LineCount - 2, Init.LineWidth - status.Length - 2);
         Console.Write(status);
         Tools.SetCursorEx(Init.LineCount - 1, 0);
