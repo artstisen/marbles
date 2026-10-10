@@ -9,12 +9,12 @@ internal static class Logo
         @"  / /|_/ // __ `// ___// __ \ / // _ \ / ___/ ",
         @" / /  / // /_/ // /   / /_/ // //  __/(__  )  ",
         @"/_/  /_/ \__,_//_/   /_.___//_/ \___//____/   ",
-        // Marbles in small and big marbles, slanted
-        @"    o   o  ooo  oooo  oooo  o     ooooo  oooo",
-        @"   oo oo o   o o   o o   o o     o     o",
-        @"  o o o ooooo oooo  oooo  o     oooo   ooo",
-        @" O   O O   O O  O  O   O O     O         O",
-        @"O   O O   O O   O OOOO  OOOOO OOOOO OOOO",
+        // Marbles in block characters (four lines: the first line holds the version number)
+        @" ",
+        @" █▄  ░  ▄█▀▀▀▀▀▀██▄▀▀▀▀▀▀██▄▀▀▀▀▀▀██▄ ███ ░░░░▀▀▀▀▀▀███▀▀▀▀▀▀███",
+        @" ███▄ ▄███ ███ ▄█▓█ ███ ▄██▀ ███ ▄██▀ █▓█  ▄▄▄ ███▄ ▀▀▀ █▓█ ▄▄▄ ",
+        @" █▓█ ▀ █▓█ █▓█▀ █▓█ █▓█▀ █▓█ █▓█▀ █▓█ █▓█  █▓█ █▓█  ▄▄▄  ▀▀▀ █▓█",
+        @" ███ ░ ███ ███  ███ ███  ███ ███▄▄██▀ ▀██▄▄███ ▀██▄▄███ ███▄▄██▀",
         @"    _   __        __             ",
         @"   / | / /____   / /_ ___   _____",
         @"  /  |/ // __ \ / __// _ \ / ___/",
@@ -55,8 +55,8 @@ internal static class Logo
     private static int _logoIndex;
 
     // For each preset: the left margin of the logo and the column of the version number
-    private static readonly int[] LogoMargins = { 4, 2, 4, 1, 3, 2, 3, 3, 2 };
-    private static readonly int[] VersionMargins = { 43, 48, 31, 45, 32, 32, 31, 1, 1 };
+    private static readonly int[] LogoMargins = { 4, 1, 4, 1, 3, 2, 3, 3, 2 };
+    private static readonly int[] VersionMargins = { 43, 2, 31, 45, 32, 32, 31, 1, 1 };
 
     /// <summary>
     /// The number of logo presets (five lines each)
