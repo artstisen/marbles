@@ -899,11 +899,14 @@ internal static partial class FileExplorer
         Console.Write(new string('-', IsDual && number == 0 ? width : Math.Min(width, Init.LineWidth - left)));
         if (!IsDual) return;
         if (number == 0) Console.Write('+');
-        // The label of the pane: highlighted on the one with the focus
+        // The label of the pane: highlighted on the one with the focus (in the attention color while the place to
+        // copy or move to is selected, as the label at the top)
         Tools.SetCursorEx(2, left + 2);
         if (HasFocus(number))
         {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            ConsoleColors.SetColors(_pending != null
+                ? ConsoleColors.ColorPreset.AttentionInverted
+                : ConsoleColors.ColorPreset.HighlightInverted);
             Console.Write(" " + Lang.F("PANE {0}", number + 1) + " ");
         }
         else
