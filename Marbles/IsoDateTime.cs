@@ -180,40 +180,6 @@ public static class IsoDateTime
         return false;
     }
     
-    private static bool DrawYearSelector()
-    {
-        _date = DateTime.Now;
-        _count = 1;
-        while (true)
-        {
-            // Clear line before writing again
-            Tools.CursorTopLeft();
-            Tools.CursorDown(3);
-            Console.Write(new string(' ', 40));
-            // Write year selector
-            Tools.CursorTopLeft();
-            Tools.CursorDown(3);
-            Console.Write(new string(' ', 3) + "<- " + _date.Year + " ->" + Entries.NewLineCharString);
-            
-            // Take input and act on Left/right, Esc and Enter
-            var c = Keyboard.ReadNavigationKey();
-            switch (c.Key)
-            {
-                case ConsoleKey.Escape:// Exit
-                    return false;
-                case ConsoleKey.LeftArrow:
-                    _date = _date.AddYears(-1);
-                    break;
-                case ConsoleKey.RightArrow:
-                    _date = _date.AddYears(1);
-                    break;
-                case ConsoleKey.Enter:
-                    CalendarYear = _date.Year;
-                    return true;
-            }
-        }
-    }
-
     private static string GetMonthsCount(int count)
     {
         if (count is >= 1 and <= 6)
@@ -285,9 +251,12 @@ public static class IsoDateTime
 
     internal static bool SelectYear()
     {
-        Tools.ClearScreen();
-        Menu.WriteModeLabel(Lang.T("Calendar"), Lang.T("Select year and press Enter (Esc to exit)"), 0);
-        return DrawYearSelector();
+        // The year is picked in a box on top of the page
+        var year = ChoiceBox.PickNumber(Lang.T("Calendar"), Lang.T("Select year and press Enter (Esc to exit)"),
+            DateTime.Now.Year);
+        if (year == null) return false;
+        CalendarYear = year.Value;
+        return true;
     }
 
     internal static void CreateYearCalendar()

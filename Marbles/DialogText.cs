@@ -364,6 +364,7 @@ internal static class DialogText
     // The keys of a box of choices (ChoiceBox)
     public static string ChoiceKeys => Lang.T("j/k Select | Enter Choose | Esc Cancel");
     public static string AskTextKeys => Lang.T("Enter OK | Esc Cancel");
+    public static string PickNumberKeys => Lang.T("h/l Change | Enter OK | Esc Cancel");
     public static string TypeNameAndPressEnter => Lang.T("Type the name and press Enter");
     public static string ChoiceYes => Lang.T("Yes");
     public static string ChoiceNo => Lang.T("No");
@@ -505,11 +506,11 @@ internal static class DialogText
     public static string SelectFileDirectory => Lang.T("File/Directory");
 
     // Editor status line
-    public const string EditorModeNormal = " -- NORMAL -- ";
-    public const string EditorModeInsert = " -- INSERT -- ";
-    public const string EditorModeVisual = " -- VISUAL -- ";
-    public const string EditorModeVisualLine = " -- V-LINE -- ";
-    public const string EditorModeVisualBlock = " -- V-BLOCK -- ";
+    public const string EditorModeNormal = "-- NORMAL --";
+    public const string EditorModeInsert = "-- INSERT --";
+    public const string EditorModeVisual = "-- VISUAL --";
+    public const string EditorModeVisualLine = "-- V-LINE --";
+    public const string EditorModeVisualBlock = "-- V-BLOCK --";
     public const string EditorMemory = "mem";
     public static string EditorSaved => Lang.T("Saved");
     public static string EditorNoChanges => Lang.T("No changes to save");

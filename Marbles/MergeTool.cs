@@ -265,28 +265,18 @@ internal class MergeTool
                                         // Save the file
                                         Entries.SaveEntriesToFile();
                                         merging = false;
-                                        Tools.ClearScreen();
-                                        Menu.WriteModeLabel(DialogText.CaptionsMerge, string.Empty, 0);
-                                        Tools.CursorTopLeft();
-                                        Tools.CursorDown(2);
-                                        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                                        Console.WriteLine(" " + DialogText.MergeCompleted + " ");
-                                        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                                        Tools.CursorDown(1);
-                                        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                                        Console.WriteLine(" " + DialogText.Summary);
                                         Init.Log("Merge (S): " + _sourceFileName1, false);
                                         Init.Log("Merge (S): " + _sourceFileName2, false);
                                         Init.Log("Merge (T): -> " + _selectedFileName, false);
-                                        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                                        Console.WriteLine(" " + Lang.T("Source read 1:") + " " + _sourceEntries1.Count + " (" + _sourceFileName1 + ")");
-                                        Console.WriteLine(" " + Lang.T("Source read 2:") + " " + _sourceEntries2.Count + " (" + _sourceFileName2 + ")");
-                                        Console.WriteLine(new String('-', 30));
-                                        Console.WriteLine(" " + Lang.T("Target write:") + " " + _targetEntries.Count);
-                                        Console.WriteLine(" " + Lang.T("File name:") + " " + _selectedFileName);
-                                        Console.WriteLine(" " + Lang.T("File size:") + " " + FileIo.GetFileSize(true));
-                                        Console.WriteLine(new String('=', 30));
-                                        Keyboard.AwaitAnyKey();
+                                        // The summary in a box on top of the page
+                                        ChoiceBox.ShowRows(DialogText.MergeCompleted, new List<(string Label, string Value)>
+                                        {
+                                            (Lang.T("Source read 1:"), _sourceEntries1.Count + " (" + _sourceFileName1 + ")"),
+                                            (Lang.T("Source read 2:"), _sourceEntries2.Count + " (" + _sourceFileName2 + ")"),
+                                            (Lang.T("Target write:"), _targetEntries.Count.ToString()),
+                                            (Lang.T("File name:"), _selectedFileName),
+                                            (Lang.T("File size:"), FileIo.GetFileSize(true))
+                                        }, 64);
                                         Tools.RemovePrivileges(false);
                                         MergeExport();
                                     }
@@ -422,23 +412,14 @@ internal class MergeTool
                                 {
                                     File.WriteAllText(Path.Combine(FileIo.GetDataAndSubFolder(), _selectedFileName), stringXml);
                                     // Exit routine
-                                    Tools.ClearScreen();
-                                    Menu.WriteModeLabel(DialogText.CaptionsExport, string.Empty, 0);
-                                    Tools.CursorTopLeft();
-                                    Tools.CursorDown(2);
-                                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                                    Console.WriteLine(" " + DialogText.ExportCompleted + " ");
-                                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                                    Tools.CursorDown(1);
-                                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                                    Console.WriteLine(" " + DialogText.Summary);
                                     Init.Log("Export (S): " + _sourceFileName1, false);
                                     Init.Log("Export (T): -> " + _selectedFileName, false);
-                                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                                    Console.WriteLine(" " + Lang.T("Target write:") + " " + _sourceEntries1.Count);
-                                    Console.WriteLine(" " + Lang.T("File name:") + " " + _selectedFileName);
-                                    Tools.CursorDown(1);
-                                    Keyboard.AwaitAnyKey();
+                                    // The summary in a box on top of the page
+                                    ChoiceBox.ShowRows(DialogText.ExportCompleted, new List<(string Label, string Value)>
+                                    {
+                                        (Lang.T("Target write:"), _sourceEntries1.Count.ToString()),
+                                        (Lang.T("File name:"), _selectedFileName)
+                                    }, 64);
                                     // Clear locals
                                     Tools.RemovePrivileges(false);
                                     MergeExport();
@@ -486,7 +467,7 @@ internal class MergeTool
 
     private void WriteStepAlert(string text)
     {
-        ChoiceBox.Message(DialogText.CaptionsMerge, text, string.Empty);
+        ChoiceBox.Message(DialogText.CaptionsMergeExport, text, string.Empty);
     }
 
     private void WriteStepInformation(string text, string modelabel)

@@ -121,6 +121,38 @@ internal static class ChoiceBox
     }
 
     /// <summary>
+    /// Pick a number (a year) in a box: h/l (or the arrow keys) change it, Enter accepts and Esc cancels
+    /// </summary>
+    /// <returns>The number picked, or null if canceled</returns>
+    internal static int? PickNumber(string caption, string prompt, int value)
+    {
+        var inner = Math.Clamp(Math.Max(TextMetrics.WidthOf(prompt) + 4, MinInner), 10, Init.LineWidth - 6);
+        var promptLines = Wrap(prompt, inner - 4);
+        // A blank row, the prompt, a blank row, the number and a blank row
+        var valueRow = promptLines.Count + 2;
+        var (top, left, width, _) = DrawFrame(caption, inner, valueRow + 2);
+        WriteText(top, left, new List<string>(), promptLines, false, width);
+        WriteHints(DialogText.PickNumberKeys);
+        while (true)
+        {
+            Tools.SetCursorEx(top + 1 + valueRow, left + 3);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write("<-  ");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            Console.Write(" " + value + " ");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write("  ->   ");
+            Tools.SetCursorEx(Init.LineCount - 1, 0);
+            var key = Console.ReadKey(true);
+            var navigation = Keyboard.ToNavigationKey(key).Key;
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return null;
+            if (key.Key == ConsoleKey.Enter) return value;
+            if (navigation is ConsoleKey.LeftArrow or ConsoleKey.DownArrow) value--;
+            if (navigation is ConsoleKey.RightArrow or ConsoleKey.UpArrow) value++;
+        }
+    }
+
+    /// <summary>
     /// Ask for a text (a name) in a box: a line telling what to do, and a field to type in
     /// </summary>
     /// <param name="caption">The title of the box</param>
@@ -263,14 +295,14 @@ internal static class ChoiceBox
             ConsoleColors.SetColors(warning
                 ? ConsoleColors.ColorPreset.WarningInverted
                 : ConsoleColors.ColorPreset.AttentionInverted);
-            Console.Write(" " + Tools.TruncateString(line, inner - 4, true) + " ");
+            Console.Write(" " + Tools.TruncateString(line, inner - 3, true) + " ");
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         foreach (var line in plain)
         {
             Tools.SetCursorEx(row++, left + 3);
-            Console.Write(Tools.TruncateString(line, inner - 4, true));
+            Console.Write(Tools.TruncateString(line, inner - 3, true));
         }
     }
 

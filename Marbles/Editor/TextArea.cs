@@ -1051,8 +1051,10 @@ public class TextArea
         if (_saveMode == SaveAsFile) right += FileExplorer.CurrentFileLabel + " | ";
         right += (cursor.Line + 1) + ":" + column + " | " + percent + "% ";
 
+        // A blank space between the mode and the line, as a break in the line
+        var gap = label.Length > 0 ? " " : string.Empty;
         // Make it fit
-        var available = width - label.Length - right.Length;
+        var available = width - label.Length - gap.Length - right.Length;
         while (text.Length > 0 && TextMetrics.WidthOf(text) > available)
         {
             text = text[..^TextMetrics.PreviousElementLength(text, text.Length)];
@@ -1074,7 +1076,7 @@ public class TextArea
         }
 
         var filler = new string(commandLine ? ' ' : '-', Math.Max(0, available - TextMetrics.WidthOf(text)));
-        var status = label + StyleMarker + text + StyleMarker + filler + right + _engine.MessageIsError;
+        var status = label + gap + StyleMarker + text + StyleMarker + filler + right + _engine.MessageIsError;
         if (status == _shownStatus) return;
         _shownStatus = status;
 
@@ -1088,6 +1090,8 @@ public class TextArea
             _ => ConsoleColors.ColorPreset.HighlightInverted
         });
         Console.Write(label);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Console.Write(gap);
         ConsoleColors.SetColors(commandLine
             ? ConsoleColors.ColorPreset.HighlightInverted
             : _engine.MessageIsError
