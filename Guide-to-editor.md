@@ -56,7 +56,7 @@ A number before a movement or command repeats it: `5j` moves 5 rows down and `3w
 - `.` Repeat the last change
 
 ## Visual mode
-Press `v` (text) or `V` (whole lines) and select with the movement keys. Then:
+Press `v` (text), `V` (whole lines) or `Q` (a block, see below) and select with the movement keys. The commands `:vsel`, `:vline` and `:block` do the same. Then:
 
 - `d` `y` `c` Delete/Yank/Change the selection
 - `p` Replace the selection with pasted text
@@ -66,7 +66,24 @@ Press `v` (text) or `V` (whole lines) and select with the movement keys. Then:
 - `J` In VISUAL: join the selected lines
 - `iw` `i"` `i(` Select the word/the text in quotes/the text in brackets
 - `o` Move the cursor to the other end of the selection
+- `v` `V` `Q` Switch to selecting text/lines/a block. The key of the mode you are in leaves it
 - `Esc` Leave Visual mode
+
+### Visual block
+`Q` selects a block: the same columns on each of the lines, like a rectangle (V-BLOCK is shown at the bottom left). Move the cursor to the opposite corner with the movement keys. The columns are counted as the text is shown, so a character that takes two columns (like 中) is taken whole when the block cuts through it.
+
+- `$` The block goes to the end of each line, however long the lines are (until you move the cursor sideways)
+- `I` Type text in front of the block, and `A` after it. You type on the first line, and when you press `Esc` the text is put on all the lines of the block. With `I` a line that ends before the block is left as it is; with `A` it gets blank spaces up to the block. After `$`, `A` adds the text at the end of each line
+- `d` (or `x`) Delete the block: the text to the right of it moves left. `D` (or `X`) deletes to the end of each line
+- `y` Yank (copy) the block. `Y` yanks to the end of each line
+- `c` Change the block: it is deleted and you type the new text, which is put on all the lines when you press `Esc`. `C` changes to the end of each line
+- `p` Replace the block with the current memory string
+- `r` and a character: Replace each character of the block with it
+- `U` `u` `~` UPPERCASE/lowercase/Switch case
+- `>` `<` Indent/Unindent the lines of the block
+- `O` Move the cursor to the other corner on the same line, `o` to the opposite corner
+
+A yanked or deleted block is pasted as a block with `p` (after the cursor) or `P` (before it): its lines go in at the same column on the lines from the cursor down, the text to the right of it stays in line, and lines are added at the end of the text if there are not enough. `2p` pastes it twice, side by side. A change made on a block is undone with one `u`, and `.` makes it again at the cursor.
 
 ## Search
 - `/text` `?text` Search forwards/backwards, `n` `N` Next/Previous match

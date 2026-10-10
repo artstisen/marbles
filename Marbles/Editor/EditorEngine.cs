@@ -9,6 +9,7 @@ internal enum EditorMode
     Insert,
     Visual,
     VisualLine,
+    VisualBlock, // A rectangle of text (see EditorEngine.Block.cs)
     Command, // Typing a ":" command
     Search // Typing a "/" or "?" search
 }
@@ -42,7 +43,8 @@ internal enum EditorRequest
 /// The modal (Normal/Insert/Visual) text editor. It holds the text, the cursor and the mode, and turns
 /// key presses into edits. It never touches the console: the TextArea control feeds it keys and draws its state.
 /// This file holds the state and the Insert and command line modes. Normal and Visual mode are found in
-/// EditorEngine.Normal.cs and cursor movement in EditorEngine.Motions.cs.
+/// EditorEngine.Normal.cs (Visual Block mode in EditorEngine.Block.cs) and cursor movement in
+/// EditorEngine.Motions.cs.
 /// </summary>
 internal sealed partial class EditorEngine
 {
@@ -134,7 +136,7 @@ internal sealed partial class EditorEngine
         Mode = singleLine || Buffer.IsEmpty ? EditorMode.Insert : EditorMode.Normal;
     }
 
-    internal bool IsVisual => Mode is EditorMode.Visual or EditorMode.VisualLine;
+    internal bool IsVisual => Mode is EditorMode.Visual or EditorMode.VisualLine or EditorMode.VisualBlock;
 
     /// <summary>
     /// True to show the number of each line in front of it (the host draws them, and gives the text the
@@ -255,7 +257,7 @@ internal sealed partial class EditorEngine
         }
 
         // A command is complete when back in Normal mode with nothing pending
-        if (Mode is EditorMode.Normal or EditorMode.Visual or EditorMode.VisualLine && !HasPending)
+        if ((Mode == EditorMode.Normal || IsVisual) && !HasPending)
         {
             Buffer.EndStep(Cursor);
         }
@@ -424,6 +426,8 @@ internal sealed partial class EditorEngine
                 return;
             }
 
+            // Text typed after "I" or "A" on a block goes on all its lines
+            FinishBlockInsert();
             // Back to Normal mode with the cursor on the last typed character
             Mode = EditorMode.Normal;
             if (Cursor.Col > 0)
@@ -781,6 +785,15 @@ internal sealed partial class EditorEngine
                 break;
             case "putall":
                 PutAllRegisters();
+                break;
+            case "vsel":
+                StartVisual(EditorMode.Visual);
+                break;
+            case "vline":
+                StartVisual(EditorMode.VisualLine);
+                break;
+            case "block":
+                StartVisual(EditorMode.VisualBlock);
                 break;
             case "d":
             case "delete":
@@ -1216,6 +1229,7 @@ internal sealed partial class EditorEngine
     internal (int Start, int End)? Selection(int line)
     {
         if (!IsVisual) return null;
+        if (Mode == EditorMode.VisualBlock) return BlockSelection(line);
         var from = TextPos.Min(_visualAnchor, Cursor);
         var to = TextPos.Max(_visualAnchor, Cursor);
         if (line < from.Line || line > to.Line) return null;

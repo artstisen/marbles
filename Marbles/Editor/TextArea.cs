@@ -991,6 +991,9 @@ public class TextArea
             case EditorMode.VisualLine:
                 label = DialogText.EditorModeVisualLine;
                 break;
+            case EditorMode.VisualBlock:
+                label = DialogText.EditorModeVisualBlock;
+                break;
             default:
                 label = DialogText.EditorModeNormal;
                 break;
@@ -1046,7 +1049,8 @@ public class TextArea
         ConsoleColors.SetColors(_engine.Mode switch
         {
             EditorMode.Insert => ConsoleColors.ColorPreset.AttentionInverted,
-            EditorMode.Visual or EditorMode.VisualLine => ConsoleColors.ColorPreset.WarningInverted,
+            EditorMode.Visual or EditorMode.VisualLine or EditorMode.VisualBlock =>
+                ConsoleColors.ColorPreset.WarningInverted,
             _ => ConsoleColors.ColorPreset.HighlightInverted
         });
         Console.Write(label);

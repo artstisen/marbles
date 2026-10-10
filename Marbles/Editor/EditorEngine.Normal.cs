@@ -136,7 +136,8 @@ internal sealed partial class EditorEngine
         var operatorPending = _operator != NoKey;
         if (cmd is 'i' or 'a' && (operatorPending || IsVisual) ||
             cmd is 'f' or 'F' or 't' or 'T' or 'g' or 'z' ||
-            cmd is 'Z' or 'r' && !operatorPending && !IsVisual ||
+            (cmd == 'Z' && !IsVisual || cmd == 'r' && (!IsVisual || Mode == EditorMode.VisualBlock)) &&
+            !operatorPending ||
             cmd is '[' or ']' && !operatorPending)
         {
             _prefix = cmd;
@@ -171,6 +172,8 @@ internal sealed partial class EditorEngine
 
         if (TryMotion(motionKey, count, operatorPending, out var motion))
         {
+            // A block selected with "$" goes to the end of each line, until the cursor is moved sideways
+            if (Mode == EditorMode.VisualBlock) _blockToEnd = motionKey == '$' || _blockToEnd && motionKey == 'G';
             RunMotion(motion);
             return;
         }
@@ -220,7 +223,15 @@ internal sealed partial class EditorEngine
 
                 break;
             case 'r':
-                if (isText) ReplaceChars(cmd, TakeCount() ?? 1);
+                if (isText && Mode == EditorMode.VisualBlock)
+                {
+                    ReplaceBlock(cmd);
+                }
+                else if (isText)
+                {
+                    ReplaceChars(cmd, TakeCount() ?? 1);
+                }
+
                 break;
             case 'i':
             case 'a':
@@ -364,6 +375,12 @@ internal sealed partial class EditorEngine
 
     private void ApplyOperatorToSelection(char op, bool forceLinewise)
     {
+        if (Mode == EditorMode.VisualBlock && !forceLinewise)
+        {
+            ApplyOperatorToBlock(op, false);
+            return;
+        }
+
         var from = TextPos.Min(_visualAnchor, Cursor);
         var to = TextPos.Max(_visualAnchor, Cursor);
         var linewise = Mode == EditorMode.VisualLine || forceLinewise;
@@ -668,6 +685,36 @@ internal sealed partial class EditorEngine
 
     private bool HandleVisualCommand(char cmd, int count)
     {
+        if (Mode == EditorMode.VisualBlock)
+        {
+            switch (cmd)
+            {
+                case 'I':
+                    StartBlockInsert(false);
+                    return true;
+                case 'A':
+                    StartBlockInsert(true);
+                    return true;
+                case 'O':
+                    BlockOtherCorner();
+                    return true;
+                case 'D':
+                case 'X':
+                    ApplyOperatorToBlock('d', true);
+                    return true;
+                case 'C':
+                    ApplyOperatorToBlock('c', true);
+                    return true;
+                case 'Y':
+                    ApplyOperatorToBlock('y', true);
+                    return true;
+                case 'p':
+                case 'P':
+                    PutOverBlock();
+                    return true;
+            }
+        }
+
         switch (cmd)
         {
             case 'v':
@@ -675,6 +722,10 @@ internal sealed partial class EditorEngine
                 return true;
             case 'V':
                 Mode = Mode == EditorMode.VisualLine ? EditorMode.Normal : EditorMode.VisualLine;
+                return true;
+            case 'Q':
+                Mode = Mode == EditorMode.VisualBlock ? EditorMode.Normal : EditorMode.VisualBlock;
+                _blockToEnd = false;
                 return true;
             case 'o':
                 // Move the cursor to the other end of the selection
@@ -880,6 +931,9 @@ internal sealed partial class EditorEngine
             case 'V':
                 _visualAnchor = Cursor;
                 Mode = EditorMode.VisualLine;
+                break;
+            case 'Q':
+                StartVisual(EditorMode.VisualBlock);
                 break;
 
             // Command line and search
@@ -1106,6 +1160,12 @@ internal sealed partial class EditorEngine
     {
         var text = GetRegister(out var linewise);
         if (text.Length == 0) return;
+        if (RegisterIsBlock(text))
+        {
+            PutBlock(after, count);
+            return;
+        }
+
         if (count > 1) text = new StringBuilder().Insert(0, text, count).ToString();
         if (linewise)
         {
