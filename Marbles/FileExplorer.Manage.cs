@@ -1,7 +1,8 @@
 ﻿namespace Marbles;
 
 // File management in the file browser: new directory, rename, copy, duplicate, move and delete, working on
-// the selected file or directory. The operations themselves are found in the class FileOperations.
+// the selected file or directory, or on the marked ones (Space). The operations themselves are found in the
+// class FileOperations.
 internal static partial class FileExplorer
 {
     private enum KeyResult
@@ -152,6 +153,66 @@ internal static partial class FileExplorer
         return true;
     }
 
+    // True (with the reason as the message) if one of the files or directories cannot be moved or deleted
+    private static bool AnyProtected(List<Item> items)
+    {
+        foreach (var item in items)
+        {
+            var protection = Protection(item);
+            if (protection == null) continue;
+            _message = items.Count == 1 ? protection : item.Name + ": " + protection;
+            return true;
+        }
+
+        return false;
+    }
+
+    #region Marks
+
+    // Mark (or unmark) the selected file or directory and go to the next
+    private static void ToggleMark()
+    {
+        var item = SelectedItem();
+        if (item == null) return;
+        var pane = ActivePane;
+        if (!pane.Marks.Remove(item.Path)) pane.Marks.Add(item.Path);
+        DrawItem(IsDual ? _active : 0, pane, pane.Index);
+        if (pane.Index < pane.Items.Count - 1) pane.Index++;
+    }
+
+    // The files and directories an operation works on: the marked ones (directories first), or the selected one
+    // if none are marked
+    private static List<Item> MarkedOrSelected()
+    {
+        var pane = ActivePane;
+        if (pane.Marks.Count == 0)
+        {
+            var item = SelectedItem();
+            return item == null ? new List<Item>() : new List<Item> { item };
+        }
+
+        // A marked item can be hidden by a filter
+        return pane.Marks.Select(path => pane.Items.FirstOrDefault(item => item.Path == path) ?? ItemOf(path))
+            .OrderBy(item => !item.IsDirectory)
+            .ThenBy(item => item.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static Item ItemOf(string path)
+    {
+        var isDirectory = Directory.Exists(path);
+        return new Item(System.IO.Path.GetFileName(path), path, isDirectory,
+            isDirectory ? 0 : new FileInfo(path).Length);
+    }
+
+    // What went wrong with one of the files or directories: with its name if there are several
+    private static string Failure(List<Item> items, Item item, string result)
+    {
+        return items.Count == 1 ? result : item.Name + ": " + result;
+    }
+
+    #endregion
+
     // Ask for a name on a page of its own. Returns null if canceled
     private static string? AskName(string caption, string name)
     {
@@ -170,14 +231,22 @@ internal static partial class FileExplorer
     // A file or directory that is being copied or moved: the user is selecting the directory to put it in.
     // This is done in the panes as they are: any directory can be gone to, in either pane, and "S" selects
     // the directory shown in the pane with the focus
-    private sealed record PendingOperation(Item Item, bool IsMove, int Pane);
+    private sealed record PendingOperation(List<Item> Items, bool IsMove, int Pane);
 
     private static PendingOperation? _pending;
 
-    private static void StartSelectingTarget(Item item, bool isMove)
+    private static void StartSelectingTarget(List<Item> items, bool isMove)
     {
-        _pending = new PendingOperation(item, isMove, _active);
-        _caption = (isMove ? DialogText.FileMoveTo : DialogText.FileCopyTo) + item.Name;
+        _pending = new PendingOperation(items, isMove, _active);
+        if (items.Count == 1)
+        {
+            _caption = (isMove ? DialogText.FileMoveTo : DialogText.FileCopyTo) + items[0].Name;
+        }
+        else
+        {
+            _caption = isMove ? Lang.F("Move to: {0} marked", items.Count) : Lang.F("Copy to: {0} marked", items.Count);
+        }
+
         // With two panes the other pane is the place to start: "S" at once copies or moves to it
         if (IsDual) _active = 1 - _active;
     }
@@ -202,25 +271,51 @@ internal static partial class FileExplorer
             return;
         }
 
-        var (item, isMove, _) = _pending;
-        // Back to the pane the file is in
+        var (items, isMove, _) = _pending;
+        // Back to the pane the files are in
         StopSelectingTarget();
         Draw(true);
-        if (isMove)
+        // One after the other, until one fails (or the copying is canceled). Those done are no longer marked
+        string? failed = null;
+        Item? failedItem = null;
+        var done = 0;
+        var path = string.Empty;
+        var favoritesChanged = false;
+        foreach (var item in items)
         {
-            var result = FileOperations.Move(item.Path, target, out var path, ShowProgress);
-            LogOperation("Move", item.Path + " -> " + target, result);
-            Finish(result, result == DialogText.Success ? null : item.Path, DialogText.FileMoved + ShortPath(target));
-            if (result == DialogText.Success && FileFavorites.PathChanged(item.Path, path)) SaveFavorites();
+            var result = isMove
+                ? FileOperations.Move(item.Path, target, out path, ShowProgress)
+                : FileOperations.Copy(item.Path, target, out path, ShowProgress);
+            LogOperation(isMove ? "Move" : "Copy", item.Path + " -> " + target, result);
+            if (result != DialogText.Success)
+            {
+                failed = Failure(items, item, result);
+                failedItem = item;
+                break;
+            }
+
+            done++;
+            ActivePane.Marks.Remove(item.Path);
+            if (isMove && FileFavorites.PathChanged(item.Path, path)) favoritesChanged = true;
+        }
+
+        string message;
+        if (items.Count == 1)
+        {
+            message = (isMove ? DialogText.FileMoved : DialogText.FileCopied) + ShortPath(target);
         }
         else
         {
-            var result = FileOperations.Copy(item.Path, target, out var path, ShowProgress);
-            LogOperation("Copy", item.Path + " -> " + target, result);
-            // A copy in the same directory is selected. Else the original stays selected
-            var inPlace = result == DialogText.Success && FileOperations.SamePath(target, ActivePane.Directory);
-            Finish(result, inPlace ? path : item.Path, DialogText.FileCopied + ShortPath(target));
+            message = isMove
+                ? Lang.F("{0} moved to {1}", done, ShortPath(target))
+                : Lang.F("{0} copied to {1}", done, ShortPath(target));
         }
+
+        // A copy in the same directory is selected. Else the original stays selected (or the place it was in)
+        var inPlace = !isMove && done > 0 && FileOperations.SamePath(target, ActivePane.Directory);
+        Finish(failed ?? DialogText.Success, inPlace ? path : failedItem?.Path ?? (isMove ? null : items[0].Path),
+            message);
+        if (favoritesChanged) SaveFavorites();
     }
 
     #endregion
@@ -320,54 +415,116 @@ internal static partial class FileExplorer
 
     private static void CopySelected()
     {
-        var item = SelectedItem();
-        if (item != null) StartSelectingTarget(item, false);
+        var items = MarkedOrSelected();
+        if (items.Count > 0) StartSelectingTarget(items, false);
     }
 
     private static void DuplicateSelected()
     {
-        var item = SelectedItem();
-        if (item == null) return;
-        var result = FileOperations.Copy(item.Path, ActivePane.Directory, out var path, ShowProgress);
-        LogOperation("Duplicate", item.Path + (path.Length > 0 ? " -> " + System.IO.Path.GetFileName(path) : ""),
-            result);
-        Finish(result, result == DialogText.Success ? path : item.Path, string.Empty);
+        var items = MarkedOrSelected();
+        if (items.Count == 0) return;
+        string? failed = null;
+        var select = items[0].Path;
+        var done = 0;
+        foreach (var item in items)
+        {
+            var result = FileOperations.Copy(item.Path, ActivePane.Directory, out var path, ShowProgress);
+            LogOperation("Duplicate", item.Path + (path.Length > 0 ? " -> " + System.IO.Path.GetFileName(path) : ""),
+                result);
+            if (result != DialogText.Success)
+            {
+                failed = Failure(items, item, result);
+                select = item.Path;
+                break;
+            }
+
+            done++;
+            ActivePane.Marks.Remove(item.Path);
+            select = path;
+        }
+
+        Finish(failed ?? DialogText.Success, select, items.Count == 1 ? string.Empty : Lang.F("{0} duplicated", done));
     }
 
     private static void MoveSelected()
     {
-        var item = SelectedItem();
-        if (item != null && !IsProtected(item)) StartSelectingTarget(item, true);
+        var items = MarkedOrSelected();
+        if (items.Count > 0 && !AnyProtected(items)) StartSelectingTarget(items, true);
     }
 
     private static void DeleteSelected()
     {
-        var item = SelectedItem();
-        if (item == null || IsProtected(item)) return;
-        string note;
-        if (item.IsDirectory)
+        var items = MarkedOrSelected();
+        if (items.Count == 0 || AnyProtected(items)) return;
+        if (!ConfirmDelete(items)) return;
+
+        string? failed = null;
+        Item? failedItem = null;
+        var done = 0;
+        var favoritesChanged = false;
+        foreach (var item in items)
         {
+            var result = FileOperations.Delete(item.Path);
+            LogOperation(item.IsDirectory ? "Delete directory" : "Delete", item.Path, result);
+            if (result != DialogText.Success)
+            {
+                failed = Failure(items, item, result);
+                failedItem = item;
+                break;
+            }
+
+            done++;
+            if (FileFavorites.PathDeleted(item.Path)) favoritesChanged = true;
+        }
+
+        Finish(failed ?? DialogText.Success, failedItem?.Path,
+            items.Count == 1 ? DialogText.FileItemDeleted + items[0].Name : Lang.F("{0} deleted", done));
+        if (favoritesChanged) SaveFavorites();
+    }
+
+    // Ask before deleting, in a box on top of the list, telling what is deleted
+    private static bool ConfirmDelete(List<Item> items)
+    {
+        if (items.Count == 1)
+        {
+            var item = items[0];
+            string note;
+            if (item.IsDirectory)
+            {
+                var (files, directories) = FileOperations.Count(item.Path);
+                note = files + directories == 0
+                    ? DialogText.DeleteEmptyDirectoryNote
+                    : Lang.F("With all its content: {0} files and {1} directories. They cannot be recovered", files,
+                        directories);
+            }
+            else
+            {
+                note = IsDataFile(item) ? DialogText.DeleteDataFileNote : DialogText.DeleteFileNote;
+            }
+
+            return ChoiceBox.Confirm(item.IsDirectory ? DialogText.DeleteDirectory : DialogText.DeleteFile,
+                DialogText.DeleteNamed.Replace("{0}", Tools.TruncateString(item.Name, 40, true)), note, true);
+        }
+
+        // All the files and directories, with the content of the directories
+        int allFiles = 0, allDirectories = 0;
+        foreach (var item in items)
+        {
+            if (!item.IsDirectory)
+            {
+                allFiles++;
+                continue;
+            }
+
             var (files, directories) = FileOperations.Count(item.Path);
-            note = files + directories == 0
-                ? DialogText.DeleteEmptyDirectoryNote
-                : Lang.F("With all its content: {0} files and {1} directories. They cannot be recovered", files,
-                    directories);
-        }
-        else
-        {
-            note = IsDataFile(item) ? DialogText.DeleteDataFileNote : DialogText.DeleteFileNote;
+            allFiles += files;
+            allDirectories += directories + 1;
         }
 
-        if (!Menu.YesNoPrompt(item.IsDirectory ? DialogText.DeleteDirectory : DialogText.DeleteFile,
-                DialogText.DeleteNamedYn.Replace("{0}", Tools.TruncateString(item.Name, 40, true)), note, true))
-        {
-            return;
-        }
-
-        var result = FileOperations.Delete(item.Path);
-        LogOperation(item.IsDirectory ? "Delete directory" : "Delete", item.Path, result);
-        Finish(result, result == DialogText.Success ? null : item.Path, DialogText.FileItemDeleted + item.Name);
-        if (result == DialogText.Success && FileFavorites.PathDeleted(item.Path)) SaveFavorites();
+        var note2 = Lang.F("In all {0} files and {1} directories. They cannot be recovered.", allFiles, allDirectories);
+        if (items.Any(IsDataFile)) note2 += " " + DialogText.DeleteDataFilesNote;
+        return ChoiceBox.Confirm(DialogText.DeleteMarkedCaption,
+            Lang.F("Delete the {0} marked files and directories?", items.Count), note2, true);
     }
 
     // Show information about the selected file or directory in a box on top of the list, until a key is pressed
@@ -458,9 +615,27 @@ internal static partial class FileExplorer
 
     private static void ToggleFavorite()
     {
-        var item = SelectedItem();
-        if (item == null) return;
-        _message = FileFavorites.Toggle(item.Path) ? DialogText.FavoriteAdded : DialogText.FavoriteRemoved;
+        var items = MarkedOrSelected();
+        if (items.Count == 0) return;
+        if (items.Count == 1)
+        {
+            _message = FileFavorites.Toggle(items[0].Path) ? DialogText.FavoriteAdded : DialogText.FavoriteRemoved;
+        }
+        else
+        {
+            // All become favorites, or none if they all are
+            var add = !items.All(item => FileFavorites.Contains(item.Path));
+            foreach (var item in items.Where(item => FileFavorites.Contains(item.Path) != add))
+            {
+                FileFavorites.Toggle(item.Path);
+            }
+
+            _message = add
+                ? Lang.F("{0} added to the favorites", items.Count)
+                : Lang.F("{0} removed from the favorites", items.Count);
+            ActivePane.Marks.Clear();
+        }
+
         SaveFavorites();
     }
 }

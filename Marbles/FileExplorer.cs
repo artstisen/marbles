@@ -43,6 +43,8 @@ internal static partial class FileExplorer
         internal string Filter = string.Empty;
         internal int ShownTop = -1; // What is on screen: the first item shown and the item selected
         internal int ShownIndex = -1;
+        internal readonly HashSet<string> Marks = new(); // The paths of the marked files and directories
+        internal string MarksDirectory = string.Empty; // The directory the marks were made in
     }
 
     // The two panes of the browser, and the one used when a file or directory is picked for something else
@@ -265,8 +267,12 @@ internal static partial class FileExplorer
             }
             else if (key.Key is ConsoleKey.Escape or ConsoleKey.Q)
             {
-                // Esc removes a filter before it closes the browser
-                if (key.Key == ConsoleKey.Escape && ActivePane.Filter.Length > 0)
+                // Esc removes the marks, and then a filter, before it closes the browser
+                if (key.Key == ConsoleKey.Escape && ActivePane.Marks.Count > 0)
+                {
+                    ActivePane.Marks.Clear();
+                }
+                else if (key.Key == ConsoleKey.Escape && ActivePane.Filter.Length > 0)
                 {
                     ActivePane.Filter = string.Empty;
                     LoadItems(null);
@@ -345,6 +351,11 @@ internal static partial class FileExplorer
             else if (_pending != null)
             {
                 // The other keys do nothing until the place to copy or move to is selected
+            }
+            else if (_mode == BrowseMode.Edit && key.Key == ConsoleKey.Spacebar)
+            {
+                ToggleMark();
+                redraw = false;
             }
             else if (_mode == BrowseMode.Edit && key.Key == ConsoleKey.N)
             {
@@ -492,6 +503,10 @@ internal static partial class FileExplorer
         }
 
         pane.Items = items;
+        // The marks are kept while the same directory is shown (also with a filter). The ones gone are dropped
+        if (pane.MarksDirectory != pane.Directory) pane.Marks.Clear();
+        pane.Marks.RemoveWhere(path => !File.Exists(path) && !Directory.Exists(path));
+        pane.MarksDirectory = pane.Directory;
         pane.Index = Math.Max(0, select == null ? 0 : items.FindIndex(i => i.Name == select || i.Path == select));
         pane.Top = 0;
         return true;
@@ -551,11 +566,10 @@ internal static partial class FileExplorer
         if (!file.IsUtf8)
         {
             // Ask how to convert the file
-            var selection = Menu.SelectionPrompt(DialogText.CaptionsFiles, DialogText.ConvertReplace,
-                DialogText.ConvertCopy, DialogText.ConvertCancel,
-                Lang.F("This file is not UTF-8. It is read as {0}.", file.EncodingName) + " " + DialogText.NotUtf8Note,
-                false, ConsoleKey.A,
-                ConsoleKey.B, ConsoleKey.Escape);
+            var selection = ChoiceBox.Pick(DialogText.CaptionsFiles,
+                Lang.F("This file is not UTF-8. It is read as {0}.", file.EncodingName), DialogText.NotUtf8Note,
+                new[] { DialogText.ConvertReplace, DialogText.ConvertCopy, DialogText.ConvertCancel },
+                new[] { "A", "B", "Esc" }, 0, false);
             if (selection == 1)
             {
                 file.Path = GetCopyPath(item.Path);
@@ -726,7 +740,7 @@ internal static partial class FileExplorer
             }
             else
             {
-                if (!Menu.YesNoPrompt(DialogText.CaptionsFiles, DialogText.CopyDataFileYn, DialogText.CopyDataFileNote,
+                if (!ChoiceBox.Confirm(DialogText.CaptionsFiles, DialogText.CopyDataFile, DialogText.CopyDataFileNote,
                         false))
                 {
                     return false;
@@ -918,9 +932,21 @@ internal static partial class FileExplorer
         var nameEnd = showType ? typeColumn - 1 : sizeEnd - SizeColumnWidth - 1;
         var name = Tools.TruncateString(item.Name + (item.IsDirectory && item.Name != ParentName ? "/" : ""),
             Math.Max(4, nameEnd - (left + 3) - 2), true);
-        ConsoleColors.SetColors(item.IsDirectory ? ConsoleColors.ColorPreset.HeaderColor :
-            isDataFile ? ConsoleColors.ColorPreset.Favorites : ConsoleColors.ColorPreset.Normal);
-        Console.Write(" " + name);
+        var nameColors = item.IsDirectory ? ConsoleColors.ColorPreset.HeaderColor :
+            isDataFile ? ConsoleColors.ColorPreset.Favorites : ConsoleColors.ColorPreset.Normal;
+        if (item.Path.Length > 0 && pane.Marks.Contains(item.Path))
+        {
+            // Marked
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+            Console.Write("+");
+            ConsoleColors.SetColors(nameColors);
+            Console.Write(name);
+        }
+        else
+        {
+            ConsoleColors.SetColors(nameColors);
+            Console.Write(" " + name);
+        }
         if (_mode == BrowseMode.Edit && item.Path.Length > 0 && FileFavorites.Contains(item.Path))
         {
             // A favorite
@@ -988,6 +1014,7 @@ internal static partial class FileExplorer
             if (IsDual && number == 0) Console.Write('+');
             var status = " " + (pane.Items.Count == 0 ? 0 : pane.Index + 1) + "/" + pane.Items.Count + " ";
             if (pane.Filter.Length > 0) status += "/" + pane.Filter + " ";
+            if (pane.Marks.Count > 0) status = " " + Lang.F("{0} marked", pane.Marks.Count) + " -" + status;
             status = Tools.TruncateString(status, Math.Max(4, width - 6), true);
             Tools.SetCursorEx(Init.LineCount - 2, left + width - status.Length - 2);
             Console.Write(status);
@@ -1007,6 +1034,8 @@ internal static partial class FileExplorer
                 BrowseMode.PickDirectory => DialogText.DirectoryPickKeys,
                 _ when _pending != null => (IsDual ? DialogText.FileTargetDualKeys : DialogText.FileTargetKeys)
                     .Replace("{0}", _pending.IsMove ? DialogText.FileMoveHere : DialogText.FileCopyHere),
+                // What can be done with the marked files and directories
+                _ when ActivePane.Marks.Count > 0 => DialogText.FileMarkedKeys,
                 _ => IsDual ? DialogText.FileBrowserDualKeys : DialogText.FileBrowserKeys
             });
         }

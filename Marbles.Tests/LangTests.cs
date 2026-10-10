@@ -279,4 +279,13 @@ public class LangTests : IDisposable
         Assert.True(problems.Count == 0, "Text that is not translated:" + Environment.NewLine +
                                          string.Join(Environment.NewLine, problems));
     }
+
+    [Fact]
+    public void ChoiceBox_WrapsTextBetweenWords()
+    {
+        Assert.Equal(new[] { "one two", "three four", "five" }, ChoiceBox.Wrap("one two three four five", 10));
+        Assert.Equal(new[] { "short" }, ChoiceBox.Wrap("short", 10));
+        Assert.Equal(new[] { "" }, ChoiceBox.Wrap("", 10));
+        Assert.All(ChoiceBox.Wrap("abcdefghijklmnop qr", 8), line => Assert.True(line.Length <= 8));
+    }
 }

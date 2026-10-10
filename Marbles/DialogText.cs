@@ -360,7 +360,14 @@ internal static class DialogText
     // File management in the file browser
     public static string NewDirectory => Lang.T("New directory");
     public static string DeleteDirectory => Lang.T("Delete directory");
-    public static string DeleteNamedYn => Lang.T("Delete \"{0}\"?") + " " + YesNo;
+    public static string DeleteNamed => Lang.T("Delete \"{0}\"?");
+    public static string DeleteMarkedCaption => Lang.T("Delete files and directories");
+    public static string DeleteDataFilesNote => Lang.T("Marbles data files with your notes are among them.");
+    public static string FileMarkedKeys => Lang.T("Space Mark | Y Duplicate | C Copy | M Move | P Fave | D Delete | Esc Unmark");
+    // The keys of a box of choices (ChoiceBox)
+    public static string ChoiceKeys => Lang.T("j/k Select | Enter Choose | Esc Cancel");
+    public static string ChoiceYes => Lang.T("Yes");
+    public static string ChoiceNo => Lang.T("No");
     public static string DeleteFileNote => Lang.T("The file cannot be recovered");
     public static string DeleteDataFileNote => Lang.T("A Marbles data file with your notes. It cannot be recovered");
     public static string DeleteEmptyDirectoryNote => Lang.T("The directory is empty");
@@ -431,7 +438,7 @@ internal static class DialogText
     public static string FavoriteMarkFolder => Lang.T("Only favorites can be marked and moved to a folder (not folders)");
     public static string FavoritesMarkedKeys => Lang.T("Space Mark | M To folder | D Remove | Esc Clear the marks");
     public static string FavoriteRemoveCaption => Lang.T("Remove favorites");
-    public static string FavoriteRemoveManyYn => Lang.T("Remove the {0} marked favorites from the list?") + " " + YesNo;
+    public static string FavoriteRemoveMany => Lang.T("Remove the {0} marked favorites from the list?");
     public static string FavoriteRemoveNote => Lang.T("The files stay where they are");
     public static string FavoriteRemovedMany => Lang.T("{0} removed from the favorites (u: Undo)");
     public static string FavoriteRenameFolder => Lang.T("Rename folder");
@@ -459,10 +466,10 @@ internal static class DialogText
     public static string FileNotText => Lang.T("This is not a text file");
     public static string DirectoryNotFound => Lang.T("Directory not found");
     public static string NotUtf8Note => Lang.T("Files are saved as UTF-8.");
-    public static string ConvertReplace => Lang.T("[A] Convert to UTF-8 and replace the file when saving");
-    public static string ConvertCopy => Lang.T("[B] Convert to UTF-8 and save as a copy (the file is left as it is)");
-    public static string ConvertCancel => Lang.T("[Esc] Cancel");
-    public static string CopyDataFileYn => Lang.T("Copy the data file to the data directory?") + " " + YesNo;
+    public static string ConvertReplace => Lang.T("Convert to UTF-8 and replace the file when saving");
+    public static string ConvertCopy => Lang.T("Convert to UTF-8 and save a copy (the file stays as it is)");
+    public static string ConvertCancel => Lang.T("Cancel");
+    public static string CopyDataFile => Lang.T("Copy the data file to the data directory?");
     public static string CopyDataFileNote => Lang.T("Data files are opened from the Marbles data directory.");
 
     // Spell checking

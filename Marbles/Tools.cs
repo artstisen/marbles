@@ -1438,6 +1438,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
             _shortcutList.Add(new Shortcut("A :mkdir name", Lang.T("Create a new directory"), false));
             _shortcutList.Add(new Shortcut("X :rename name", Lang.T("Rename the file or directory"), false));
+            _shortcutList.Add(new Shortcut("Space", Lang.T("Mark/Unmark: Y C M P D work on the marked"), false));
             _shortcutList.Add(new Shortcut("Y :duplicate", Lang.T("Make a copy in the same directory"), false));
             _shortcutList.Add(new Shortcut("C :copy", Lang.T("Copy: go to the directory, then S (Esc cancels)"), false));
             _shortcutList.Add(new Shortcut("M :move", Lang.T("Move: go to the directory, then S (Esc cancels)"), false));

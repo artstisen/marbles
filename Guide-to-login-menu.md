@@ -101,7 +101,7 @@ A text file is opened in the [editor](Guide-to-editor.md), where `:w` saves it a
 **Data files:** Opening a Marbles data file (.mbls) closes the browser and selects the file on the login page. A data file outside the data directory can be copied to it first.
 
 ### Managing files
-These work on the selected file or directory (one at a time):
+These work on the selected file or directory. Duplicate, copy, move, favorite and delete also work on several at once (see marking below):
 
 - `A` or `:mkdir name` Create a new directory
 - `X` or `:rename name` Rename. Without a name you are asked for it, starting from the current name
@@ -109,10 +109,13 @@ These work on the selected file or directory (one at a time):
 - `C` or `:copy` Copy to another directory
 - `M` or `:move` Move to another directory
 - `D` or `:delete` Delete. You are asked first, and for a directory you are told how many files and directories it contains
+- `Space` Mark (or unmark) the selected file or directory and go to the next. A marked one has a `+` in front of its name, and the number marked is shown at the bottom right of the pane. While some are marked, `Y` `C` `M` `P` and `D` work on all the marked ones instead of the selected one: they are duplicated, copied or moved to the directory you select, made favorites (or, if they all are favorites already, removed from the favorites), or deleted after one question that tells how many files and directories are deleted in all. The marks stay while the pane shows the same directory (also with a filter), and `Esc` clears them. If one of them fails, the operation stops there and the message tells which one; those not done stay marked. `X` (rename) and `I` (info) always work on the selected one
+
+Questions (delete, converting a file that is not UTF-8, copying a data file to the data directory, and removing favorites) are asked in a box on top of the list: `Y` or `N` answers at once, or select with `j` `k` and press `Enter`. `Esc` cancels. When something cannot be undone, the question is highlighted as a warning and _No_ is selected first.
 
 A new name (of a file, a directory or a data file) follows the same rules on all platforms, so files can be copied between Windows, macOS and Linux: it cannot contain `\ / : * ? " < > |` or control characters, cannot end with a dot or a space, can be at most 255 characters long, and cannot be a name Windows keeps for devices (`CON`, `PRN`, `AUX`, `NUL`, `COM1`-`COM9`, `LPT1`-`LPT9`, also with an extension, as `con.txt`). If a name cannot be used, the message tells why, or that a file or directory with that name already exists.
 
-For copy and move you select where to: after `C` or `M` the browser stays as it is, with the name of the file at the top left. Go to the directory, in either pane, and press `S` to copy or move the file to the directory shown in the pane with the focus. `Esc` cancels. With two panes the focus goes to the other pane, so pressing `S` at once copies or moves to it, and `Tab` takes you back if the place is in the first pane. With one pane you go to the directory in that pane. While you are selecting, the other file keys and commands are not in use (`:cd` and `:home` are). Both panes are updated afterwards, and the focus returns to the pane the file was in. While a directory is being copied the name of the current file is shown, and `Esc` cancels the copy (what was copied so far is removed).
+For copy and move you select where to: after `C` or `M` the browser stays as it is, with the name of the file (or the number marked) at the top left. Go to the directory, in either pane, and press `S` to copy or move the file to the directory shown in the pane with the focus. `Esc` cancels. With two panes the focus goes to the other pane, so pressing `S` at once copies or moves to it, and `Tab` takes you back if the place is in the first pane. With one pane you go to the directory in that pane. While you are selecting, the other file keys and commands are not in use (`:cd` and `:home` are). Both panes are updated afterwards, and the focus returns to the pane the file was in. While a directory is being copied the name of the current file is shown, and `Esc` cancels the copy (what was copied so far is removed).
 
 Things to know:
 

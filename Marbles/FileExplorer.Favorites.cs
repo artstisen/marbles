@@ -562,8 +562,8 @@ internal static partial class FileExplorer
         {
             // All the marked favorites
             var count = _favoriteMarks.Count;
-            if (count > 1 && !Menu.YesNoPrompt(DialogText.FavoriteRemoveCaption,
-                    DialogText.FavoriteRemoveManyYn.Replace("{0}", count.ToString()),
+            if (count > 1 && !ChoiceBox.Confirm(DialogText.FavoriteRemoveCaption,
+                    DialogText.FavoriteRemoveMany.Replace("{0}", count.ToString()),
                     DialogText.FavoriteRemoveNote, true))
             {
                 return;
@@ -582,8 +582,8 @@ internal static partial class FileExplorer
         {
             // The favorites in a folder are removed with it
             var count = FileFavorites.FolderCount(number);
-            if (count > 0 && !Menu.YesNoPrompt(DialogText.FavoriteDeleteFolder,
-                    DialogText.DeleteNamedYn.Replace("{0}", Tools.TruncateString(item.Name, 40, true)),
+            if (count > 0 && !ChoiceBox.Confirm(DialogText.FavoriteDeleteFolder,
+                    DialogText.DeleteNamed.Replace("{0}", Tools.TruncateString(item.Name, 40, true)),
                     (count == 1 ? DialogText.FavoriteDeleteFolderNoteOne : DialogText.FavoriteDeleteFolderNote)
                     .Replace("{0}", count.ToString()), true))
             {
