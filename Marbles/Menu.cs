@@ -814,6 +814,9 @@ internal static class Menu
             if (navigation == ConsoleKey.DownArrow) selected = (selected + 1) % choices.Length;
             if (navigation == ConsoleKey.UpArrow) selected = (selected + choices.Length - 1) % choices.Length;
             if (key.KeyChar >= '1' && key.KeyChar < '1' + choices.Length) selected = key.KeyChar - '1';
+            // gg and G: the first and the last choice
+            if (key.KeyChar == 'G') selected = choices.Length - 1;
+            if (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g') selected = 0;
         }
     }
 

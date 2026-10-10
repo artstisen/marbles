@@ -22,7 +22,7 @@ The main menu has 2 pages, each with two boxes of keys and commands: four boxes 
 - `j` on the last item of a box goes on to the first item of the next box (on the next page after box 2, and back to box 1 after box 4). `k` on the first item goes back to the last item of the previous box
 - `gg` (or `Home`) selects the first item of box 1, and `G` (or `End`) the last item of box 4
 - `Tab` goes to the next box: from the two boxes of the first page to the two of the second, and back to the first. `Shift+Tab` goes the other way
-- `Esc` shows a small box with three choices: **1 Logout**, **2 Select mode** (log out and go to the [Select mode](Guide-to-login-menu.md#select-mode) page) and **3 Exit** (close Marbles, without asking again). Select with `j` `k` or the number and press `Enter`, or `Esc` to close the box
+- `Esc` shows a small box with three choices: **1 Logout**, **2 Select mode** (log out and go to the [Select mode](Guide-to-login-menu.md#select-mode) page) and **3 Exit** (close Marbles, without asking again). Select with `j` `k` (`gg` `G`: the first/last) or the number and press `Enter`, or `Esc` to close the box
 - `h` `l` (or `Left`/`Right`) show the previous/next page, and `1` and `2` select a page
 
 ### Page 1: Notes and Data file

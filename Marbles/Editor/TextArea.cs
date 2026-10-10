@@ -625,6 +625,10 @@ public class TextArea
             {
                 selected = (selected + choices.Length - 1) % choices.Length;
             }
+
+            // gg and G: the first and the last choice
+            if (key.KeyChar == 'G') selected = choices.Length - 1;
+            if (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g') selected = 0;
         }
 
         // The rows that were covered are written again when the editor is drawn
