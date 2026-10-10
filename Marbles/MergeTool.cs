@@ -44,9 +44,10 @@ internal class MergeTool
 
 
 
-    private void NoFiles()
+    // There are no data files to merge or export (the caption tells which)
+    private void NoFiles(string caption)
     {
-        ChoiceBox.Message(DialogText.CaptionsMerge, DialogText.NoFiles, string.Empty);
+        ChoiceBox.Message(caption, DialogText.NoFiles, string.Empty);
         MergeExport();
     }
 
@@ -313,7 +314,7 @@ internal class MergeTool
         }
         else
         {
-            NoFiles();
+            NoFiles(DialogText.CaptionsMerge);
         }
     }
 
@@ -460,7 +461,7 @@ internal class MergeTool
         }
         else
         {
-            NoFiles();
+            NoFiles(DialogText.CaptionsExport);
         }
     }
 
