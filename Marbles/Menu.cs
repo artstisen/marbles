@@ -517,7 +517,7 @@ internal static class Menu
         WriteNameInTopBar(true);
         Tools.SetCursorEx(1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth - 1));
+        Console.Write(new string('-', Init.LineWidth));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         static string Check(bool on) => on ? DialogText.CheckedSetting : DialogText.UnCheckedSetting;
         if (page == 0)

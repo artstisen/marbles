@@ -797,7 +797,7 @@ public class TextArea
         _shownModeLabel = label;
         Tools.SetCursorEx(_top - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth - 1));
+        Console.Write(new string('-', Init.LineWidth));
         Tools.SetCursorEx(_top - 1, Math.Max(0, Init.LineWidth / 2 - (TextMetrics.WidthOf(label) / 2 + 1)));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
         Console.Write(" " + label + " ");
