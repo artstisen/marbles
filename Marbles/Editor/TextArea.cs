@@ -232,8 +232,7 @@ public class TextArea
             // Offer to save before closing
             Canceled = true;
             if (!_singleLine && _engine.IsModified &&
-                Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn, string.Empty, 0, string.Empty,
-                    true) == 1)
+                Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn, string.Empty, true) == 1)
             {
                 Save();
                 Canceled = false;

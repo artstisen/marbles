@@ -776,24 +776,14 @@ internal static class Tools
 
     internal static void FatalError(string errorMsg)
     {
-        ClearScreen();
-        Console.WriteLine("");
-        Menu.WriteModeLabel(DialogText.CaptionsKeyError, DialogText.ErrorUnsupportedAction, 0);
-        Menu.WriteNameInTopBar(true);
-        CursorDown(2);
-        Keyboard.AwaitAnyKey();
+        ChoiceBox.Message(DialogText.CaptionsKeyError, DialogText.ErrorUnsupportedAction, errorMsg);
         // Start over
         ColdRestart();
     }
 
     internal static void ActionUnsupported(string errorMsg)
     {
-        ClearScreen();
-        Console.WriteLine("");
-        Menu.WriteModeLabel(DialogText.CaptionsKeyError, DialogText.ErrorUnsupportedAction, 0);
-        Menu.WriteNameInTopBar(true);
-        CursorDown(2);
-        Keyboard.AwaitAnyKey();
+        ChoiceBox.Message(DialogText.CaptionsKeyError, DialogText.ErrorUnsupportedAction, errorMsg);
     }
 
 

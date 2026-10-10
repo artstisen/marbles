@@ -1594,7 +1594,7 @@ internal static class Actions
         if (Entries.CurrentEntryExists() && !IsFavorite(Entries.CurrentEntry))
         {
             var result = Menu.YesOptionNoPrompt(DialogText.Favorites, DialogText.AddFavoriteYn, string.Empty, false,
-                ConsoleKey.P);
+                ConsoleKey.P, DialogText.FavoriteChoicePinned);
             if (result != 3) // If not No, continue
             {
                 if (result == 2) // If option set pinned
@@ -1635,7 +1635,7 @@ internal static class Actions
             else
             {
                 result = Menu.YesOptionNoPrompt(DialogText.Favorites, DialogText.RemoveFavoriteOrPinYn, string.Empty,
-                    false, ConsoleKey.P);
+                    false, ConsoleKey.P, DialogText.FavoriteChoicePin);
             }
 
             if (result == 1) // Remove from favorites
@@ -2914,11 +2914,7 @@ internal static class Actions
         }
         catch (Exception e) when (e is not NavigationException)
         {
-            Tools.ClearScreen();
-            Console.WriteLine(e.Message);
-            Tools.CursorReturn();
-            Tools.CursorDown();
-            Keyboard.AwaitAnyKey();
+            ChoiceBox.Message(DialogText.ApplicationName, e.Message, string.Empty);
         }
     }
 
@@ -2958,11 +2954,7 @@ internal static class Actions
         }
         catch (Exception e) when (e is not NavigationException)
         {
-            Tools.ClearScreen();
-            Console.WriteLine(e.Message);
-            Tools.CursorReturn();
-            Tools.CursorDown();
-            Keyboard.AwaitAnyKey();
+            ChoiceBox.Message(DialogText.ApplicationName, e.Message, string.Empty);
         }
     }
 

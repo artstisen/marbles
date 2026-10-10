@@ -214,6 +214,14 @@ internal static class Menu
         string caption, string note, bool suppressPause)
     {
         if (string.IsNullOrEmpty(msg)) return;
+        if (requireKeyPress)
+        {
+            // A message that waits for a key is shown in a box on top of the page
+            ChoiceBox.Message(showCaption && !string.IsNullOrEmpty(caption) ? caption : DialogText.ApplicationName,
+                msg, note);
+            return;
+        }
+
         // Clear screen
         if (clearScreen)
         {
@@ -251,240 +259,61 @@ internal static class Menu
     }
 
 
-    private static ConsoleKeyInfo _c;
-    private static bool _waiting;
-
+    /// <summary>
+    /// Ask yes or no in a box on top of the page (ChoiceBox)
+    /// </summary>
+    /// <param name="invertColors">True for something that cannot be undone: the question is shown as a warning
+    /// and No is selected first</param>
     public static bool YesNoPrompt(string caption, string question, string note, bool invertColors)
     {
-        // Hide cursor, set label and name in top bar
-        Tools.HideCursor();
-        Tools.ClearScreen();
-        WriteModeLabel(caption, string.Empty, 0);
-        WriteNameInTopBar(true);
-        Tools.CursorDown(1);
-        if (!string.IsNullOrEmpty(note))
-        {
-            Console.WriteLine(" " + note);
-        }
-
-        Tools.CursorDown(1);
-        Console.Write(" ");
-        ConsoleColors.SetColors(invertColors
-            ? ConsoleColors.ColorPreset.WarningInverted
-            : ConsoleColors.ColorPreset.AttentionInverted);
-        Console.WriteLine(" " + question + " ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        // Keep asking until Y or N is pressed
-        _waiting = true;
-        do
-        {
-            _c = Console.ReadKey(true);
-            switch (_c.Key)
-            {
-                case ConsoleKey.Y:
-                    _waiting = false;
-                    return true;
-                case ConsoleKey.N:
-                    _waiting = false;
-                    return false;
-            }
-        } while (_waiting);
-
-        return false;
+        return ChoiceBox.Confirm(caption, question, note, invertColors);
     }
 
     // Returns:
     // 1 = Yes
     // 2 = Option
     // 3 = No
+    /// <summary>
+    /// Ask yes, an option or no in a box on top of the page
+    /// </summary>
+    /// <returns>1 = Yes, 2 = the option, 3 = No (also Esc)</returns>
     public static byte YesOptionNoPrompt(string caption, string question, string note, bool invertColors,
-        ConsoleKey optionKey)
+        ConsoleKey optionKey, string option)
     {
-        // Hide cursor, set label and name in top bar
-        Tools.ClearScreen();
-        WriteModeLabel(caption, string.Empty, 0);
-        WriteNameInTopBar(true);
-        Tools.CursorDown(1);
-        if (!string.IsNullOrEmpty(note))
+        var choice = ChoiceBox.Pick(caption, question, note,
+            new[] { DialogText.ChoiceYes, option, DialogText.ChoiceNo },
+            new[] { "Y", optionKey.ToString(), "N" }, 0, invertColors);
+        return choice switch
         {
-            Console.WriteLine(" " + note);
-        }
-
-        Tools.CursorDown(1);
-        Console.Write(" ");
-        ConsoleColors.SetColors(invertColors
-            ? ConsoleColors.ColorPreset.WarningInverted
-            : ConsoleColors.ColorPreset.AttentionInverted);
-        Console.WriteLine(" " + question + " ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        // Keep asking until Y, option or N is pressed
-        _waiting = true;
-        do
-        {
-            _c = Console.ReadKey(true);
-            if (_c.Key == ConsoleKey.Y)
-            {
-                _waiting = false;
-                return 1;
-            }
-            else if (_c.Key == optionKey)
-            {
-                _waiting = false;
-                return 2;
-            }
-            else if (_c.Key == ConsoleKey.N)
-            {
-                _waiting = false;
-                return 3;
-            }
-        } while (_waiting);
-
-        return 0;
+            0 => 1,
+            1 => 2,
+            _ => 3
+        };
     }
 
     // Returns:
     // 1 = Yes
     // 2 = No
     // 3 = Cancel
-    public static byte YesNoCancelPrompt(string caption, string question, string question2, int question2margin, string note, bool invertColors)
+    /// <summary>
+    /// Ask yes, no or cancel in a box on top of the page
+    /// </summary>
+    /// <returns>1 = Yes, 2 = No, 3 = Cancel (also Esc)</returns>
+    public static byte YesNoCancelPrompt(string caption, string question, string note, bool invertColors)
     {
-        // Hide cursor, set label and name in top bar
-        Tools.ClearScreen();
-        WriteModeLabel(caption, string.Empty, 0);
-        WriteNameInTopBar(true);
-        Tools.CursorDown(1);
-        if (!string.IsNullOrEmpty(note))
+        var choice = ChoiceBox.Pick(caption, question, note,
+            new[] { DialogText.ChoiceYes, DialogText.ChoiceNo, DialogText.ChoiceCancel },
+            new[] { "Y", "N", "Esc" }, 0, invertColors);
+        return choice switch
         {
-            Console.WriteLine(" " + note);
-        }
-
-        Tools.CursorDown(1);
-        Console.Write(" ");
-        ConsoleColors.SetColors(invertColors
-            ? ConsoleColors.ColorPreset.WarningInverted
-            : ConsoleColors.ColorPreset.AttentionInverted);
-        Console.WriteLine(" " + question + " ");
-        if (!string.IsNullOrEmpty(question2))
-        {
-            Tools.CursorDown(1);
-            // Insert margin
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(new string(' ', question2margin));
-            // Write question2
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-            Console.Write(" " + question2 + " ");
-        }
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        // Keep asking until Y or N is pressed
-        _waiting = true;
-        do
-        {
-            _c = Console.ReadKey(true);
-            switch (_c.Key)
-            {
-                case ConsoleKey.Y:
-                    _waiting = false;
-                    return 1;
-                case ConsoleKey.N:
-                    _waiting = false;
-                    return 2;
-                case ConsoleKey.Escape:
-                    _waiting = false;
-                    return 3;
-                case ConsoleKey.E:
-                    _waiting = false;
-                    return 4;
-            }
-        } while (_waiting);
-
-        return 0;
+            0 => 1,
+            1 => 2,
+            _ => 3
+        };
     }
 
 
-    public static byte SelectionPrompt(string caption, string questionA, string questionB, string questionC,
-        string note, bool invertColors, ConsoleKey a, ConsoleKey b, ConsoleKey c)
-    {
-        // Hide cursor, set label and name in top bar
-        Tools.ClearScreen();
-        WriteModeLabel(caption, string.Empty, 0);
-        WriteNameInTopBar(true);
-        Tools.CursorDown(1);
-        if (!string.IsNullOrEmpty(note))
-        {
-            Console.WriteLine(" " + note);
-        }
 
-        Tools.CursorDown(1);
-        if (invertColors)
-        {
-            Console.Write(" ");
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-        }
-
-        Console.WriteLine(" " + questionA + " ");
-        if (invertColors)
-        {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        }
-
-        Tools.CursorDown(1);
-        if (invertColors)
-        {
-            Console.Write(" ");
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-        }
-
-        Console.WriteLine(" " + questionB + " ");
-        if (invertColors)
-        {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        }
-
-        Tools.CursorDown(1);
-        if (invertColors)
-        {
-            Console.Write(" ");
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-        }
-
-        Console.WriteLine(" " + questionC + " ");
-        if (invertColors)
-        {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        }
-
-        // Keep asking until keys are pressed
-        _waiting = true;
-        do
-        {
-            var selection = Console.ReadKey(true).Key;
-            if (selection == a || selection == ConsoleKey.Enter)
-            {
-                _waiting = false;
-                return 0;
-            }
-
-            if (selection == b)
-            {
-                _waiting = false;
-                return 1;
-            }
-
-            if (selection == c)
-            {
-                _waiting = false;
-                return 2;
-            }
-
-            if (selection == ConsoleKey.Escape)
-            {
-                _waiting = false;
-                return 3;
-            }
-        } while (_waiting);
-
-        return 0;
-    }
 
 
     // Primary menu item method

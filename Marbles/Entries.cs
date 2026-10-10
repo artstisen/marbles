@@ -567,7 +567,11 @@ internal static class Entries
 
     internal static void SaveEntriesToFile()
     {
-        Menu.StatusMessage(DialogText.Saving, false, true, false, string.Empty, string.Empty, true);
+        // "Saving..." on the bottom line: the page stays (a message can follow on top of it)
+        Tools.HideCursor();
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Console.Write(" " + DialogText.Saving);
         _saveStatus = DialogText.Saving;
         _saveStatus = FileIo.SaveEntries();
         // Block flow on write errors

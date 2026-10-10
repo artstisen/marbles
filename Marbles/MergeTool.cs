@@ -26,7 +26,9 @@ internal class MergeTool
 
     internal void MergeExport()
     {
-        int selection = Menu.SelectionPrompt(DialogText.CaptionsMergeExport, DialogText.MergeExportA, DialogText.MergeExportB, DialogText.MergeExportC, DialogText.SelectOption, true, ConsoleKey.A, ConsoleKey.B, ConsoleKey.Escape);
+        var selection = ChoiceBox.Pick(DialogText.CaptionsMergeExport, DialogText.SelectOption, string.Empty,
+            new[] { DialogText.MergeChoice, DialogText.ExportChoice, DialogText.ChoiceCancel },
+            new[] { "A", "B", "Esc" }, 0, false);
         switch (selection)
         {
             case 0:
@@ -44,17 +46,7 @@ internal class MergeTool
 
     private void NoFiles()
     {
-        Tools.ClearScreen();
-        Menu.WriteModeLabel(DialogText.CaptionsMerge, string.Empty, 0);
-        Tools.CursorTopLeft();
-        Tools.CursorDown(2);
-        Console.Write(" ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-        Console.Write(" " + DialogText.NoFiles + " ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Tools.CursorReturn();
-        Tools.CursorDown(2);
-        Keyboard.AwaitAnyKey();
+        ChoiceBox.Message(DialogText.CaptionsMerge, DialogText.NoFiles, string.Empty);
         MergeExport();
     }
 
@@ -494,17 +486,7 @@ internal class MergeTool
 
     private void WriteStepAlert(string text)
     {
-        Tools.ClearScreen();
-        Menu.WriteModeLabel(DialogText.CaptionsMerge, string.Empty, 0);
-        Tools.CursorTopLeft();
-        Tools.CursorDown(2);
-        Console.Write(" ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-        Console.Write(" " + text + " ");
-        Tools.CursorReturn();
-        Tools.CursorDown(2);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Keyboard.AwaitAnyKey();
+        ChoiceBox.Message(DialogText.CaptionsMerge, text, string.Empty);
     }
 
     private void WriteStepInformation(string text, string modelabel)

@@ -153,33 +153,28 @@ internal static class DialogText
 
     // Yes/No dialogs
     private static string YesNo => Lang.T("[Y] Yes  [N] No");
-    private static string YesNoCancel => Lang.T("[Y] Yes  [N] No  [Esc] Cancel");
     public static string YesContinue => Lang.T("[E] Yes (continue editing)");
     public static string SaveQuestion => Lang.T("Save changes?");
     public static string SaveChoiceYes => Lang.T("Y    Yes, save and close");
     public static string SaveChoiceNo => Lang.T("N    No, close without saving");
     public static string SaveChoiceContinue => Lang.T("E    Save and continue editing");
     public static string SaveChoiceCancel => Lang.T("Esc  Cancel (continue editing)");
-    private static string YesPinnedNo => Lang.T("[Y] Yes  [P] Pinned  [N] No");
-    private static string YesNoPinned => Lang.T("[Y] Yes  [N] No  [P] Pin");
 
     // -------------------------------------------------------------------
     //public static string NewFileYn => Lang.T("Create a new file?") + " " + YesNo;
-    public static string RenameFileYn => Lang.T("Rename selected file?") + " " + YesNo;
-    public static string CopyFileYn => Lang.T("Copy selected file?") + " " + YesNo;
-    public static string MoveFileYn => Lang.T("Move selected file?") + " " + YesNo;
-    public static string DeleteFileYn => Lang.T("Delete selected file?") + " " + YesNo;
+    public static string RenameFileYn => Lang.T("Rename selected file?");
+    public static string CopyFileYn => Lang.T("Copy selected file?");
+    public static string MoveFileYn => Lang.T("Move selected file?");
+    public static string DeleteFileYn => Lang.T("Delete selected file?");
 
-    public static string SaveChangesYnCancel => Lang.T("Save changes?") + " " + YesNoCancel;
-    public static string SaveChangesYn => Lang.T("Save changes?") + " " + YesNo;
-    public static string ReplaceFileYn => Lang.T("The file exists. Replace it?") + " " + YesNo;
-    public static string DeleteEntryYn => Lang.T("Delete entry?") + " " + YesNo;
-    public static string DeleteEntryYnConfirm => Lang.T("Confirm deletion:") + " " + YesNo;
-    public static string DuplicateEntryYn => Lang.T("Duplicate entry?") + " " + YesNo;
-    public static string ClearTextYn => Lang.T("Clear text?") + " " + YesNo;
-    public static string RevertEditYn => Lang.T("Revert to previous edit?") + " " + YesNo;
-    public static string RestoreDeletedYn => Lang.T("Undo last deletion?") + " " + YesNo;
-    public static string ResetOutputDimensions => Lang.F("Reset {0} output dimensions?", ApplicationName) + " " + YesNo;
+    public static string SaveChangesYn => Lang.T("Save changes?");
+    public static string ReplaceFileYn => Lang.T("The file exists. Replace it?");
+    public static string DeleteEntryYn => Lang.T("Delete entry?");
+    public static string DeleteEntryYnConfirm => Lang.T("Confirm deletion:");
+    public static string DuplicateEntryYn => Lang.T("Duplicate entry?");
+    public static string ClearTextYn => Lang.T("Clear text?");
+    public static string RevertEditYn => Lang.T("Revert to previous edit?");
+    public static string RestoreDeletedYn => Lang.T("Undo last deletion?");
     public static string FitOutputDimensions => Lang.T("Follow the size of the terminal window (automatic size)?") + " " + YesNo;
     public static string EnlargeWindow => Lang.T("Make the terminal window larger and press a key");
     // The same questions in a box on top of the page (ChoiceBox), which shows the choices itself
@@ -198,18 +193,20 @@ internal static class DialogText
     public static string TransferComplete => Lang.T("Complete transfer");
     public static string TransferDiscard => Lang.T("Discard transfer");
     public static string ChoiceCancel => Lang.T("Cancel");
-    public static string RemoveFavoriteYn => Lang.T("Remove from favorites?") + " " + YesNo;
-    public static string RemoveFavoriteOrPinYn => Lang.T("Remove from favorites?") + " " + YesNoPinned;
-    public static string AddFavoriteYn => Lang.T("Add to favorites?") + " " + YesPinnedNo;
-    public static string ClearStringMemory => Lang.T("Clear string memory?") + " " + YesNo;
+    // The choices when an entry is made a favorite, or is a favorite already (in a box, with keys in front)
+    public static string FavoriteChoicePinned => Lang.T("Yes, pinned (at the top of the favorites)");
+    public static string FavoriteChoicePin => Lang.T("No, pin it (at the top of the favorites)");
+    // The kinds of new data files, and merge or export
+    public static string NewFileStandard => Lang.T("Standard data file (default)");
+    public static string NewFileCalendar => Lang.T("Calendar");
+    public static string MergeChoice => Lang.T("Merge two data files into a new one");
+    public static string ExportChoice => Lang.T("Export a data file to a new one");
+    public static string RemoveFavoriteYn => Lang.T("Remove from favorites?");
+    public static string RemoveFavoriteOrPinYn => Lang.T("Remove from favorites?");
+    public static string AddFavoriteYn => Lang.T("Add to favorites?");
+    public static string ClearStringMemory => Lang.T("Clear string memory?");
 
     // Selection dialogs
-    public static string MergeExportA => Lang.T("Press [A] to merge");
-    public static string MergeExportB => Lang.T("Press [B] to export");
-    public static string MergeExportC => Lang.T("Press [Esc] to cancel");
-    public static string NewFileA => Lang.T("[A] Standard data file (default)");
-    public static string NewFileB => Lang.T("[B] Calendar");
-    public static string NewFileC => Lang.T("[Esc] Cancel");
 
     public static string ImportYnNote => Lang.T("The file is selected in the file browser.");
     public static string ExportedTo => Lang.T("Saved as ");

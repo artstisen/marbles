@@ -56,8 +56,9 @@ public static class FileActions
 
     internal static bool NewDataFilePrompt()
     {
-        int selection = Menu.SelectionPrompt(DialogText.NewFile, DialogText.NewFileA, DialogText.NewFileB,
-            DialogText.NewFileC, DialogText.SelectFileOption, true, ConsoleKey.A, ConsoleKey.B, ConsoleKey.Escape);
+        var selection = ChoiceBox.Pick(DialogText.NewFile, DialogText.SelectFileOption, string.Empty,
+            new[] { DialogText.NewFileStandard, DialogText.NewFileCalendar, DialogText.ChoiceCancel },
+            new[] { "A", "B", "Esc" }, 0, false);
         switch (selection)
         {
             case 0:
@@ -83,20 +84,15 @@ public static class FileActions
             title = Lang.T("Calendar") + "-" + IsoDateTime.CalendarYear;
         }
 
-        Tools.ClearScreen();
-        Menu.WriteModeLabel(DialogText.NewFile, DialogText.EnterFileNameAndPressEnter, 1);
-        Tools.CursorDown(3);
-        Console.Write(" " + DialogText.NameColon);
-
-        var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, 56, 1, title, 0, (type != FileType.Normal),
-            false, false, 0);
-        if (textArea.Canceled)
+        // The name in a box on top of the page
+        var asked = ChoiceBox.AskText(DialogText.NewFile, DialogText.EnterFileNameAndPressEnter, DialogText.NameColon,
+            title);
+        if (asked == null)
         {
             return false;
         }
 
-        // Fetch data from editor
-        string fileName = textArea.GetText();
+        string fileName = asked;
         fileName = Tools.TruncateString(fileName, 32, false);
         // Check file name
         var problem = Tools.FileNameProblem(fileName);
@@ -140,19 +136,15 @@ public static class FileActions
                 DialogText.FileColon + " " + FileIo.GetFileName(),
                 false))
         {
-            Tools.ClearScreen();
-            Menu.WriteModeLabel(DialogText.RenameFile, DialogText.ChangeFileNameAndPressEnter, 1);
-            Tools.CursorDown(3);
-            Console.Write(" " + DialogText.NameColon);
-            TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, 56, 1,
-                FileIo.GetFileNameWithoutExtension(), 0, true, false, false, 0);
-            if (textArea.Canceled)
+            // The name in a box on top of the page
+            var asked = ChoiceBox.AskText(DialogText.RenameFile, DialogText.ChangeFileNameAndPressEnter,
+                DialogText.NameColon, FileIo.GetFileNameWithoutExtension());
+            if (asked == null)
             {
                 return false;
             }
 
-            // Fetch data from editor
-            string newFileName = textArea.GetText();
+            string newFileName = asked;
             newFileName = Tools.TruncateString(newFileName, 32, false);
             // Check file name
             var problem = Tools.FileNameProblem(newFileName);
@@ -220,19 +212,15 @@ public static class FileActions
                 DialogText.FileColon + " " + FileIo.GetFileName(),
                 false))
         {
-            Tools.ClearScreen();
-            Menu.WriteModeLabel(DialogText.CopyFile, DialogText.ChangeFileNameAndPressEnter, 1);
-            Tools.CursorDown(3);
-            Console.Write(" " + DialogText.NameColon);
-            TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, 56, 1,
-                FileIo.GetFileNameWithoutExtension() + " (copy)", 0, true, false, false, 0);
-            if (textArea.Canceled)
+            // The name in a box on top of the page
+            var asked = ChoiceBox.AskText(DialogText.CopyFile, DialogText.ChangeFileNameAndPressEnter,
+                DialogText.NameColon, FileIo.GetFileNameWithoutExtension() + " (copy)");
+            if (asked == null)
             {
                 return false;
             }
 
-            // Fetch data from editor
-            string newFileName = textArea.GetText();
+            string newFileName = asked;
             newFileName = Tools.TruncateString(newFileName, 32, false);
             // Check file name
             var problem = Tools.FileNameProblem(newFileName);
