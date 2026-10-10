@@ -1331,6 +1331,7 @@ internal static class Tools
         Files, // The file browser
         Favorites, // The favorites of the file browser
         Search, // The files found by a search in the file browser
+        ColorScheme, // The color scheme editor
         Editor
     }
 
@@ -1358,7 +1359,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("j k or the number of the row: Select"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Startup"), Lang.T("Text Editor can start in the favorites list"), false));
             _shortcutList.Add(new Shortcut("Enter Space", Lang.T("Change the selected setting"), false));
-            _shortcutList.Add(new Shortcut("l h", Lang.T("Next/Previous color scheme or logo"), false));
+            _shortcutList.Add(new Shortcut("l h", Lang.T("Next/Previous color scheme or language"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Color scheme"), Lang.T("Enter: edit the colors"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("View log"), Lang.T("/text only shows lines containing \"text\""), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogin, true));
             _shortcutList.Add(new Shortcut("Enter", Lang.T("Log in with the password typed"), false));
@@ -1462,6 +1464,15 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q F h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.T("Kept in favorites.txt in the data directory"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionColorScheme, true));
+            _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select the preset or a group of colors"), false));
+            _shortcutList.Add(new Shortcut("h l", Lang.T("On the preset: the previous/next preset"), false));
+            _shortcutList.Add(new Shortcut("l Enter Space", Lang.T("On a group: pick its color from a list"), false));
+            _shortcutList.Add(new Shortcut("T", Lang.T("Pick the text color (Highlight, Attention, Warning)"), false));
+            _shortcutList.Add(new Shortcut("E", Lang.T("Back to the colors of the preset"), false));
+            _shortcutList.Add(new Shortcut("S", Lang.T("Save the colors and close"), false));
+            _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Close (asks to save changes)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Open"), Lang.T(":scheme, or Configuration: Color scheme"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionEditor, true));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Modes"), true));
             _shortcutList.Add(new Shortcut("Esc", Lang.T("Normal mode (navigate and give commands)"), false));
@@ -1598,6 +1609,7 @@ internal static class Tools
             HelpTopic.Files => DialogText.HelpSectionFiles,
             HelpTopic.Favorites => DialogText.HelpSectionFavorites,
             HelpTopic.Search => DialogText.HelpSectionSearch,
+            HelpTopic.ColorScheme => DialogText.HelpSectionColorScheme,
             HelpTopic.Editor => DialogText.HelpSectionEditor,
             _ => string.Empty
         };

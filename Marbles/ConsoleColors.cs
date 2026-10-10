@@ -853,6 +853,23 @@ class ConsoleColors
         PreviewWarningForegroundColor = CurrentWarningForegroundColor;
     }
 
+    /// <summary>
+    /// Use the colors of a preset as the colors being edited, leaving the colors in use as they are
+    /// </summary>
+    internal static void PreviewPreset(ColorPreset preset)
+    {
+        var colors = Enumerable.Range(0, 13).Select(GetCurrentColorFromIndex).ToArray();
+        var background = Background;
+        SetColors(preset);
+        InitializePreviewColors();
+        for (var i = 0; i < colors.Length; i++)
+        {
+            SetColorFromIndex(i, GetIndexFromColor(colors[i]));
+        }
+
+        Background = background;
+    }
+
     internal static void SavePreviewToCurrentColors()
     {
         // Normal colors

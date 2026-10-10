@@ -2,7 +2,8 @@
 
 ## v1.5.3
 - **Start page**: the name of the selected data file is no longer shown at the top right (it belongs to the login page). In the options of the login page (`Esc`), `F/T` (Files/Select mode) is now the first item, and `I` (Info) has taken its place.
-- **A new logo preset** (the second): "Marbles" in the style of block letters, drawn with ordinary characters, and three variants of it (presets 3 to 5). The presets after them are four numbers higher (the logo with your own text is now the twelfth).
+- **A new logo**: "Marbles" in the style of block letters, drawn with ordinary characters. It is now the only logo: the logo presets, `:logo`, the Logo row of the Configuration page and the settings `logo` and `logotxt` are removed. The sweep of the logo on the login page is twice as fast.
+- **Color scheme editor**: the colors are edited on a page of their own, opened with `:scheme` or from the Configuration page (Color scheme, `Enter`). Choose a preset to start from, pick the colors of each group from a list, and see them all on a small screen at the bottom before saving with `S`. Menu page 4 now holds `:scheme`, `:color` and `:bw`. The colors can also be edited while black and white is on.
 - **Start in the favorites**: when Marbles starts in the Text Editor, it can open the favorites list of the file browser first (Configuration page, below "Start in Text Editor").
 - **Languages**: the menus, help, quick guide and messages can be shown in Danish, German, Norwegian (bokmål), Swedish, Spanish or French. Choose the language on the Configuration page of the start page, or with `:language da` (and so on) in the main menu (saved as `language` in the settings file). Commands, keys and the names of the editor modes stay English in all languages. Lines of help and key hints that are too long for the window in a language are cut at its edge.
 - **`gv`** in the editor selects the last selection again (as in Vim), in the same kind of selection.

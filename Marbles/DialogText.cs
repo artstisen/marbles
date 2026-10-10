@@ -45,6 +45,8 @@ internal static class DialogText
     public static string CaptionsOptions => Lang.T("Options");
     public static string CaptionsMoreOptions => Lang.T("More options");
     public static string CaptionsColorScheme => Lang.T("Edit color scheme");
+    public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | ? Help | Esc Close");
+    public static string HelpSectionColorScheme => Lang.T("Color scheme editor");
     public static string CaptionsExport => Lang.T("Export");
     public static string CaptionsImport => Lang.T("Import");
     public static string CaptionsBackup => Lang.T("Backup");
@@ -132,9 +134,6 @@ internal static class DialogText
     public static string NotAvailable => Lang.T("N/A");
     public static string SavIndicator => Lang.T("Unsaved");
 
-    public static string ExtExample => Lang.T("[Example]");
-    public static string SchemeLocked => Lang.T("[LOCKED]");
-    public static string SchemeEditing => Lang.T("[EDITING]");
     public const string PaginationLeftRight = "<- ->";
     public static string BrowseUpDown => Lang.T("Up/Down");
     public static string ExtSelectDataFile => Lang.T("File");
@@ -329,7 +328,7 @@ internal static class DialogText
     public const string LogEditorCommand = "Editor";
     public const string LogFilesCommand = "Files";
     public const string LogFile = "File: ";
-    public static string MonochromeIsOn => Lang.T("Black and white is on: turn it off (:bw) to use the color scheme");
+    public static string MonochromeIsOn => Lang.T("Black and white is on: the colors are used when it is turned off");
     public static string Drives => Lang.T("Drives");
     public const string DirectoryMark = "<DIR>";
     public static string DataFileMark => Lang.T("[Data file]");

@@ -465,7 +465,7 @@ internal static class Actions
         // A number after the command selects a preset directly, like ":color 5"
         var number = int.TryParse(CommandLine.Argument(command), out var parsedNumber) ? parsedNumber : 0;
         if (CommandLine.Argument(command).Length > 0 &&
-            !(CommandLine.Name(command) is "color" or "logo" && number > 0) && command != "size auto" &&
+            !(CommandLine.Name(command) == "color" && number > 0) && command != "size auto" &&
             CommandLine.Name(command) is not ("new" or "language"))
         {
             CommandLine.ShowUnknown(command);
@@ -536,16 +536,10 @@ internal static class Actions
                 ResetSettings();
                 break;
             case "scheme":
-                if (ConsoleColors.Monochrome)
-                {
-                    // The colors are not in use
-                    ChangeMenuFocus(3);
-                    CommandLine.ShowMessage(DialogText.MonochromeIsOn);
-                    Menu.DrawTopMenu(false, true, false);
-                    break;
-                }
-
-                EnableColorSettings();
+                // The color scheme editor, a page of its own
+                SchemeEditor.Show();
+                ChangeMenuFocus(3);
+                Menu.DrawTopMenu(false, true, false);
                 break;
             case "bw":
                 // Black and white on or off
@@ -590,34 +584,6 @@ internal static class Actions
                 Menu.DrawTopMenu(false, true, false);
                 break;
             }
-            case "logo":
-                if (number > LogoPresetCount)
-                {
-                    CommandLine.ShowUnknown(command);
-                    Menu.DrawTopMenu(false, true, false);
-                    break;
-                }
-
-                // Switch to settings page if on a different index
-                ChangeMenuFocus(2);
-                if (number > 0)
-                {
-                    // Select logo
-                    Logo.SetLogoIndex(number - 1);
-                }
-                else if (Logo.GetLogoIndex() < LogoPresetCount - 1)
-                {
-                    // Toggle logo
-                    Logo.SetLogoIndex(Logo.GetLogoIndex() + 1);
-                }
-                else
-                {
-                    Logo.ResetLogoIndex();
-                }
-
-                FileIo.SaveSettings();
-                Menu.DrawTopMenu(false, true, false);
-                break;
             case "color":
                 if (number > ColorPresets.Length)
                 {
@@ -626,8 +592,8 @@ internal static class Actions
                     break;
                 }
 
-                // Switch to settings page if on a different index
-                ChangeMenuFocus(2);
+                // Switch to the page of the colors if on a different one
+                ChangeMenuFocus(3);
                 // Select the color preset, or use the next
                 SetColorPreset(number > 0
                     ? number - 1
@@ -645,8 +611,6 @@ internal static class Actions
         }
     }
 
-    internal static int LogoPresetCount => Logo.PresetCount;
-
     // The color presets in the order they are numbered (the first is the default colors)
     private static readonly ConsoleColors.ColorPreset[] ColorPresets =
     {
@@ -661,6 +625,11 @@ internal static class Actions
     };
 
     internal static int ColorPresetCount => ColorPresets.Length;
+
+    /// <summary>
+    /// A color preset by its number (from 0)
+    /// </summary>
+    internal static ConsoleColors.ColorPreset ColorPresetAt(int index) => ColorPresets[index];
 
     private static readonly string[] ColorPresetNames =
     {
@@ -847,216 +816,6 @@ internal static class Actions
             Menu.BypassAwaitAction = true; // Bypass the ReadKey function within the DrawTopMenu method
             Menu.DrawTopMenu(false, true, false);
         }
-    }
-
-    // The column of the color picker on the color scheme page (the examples stay visible beside it)
-    private const int SchemePickerLeft = 52;
-    private const int SchemeTop = Menu.MenuTop + 1; // The row of ":scheme" on the fourth page of the menu
-    private const int SchemeBackgroundRow = 9; // The last row of the color scheme: the background
-
-    // The page is drawn again with the colors being edited, after the color picker was shown on top of it
-    private static void DrawColorSettings(int selectedProperty)
-    {
-        Menu.BypassAwaitAction = true; // Bypass the ReadKey function within the DrawTopMenu method
-        Menu.DrawTopMenu(false, true, false);
-        Tools.CursorTopLeft();
-        Menu.WriteModeLabel(DialogText.CaptionsColorScheme, string.Empty, 0);
-        // Overwrite the "[LOCKED]" label
-        Tools.CursorDown(SchemeTop);
-        Tools.CursorRight(Menu.SchemeLabelColumn);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-        Console.Write(Menu.SchemeLabel(true));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        for (var property = 0; property <= SchemeBackgroundRow; property++)
-        {
-            Tools.CursorTopLeft();
-            Tools.CursorDown(SchemeTop + 1 + property);
-            WriteColorExample(property);
-        }
-
-        // Place selector
-        Tools.CursorTopLeft();
-        Tools.CursorDown(SchemeTop + 1 + selectedProperty);
-        Menu.WriteSelectionPointer(false);
-    }
-
-    // Pick a color for a property of the color scheme: the text color of the first six, and the background
-    // (or the text, if "textColor" is set) of the three highlight styles
-    private static void PickSchemeColor(int selectedProperty, bool textColor)
-    {
-        if (selectedProperty == SchemeBackgroundRow)
-        {
-            if (textColor) return;
-            // The colors are shown with the text on them. [Default] is the background of the terminal
-            if (ColorPicker.Pick(DialogText.BackgroundCaption, SchemePickerLeft, true, ConsoleColors.PreviewBackground,
-                    color => ConsoleColors.IsPreviewColorAllowed(0, color), color =>
-                    {
-                        Console.BackgroundColor = color;
-                        Console.ForegroundColor = ConsoleColors.GetPreviewColor(1);
-                    }, out var chosen))
-            {
-                ConsoleColors.PreviewBackground = chosen;
-            }
-
-            DrawColorSettings(selectedProperty);
-            return;
-        }
-
-        var isHighlight = selectedProperty >= 6;
-        if (textColor && !isHighlight) return;
-        // The colors of the scheme are numbered: 1-6 the text colors, then background and text of each highlight
-        var background = 7 + (selectedProperty - 6) * 2;
-        var index = !isHighlight ? selectedProperty + 1 : textColor ? background + 1 : background;
-        Action<ConsoleColor>? sample = null;
-        if (isHighlight)
-        {
-            sample = color =>
-            {
-                Console.BackgroundColor = textColor ? ConsoleColors.GetPreviewColor(background) : color;
-                Console.ForegroundColor = textColor ? color : ConsoleColors.GetPreviewColor(background + 1);
-            };
-        }
-
-        if (ColorPicker.Pick(textColor ? DialogText.TextColorCaption : DialogText.ColorCaption, SchemePickerLeft,
-                false, ConsoleColors.GetPreviewColor(index),
-                color => ConsoleColors.IsPreviewColorAllowed(index, color), sample, out var picked) &&
-            picked != null)
-        {
-            ConsoleColors.SetPreviewColor(index, picked.Value);
-        }
-
-        DrawColorSettings(selectedProperty);
-    }
-
-
-    private static void EnableColorSettings()
-    {
-        // Switch to color settings page if on a different index
-        ChangeMenuFocus(3);
-
-        Tools.CursorTopLeft();
-        Menu.WriteModeLabel(DialogText.CaptionsColorScheme, string.Empty, 0);
-        // Overwrite the "[LOCKED]" label
-        Tools.CursorDown(SchemeTop);
-        Tools.CursorRight(Menu.SchemeLabelColumn);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-        Console.Write(Menu.SchemeLabel(true));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Tools.CursorTopLeft();
-        ConsoleColors.InitializePreviewColors();
-        bool editingColorSettings = true;
-        int propertySelectorIndex =
-            0; // Used as both the selection pointer index and as reference to the ColorPreset we want to change
-        // Place selector
-        Tools.CursorTopLeft();
-        Tools.CursorDown(SchemeTop + 1);
-        Menu.WriteSelectionPointer(false);
-        do
-        {
-            // Take input and navigate color options
-            _c = Keyboard.ReadNavigationKey();
-            if (_c.Key == ConsoleKey.Escape) // Cancel/exit
-            {
-                editingColorSettings = false;
-                Menu.DrawTopMenu(false, true, false);
-            }
-            else if (_c.Key == ConsoleKey.Enter) // Save and return
-            {
-                ConsoleColors.SavePreviewToCurrentColors();
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                editingColorSettings = false;
-                Menu.DrawTopMenu(false, true, false);
-            }
-            else if (_c.Key == ConsoleKey.E) // Reset to default
-            {
-                editingColorSettings = false;
-                ResetColorSettings();
-            }
-            else if (_c.Key == ConsoleKey.T) // Pick the text color of a highlight style
-            {
-                PickSchemeColor(propertySelectorIndex, true);
-            }
-            else if (_c.Key == ConsoleKey.UpArrow)
-            {
-                if (propertySelectorIndex > 0)
-                {
-                    Menu.WriteSelectionPointer(true);
-                    Tools.CursorUp(1);
-                    Menu.WriteSelectionPointer(false);
-                    propertySelectorIndex -= 1;
-                }
-                else
-                {
-                    Menu.WriteSelectionPointer(true);
-                    Tools.CursorDown(SchemeBackgroundRow);
-                    Menu.WriteSelectionPointer(false);
-                    propertySelectorIndex = SchemeBackgroundRow;
-                }
-            }
-            else if (_c.Key == ConsoleKey.DownArrow)
-            {
-                if (propertySelectorIndex < SchemeBackgroundRow)
-                {
-                    Menu.WriteSelectionPointer(true);
-                    Tools.CursorDown();
-                    Menu.WriteSelectionPointer(false);
-                    propertySelectorIndex += 1;
-                }
-                else
-                {
-                    Menu.WriteSelectionPointer(true);
-                    Tools.CursorUp(SchemeBackgroundRow);
-                    Menu.WriteSelectionPointer(false);
-                    propertySelectorIndex = 0;
-                }
-            }
-            else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.LeftArrow or ConsoleKey.Spacebar)
-            {
-                // Pick the color from a list
-                PickSchemeColor(propertySelectorIndex, false);
-            }
-        } while (editingColorSettings);
-    }
-
-
-    private static void WriteColorExample(int propertySelectorIndex)
-    {
-        Tools.CursorRight(16);
-        // Set temporary preview color
-        if (propertySelectorIndex is 0 or SchemeBackgroundRow)
-            ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.Normal);
-        else if (propertySelectorIndex == 1)
-            ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.HeaderColor);
-        else if (propertySelectorIndex == 2)
-            ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.Divider);
-        else if (propertySelectorIndex == 3)
-            ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.Favorites);
-        else if (propertySelectorIndex == 4)
-            ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.PreviewTitle);
-        else if (propertySelectorIndex == 5)
-            ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.EditorTitle);
-        else if (propertySelectorIndex == 6)
-            ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.HighlightInverted);
-        else if (propertySelectorIndex == 7)
-            ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.AttentionInverted);
-        else if (propertySelectorIndex == 8)
-            ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.WarningInverted);
-        // Write example
-        Console.Write(DialogText.ExtExample);
-        // Return to normal
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Tools.CursorReturn();
-    }
-
-    // Reset all color settings
-    private static void ResetColorSettings()
-    {
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
-        ConsoleColors.DefaultColorPresetIndex();
-        FileIo.SaveSettings();
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.Clear();
-        Menu.DrawTopMenu(false, true, false);
     }
 
     private static bool _changeOutputDimensionsAccelerated;
@@ -1711,8 +1470,6 @@ internal static class Actions
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
         ConsoleColors.DefaultColorPresetIndex();
         Vignette.SetDefaultVignetteState();
-        Logo.ResetLogoIndex();
-        Logo.ResetLogoText();
         Logo.AnimationEnabled = true;
         PreviewEnabled = false;
         StartMenu.Mode = StartMenu.StartMode.Select;

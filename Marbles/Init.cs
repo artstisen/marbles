@@ -245,8 +245,6 @@ internal static class Init
         Entries.ResetRecallId();
         AsciiStyles.ResetAsciiStyle();
         Vignette.SetDefaultVignetteState();
-        Logo.ResetLogoIndex();
-        Logo.ResetLogoText();
         Logo.AnimationEnabled = true;
         AutoSize = false;
         Actions.PreviewEnabled = false;

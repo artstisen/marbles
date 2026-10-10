@@ -949,10 +949,6 @@ internal static class FileIo
         _tempSettings += "; STYLING" + Entries.NewLineChar;
         // ASCII style
         _tempSettings += "asciistyle=" + AsciiStyles.GetAsciiStyle() + Entries.NewLineChar;
-        // Logo
-        _tempSettings += "logo=" + Logo.GetLogoIndex() + Entries.NewLineChar;
-        // Logo text
-        _tempSettings += "logotxt=" + Logo.GetLogoText() + Entries.NewLineChar;
         // Logo animation on the login page
         _tempSettings += "logoanim=" + (Logo.AnimationEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Color scheme (for the color preset selector)
@@ -1141,27 +1137,6 @@ internal static class FileIo
         else
         {
             AsciiStyles.ResetAsciiStyle();
-        }
-
-        // Logo
-        var logo = GetNumber("logo");
-        if (logo.HasValue)
-        {
-            Logo.SetLogoIndex(logo.Value);
-        }
-        else
-        {
-            Logo.ResetLogoIndex();
-        }
-
-        // Logo text
-        if (Tools.IsValid(Get("logotxt")))
-        {
-            Logo.SetLogoText(Get("logotxt"));
-        }
-        else
-        {
-            Logo.ResetLogoText();
         }
 
         // Logo animation (on unless turned off)

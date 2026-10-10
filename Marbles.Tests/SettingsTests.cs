@@ -65,8 +65,7 @@ backup=
     public void Dispose()
     {
         Init.SetDefaultOutputDimensions();
-        Logo.ResetLogoIndex();
-        Logo.ResetLogoText();
+        Logo.AnimationEnabled = true;
         AsciiStyles.ResetAsciiStyle();
         FileIo.SetDefaultFileName();
         Directory.SetCurrentDirectory(_originalDirectory);
@@ -84,8 +83,6 @@ backup=
         Assert.Equal(100, Init.LineWidth);
         Assert.Equal(30, Init.LineCount);
         Assert.Equal(1, AsciiStyles.GetAsciiStyle());
-        Assert.Equal(7, Logo.GetLogoIndex());
-        Assert.Equal("a=b text", Logo.GetLogoText());
         Assert.Equal(5, ConsoleColors.GetColorPresetIndex());
         Assert.Equal("notes.mbls", FileIo.GetFileName());
         Assert.False(FileIo.BackupEnabled());
@@ -127,9 +124,11 @@ backup=
         Assert.DoesNotContain("KEY MAPPING", saved);
         var settings = FileIo.ParseSettings(saved);
         Assert.Equal("100", settings["linewidth"]);
-        Assert.Equal("a=b text", settings["logotxt"]);
+        // The logo presets are gone: their settings are not written any more
+        Assert.False(settings.ContainsKey("logo"));
+        Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(37, settings.Count);
+        Assert.Equal(35, settings.Count);
         Assert.Equal("false", settings["startfavorites"]);
         Assert.Equal("en", settings["language"]);
         Assert.Equal("default", settings["background"]);
@@ -148,9 +147,9 @@ backup=
     [Fact]
     public void SettingsCanBeInAnyOrder_AndMissingOnesGetDefaults()
     {
-        File.WriteAllText(SettingsFile, "# comment\nlogo=3\n\nnot a setting\nLINECOUNT=40\nlinewidth=nonsense\n");
+        File.WriteAllText(SettingsFile, "# comment\nlogoanim=false\n\nnot a setting\nLINECOUNT=40\nlinewidth=nonsense\n");
         Assert.True(FileIo.LoadSettings());
-        Assert.Equal(3, Logo.GetLogoIndex());
+        Assert.False(Logo.AnimationEnabled);
         Assert.Equal(40, Init.LineCount);
         Assert.Equal(Init.MinLineWidth, Init.LineWidth);
         Assert.Equal("data.mbls", FileIo.GetFileName());

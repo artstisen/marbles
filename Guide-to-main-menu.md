@@ -46,9 +46,7 @@ The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`
 - `:vignette` **Text vignette**: Create a text to be shown on the main menu.
 - `:size` **Change dimensions**: Set the number of rows and columns used by Marbles.
 - `:size auto` **Follow the size of the window**: Turn automatic dimensions on or off. When on, Marbles uses the size of the terminal window (leaving one row and one column unused), checked when the login page, a menu, a list or an entry is shown. A window resized while the editor is open is picked up when the editor is closed. Setting the dimensions yourself with `:size` turns automatic dimensions off.
-- `:color` **Color preset**: Use the next of the color presets, or select one by number: `:color 5` (see page 4 for making your own).
 - `:language` **Language**: Use the next language, or select one by its code: `:language en` (English), `da` (Danish), `de` (German), `nb` (Norwegian), `sv` (Swedish), `es` (Spanish), `fr` (French). The language is saved as `language` in the settings file, and can also be changed on the Configuration page
-- `:logo` **Logo preset**: Use the next of the logo presets, or select one by number: `:logo 3` (the last preset shows a text of your own, set as `logotxt` in the settings file).
 - `:backup` **Toggle backup**: Save a copy of the data file in another directory every time it is saved. The directory is selected in the file browser: go to it and press `S`.
 - `:password` **Reset password**: Change the password of the data file. It is not possible to recover your notes if you forget your password.
 - `:defaults` **Default settings**: Reset all settings.
@@ -56,17 +54,26 @@ The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`
 - `:logout` **Logout**
 - `:q` **Exit**
 
-### Page 4 (color scheme)
-- `:scheme` **Unlock color scheme**: Edit the colors of the selected color preset
-  - `j` `k` (or `Up`/`Down`) Select the color group to change
-  - `l` (or `Right`, `Space`) Pick the color from a list of the 16 colors: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. For the last three groups (the highlight styles) this is the background color
-  - `T` Pick the text color of a highlight style (the last three groups)
-  - **Background**: the last group. `[Default]` (the default) shows the text on the terminal's own background, as Marbles always did, so a transparent or blurred terminal window stays that way. Pick a color to give Marbles a background of its own: the whole window is filled with it, and the terminal's background is used again when Marbles exits. The background cannot have the color of the text, the logo, dividers, favorites or titles. The color presets (`:color`) and `:defaults` use `[Default]`. The setting is `background` in the settings file (a color number, or `default`)
-  - A color shown in brackets in the list cannot be picked, as the text would not be visible on its background
-  - `E` Reset to the default colors of the preset
-  - `Enter` Save and exit, `Esc` Cancel
-- `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the color scheme cannot be edited, and the terminal's own background is used
-  - `Esc` Cancel
+### Page 4 (colors)
+- `:scheme` **Edit color scheme**: Open the [color scheme editor](#color-scheme-editor)
+- `:color` **Color preset**: Use the next of the color presets, or select one by number: `:color 5`
+- `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the terminal's own background is used
+
+### Color scheme editor
+The colors of Marbles are edited on a page of their own, opened with `:scheme` in the main menu or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It shows the colors being edited: the preset at the top, the ten groups of colors below it, each with a sample and the names of its colors, and a small screen at the bottom that shows them all on the background. Nothing is used until you save.
+
+- `j` `k` (or `Up`/`Down`, `gg` `G`) Select the preset or a group
+- On the preset: `l` and `h` (or `Enter`) Start from the next/previous preset. The groups get the colors of the preset
+- On a group: `l` (or `Enter`, `Space`, `Right`) Pick its color from a list of the 16 colors: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. For Highlight, Attention and Warning (shown inverted) this is the background color
+- `T` Pick the text color of Highlight, Attention or Warning
+- **Background**: the last group. `[Default]` (the default) shows the text on the terminal's own background, so a transparent or blurred terminal window stays that way. Pick a color to give Marbles a background of its own: the whole window is filled with it, and the terminal's background is used again when Marbles exits. The background cannot have the color of the text, the logo, dividers, favorites or titles. The color presets (`:color`) and `:defaults` use `[Default]`. The setting is `background` in the settings file (a color number, or `default`)
+- A color shown in brackets in the list cannot be picked, as the text would not be visible on its background
+- `E` Back to the colors of the preset
+- `S` Save the colors and close the editor
+- `Esc` (or `Q`) Close. If something was changed, you are asked whether to save it
+- `?` Show the help of the editor
+
+With _Black and white_ on, the colors can still be edited: they are used when black and white is turned off.
 
 ## Lists of entries
 Search results, Top 20, Favorites, Session history and List all are shown as lists.

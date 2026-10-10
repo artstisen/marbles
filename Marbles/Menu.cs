@@ -93,20 +93,6 @@ internal static class Menu
         Tools.CursorTopLeftDown(MenuTop);
     }
 
-    /// <summary>
-    /// The column of the "[LOCKED]" label of the color scheme on the fourth page of the menu
-    /// </summary>
-    internal static int SchemeLabelColumn { get; private set; }
-
-    /// <summary>
-    /// The label of the color scheme: locked or being edited (as wide as the longer of the two)
-    /// </summary>
-    internal static string SchemeLabel(bool editing)
-    {
-        var width = Math.Max(DialogText.SchemeLocked.Length, DialogText.SchemeEditing.Length);
-        return (editing ? DialogText.SchemeEditing : DialogText.SchemeLocked).PadRight(width);
-    }
-
     private static int _manageModePage;
     private static int _viewModePage;
     internal static bool BypassAwaitAction { get; set; }
@@ -184,10 +170,6 @@ internal static class Menu
                 WriteMenuItem(":size auto",
                     (Init.AutoSize ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
                     " " + Lang.T("Follow the size of the window"), true);
-                WriteMenuItem(":color 1-" + Actions.ColorPresetCount,
-                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] " + Lang.T("Color preset (no number: next)"), true);
-                WriteMenuItem(":logo 1-" + Actions.LogoPresetCount,
-                    "[" + (Logo.GetLogoIndex() + 1) + "] " + Lang.T("Logo preset (no number: next)"), true);
                 WriteMenuItem(":language", "[" + Lang.Current + "] " + Lang.T("Language: da, de ... (none: next)"), true);
                 WriteMenuItem(":backup", FileIo.GetBackupStatus() + " " + Lang.T("Toggle Backup"), true);
                 WriteMenuItem(":password", Lang.T("Reset password"), true);
@@ -202,38 +184,9 @@ internal static class Menu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 WriteMenuExtension(GetMenuNavigation((_manageModePage + 1) + "/" + (MaxManageModePages + 1)));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem(":scheme", Lang.T("Unlock color scheme") + " ", false);
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-                SchemeLabelColumn = Console.CursorLeft;
-                Console.Write(SchemeLabel(false) + "\n");
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, Lang.T("Text"),
-                    ConsoleColors.ColorPreset.Normal, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
-                    Lang.T("Logo, login label, directory browser, editor repeat"),
-                    ConsoleColors.ColorPreset.HeaderColor, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, Lang.T("Dividers and captions"),
-                    ConsoleColors.ColorPreset.Divider, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample, Lang.T("Favorites"),
-                    ConsoleColors.ColorPreset.Favorites, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
-                    Lang.T("Preview title and save state indicator"), ConsoleColors.ColorPreset.PreviewTitle, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
-                    Lang.T("Editor title"), ConsoleColors.ColorPreset.EditorTitle, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample,
-                    Lang.T("Highlight and selection indicators"), ConsoleColors.ColorPreset.HighlightInverted, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample, Lang.T("Attention"),
-                    ConsoleColors.ColorPreset.AttentionInverted, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample, Lang.T("Warning"),
-                    ConsoleColors.ColorPreset.WarningInverted, true, false);
-                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
-                    Lang.T("Background ([Default]: the terminal's)"), ConsoleColors.ColorPreset.Normal, true,
-                    false);
-                WriteMenuItem(new string(' ', 2) + "j k / l", Lang.T("Select/Pick color from a list"), true);
-                WriteMenuItem(new string(' ', 2) + "T", Lang.T("Pick text color (the last three)"), true);
-                WriteMenuItem(new string(' ', 2) + "E", Lang.T("Reset"), true);
-                WriteMenuItem(new string(' ', 2) + "Enter/Esc", Lang.T("Save and exit/Cancel"), true);
+                WriteMenuItem(":scheme", Lang.T("Edit color scheme"), true);
+                WriteMenuItem(":color 1-" + Actions.ColorPresetCount,
+                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] " + Lang.T("Color preset (no number: next)"), true);
                 WriteMenuItem(":bw",
                     (ConsoleColors.Monochrome ? DialogText.CheckedSetting : DialogText.UnCheckedSetting) +
                     " " + Lang.T("Black and white (no colors)"), true);

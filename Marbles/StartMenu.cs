@@ -159,7 +159,6 @@ internal static class StartMenu
         Monochrome,
         Language,
         ColorScheme,
-        Logo,
         AutoSize,
         Size,
         LineNumbers,
@@ -178,7 +177,6 @@ internal static class StartMenu
         if (Mode == StartMode.Editor) settings.Add(Setting.StartFavorites);
         settings.Add(Setting.Monochrome);
         if (!ConsoleColors.Monochrome) settings.Add(Setting.ColorScheme);
-        settings.Add(Setting.Logo);
         settings.Add(Setting.Language);
         settings.Add(Setting.AutoSize);
         if (!Init.AutoSize) settings.Add(Setting.Size);
@@ -205,7 +203,6 @@ internal static class StartMenu
             Setting.ColorScheme => indent + Lang.F("Color scheme: {0} of {1}", ConsoleColors.GetColorPresetIndex() + 1,
                                        Actions.ColorPresetCount) + " (" +
                                    Actions.ColorPresetName(ConsoleColors.GetColorPresetIndex()) + ")",
-            Setting.Logo => indent + Lang.F("Logo: {0} of {1}", Logo.GetLogoIndex() + 1, Actions.LogoPresetCount),
             Setting.AutoSize => Check(Init.AutoSize) + DialogText.ConfigAutoSize,
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
@@ -293,12 +290,17 @@ internal static class StartMenu
             {
                 Tools.WriteEditorHelp(false, Tools.HelpTopic.Start);
             }
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && settings[selected] == Setting.ColorScheme)
+            {
+                // The color scheme editor (l and h select the next and previous preset)
+                SchemeEditor.Show();
+            }
             else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow)
             {
                 ChangeSetting(settings[selected], true);
             }
             else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow &&
-                     settings[selected] is Setting.ColorScheme or Setting.Logo or Setting.Language)
+                     settings[selected] is Setting.ColorScheme or Setting.Language)
             {
                 // The previous color scheme or logo
                 ChangeSetting(settings[selected], false);
@@ -344,12 +346,6 @@ internal static class StartMenu
             {
                 var count = Actions.ColorPresetCount;
                 Actions.SetColorPreset((ConsoleColors.GetColorPresetIndex() + (next ? 1 : count - 1)) % count);
-                break;
-            }
-            case Setting.Logo:
-            {
-                var count = Actions.LogoPresetCount;
-                Logo.SetLogoIndex((Logo.GetLogoIndex() + (next ? 1 : count - 1)) % count);
                 break;
             }
             case Setting.AutoSize:
