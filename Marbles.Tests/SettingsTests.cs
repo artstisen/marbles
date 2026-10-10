@@ -181,6 +181,37 @@ backup=
     }
 
     [Fact]
+    public void TheDeepBluePreset_IsTheSecond_AndHasABackground()
+    {
+        try
+        {
+            Assert.Equal(8, Actions.ColorPresetCount);
+            Assert.Equal("Deep Blue", Actions.ColorPresetName(1));
+            Assert.Equal("Marbles Quest", Actions.ColorPresetName(2));
+            Actions.SetColorPreset(1);
+            Assert.Equal(ConsoleColor.DarkBlue, ConsoleColors.Background);
+            FileIo.SaveSettings();
+            var saved = FileIo.ParseSettings(File.ReadAllText(SettingsFile));
+            var expected = new[] { "2", "4", "4", "14", "8", "15", "12", "0", "10", "15", "6", "4" };
+            for (var i = 1; i <= expected.Length; i++)
+            {
+                Assert.Equal(expected[i - 1], saved["color" + i]);
+            }
+
+            Assert.Equal("5", saved["background"]);
+            Assert.Equal("1", saved["(clpreset)"]);
+            // The others use the background of the terminal
+            Actions.SetColorPreset(2);
+            Assert.Null(ConsoleColors.Background);
+        }
+        finally
+        {
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
+            ConsoleColors.DefaultColorPresetIndex();
+        }
+    }
+
+    [Fact]
     public void TheBackground_CannotHaveTheColorOfTheText()
     {
         try

@@ -1104,7 +1104,7 @@ internal static class Tools
         // Exit the application reverting to the original console colors
         Console.ResetColor();
         Console.Clear();
-        Console.WriteLine("*** " + DialogText.ApplicationName + " " + DialogText.Exit.ToLower() + " ***");
+        Console.WriteLine("-- " + DialogText.ApplicationName + " " + DialogText.Exit.ToLower() + " --");
         Environment.Exit(0);
     }
 

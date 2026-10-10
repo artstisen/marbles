@@ -635,6 +635,7 @@ internal static class Actions
     private static readonly ConsoleColors.ColorPreset[] ColorPresets =
     {
         ConsoleColors.ColorPreset.Reset,
+        ConsoleColors.ColorPreset.DeepBlue,
         ConsoleColors.ColorPreset.MarblesQuest,
         ConsoleColors.ColorPreset.NightWriter,
         ConsoleColors.ColorPreset.YellowMonochrome,
@@ -647,7 +648,7 @@ internal static class Actions
 
     private static readonly string[] ColorPresetNames =
     {
-        "Default", "Marbles Quest", "Night Writer", "Yellow Monochrome", "Green Monochrome", "Ice Warp", "Water Sport"
+        "Default", "Deep Blue", "Marbles Quest", "Night Writer", "Yellow Monochrome", "Green Monochrome", "Ice Warp", "Water Sport"
     };
 
     /// <summary>

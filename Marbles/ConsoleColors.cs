@@ -232,6 +232,26 @@ class ConsoleColors
         CurrentHighlightForegroundColor = GetColorFromIndex(4);
     }
 
+    private static void DeepBlueColorTheme()
+    {
+        // Normal colors: the only preset with a background of its own
+        Background = GetColorFromIndex(5);
+        CurrentForegroundColor = GetColorFromIndex(2);
+        // Individual foreground colors
+        CurrentHeaderColor = GetColorFromIndex(4);
+        CurrentDividerColor = GetColorFromIndex(4);
+        CurrentFavoritesColor = GetColorFromIndex(14);
+        CurrentPreviewTitleColor = GetColorFromIndex(8);
+        CurrentEditorTitleColor = GetColorFromIndex(15);
+        // Inverted colors
+        CurrentAttentionBackgroundColor = GetColorFromIndex(12);
+        CurrentAttentionForegroundColor = GetColorFromIndex(0);
+        CurrentWarningBackgroundColor = GetColorFromIndex(10);
+        CurrentWarningForegroundColor = GetColorFromIndex(15);
+        CurrentHighlightBackgroundColor = GetColorFromIndex(6);
+        CurrentHighlightForegroundColor = GetColorFromIndex(4);
+    }
+
     private static void WaterSport()
     {
         // Normal colors
@@ -469,7 +489,8 @@ class ConsoleColors
         YellowMonochrome,
         GreenMonochrome,
         IceWarp,
-        WaterSport
+        WaterSport,
+        DeepBlue
     }
 
     // Used for saving the last selected color preset
@@ -549,7 +570,7 @@ class ConsoleColors
     public static void SetColors(ColorPreset preset)
     {
         if (Monochrome && SetMonochromeColors(preset)) return;
-        // The color presets use the background of the terminal
+        // The color presets use the background of the terminal, unless they have one of their own
         if (preset == ColorPreset.Reset || preset >= ColorPreset.MarblesQuest) Background = null;
         if (preset == ColorPreset.Reset)
         {
@@ -578,6 +599,10 @@ class ConsoleColors
         else if (preset == ColorPreset.WaterSport)
         {
             WaterSport();
+        }
+        else if (preset == ColorPreset.DeepBlue)
+        {
+            DeepBlueColorTheme();
         }
         else if (preset == ColorPreset.Normal)
         {
