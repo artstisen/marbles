@@ -366,6 +366,8 @@ internal static class DialogText
     public static string FileMarkedKeys => Lang.T("Space Mark | Y Duplicate | C Copy | M Move | P Fave | D Delete | Esc Unmark");
     // The keys of a box of choices (ChoiceBox)
     public static string ChoiceKeys => Lang.T("j/k Select | Enter Choose | Esc Cancel");
+    public static string AskTextKeys => Lang.T("Enter OK | Esc Cancel");
+    public static string TypeNameAndPressEnter => Lang.T("Type the name and press Enter");
     public static string ChoiceYes => Lang.T("Yes");
     public static string ChoiceNo => Lang.T("No");
     public static string DeleteFileNote => Lang.T("The file cannot be recovered");

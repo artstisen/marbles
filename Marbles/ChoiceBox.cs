@@ -1,8 +1,8 @@
 ﻿namespace Marbles;
 
 /// <summary>
-/// A box of choices drawn on top of the page, which is not cleared: for asking before something is done
-/// (deleting a file ...). The caller draws the page again when the box is closed
+/// A box drawn on top of the page, which is not cleared: for asking before something is done (deleting a
+/// file ...), or for a name. The caller draws the page again when the box is closed
 /// </summary>
 internal static class ChoiceBox
 {
@@ -131,6 +131,62 @@ internal static class ChoiceBox
                 if (keys[i] == typed) return i;
             }
         }
+    }
+
+    /// <summary>
+    /// Ask for a text (a name) in a box: a line telling what to do, and a field to type in
+    /// </summary>
+    /// <param name="caption">The title of the box</param>
+    /// <param name="prompt">What to do, above the field</param>
+    /// <param name="label">In front of the field ("Name:")</param>
+    /// <param name="text">The text the field starts with (the cursor is placed at its end)</param>
+    /// <returns>The text typed (trimmed), or null if canceled or empty</returns>
+    internal static string? AskText(string caption, string prompt, string label, string text)
+    {
+        var inner = Math.Clamp(Math.Max(TextMetrics.WidthOf(prompt) + 4, 64), 10, Init.LineWidth - 6);
+        var promptLines = Wrap(prompt, inner - 4);
+        // A blank row, the prompt, a blank row, the field and a blank row
+        var fieldRow = promptLines.Count + 2;
+        var height = fieldRow + 2;
+        var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
+        var top = Math.Max(1, (Init.LineCount - height - 2) / 2);
+
+        Tools.HideCursor();
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(top, left);
+        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
+        for (var row = 0; row < height; row++)
+        {
+            Tools.SetCursorEx(top + 1 + row, left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            var line = row >= 1 && row <= promptLines.Count ? "  " + promptLines[row - 1] : string.Empty;
+            if (row == fieldRow) line = "  " + label;
+            Console.Write(line + new string(' ', Math.Max(0, inner - TextMetrics.WidthOf(line))));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+        }
+
+        Tools.SetCursorEx(top + height + 1, left);
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+        Tools.SetCursorEx(top, left + 2);
+        Console.Write(" " + Tools.TruncateString(caption, inner - 4, true) + " ");
+        // The keys of the box
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Console.Write(new string(' ', Init.LineWidth - 1));
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        Menu.WriteKeyHints(DialogText.AskTextKeys);
+
+        // The field takes the rest of the row
+        var fieldLeft = left + 3 + TextMetrics.WidthOf(label);
+        var textArea = new TextArea(fieldLeft, top + 1 + fieldRow, left + inner - fieldLeft, 1, text, 0,
+            text.Length > 0, false, false, 0);
+        var typed = textArea.GetText().Trim();
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        return textArea.Canceled || typed.Length == 0 ? null : typed;
     }
 
     /// <summary>

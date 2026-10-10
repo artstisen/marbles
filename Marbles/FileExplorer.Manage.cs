@@ -213,17 +213,10 @@ internal static partial class FileExplorer
 
     #endregion
 
-    // Ask for a name on a page of its own. Returns null if canceled
+    // Ask for a name in a box on top of the list. Returns null if canceled
     private static string? AskName(string caption, string name)
     {
-        Tools.ClearScreen();
-        Menu.WriteModeLabel(caption, DialogText.EnterFileNameAndPressEnter + " " + DialogText.PressEscToExitP, 1);
-        Tools.CursorDown(3);
-        Console.Write(" " + DialogText.NameColon);
-        var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, 56, 1, name, 0, name.Length > 0, false,
-            false, 0);
-        name = textArea.GetText().Trim();
-        return textArea.Canceled || name.Length == 0 ? null : name;
+        return ChoiceBox.AskText(caption, DialogText.TypeNameAndPressEnter, DialogText.NameColon, name);
     }
 
     #region Selecting where to copy or move to
