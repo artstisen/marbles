@@ -9,7 +9,7 @@ Marbles can be used for encrypted notes and as an editor for ordinary text files
 - `4` **Quick guide**: A short introduction to Marbles: what the two parts are for, the keys for moving around, and the modes of the editor. `Esc` closes it, and `?` shows the help with all the keys
 - `5` **Exit**: Close Marbles at once
 
-Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking.
+Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking in a box on top of the page (`Y`/`N`, or `j`/`k` and `Enter`; `Esc` cancels).
 
 ### Configuration
 - **Show choices on startup** (the default)
@@ -27,8 +27,8 @@ Below these are some basic settings, so they can be changed without logging in t
 - **Automatic size**: Follow the size of the terminal window
 - **Size**: Set the number of columns and rows by hand (shown when _Automatic size_ is off)
 - **Line numbers in the editor**: Show line numbers to the left of the text (off from the start)
-- **Reset all settings**: Set all settings back to their defaults (you are asked first)
-- **Restart Marbles**: Start Marbles over: the settings are read again and the start page is shown as at startup (you are asked first)
+- **Reset all settings**: Set all settings back to their defaults (you are asked first, in a box where _No_ is selected first)
+- **Restart Marbles**: Start Marbles over: the settings are read again and the start page is shown as at startup (you are asked first, in a box)
 - **View log**: Show the [log](#the-log)
 
 Select a row with `j`/`k` or its number, and press `Enter` or `Space` to change it. For the language and the color scheme, `l` and `h` select the next and the previous. `Esc` returns. Changes are saved at once.

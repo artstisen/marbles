@@ -188,6 +188,11 @@ internal static class DialogText
     public static string FitOutputDimensions => Lang.T("Follow the size of the terminal window (automatic size)?") + " " + YesNo;
     public static string EnlargeWindow => Lang.T("Make the terminal window larger and press a key");
     public static string ResetSettings => Lang.T("Revert to default settings?") + " " + YesNo;
+    // The same questions in a box on top of the page (ChoiceBox), which shows the choices itself
+    public static string ExitQuestion => Lang.T("Exit?");
+    public static string RestartQuestion => Lang.T("Restart Marbles?");
+    public static string ResetSettingsQuestion => Lang.T("Revert to default settings?");
+    public static string SaveChangesQuestion => Lang.T("Save changes?");
     public static string RemoveFavoriteYn => Lang.T("Remove from favorites?") + " " + YesNo;
     public static string RemoveFavoriteOrPinYn => Lang.T("Remove from favorites?") + " " + YesNoPinned;
     public static string AddFavoriteYn => Lang.T("Add to favorites?") + " " + YesPinnedNo;

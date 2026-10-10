@@ -77,7 +77,7 @@ The colors of Marbles are edited on a page of their own, opened with `:scheme` i
 - A color shown in brackets in the list cannot be picked, as the text would not be visible on its background
 - `E` Back to the colors of the preset
 - `S` Save the colors and close the editor
-- `Esc` (or `Q`) Close. If something was changed, you are asked whether to save it
+- `Esc` (or `Q`) Close. If something was changed, you are asked in a box whether to save it (`Y`/`N`, or `j`/`k` and `Enter`)
 - `?` Show the help of the editor
 
 With _Black and white_ on, the colors can still be edited: they are used when black and white is turned off.

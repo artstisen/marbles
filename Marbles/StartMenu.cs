@@ -114,7 +114,7 @@ internal static class StartMenu
             if (result == Result.Redraw) continue;
             if (result == Result.Close)
             {
-                if (Menu.YesNoPrompt(DialogText.Exit, DialogText.ExitYn, string.Empty, true))
+                if (ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false))
                 {
                     Tools.ExitApplication();
                 }
@@ -363,7 +363,7 @@ internal static class StartMenu
                 EventLog.Show();
                 return;
             case Setting.Restart:
-                if (Menu.YesNoPrompt(DialogText.Restart, DialogText.RestartYn, string.Empty, true))
+                if (ChoiceBox.Confirm(DialogText.Restart, DialogText.RestartQuestion, string.Empty, false))
                 {
                     // Marbles starts over: the settings are read again, and the start page is shown as at startup
                     Tools.RestartFromStartPage();
@@ -371,7 +371,7 @@ internal static class StartMenu
 
                 return;
             default:
-                if (Menu.YesNoPrompt(DialogText.CaptionsSettings, DialogText.ResetSettings, string.Empty, true))
+                if (ChoiceBox.Confirm(DialogText.CaptionsSettings, DialogText.ResetSettingsQuestion, string.Empty, true))
                 {
                     Actions.ApplyDefaultSettings();
                 }

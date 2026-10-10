@@ -53,8 +53,8 @@ internal static class SchemeEditor
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q)
             {
                 // Changes are only kept when saved
-                if (_changed && Menu.YesNoPrompt(DialogText.CaptionsColorScheme, DialogText.SaveChangesYn,
-                        string.Empty, true))
+                if (_changed && ChoiceBox.Confirm(DialogText.CaptionsColorScheme, DialogText.SaveChangesQuestion,
+                        string.Empty, false))
                 {
                     Save();
                 }

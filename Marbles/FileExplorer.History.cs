@@ -241,8 +241,10 @@ internal static partial class FileExplorer
     private static void RemoveFromHistory(int number)
     {
         if (number < 0) return;
-        var name = System.IO.Path.GetFileName(FileHistory.Items[number].Path);
+        var path = FileHistory.Items[number].Path;
+        var name = System.IO.Path.GetFileName(path);
         FileHistory.RemoveAt(number);
+        EventLog.Add(DialogText.LogFile + "History remove: " + path);
         _historyMessage = Lang.F("Removed from the history: {0}", name);
         SaveHistory();
     }
@@ -259,6 +261,7 @@ internal static partial class FileExplorer
         }
 
         FileHistory.Clear();
+        EventLog.Add(DialogText.LogFile + "History cleared");
         _historyFilter = string.Empty;
         _historyIndex = 0;
         _historyMessage = DialogText.HistoryCleared;
