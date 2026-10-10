@@ -914,14 +914,15 @@ internal static class Actions
     internal static void DrawEditMenu()
     {
         Menu.DrawTopMenu(false, false, false);
-        Menu.WriteNameInTopBar(true);
+        Menu.WriteEditorTop();
         Tools.CursorTopLeft();
         Tools.CursorDown(1);
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
         Menu.WriteTitleLabel(); // Insert title
         Tools.CursorReturn();
         Tools.CursorDown();
-        WriteHorizontalRule(true, DialogText.CaptionsEdit, true, ConsoleColors.ColorPreset.EditorTitle);
+        // The editor writes its mode on the divider
+        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.EditorTitle);
         Tools.SaveCursorPosition(1);
         Tools.CursorTopLeft();
         Tools.CursorDown(Init.LineCount - 1); // Insert bottom line
@@ -933,7 +934,7 @@ internal static class Actions
     internal static void DrawEditFileMenu()
     {
         Menu.DrawTopMenu(false, false, false);
-        Menu.WriteNameInTopBar(false);
+        Menu.WriteEditorTop();
         Tools.CursorTopLeft();
         Tools.CursorDown(1);
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
@@ -949,7 +950,8 @@ internal static class Actions
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.CursorReturn();
         Tools.CursorDown();
-        WriteHorizontalRule(true, DialogText.CaptionsEdit, true, ConsoleColors.ColorPreset.EditorTitle);
+        // The editor writes its mode on the divider
+        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.EditorTitle);
         Tools.SaveCursorPosition(1);
         Tools.CursorTopLeft();
         Tools.CursorDown(Init.LineCount - 1); // Insert bottom line
@@ -960,14 +962,15 @@ internal static class Actions
     internal static void DrawEditSettingsMenu()
     {
         Menu.DrawTopMenu(false, false, false);
-        Menu.WriteNameInTopBar(false);
+        Menu.WriteEditorTop();
         Tools.CursorTopLeft();
         Tools.CursorDown(1);
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
         Console.Write(" " + DialogText.FileColon + " " + FileIo.SettingsFileName);
         Tools.CursorReturn();
         Tools.CursorDown();
-        WriteHorizontalRule(true, DialogText.CaptionsEdit, true, ConsoleColors.ColorPreset.EditorTitle);
+        // The editor writes its mode on the divider
+        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.EditorTitle);
         Tools.SaveCursorPosition(1);
         Tools.CursorTopLeft();
         Tools.CursorDown(Init.LineCount - 1); // Insert bottom line
@@ -1352,7 +1355,7 @@ internal static class Actions
         ConsoleColors.Monochrome = false;
         SyntaxHighlighter.ColorFiles = true;
         FileExplorer.DualPane = true;
-        TextArea.LineNumbers = true;
+        TextArea.LineNumbers = false;
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
         ConsoleColors.DefaultColorPresetIndex();
         Logo.AnimationEnabled = true;

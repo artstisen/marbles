@@ -59,6 +59,11 @@ internal static class DialogText
     public static string CaptionsRecall => Lang.T("RECALL");
     public static string CaptionsClear => Lang.T("CLEAR");
     public static string CaptionsEdit => Lang.T("EDIT");
+    // The mode of the editor, on the divider above the text (EDIT for Insert mode)
+    public static string DividerNavigate => Lang.T("NAVIGATE");
+    public static string DividerSelect => Lang.T("SELECT");
+    public static string DividerCommand => Lang.T("COMMAND");
+    public static string CaptionsEditor => Lang.T("Editor");
     public static string CaptionsTop20 => Lang.T("TOP 20");
     public static string CaptionsFavorites => Lang.T("FAVORITES");
     public static string CaptionsSession => Lang.T("SESSION HISTORY");
@@ -135,7 +140,7 @@ internal static class DialogText
     public const string CheckedSetting = "[x]";
     public const string UnCheckedSetting = "[ ]";
     public static string NotAvailable => Lang.T("N/A");
-    public static string SavIndicator => Lang.T("Unsaved");
+    public static string SavIndicator => " " + Lang.T("Unsaved") + " ";
 
     public const string PaginationLeftRight = "<- ->";
     public static string BrowseUpDown => Lang.T("Up/Down");

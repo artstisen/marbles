@@ -1109,7 +1109,7 @@ internal static class FileIo
         SyntaxHighlighter.ColorFiles = Tools.TrimToLower(Get("syntaxcolors")) != DialogText.BFalse &&
                                        Tools.TrimToLower(Get("mdcolors")) != DialogText.BFalse;
         // On unless turned off
-        TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) != DialogText.BFalse;
+        TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) == DialogText.BTrue;
         ConsoleColors.Monochrome = Tools.TrimToLower(Get("monochrome")) == DialogText.BTrue;
 
         // ASCII style

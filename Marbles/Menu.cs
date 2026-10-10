@@ -173,7 +173,7 @@ internal static class Menu
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.Edit)
         {
-            WriteMenuItem(":help", Lang.T("Help"), true);
+            // The editor writes its own top row (WriteEditorTop)
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.Search)
         {
@@ -1111,6 +1111,23 @@ internal static class Menu
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.PreviewTitle);
         Console.Write(DialogText.DocumentScroll);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    /// <summary>
+    /// The top row of the editor: the label EDITOR at the left, the name of the program in the middle, and
+    /// ":help" at the right
+    /// </summary>
+    internal static void WriteEditorTop()
+    {
+        WriteModeLabel(DialogText.CaptionsEditor, string.Empty, 0);
+        WriteNameInTopBar(false);
+        var key = " :help ";
+        var text = " " + Lang.T("Help") + " ";
+        Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - 1 - TextMetrics.WidthOf(key + text)));
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.NormalInverted);
+        Console.Write(key);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Console.Write(text);
     }
 
     internal static void WriteNameInTopBar(bool displayDataFileName)

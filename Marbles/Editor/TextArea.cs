@@ -40,7 +40,7 @@ public class TextArea
     /// <summary>
     /// True to show line numbers in the editor (setting "linenumbers")
     /// </summary>
-    internal static bool LineNumbers { get; set; } = true;
+    internal static bool LineNumbers { get; set; }
 
     private const int GutterGap = 2; // The blank columns between the line numbers and the text
     private const int MinNumberWidth = 2;
@@ -716,6 +716,7 @@ public class TextArea
         Array.Fill(_shownRows, null);
         Array.Fill(_shownCells, 0);
         _shownStatus = null;
+        _shownModeLabel = null;
         Draw();
     }
 
@@ -765,8 +766,38 @@ public class TextArea
         }
 
         if (_readOnly) return;
-        if (!_singleLine) DrawStatusLine();
+        if (!_singleLine)
+        {
+            DrawModeDivider();
+            DrawStatusLine();
+        }
+
         PlaceCursor();
+    }
+
+    private string? _shownModeLabel; // The mode written on the divider above the text
+
+    // The mode on the divider above the text: EDIT (Insert), NAVIGATE (Normal), SELECT (the Visual modes) or
+    // COMMAND (the command line and search). Written when it changes
+    private void DrawModeDivider()
+    {
+        if (_top < 1) return;
+        var label = _engine.Mode switch
+        {
+            EditorMode.Insert => DialogText.CaptionsEdit,
+            EditorMode.Visual or EditorMode.VisualLine or EditorMode.VisualBlock => DialogText.DividerSelect,
+            EditorMode.Command or EditorMode.Search => DialogText.DividerCommand,
+            _ => DialogText.DividerNavigate
+        };
+        if (label == _shownModeLabel) return;
+        _shownModeLabel = label;
+        Tools.SetCursorEx(_top - 1, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(new string('-', Init.LineWidth - 1));
+        Tools.SetCursorEx(_top - 1, Math.Max(0, Init.LineWidth / 2 - (TextMetrics.WidthOf(label) / 2 + 1)));
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
+        Console.Write(" " + label + " ");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
     // Build the content of a row: the text of a segment of a line, split where the color changes

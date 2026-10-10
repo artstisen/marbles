@@ -251,7 +251,7 @@ internal static class Init
         ConsoleColors.Monochrome = false;
         SyntaxHighlighter.ColorFiles = true;
         FileExplorer.DualPane = true;
-        TextArea.LineNumbers = true;
+        TextArea.LineNumbers = false;
         Logo.AnimateNext(); // Sweep the logo when the login page is first shown
         WriteProgressBar(8); // progress
         // Set default colors

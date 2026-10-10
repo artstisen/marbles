@@ -131,7 +131,7 @@ backup=
         Assert.Equal("false", settings["startfavorites"]);
         Assert.Equal("en", settings["language"]);
         Assert.Equal("default", settings["background"]);
-        Assert.Equal("true", settings["linenumbers"]);
+        Assert.Equal("false", settings["linenumbers"]);
         Assert.Equal("true", settings["browsedual"]);
         Assert.Equal("1", settings["browsepane"]);
         Assert.Equal("true", settings["syntaxcolors"]);
