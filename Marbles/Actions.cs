@@ -1368,7 +1368,7 @@ internal static class Actions
 
     private static void ResetSettings()
     {
-        if (Menu.YesNoPrompt(DialogText.CaptionsSettings, DialogText.ResetSettings, string.Empty, true))
+        if (ChoiceBox.Confirm(DialogText.CaptionsSettings, DialogText.ResetSettingsQuestion, string.Empty, true))
         {
             ApplyDefaultSettings();
             Menu.DrawTopMenu(false, true, false);

@@ -733,7 +733,7 @@ internal static class Tools
 
     internal static void Restart()
     {
-        if (Menu.YesNoPrompt(DialogText.Restart, DialogText.RestartYn, string.Empty, true))
+        if (ChoiceBox.Confirm(DialogText.Restart, DialogText.RestartQuestion, string.Empty, false))
         {
             Init.Log(" *** Restart *** ", false);
             RemovePrivileges(true);
@@ -1123,7 +1123,7 @@ internal static class Tools
 
     public static void ExitApplicationQuestion()
     {
-        if (Menu.YesNoPrompt(DialogText.Exit, DialogText.ExitYn, string.Empty, true))
+        if (ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false))
         {
             ExitApplication();
         }
@@ -1251,7 +1251,7 @@ internal static class Tools
     internal static void ResetPasswordRoutine()
     {
         // Question: Reset password?
-        if (Menu.YesNoPrompt(DialogText.CaptionsPassword, DialogText.ResetPassword, string.Empty, false))
+        if (ChoiceBox.Confirm(DialogText.CaptionsPassword, DialogText.ResetPasswordQuestion, string.Empty, false))
         {
             Tools.ClearScreen();
             Mode.SetMode(Mode.SelectedMode.Login);
