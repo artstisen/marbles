@@ -1018,10 +1018,12 @@ internal static class Tools
             // Else ask for current password
             Encryptor.SetKey(ReadMasked(true)); // Set password
             _pass = string.Empty; // Clear password stored from the masked reader
-            ClearScreen();
-            // Indicate loading
+            // Indicate loading on the bottom line: the login page stays, so that a message about a wrong
+            // password can be shown on top of it
+            HideCursor();
+            SetCursorEx(Init.LineCount - 1, 0);
+            Console.Write(" " + DialogText.Loading);
             // Try to load file
-            Console.WriteLine(DialogText.Loading);
             _load = new LoadStatus();
             _load = FileIo.LoadEntries();
             if (_load.Success)
@@ -1041,28 +1043,18 @@ internal static class Tools
             else if (!_load.Success)
             {
                 Init.Log("Login FAILED: "  + FileIo.GetFolderAndFileNameWithSizeForDisplay(), false);
-                if (_load.StatusMessage == DialogText.FileNotFound)
+                // What went wrong, in a box on top of the login page
+                if (_load.StatusMessage.Contains(DialogText.InvalidPasswordDot))
                 {
-                    Menu.StatusMessage(_load.StatusMessage, true, true, true, DialogText.CaptionsLogin, string.Empty,
-                        false);
-                    LoginRoutine(true);
+                    ChoiceBox.Message(DialogText.CaptionsLogin, DialogText.InvalidPasswordDot,
+                        DialogText.CapsLockNotice);
                 }
                 else
                 {
-                    if (_load.StatusMessage.Contains(DialogText.InvalidPasswordDot))
-                    {
-                        ClearScreen();
-                        Menu.WriteModeLabel(DialogText.CaptionsLogin, string.Empty, 0);
-                        CursorDown(2);
-                        Menu.StatusMessage(_load.StatusMessage, true, false, false, string.Empty, string.Empty, false);
-                        LoginRoutine(true);
-                    }
-                    else
-                    {
-                        Menu.StatusMessage(_load.StatusMessage, true, true, false, string.Empty, string.Empty, false);
-                        LoginRoutine(true);
-                    }
+                    ChoiceBox.Message(DialogText.CaptionsLogin, _load.StatusMessage, string.Empty);
                 }
+
+                LoginRoutine(true);
             }
         }
 
@@ -1268,8 +1260,8 @@ internal static class Tools
             }
             else
             {
-                Menu.StatusMessage(DialogText.InvalidPassword, true, true, true, DialogText.CaptionsPassword,
-                    string.Empty, false);
+                ChoiceBox.Message(DialogText.CaptionsPassword, DialogText.InvalidPasswordDot,
+                    DialogText.CapsLockNotice);
                 ResetPasswordRoutine();
             }
         }

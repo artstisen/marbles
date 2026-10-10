@@ -266,7 +266,6 @@ internal static class DialogText
     public static string PasswordLength => Lang.T("Password must be between 8 and 128 characters long");
     public static string PasswordMismatch => Lang.T("The two passwords do not match");
     public static string InvalidPasswordDot => Lang.T("Invalid password."); // Must have period.
-    public static string InvalidPassword => Lang.T("Invalid password");
     public static string CapsLockNotice => Lang.T("Make sure Caps Lock is not enabled.");
     public static string PasswordCreated => Lang.T("Password created");
     public static string InvalidFileName => Lang.T("Invalid file name");
