@@ -149,7 +149,6 @@ internal static class DialogText
     public static string HitAnyKeyToContinue => Lang.T("[Press any key to continue]");
     public static string HitAnyKeyOrEscape => Lang.T("[Press a key to continue/Esc to exit]");
     public static string PressEscToExitP => Lang.T("(Press Esc to exit)");
-    public static string PressEscToExitS => Lang.T("[Press Esc to exit]");
     public static string PressEscSpaceToExit => Lang.T("[Press Esc or Spacebar to cancel]");
 
     // Yes/No dialogs
@@ -170,7 +169,6 @@ internal static class DialogText
     public static string CopyFileYn => Lang.T("Copy selected file?") + " " + YesNo;
     public static string MoveFileYn => Lang.T("Move selected file?") + " " + YesNo;
     public static string DeleteFileYn => Lang.T("Delete selected file?") + " " + YesNo;
-    public static string CreateTransfer => Lang.T("Prepare transfer?") + " " + YesNo;
 
     public static string SaveChangesYnCancel => Lang.T("Save changes?") + " " + YesNoCancel;
     public static string SaveChangesYn => Lang.T("Save changes?") + " " + YesNo;
@@ -190,13 +188,19 @@ internal static class DialogText
     public static string ResetSettingsQuestion => Lang.T("Revert to default settings?");
     public static string SaveChangesQuestion => Lang.T("Save changes?");
     public static string ResetPasswordQuestion => Lang.T("Reset password?");
+    public static string BackupQuestion => Lang.T("Set backup directory?");
+    public static string BackupDisableQuestion => Lang.T("Disable backup?");
+    public static string ImportQuestion => Lang.T("Import a text file as a new entry?");
+    public static string CreateTransferQuestion => Lang.T("Prepare transfer?");
+    public static string DiscardTransferQuestion => Lang.T("Discard transfer?");
+    // The choices of a transfer (in a box, with their keys in front)
+    public static string TransferAdd => Lang.T("Add to current transfer");
+    public static string TransferComplete => Lang.T("Complete transfer");
+    public static string TransferDiscard => Lang.T("Discard transfer");
+    public static string ChoiceCancel => Lang.T("Cancel");
     public static string RemoveFavoriteYn => Lang.T("Remove from favorites?") + " " + YesNo;
     public static string RemoveFavoriteOrPinYn => Lang.T("Remove from favorites?") + " " + YesNoPinned;
     public static string AddFavoriteYn => Lang.T("Add to favorites?") + " " + YesPinnedNo;
-    public static string ImportYn => Lang.T("Import a text file as a new entry?") + " " + YesNo;
-    public static string BackupYn => Lang.T("Set backup directory?") + " " + YesNo;
-    public static string BackupDisableYn => Lang.T("Disable backup?") + " " + YesNo;
-    public static string DiscardTransferCollection => Lang.T("Discard transfer?") + " " + YesNo;
     public static string ClearStringMemory => Lang.T("Clear string memory?") + " " + YesNo;
 
     // Selection dialogs
@@ -206,17 +210,12 @@ internal static class DialogText
     public static string NewFileA => Lang.T("[A] Standard data file (default)");
     public static string NewFileB => Lang.T("[B] Calendar");
     public static string NewFileC => Lang.T("[Esc] Cancel");
-    public static string TransferA => Lang.T("[Enter] Add to current transfer");
-    public static string TransferB => Lang.T("[A] Complete transfer");
-    public static string TransferC => Lang.T("[B] Discard transfer");
-    public static string TransferD => Lang.T("[Esc] Cancel");
 
     public static string ImportYnNote => Lang.T("The file is selected in the file browser.");
     public static string ExportedTo => Lang.T("Saved as ");
     public static string SelectOption => Lang.T("Select option...");
     public static string SelectFileOption => Lang.T("Select file preset");
     public static string SelectTransferOption => Lang.T("Select transfer option");
-    public static string SelectTransferOptionEsc => Lang.T("Select transfer option") + " " + PressEscToExitP;
     public static string CanNotBeUndone => Lang.T("This action can not be undone!");
     public static string FileMoveInstructions => Lang.T("Move file: Select target directory and press Enter...");
     public static string PinnedEntryPosition => Lang.T("Only pinned entries can change position");

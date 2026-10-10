@@ -594,14 +594,15 @@ internal static class Entries
         {
             if (CurrentEntryExists())
             {
-                // Insert, clear or exit
-                int selection = Menu.SelectionPrompt(DialogText.Transfer, DialogText.TransferA,
-                    DialogText.TransferB + " " + GetTransferState(),
-                    DialogText.TransferC,
-                    DialogText.SelectTransferOptionEsc + ReturnNewLineCharString + ReturnNewLineCharString +
-                    " " + Lang.T("Adding: ") + Tools.TruncateString(CurrentEntry.Title, 60, true), true, ConsoleKey.Enter,
-                    ConsoleKey.A,
-                    ConsoleKey.B);
+                // Add, complete, discard or cancel
+                var selection = ChoiceBox.Pick(DialogText.Transfer, DialogText.SelectTransferOption,
+                    Lang.T("Adding: ") + Tools.TruncateString(CurrentEntry.Title, 60, true),
+                    new[]
+                    {
+                        DialogText.TransferAdd, DialogText.TransferComplete + " " + GetTransferState(),
+                        DialogText.TransferDiscard, DialogText.ChoiceCancel
+                    },
+                    new[] { "Enter", "A", "B", "Esc" }, 0, false);
                 switch (selection)
                 {
                     case 0:
@@ -609,44 +610,40 @@ internal static class Entries
                         CreateTransfer();
                         break;
                     case 1:
-                        // As for key and insert 
+                        // Ask for key and insert
                         InsertTransfer();
                         break;
                     case 2:
                         // Clear transfer
                         ClearTransfer(true);
                         break;
-                    case 3:
-                        // Cancel
-                        return;
                     default:
+                        // Cancel
                         return;
                 }
             }
             else
             {
-                // Insert, clear or exit
-                int selection = Menu.SelectionPrompt(DialogText.Transfer, DialogText.TransferB + GetTransferState(),
-                    DialogText.TransferC,
-                    DialogText.TransferD, DialogText.SelectTransferOption, true, ConsoleKey.A, ConsoleKey.B,
-                    ConsoleKey.Escape);
+                // Complete, discard or cancel
+                var selection = ChoiceBox.Pick(DialogText.Transfer, DialogText.SelectTransferOption, string.Empty,
+                    new[]
+                    {
+                        DialogText.TransferComplete + " " + GetTransferState(), DialogText.TransferDiscard,
+                        DialogText.ChoiceCancel
+                    },
+                    new[] { "A", "B", "Esc" }, 0, false);
                 switch (selection)
                 {
                     case 0:
-                        // As for key and insert 
+                        // Ask for key and insert
                         InsertTransfer();
                         break;
                     case 1:
                         // Clear transfer
                         ClearTransfer(true);
                         break;
-                    case 2:
-                        // Cancel
-                        return;
-                    case 3:
-                        // Cancel
-                        return;
                     default:
+                        // Cancel
                         return;
                 }
             }
@@ -655,11 +652,10 @@ internal static class Entries
         {
             if (CurrentEntryExists())
             {
-                if (Menu.YesNoPrompt(DialogText.Transfer, DialogText.CreateTransfer,
+                if (ChoiceBox.Confirm(DialogText.Transfer, DialogText.CreateTransferQuestion,
                         Lang.T("This feature will store a protected collection of cloned entries in memory\n" +
                                "for transfer between data files within the current session. The original\n" +
-                               "entries will remain untouched.").Replace("\n", NewLineCharString + " ") +
-                        NewLineCharString + NewLineCharString +
+                               "entries will remain untouched.").Replace("\n", " ") +
                         " " + Lang.T("Adding: ") + Tools.TruncateString(CurrentEntry.Title, 60, true), false))
                 {
                     // Create transfer key
@@ -668,9 +664,7 @@ internal static class Entries
             }
             else
             {
-                Menu.StatusMessage(Lang.T("Please select an entry to transfer..."), true, true, true, DialogText.Transfer,
-                    string.Empty,
-                    false);
+                ChoiceBox.Message(DialogText.Transfer, Lang.T("Please select an entry to transfer..."), string.Empty);
             }
         }
     }
@@ -682,14 +676,10 @@ internal static class Entries
             // Ask for transfer key to save entry for transfer
             if (!Tools.IsValid((_transferKey)))
             {
-                Tools.ClearScreen();
-                Menu.WriteModeLabel(DialogText.Transfer, Lang.T("Create a security key (password) to protect the transfer...") +
-                                                         NewLineCharString +
-                                                         " " + DialogText.PressEscToExitS, 0);
-                Tools.CursorDown(4);
-                Console.Write(" " + DialogText.KeyColon + " ");
-                _transferKey = Tools.ReadMaskedSimple(true);
-                if (_transferKey == DialogText.CancelCommand)
+                var key = ChoiceBox.AskSecret(DialogText.Transfer,
+                    Lang.T("Create a security key (password) to protect the transfer..."), DialogText.KeyColon);
+                _transferKey = key ?? DialogText.CancelCommand;
+                if (key == null)
                 {
                     // Clear key
                     _transferKey = string.Empty;
@@ -705,21 +695,18 @@ internal static class Entries
                 if (!TransferEntryExists(CurrentEntry))
                 {
                     _transferEntry.Add(CloneEntry(CurrentEntry, true));
-                    Menu.StatusMessage(Lang.T("Entry collected for transfer") + " " + GetTransferState(), true, true, true,
-                        DialogText.Transfer, string.Empty,
-                        false);
+                    ChoiceBox.Message(DialogText.Transfer, Lang.T("Entry collected for transfer") + " " + GetTransferState(),
+                        string.Empty);
                 }
                 else
                 {
-                    Menu.StatusMessage(Lang.T("Canceled: Entry already added"), true, true, true, DialogText.Transfer,
-                        string.Empty,
-                        false);
+                    ChoiceBox.Message(DialogText.Transfer, Lang.T("Canceled: Entry already added"), string.Empty);
                 }
             }
             else
             {
-                Menu.StatusMessage(Lang.T("Transfer key must be between 4 and 16 characters long"), true, true, true,
-                    DialogText.Transfer, string.Empty, false);
+                ChoiceBox.Message(DialogText.Transfer, Lang.T("Transfer key must be between 4 and 16 characters long"),
+                    string.Empty);
                 _transferKey = string.Empty;
                 TransferEntry();
             }
@@ -745,13 +732,9 @@ internal static class Entries
         if (IsValidTransfer())
         {
             // Ask for key and add transfer to current collection
-            Tools.ClearScreen();
-            Menu.WriteModeLabel(DialogText.Transfer, Lang.T("Enter key to complete the transfer...") + NewLineCharString +
-                                                     " " + DialogText.PressEscToExitS, 0);
-            Tools.CursorDown(4);
-            Console.Write(" " + DialogText.KeyColon + " ");
-            var input = Tools.ReadMaskedSimple(true);
-            if (input == DialogText.CancelCommand)
+            var input = ChoiceBox.AskSecret(DialogText.Transfer, Lang.T("Enter key to complete the transfer..."),
+                DialogText.KeyColon);
+            if (input == null)
             {
                 // Just return without clearing key
                 // because it is just a cancel of the transfer
@@ -767,14 +750,12 @@ internal static class Entries
                 }
 
                 SaveEntriesToFile();
-                Menu.StatusMessage(Lang.T("Transfer complete"), true, true, true,
-                    DialogText.Transfer, string.Empty, false);
+                ChoiceBox.Message(DialogText.Transfer, Lang.T("Transfer complete"), string.Empty);
             }
             else
             {
                 // Invalid key...
-                Menu.StatusMessage(Lang.T("Invalid key. Please try again..."), true, true, true,
-                    DialogText.Transfer, string.Empty, false);
+                ChoiceBox.Message(DialogText.Transfer, Lang.T("Invalid key. Please try again..."), string.Empty);
                 TransferEntry();
             }
         }
@@ -782,8 +763,8 @@ internal static class Entries
 
     internal static void ClearTransfer(bool confirm)
     {
-        if (confirm && !Menu.YesNoPrompt(DialogText.Transfer, DialogText.DiscardTransferCollection, string.Empty,
-                false))
+        if (confirm && !ChoiceBox.Confirm(DialogText.Transfer, DialogText.DiscardTransferQuestion, string.Empty,
+                true))
         {
             return;
         }

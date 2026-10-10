@@ -39,7 +39,7 @@ The main menu has 2 pages, each with two boxes of keys and commands: four boxes 
 **Data file**
 - `I` **File info**: Information about the data file in a box on top of the menu (the same box as `I` in the file browser): name, type, size, the number of entries, when it was created and last changed, the full path, and the backup directory. Any key closes it.
 - `:import` **Import text file**: Import a text file as a new entry. The file is selected in the file browser, and the entry gets the name of the file as its title.
-- `:transfer` **Transfer**: Collect entries for transfer to another data file, protected by a key.
+- `:transfer` **Transfer**: Collect entries for transfer to another data file, protected by a key. The questions, the key and the messages are shown in boxes on top of the page.
 - `:backup` **Backup**: Turn backup on or off. When on, a copy of the data file is saved in another directory every time it is saved. The directory is selected in the file browser: go to it and press `S`.
 - `:password` **Reset password**: Change the password of the data file. It is not possible to recover your notes if you forget your password.
 - `:` **Command line**: Type a command. "COMMAND:" is shown on the bottom line while typing.
@@ -58,7 +58,7 @@ The main menu has 2 pages, each with two boxes of keys and commands: four boxes 
 
 **Marbles**
 - `:browse` **Browse files**: Open the file browser.
-- `D` **Display timestamp**: The current date, time and week number.
+- `D` **Display timestamp**: The current date and time (also in compact form) and the week number, in a box on top of the page. Any key closes it.
 - `:guide` **Quick guide**: A short introduction to Marbles. It is also found on the start page and in the options of the login page.
 - `:about` **About**: General information about Marbles.
 - `:defaults` **Default settings**: Reset all settings.
@@ -92,7 +92,7 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 - `P` Add the selected entry to (or remove it from) the favorites, or pin it to the top of the favorites list
 - `Tab` Change the sorting
 - `Tab` or `V` In the favorites list: move the selected pinned entry. The entry is highlighted and follows `j` `k` up and down among the pinned entries (also to the next page) until you press `Esc` or `Enter`. The order is saved as you go
-- `:title` Change the title of the selected entry
+- `:title` Change the title of the selected entry, in a box on top of the list. The list is shown again afterwards
 - `:delete` Delete the selected entry
 - `:pin` Set the text color of a pinned entry (in the favorites list). The 16 colors are shown in a list, as they look with your color scheme: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. _Default_ removes the color. `:pin 13` sets color 13 of the list directly
 - `:transfer` Add the selected entry to the transfer collection

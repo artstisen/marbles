@@ -162,6 +162,7 @@ internal static class Actions
             {
                 // Display timestamp
                 Tools.DisplayDateTime();
+                Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.Key == ConsoleKey.S || _c.KeyChar == '/')
             {
@@ -879,27 +880,17 @@ internal static class Actions
             return;
         }
 
-        Tools.ClearScreen();
-        Menu.WriteModeLabel(DialogText.New, DialogText.EnterTitleAndPressEnter + " " + DialogText.PressEscToExitP,
-            1);
-        Menu.WriteNameInTopBar(true);
-        Tools.CursorDown(3);
-        Console.Write(" " + DialogText.TitleColon);
-        TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Tools.GetTitleEditWidth(), 1, "", 0, false,
-            false, false, 0);
-        if (textArea.Canceled)
+        // The title is asked for in a box on top of the page
+        var asked = ChoiceBox.AskText(DialogText.New, DialogText.EnterTitleAndPressEnter, DialogText.TitleColon,
+            string.Empty);
+        _tempText = Tools.ConstrainTitle(asked ?? string.Empty);
+        if (!Tools.IsValid(_tempText))
         {
             RecallPreviousView();
             return;
         }
 
-        // Fetch data from editor
-        _tempText = textArea.GetText();
-        _tempText = Tools.ConstrainTitle(_tempText);
-        if (Tools.IsValid(_tempText))
-        {
-            CreateEntry(_tempText);
-        }
+        CreateEntry(_tempText);
     }
 
     private static void CreateEntry(string title)
@@ -1018,33 +1009,30 @@ internal static class Actions
     }
 
 
-    private static void ChangeTitle()
+    /// <param name="fromList">True when changed from a list of entries: the list is shown again afterwards
+    /// (else the entry)</param>
+    private static void ChangeTitle(bool fromList = false)
     {
         if (Entries.CurrentEntryExists())
         {
-            Tools.ClearScreen();
-            Menu.WriteModeLabel(DialogText.EditTitle,
-                DialogText.EditTitleAndPressEnter + " " + DialogText.PressEscToExitP, 1);
-            Menu.WriteNameInTopBar(true);
-            Tools.CursorDown(3);
-            Console.Write(" " + DialogText.TitleColon);
-            TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Tools.GetTitleEditWidth(), 1,
-                Entries.CurrentEntry.Title, 0, true, false, false, 0);
-            if (textArea.Canceled)
+            // The title is changed in a box on top of the page
+            var asked = ChoiceBox.AskText(DialogText.EditTitle, DialogText.EditTitleAndPressEnter,
+                DialogText.TitleColon, Entries.CurrentEntry.Title);
+            _tempText = Tools.ConstrainTitle(asked ?? string.Empty);
+            if (Tools.IsValid(_tempText) && _tempText != Entries.CurrentEntry.Title)
             {
-                DisplayEntry(false);
-                return;
-            }
-
-            // Fetch data from editor
-            _tempText = textArea.GetText();
-            _tempText = Tools.ConstrainTitle(_tempText);
-            if (Tools.IsValid(_tempText))
-            {
-                ResetLastSelectedIndex();
+                if (!fromList) ResetLastSelectedIndex();
                 Entries.CurrentEntry.Title = _tempText;
                 Entries.UpdateEntry(Entries.CurrentEntry, true);
                 Entries.SaveEntriesToFile();
+            }
+
+            if (fromList)
+            {
+                ExitNumericSelect(_lastSelectedPage, _lastSelectedIndex);
+            }
+            else
+            {
                 DisplayEntry(false);
             }
         }
@@ -1267,37 +1255,36 @@ internal static class Actions
     {
         if (!FileIo.BackupEnabled())
         {
-            if (Menu.YesNoPrompt(DialogText.CaptionsBackup, DialogText.BackupYn, string.Empty, false))
+            if (ChoiceBox.Confirm(DialogText.CaptionsBackup, DialogText.BackupQuestion, string.Empty, false))
             {
                 // Select the directory in the file browser
                 var backupPath = FileExplorer.PickDirectory(DialogText.CaptionsBackup);
-                if (backupPath == null)
+                if (backupPath != null)
                 {
-                    // Canceled
-                }
-                else if (Tools.IsValidPath(backupPath) && FileIo.CheckBackupDirectory(backupPath))
-                {
-                    FileIo.SetBackup(true, backupPath, true);
-                    Entries.SaveEntriesToFile();
-                    Menu.StatusMessage(DialogText.BackupEnabled, true, true, true, DialogText.CaptionsBackup,
-                        Lang.T("Path: ") + backupPath, false);
-                }
-                else
-                {
-                    Menu.StatusMessage(DialogText.InvalidBackupPath, true, true, true, DialogText.CaptionsBackup,
-                        Lang.T("Path: ") + backupPath, false);
+                    var valid = Tools.IsValidPath(backupPath) && FileIo.CheckBackupDirectory(backupPath);
+                    if (valid)
+                    {
+                        FileIo.SetBackup(true, backupPath, true);
+                        Entries.SaveEntriesToFile();
+                    }
+
+                    // The message on top of the menu
+                    Mode.SetMode(Mode.SelectedMode.Manage);
+                    Menu.DrawTopMenu(false, true, false);
+                    ChoiceBox.Message(DialogText.CaptionsBackup,
+                        valid ? DialogText.BackupEnabled : DialogText.InvalidBackupPath,
+                        Lang.T("Path: ") + backupPath);
                 }
             }
         }
         else if (FileIo.BackupEnabled())
         {
-            if (Menu.YesNoPrompt(DialogText.CaptionsBackup, DialogText.BackupDisableYn,
+            if (ChoiceBox.Confirm(DialogText.CaptionsBackup, DialogText.BackupDisableQuestion,
                     FileIo.GetBackupPathForDisplay(true), false))
             {
                 // Set to false and delete path
                 FileIo.SetBackup(false, "", true);
-                Menu.StatusMessage(DialogText.BackupDisabled, true, true, true, DialogText.CaptionsBackup, string.Empty,
-                    false);
+                ChoiceBox.Message(DialogText.CaptionsBackup, DialogText.BackupDisabled, string.Empty);
             }
         }
 
@@ -1308,7 +1295,7 @@ internal static class Actions
     // Import a text file, selected in the file browser, as a new entry
     private static void ImportEntry()
     {
-        if (Menu.YesNoPrompt(DialogText.CaptionsImport, DialogText.ImportYn, DialogText.ImportYnNote, false))
+        if (ChoiceBox.Confirm(DialogText.CaptionsImport, DialogText.ImportQuestion, DialogText.ImportYnNote, false))
         {
             var path = FileExplorer.PickFile(DialogText.CaptionsImport);
             if (path != null)
@@ -1323,8 +1310,10 @@ internal static class Actions
                 }
                 catch (Exception e)
                 {
-                    Menu.StatusMessage(e.Message, true, true, true, DialogText.CaptionsImport, string.Empty, false);
+                    // The message on top of the menu
                     Mode.SetMode(Mode.SelectedMode.Manage);
+                    Menu.DrawTopMenu(false, true, false);
+                    ChoiceBox.Message(DialogText.CaptionsImport, e.Message, string.Empty);
                     Menu.DrawTopMenu(false, true, false);
                     return;
                 }
@@ -2682,6 +2671,8 @@ internal static class Actions
         {
             // Display timestamp
             Tools.DisplayDateTime();
+            ExitNumericSelect(pageNumber, _resultIndex);
+            return;
         }
         // Search
         else if (_c.Key == ConsoleKey.S || _c.KeyChar == '/')
@@ -2933,7 +2924,7 @@ internal static class Actions
                 }
                 else if (action == 1)
                 {
-                    ChangeTitle();
+                    ChangeTitle(true);
                 }
                 else if (action == 2)
                 {

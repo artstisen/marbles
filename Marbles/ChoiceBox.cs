@@ -2,11 +2,23 @@
 
 /// <summary>
 /// A box drawn on top of the page, which is not cleared: for asking before something is done (deleting a
-/// file ...), or for a name. The caller draws the page again when the box is closed
+/// file ...), for a name or a key, or for a message. The caller draws the page again when the box is closed.
+/// A box that follows another box (the page has not been drawn again in between) covers the one before it
 /// </summary>
 internal static class ChoiceBox
 {
     private const int MinInner = 40; // The narrowest box (inside the frame)
+
+    // Where the last box is (its frame), until the screen is cleared
+    private static (int Top, int Left, int Right, int Bottom)? _shown;
+
+    /// <summary>
+    /// The screen has been cleared: no box is shown
+    /// </summary>
+    internal static void Forget()
+    {
+        _shown = null;
+    }
 
     /// <summary>
     /// Ask yes or no. Y and N answer at once, j/k select and Enter picks, Esc is no
@@ -39,64 +51,16 @@ internal static class ChoiceBox
         // A blank row, the question, the note, a blank row, the choices and a blank row
         var textRows = questionLines.Count + noteLines.Count;
         var choiceTop = 2 + textRows;
-        var height = choiceTop + choices.Count + 1;
-        var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
-        var top = Math.Max(1, (Init.LineCount - height - 2) / 2);
-
-        Tools.HideCursor();
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(top, left);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
-        for (var row = 0; row < height; row++)
+        var (top, left, width, _) = DrawFrame(caption, inner, choiceTop + choices.Count + 1);
+        WriteText(top, left, questionLines, noteLines, warning, width);
+        for (var number = 0; number < choices.Count; number++)
         {
-            Tools.SetCursorEx(top + 1 + row, left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write('|');
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            var used = 0;
-            var line = row - 1;
-            if (line >= 0 && line < questionLines.Count)
-            {
-                Console.Write(" ");
-                ConsoleColors.SetColors(warning
-                    ? ConsoleColors.ColorPreset.WarningInverted
-                    : ConsoleColors.ColorPreset.AttentionInverted);
-                Console.Write(" " + questionLines[line] + " ");
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                used = TextMetrics.WidthOf(questionLines[line]) + 3;
-            }
-            else if (line >= questionLines.Count && line < textRows)
-            {
-                var text = "  " + noteLines[line - questionLines.Count];
-                Console.Write(text);
-                used = TextMetrics.WidthOf(text);
-            }
-            else if (row >= choiceTop && row < choiceTop + choices.Count)
-            {
-                var number = row - choiceTop;
-                var text = "   " + keys[number].PadRight(keyWidth) + " .... " +
-                           Tools.TruncateString(choices[number], inner - keyWidth - 11, true);
-                Console.Write(text);
-                used = TextMetrics.WidthOf(text);
-            }
-
-            Console.Write(new string(' ', Math.Max(0, inner - used)));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write('|');
+            Tools.SetCursorEx(top + 1 + choiceTop + number, left + 1);
+            Console.Write("   " + keys[number].PadRight(keyWidth) + " .... " +
+                          Tools.TruncateString(choices[number], width - keyWidth - 11, true));
         }
 
-        Tools.SetCursorEx(top + height + 1, left);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(top, left + 2);
-        Console.Write(" " + Tools.TruncateString(caption, inner - 4, true) + " ");
-        // The keys of the box
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.Write(new string(' ', Init.LineWidth - 1));
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        Menu.WriteKeyHints(DialogText.ChoiceKeys);
-
+        WriteHints(DialogText.ChoiceKeys);
         while (true)
         {
             for (var i = 0; i < choices.Count; i++)
@@ -134,6 +98,29 @@ internal static class ChoiceBox
     }
 
     /// <summary>
+    /// Show a message (highlighted) and a note in a box until a key is pressed
+    /// </summary>
+    internal static void Message(string caption, string message, string note)
+    {
+        var inner = Math.Clamp(Math.Max(Math.Max(TextMetrics.WidthOf(message), TextMetrics.WidthOf(caption)) + 4,
+            MinInner), 10, Init.LineWidth - 6);
+        var messageLines = Wrap(message, inner - 4);
+        var noteLines = note.Length == 0 ? new List<string>() : Wrap(note, inner - 4);
+        // A blank row, the message, the note, a blank row, "Press any key" and a blank row
+        var keyRow = 2 + messageLines.Count + noteLines.Count;
+        var (top, left, _, _) = DrawFrame(caption, inner, keyRow + 2);
+        WriteText(top, left, messageLines, noteLines, false, inner);
+        Tools.SetCursorEx(top + 1 + keyRow, left + 3);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(DialogText.HitAnyKeyToContinue);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        Console.Write(new string(' ', Init.LineWidth - 1));
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        Console.ReadKey(true);
+    }
+
+    /// <summary>
     /// Ask for a text (a name) in a box: a line telling what to do, and a field to type in
     /// </summary>
     /// <param name="caption">The title of the box</param>
@@ -143,59 +130,52 @@ internal static class ChoiceBox
     /// <returns>The text typed (trimmed), or null if canceled or empty</returns>
     internal static string? AskText(string caption, string prompt, string label, string text)
     {
-        var inner = Math.Clamp(Math.Max(TextMetrics.WidthOf(prompt) + 4, 64), 10, Init.LineWidth - 6);
-        var promptLines = Wrap(prompt, inner - 4);
-        // A blank row, the prompt, a blank row, the field and a blank row
-        var fieldRow = promptLines.Count + 2;
-        var height = fieldRow + 2;
-        var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
-        var top = Math.Max(1, (Init.LineCount - height - 2) / 2);
-
-        Tools.HideCursor();
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(top, left);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
-        for (var row = 0; row < height; row++)
-        {
-            Tools.SetCursorEx(top + 1 + row, left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write('|');
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            var line = row >= 1 && row <= promptLines.Count ? "  " + promptLines[row - 1] : string.Empty;
-            if (row == fieldRow) line = "  " + label;
-            Console.Write(line + new string(' ', Math.Max(0, inner - TextMetrics.WidthOf(line))));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write('|');
-        }
-
-        Tools.SetCursorEx(top + height + 1, left);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(top, left + 2);
-        Console.Write(" " + Tools.TruncateString(caption, inner - 4, true) + " ");
-        // The keys of the box
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.Write(new string(' ', Init.LineWidth - 1));
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        Menu.WriteKeyHints(DialogText.AskTextKeys);
-
-        // The field takes the rest of the row
-        var fieldLeft = left + 3 + TextMetrics.WidthOf(label);
-        var textArea = new TextArea(fieldLeft, top + 1 + fieldRow, left + inner - fieldLeft, 1, text, 0,
-            text.Length > 0, false, false, 0);
+        var (fieldTop, fieldLeft, fieldWidth) = DrawField(caption, prompt, label);
+        var textArea = new TextArea(fieldLeft, fieldTop, fieldWidth, 1, text, 0, text.Length > 0, false, false, 0);
         var typed = textArea.GetText().Trim();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         return textArea.Canceled || typed.Length == 0 ? null : typed;
     }
 
     /// <summary>
+    /// Ask for a key (a password) in a box: what is typed is shown as *
+    /// </summary>
+    /// <returns>The key typed, or null if canceled</returns>
+    internal static string? AskSecret(string caption, string prompt, string label)
+    {
+        var (fieldTop, fieldLeft, _) = DrawField(caption, prompt, label);
+        Tools.SetCursorEx(fieldTop, fieldLeft + 1);
+        var typed = Tools.ReadMaskedSimple(true);
+        return typed == DialogText.CancelCommand ? null : typed;
+    }
+
+    // A box with a line telling what to do and a label for a field. Returns where the field is
+    private static (int Top, int Left, int Width) DrawField(string caption, string prompt, string label)
+    {
+        var inner = Math.Clamp(Math.Max(TextMetrics.WidthOf(prompt) + 4, 64), 10, Init.LineWidth - 6);
+        var promptLines = Wrap(prompt, inner - 4);
+        // A blank row, the prompt, a blank row, the field and a blank row
+        var fieldRow = promptLines.Count + 2;
+        var (top, left, width, _) = DrawFrame(caption, inner, fieldRow + 2);
+        WriteText(top, left, new List<string>(), promptLines, false, width);
+        Tools.SetCursorEx(top + 1 + fieldRow, left + 3);
+        Console.Write(label);
+        WriteHints(DialogText.AskTextKeys);
+        // The field takes the rest of the row
+        var fieldLeft = left + 3 + TextMetrics.WidthOf(label);
+        return (top + 1 + fieldRow, fieldLeft, Math.Max(4, left + width - fieldLeft));
+    }
+
+    /// <summary>
     /// Show rows of information (a label and a value) in a box until a key is pressed. A long value (a path)
     /// continues on the next rows
     /// </summary>
-    internal static void ShowRows(string caption, IReadOnlyList<(string Label, string Value)> rows)
+    /// <param name="caption">The title of the box</param>
+    /// <param name="rows">The labels and values</param>
+    /// <param name="width">The width inside the box (0: the width of the screen)</param>
+    internal static void ShowRows(string caption, IReadOnlyList<(string Label, string Value)> rows, int width = 0)
     {
-        var inner = Init.LineWidth - 6;
+        var inner = width > 0 ? Math.Min(width, Init.LineWidth - 6) : Init.LineWidth - 6;
         // The labels take the width of the longest (translated) label
         var labelWidth = Math.Max(10, rows.Max(row => TextMetrics.WidthOf(row.Label)) + 1);
         var room = Math.Max(10, inner - labelWidth - 2);
@@ -216,32 +196,92 @@ internal static class ChoiceBox
         // The box fits on the screen
         var most = Math.Max(1, Init.LineCount - 4);
         if (lines.Count > most) lines = lines.GetRange(0, most);
-        const int left = 2;
-        var top = Math.Max(2, (Init.LineCount - lines.Count - 3) / 2);
+        var (top, left, _, _) = DrawFrame(caption, inner, lines.Count);
+        for (var i = 0; i < lines.Count; i++)
+        {
+            Tools.SetCursorEx(top + 1 + i, left + 2);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write(lines[i].Label);
+            Tools.SetCursorEx(top + 1 + i, left + 2 + labelWidth);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(lines[i].Value);
+        }
 
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        Console.ReadKey(true);
+    }
+
+    // Draw the frame of a box with its title and a blank inside, in the middle of the screen. A box shown
+    // before it (the page not drawn again) is covered. Returns where the box is and how big it is inside
+    private static (int Top, int Left, int Inner, int Height) DrawFrame(string caption, int inner, int height)
+    {
+        var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
+        var top = Math.Max(1, (Init.LineCount - height - 2) / 2);
+        if (_shown is { } shown)
+        {
+            var right = Math.Max(left + inner + 1, shown.Right);
+            var bottom = Math.Max(top + height + 1, shown.Bottom);
+            top = Math.Min(top, shown.Top);
+            left = Math.Min(left, shown.Left);
+            inner = right - left - 1;
+            height = bottom - top - 1;
+        }
+
+        _shown = (top, left, left + inner + 1, top + height + 1);
         Tools.HideCursor();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Tools.SetCursorEx(top, left);
         Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
-        for (var i = 0; i < lines.Count; i++)
+        for (var row = 0; row < height; row++)
         {
-            Tools.SetCursorEx(top + 1 + i, left);
+            Tools.SetCursorEx(top + 1 + row, left);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write("| " + lines[i].Label + new string(' ', Math.Max(0, labelWidth - TextMetrics.WidthOf(lines[i].Label))));
+            Console.Write('|');
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(lines[i].Value +
-                          new string(' ', Math.Max(0, inner - labelWidth - 1 - TextMetrics.WidthOf(lines[i].Value))));
+            Console.Write(new string(' ', inner));
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             Console.Write('|');
         }
 
-        Tools.SetCursorEx(top + lines.Count + 1, left);
+        Tools.SetCursorEx(top + height + 1, left);
         Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
         Tools.SetCursorEx(top, left + 2);
         Console.Write(" " + Tools.TruncateString(caption, inner - 4, true) + " ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.ReadKey(true);
+        return (top, left, inner, height);
+    }
+
+    // The highlighted lines (a question or a message) and the lines below them, from the second row of a box
+    private static void WriteText(int top, int left, List<string> highlighted, List<string> plain, bool warning,
+        int inner)
+    {
+        var row = top + 2;
+        foreach (var line in highlighted)
+        {
+            Tools.SetCursorEx(row++, left + 2);
+            ConsoleColors.SetColors(warning
+                ? ConsoleColors.ColorPreset.WarningInverted
+                : ConsoleColors.ColorPreset.AttentionInverted);
+            Console.Write(" " + Tools.TruncateString(line, inner - 4, true) + " ");
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        foreach (var line in plain)
+        {
+            Tools.SetCursorEx(row++, left + 3);
+            Console.Write(Tools.TruncateString(line, inner - 4, true));
+        }
+    }
+
+    // The keys of a box, on the bottom line
+    private static void WriteHints(string hints)
+    {
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Console.Write(new string(' ', Init.LineWidth - 1));
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        Menu.WriteKeyHints(hints);
     }
 
     /// <summary>

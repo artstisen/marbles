@@ -1098,6 +1098,7 @@ internal static class Tools
         // The screen is cleared with the background of the color scheme
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Console.Clear();
+        ChoiceBox.Forget();
     }
 
     // Remove privileges but keep transfer entry
@@ -1849,41 +1850,17 @@ internal static class Tools
         Keyboard.AwaitAnyKey();
     }
 
+    /// <summary>
+    /// Show the date and time in a box until a key is pressed: as written in entries, compact, and the week
+    /// </summary>
     public static void DisplayDateTime()
     {
-        string title = Lang.T("Timestamp");
-        string output = " " + IsoDateTime.GetDateTimeNow() + " ";
-        string output2 = " " + IsoDateTime.GetDateTimeNowCompressed(string.Empty) + " ";
-        string output3 = " " + Lang.F("Week {0}", IsoDateTime.GetIso8601WeekNumber(DateTime.Now));
-        int boxHeight = 6;
-        int boxWidth = output.Length + 4;
-        SaveCursorPosition(5);
-        CursorTopLeft();
-        // Place cursor according to box size
-        CursorDown((Init.LineCount / 2) - (boxHeight / 2));
-        CursorRight((Init.LineWidth / 2) - (boxWidth / 2));
-        // Draw rectangle
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-        for (int i = 0; i < boxHeight; i++)
+        ChoiceBox.ShowRows(Lang.T("Timestamp"), new List<(string Label, string Value)>
         {
-            Console.Write(new string(' ', boxWidth));
-            CursorLeft(boxWidth);
-            CursorDown(); 
-        }
-        CursorUp(6);
-        CursorRight(1);
-        Console.Write(title);
-        CursorLeft(title.Length);
-        CursorDown(2);
-        Console.Write(output);
-        CursorLeft(output.Length);
-        CursorDown();
-        Console.Write(output2);
-        CursorLeft(output2.Length);
-        CursorDown();
-        Console.Write(output3);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        LoadCursorPosition(5);
+            (Lang.T("Date and time:"), IsoDateTime.GetDateTimeNow()),
+            (Lang.T("Compact:"), IsoDateTime.GetDateTimeNowCompressed(string.Empty)),
+            (Lang.T("Week:"), IsoDateTime.GetIso8601WeekNumber(DateTime.Now).ToString())
+        }, 40);
     }
 
 
