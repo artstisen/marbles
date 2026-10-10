@@ -129,7 +129,8 @@ backup=
         Assert.Equal("100", settings["linewidth"]);
         Assert.Equal("a=b text", settings["logotxt"]);
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(34, settings.Count);
+        Assert.Equal(35, settings.Count);
+        Assert.Equal("default", settings["background"]);
         Assert.Equal("true", settings["linenumbers"]);
         Assert.Equal("true", settings["browsedual"]);
         Assert.Equal("1", settings["browsepane"]);
@@ -151,6 +152,55 @@ backup=
         Assert.Equal(40, Init.LineCount);
         Assert.Equal(Init.MinLineWidth, Init.LineWidth);
         Assert.Equal("data.mbls", FileIo.GetFileName());
+    }
+
+    [Theory]
+    [InlineData("background=5", "DarkBlue", "5")]
+    [InlineData("background=default", null, "default")]
+    [InlineData("background=nonsense", null, "default")]
+    [InlineData("background=16", null, "default")]
+    [InlineData("", null, "default")]
+    public void Background_IsLoadedAndSaved(string setting, string? expected, string saved)
+    {
+        File.WriteAllText(SettingsFile, LegacySettings + "\n" + setting + "\n");
+        File.WriteAllText(Path.Combine(_workDirectory, "data", "notes.mbls"), "x");
+        try
+        {
+            Assert.True(FileIo.LoadSettings());
+            Assert.Equal(expected, ConsoleColors.Background?.ToString());
+            FileIo.SaveSettings();
+            Assert.Equal(saved, FileIo.ParseSettings(File.ReadAllText(SettingsFile))["background"]);
+            // A color preset uses the background of the terminal
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.IceWarp);
+            Assert.Null(ConsoleColors.Background);
+        }
+        finally
+        {
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
+        }
+    }
+
+    [Fact]
+    public void TheBackground_CannotHaveTheColorOfTheText()
+    {
+        try
+        {
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
+            ConsoleColors.InitializePreviewColors();
+            // The default text is gray, the logo cyan
+            Assert.False(ConsoleColors.IsPreviewColorAllowed(0, ConsoleColor.Gray));
+            Assert.False(ConsoleColors.IsPreviewColorAllowed(0, ConsoleColor.Cyan));
+            Assert.True(ConsoleColors.IsPreviewColorAllowed(0, ConsoleColor.DarkBlue));
+            ConsoleColors.PreviewBackground = ConsoleColor.DarkBlue;
+            ConsoleColors.SavePreviewToCurrentColors();
+            Assert.Equal(ConsoleColor.DarkBlue, ConsoleColors.Background);
+            // Text on it cannot have its color
+            Assert.True(ConsoleColors.IsBackgroundColor(ConsoleColor.DarkBlue));
+        }
+        finally
+        {
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
+        }
     }
 
     [Fact]

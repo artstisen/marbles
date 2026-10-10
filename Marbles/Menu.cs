@@ -211,6 +211,9 @@ internal static class Menu
                     ConsoleColors.ColorPreset.AttentionInverted, true, false);
                 WriteExtendedMenuItem(new string(' ', 2) + "l / T", DialogText.ExtExample, "Warning",
                     ConsoleColors.ColorPreset.WarningInverted, true, false);
+                WriteExtendedMenuItem(new string(' ', 2) + "l", DialogText.ExtExample,
+                    "Background ([Default]: the terminal's)", ConsoleColors.ColorPreset.Normal, true,
+                    false);
                 WriteMenuItem(new string(' ', 2) + "j k / l", "Select/Pick color from a list", true);
                 WriteMenuItem(new string(' ', 2) + "T", "Pick text color (the last three)", true);
                 WriteMenuItem(new string(' ', 2) + "E", "Reset", true);
@@ -865,7 +868,7 @@ internal static class Menu
     internal static void WriteNameInTopBar(bool displayDataFileName)
     {
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        WriteCenterText("*** " + DialogText.ApplicationName + " ***");
+        WriteCenterText("-- " + DialogText.ApplicationName + " --");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         if (displayDataFileName)
         {

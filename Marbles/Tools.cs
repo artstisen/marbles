@@ -740,7 +740,7 @@ internal static class Tools
 
     internal static void FatalError(string errorMsg)
     {
-        Console.Clear();
+        ClearScreen();
         Console.WriteLine("");
         Menu.WriteModeLabel(DialogText.CaptionsKeyError, DialogText.ErrorUnsupportedAction, 0);
         Menu.WriteNameInTopBar(true);
@@ -752,7 +752,7 @@ internal static class Tools
 
     internal static void ActionUnsupported(string errorMsg)
     {
-        Console.Clear();
+        ClearScreen();
         Console.WriteLine("");
         Menu.WriteModeLabel(DialogText.CaptionsKeyError, DialogText.ErrorUnsupportedAction, 0);
         Menu.WriteNameInTopBar(true);
@@ -1039,6 +1039,8 @@ internal static class Tools
 
     internal static void ClearScreen()
     {
+        // The screen is cleared with the background of the color scheme
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Console.Clear();
     }
 
@@ -1101,7 +1103,7 @@ internal static class Tools
         ShowCursor(); // Remember to show cursor again for continuous work in the console
         // Exit the application reverting to the original console colors
         Console.ResetColor();
-        ClearScreen();
+        Console.Clear();
         Console.WriteLine("*** " + DialogText.ApplicationName + " " + DialogText.Exit.ToLower() + " ***");
         Environment.Exit(0);
     }

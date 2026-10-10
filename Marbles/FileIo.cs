@@ -956,6 +956,10 @@ internal static class FileIo
         _tempSettings += "(clpreset)=" + ConsoleColors.GetColorPresetIndex()+ Entries.NewLineChar;
         // Black and white: the colors below are kept, but not used
         _tempSettings += "monochrome=" + (ConsoleColors.Monochrome ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // The background: a color number, or "default" for the background of the terminal
+        _tempSettings += "background=" + (ConsoleColors.Background is { } background
+            ? ConsoleColors.GetIndexFromColor(background).ToString()
+            : DialogText.BackgroundDefault) + Entries.NewLineChar;
         _tempSettings += "color1=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(1))+ Entries.NewLineChar;
         _tempSettings += "color2=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(2))+ Entries.NewLineChar;
         _tempSettings += "color3=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(3))+ Entries.NewLineChar;
@@ -1172,6 +1176,8 @@ internal static class FileIo
         {
             ConsoleColors.SetColorFromIndex(i, GetNumber("color" + i) ?? 15);
         }
+
+        ConsoleColors.SetBackgroundFromIndex(GetNumber("background"));
 
         // Sub directory
         var subFolder = Get("subdir");

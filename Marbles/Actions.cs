@@ -835,6 +835,7 @@ internal static class Actions
     // The column of the color picker on the color scheme page (the examples stay visible beside it)
     private const int SchemePickerLeft = 52;
     private const int SchemeTop = Menu.MenuTop + 1; // The row of ":scheme" on the fourth page of the menu
+    private const int SchemeBackgroundRow = 9; // The last row of the color scheme: the background
 
     // The page is drawn again with the colors being edited, after the color picker was shown on top of it
     private static void DrawColorSettings(int selectedProperty)
@@ -849,7 +850,7 @@ internal static class Actions
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
         Console.Write("[EDITING]");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        for (var property = 0; property <= 8; property++)
+        for (var property = 0; property <= SchemeBackgroundRow; property++)
         {
             Tools.CursorTopLeft();
             Tools.CursorDown(SchemeTop + 1 + property);
@@ -866,6 +867,24 @@ internal static class Actions
     // (or the text, if "textColor" is set) of the three highlight styles
     private static void PickSchemeColor(int selectedProperty, bool textColor)
     {
+        if (selectedProperty == SchemeBackgroundRow)
+        {
+            if (textColor) return;
+            // The colors are shown with the text on them. [Default] is the background of the terminal
+            if (ColorPicker.Pick(DialogText.BackgroundCaption, SchemePickerLeft, true, ConsoleColors.PreviewBackground,
+                    color => ConsoleColors.IsPreviewColorAllowed(0, color), color =>
+                    {
+                        Console.BackgroundColor = color;
+                        Console.ForegroundColor = ConsoleColors.GetPreviewColor(1);
+                    }, out var chosen))
+            {
+                ConsoleColors.PreviewBackground = chosen;
+            }
+
+            DrawColorSettings(selectedProperty);
+            return;
+        }
+
         var isHighlight = selectedProperty >= 6;
         if (textColor && !isHighlight) return;
         // The colors of the scheme are numbered: 1-6 the text colors, then background and text of each highlight
@@ -952,14 +971,14 @@ internal static class Actions
                 else
                 {
                     Menu.WriteSelectionPointer(true);
-                    Tools.CursorDown(8);
+                    Tools.CursorDown(SchemeBackgroundRow);
                     Menu.WriteSelectionPointer(false);
-                    propertySelectorIndex = 8;
+                    propertySelectorIndex = SchemeBackgroundRow;
                 }
             }
             else if (_c.Key == ConsoleKey.DownArrow)
             {
-                if (propertySelectorIndex < 8)
+                if (propertySelectorIndex < SchemeBackgroundRow)
                 {
                     Menu.WriteSelectionPointer(true);
                     Tools.CursorDown();
@@ -969,7 +988,7 @@ internal static class Actions
                 else
                 {
                     Menu.WriteSelectionPointer(true);
-                    Tools.CursorUp(8);
+                    Tools.CursorUp(SchemeBackgroundRow);
                     Menu.WriteSelectionPointer(false);
                     propertySelectorIndex = 0;
                 }
@@ -987,7 +1006,7 @@ internal static class Actions
     {
         Tools.CursorRight(16);
         // Set temporary preview color
-        if (propertySelectorIndex == 0)
+        if (propertySelectorIndex is 0 or SchemeBackgroundRow)
             ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.Normal);
         else if (propertySelectorIndex == 1)
             ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.HeaderColor);

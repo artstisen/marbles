@@ -24,6 +24,9 @@ class ConsoleColors
 
     #region Properties: Current console colors
 
+    // The color scheme has a background of its own. Without one (the default), text is shown on the background
+    // of the terminal (which can be transparent), and the background color is taken to be black
+    private static bool CurrentBackgroundSet { get; set; }
     private static ConsoleColor CurrentBackgroundColor { get; set; }
     private static ConsoleColor CurrentForegroundColor { get; set; }
     private static ConsoleColor CurrentHeaderColor { get; set; } // Foreground color
@@ -41,6 +44,7 @@ class ConsoleColors
     #endregion
 
     #region Properties: Preview console colors
+    private static bool PreviewBackgroundSet { get; set; }
     private static ConsoleColor PreviewBackgroundColor { get; set; }
     private static ConsoleColor PreviewForegroundColor { get; set; }
     private static ConsoleColor PreviewHeaderColor { get; set; } // Foreground color
@@ -54,6 +58,56 @@ class ConsoleColors
     private static ConsoleColor PreviewWarningForegroundColor { get; set; }
     private static ConsoleColor PreviewHighlightBackgroundColor { get; set; }
     private static ConsoleColor PreviewHighlightForegroundColor { get; set; }
+
+    #endregion
+
+    #region Background
+
+    /// <summary>
+    /// The background color of the color scheme, or null to use the background of the terminal
+    /// (setting "background")
+    /// </summary>
+    internal static ConsoleColor? Background
+    {
+        get => CurrentBackgroundSet ? CurrentBackgroundColor : null;
+        set
+        {
+            CurrentBackgroundSet = value != null;
+            CurrentBackgroundColor = value ?? DefaultBackgroundColor;
+        }
+    }
+
+    /// <summary>
+    /// The background color of the color scheme being edited, or null to use the background of the terminal
+    /// </summary>
+    internal static ConsoleColor? PreviewBackground
+    {
+        get => PreviewBackgroundSet ? PreviewBackgroundColor : null;
+        set
+        {
+            PreviewBackgroundSet = value != null;
+            PreviewBackgroundColor = value ?? DefaultBackgroundColor;
+        }
+    }
+
+    /// <summary>
+    /// The background color from its number in the settings file (null, or a number that is not a color:
+    /// the background of the terminal)
+    /// </summary>
+    internal static void SetBackgroundFromIndex(int? colorIndex)
+    {
+        Background = colorIndex is >= 0 and < 16 ? GetColorFromIndex(colorIndex.Value) : null;
+    }
+
+    // The colors of text on the normal background: the background of the color scheme, or that of the terminal
+    private static void SetNormalBackground(bool preview)
+    {
+        Console.ResetColor();
+        if (preview ? PreviewBackgroundSet : CurrentBackgroundSet)
+        {
+            Console.BackgroundColor = preview ? PreviewBackgroundColor : CurrentBackgroundColor;
+        }
+    }
 
     #endregion
 
@@ -495,6 +549,8 @@ class ConsoleColors
     public static void SetColors(ColorPreset preset)
     {
         if (Monochrome && SetMonochromeColors(preset)) return;
+        // The color presets use the background of the terminal
+        if (preset == ColorPreset.Reset || preset >= ColorPreset.MarblesQuest) Background = null;
         if (preset == ColorPreset.Reset)
         {
             ResetColors();
@@ -525,8 +581,7 @@ class ConsoleColors
         }
         else if (preset == ColorPreset.Normal)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(false);
             Console.ForegroundColor = CurrentForegroundColor;
         }
         else if (preset == ColorPreset.NormalInverted)
@@ -536,32 +591,27 @@ class ConsoleColors
         }
         else if (preset == ColorPreset.HeaderColor)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(false);
             Console.ForegroundColor = CurrentHeaderColor;
         }
         else if (preset == ColorPreset.Divider)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(false);
             Console.ForegroundColor = CurrentDividerColor;
         }
         else if (preset == ColorPreset.Favorites)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(false);
             Console.ForegroundColor = CurrentFavoritesColor;
         }
         else if (preset == ColorPreset.PreviewTitle)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(false);
             Console.ForegroundColor = CurrentPreviewTitleColor;
         }
         else if (preset == ColorPreset.EditorTitle)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(false);
             Console.ForegroundColor = CurrentEditorTitleColor;
         }
         else if (preset == ColorPreset.HighlightInverted)
@@ -590,8 +640,7 @@ class ConsoleColors
         }
         else if (preset == ColorPreset.Normal)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(true);
             Console.ForegroundColor = PreviewForegroundColor;
         }
         else if (preset == ColorPreset.NormalInverted)
@@ -601,32 +650,27 @@ class ConsoleColors
         }
         else if (preset == ColorPreset.HeaderColor)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(true);
             Console.ForegroundColor = PreviewHeaderColor;
         }
         else if (preset == ColorPreset.Divider)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(true);
             Console.ForegroundColor = PreviewDividerColor;
         }
         else if (preset == ColorPreset.Favorites)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(true);
             Console.ForegroundColor = PreviewFavoritesColor;
         }
         else if (preset == ColorPreset.PreviewTitle)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(true);
             Console.ForegroundColor = PreviewPreviewTitleColor;
         }
         else if (preset == ColorPreset.EditorTitle)
         {
-            // TEST
-            Console.ResetColor();
+            SetNormalBackground(true);
             Console.ForegroundColor = PreviewEditorTitleColor;
         }
         else if (preset == ColorPreset.HighlightInverted)
@@ -673,6 +717,17 @@ class ConsoleColors
     /// </summary>
     internal static bool IsPreviewColorAllowed(int propertyIndex, ConsoleColor color)
     {
+        if (propertyIndex == 0)
+        {
+            // The background cannot have the color of the text shown on it
+            for (var text = 1; text <= 6; text++)
+            {
+                if (GetPreviewColorFromIndex(text) == color) return false;
+            }
+
+            return true;
+        }
+
         _previewColorIndex = GetIndexFromColor(color);
         return !IsBackgroundColorMatchingForegroundColor(propertyIndex);
     }
@@ -755,6 +810,7 @@ class ConsoleColors
     internal static void InitializePreviewColors()
     {
         // Normal colors
+        PreviewBackgroundSet = CurrentBackgroundSet;
         PreviewBackgroundColor = CurrentBackgroundColor;
         PreviewForegroundColor = CurrentForegroundColor;
         // Individual foreground colors
@@ -775,6 +831,7 @@ class ConsoleColors
     internal static void SavePreviewToCurrentColors()
     {
         // Normal colors
+        CurrentBackgroundSet = PreviewBackgroundSet;
         CurrentBackgroundColor = PreviewBackgroundColor;
         CurrentForegroundColor = PreviewForegroundColor;
         // Individual foreground colors

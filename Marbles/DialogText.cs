@@ -87,6 +87,8 @@ internal static class DialogText
     public const string ReplaceKeys = "Enter/Space Edit or change | j/k Select | Esc Cancel";
     public const string ColorCaption = "Color";
     public const string TextColorCaption = "Text color";
+    public const string BackgroundCaption = "Background";
+    public const string BackgroundDefault = "default"; // The setting for the background of the terminal
     public const string Favorites = "Favorites";
     public const string Session = "Session";
     public const string New = "New";

@@ -60,10 +60,11 @@ The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`
   - `j` `k` (or `Up`/`Down`) Select the color group to change
   - `l` (or `Right`, `Space`) Pick the color from a list of the 16 colors: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. For the last three groups (the highlight styles) this is the background color
   - `T` Pick the text color of a highlight style (the last three groups)
+  - **Background**: the last group. `[Default]` (the default) shows the text on the terminal's own background, as Marbles always did, so a transparent or blurred terminal window stays that way. Pick a color to give Marbles a background of its own: the whole window is filled with it, and the terminal's background is used again when Marbles exits. The background cannot have the color of the text, the logo, dividers, favorites or titles. The color presets (`:color`) and `:defaults` use `[Default]`. The setting is `background` in the settings file (a color number, or `default`)
   - A color shown in brackets in the list cannot be picked, as the text would not be visible on its background
   - `E` Reset to the default colors of the preset
-- `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the color scheme cannot be edited
-  - `Enter` Save and exit
+  - `Enter` Save and exit, `Esc` Cancel
+- `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the color scheme cannot be edited, and the terminal's own background is used
   - `Esc` Cancel
 
 ## Lists of entries

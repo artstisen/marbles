@@ -109,7 +109,7 @@ internal static class Init
     {
         try
         {
-            Console.Clear();
+            Tools.ClearScreen();
             // Top left corner
             Tools.CursorTopLeft();
             Console.Write(TempOutputCornerChar);
@@ -146,7 +146,7 @@ internal static class Init
     {
         try
         {
-            Console.Clear();
+            Tools.ClearScreen();
             // Top left corner
             Tools.CursorTopLeft();
             Console.Write(TempOutputCornerChar + "--");
