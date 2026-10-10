@@ -30,6 +30,7 @@ internal static class Menu
 
     public static void NextTopMenuManagePage()
     {
+        ResetMenuSelection();
         if (_manageModePage < MaxManageModePages)
         {
             _manageModePage += 1;
@@ -42,6 +43,7 @@ internal static class Menu
 
     public static void PreviousTopMenuManagePage()
     {
+        ResetMenuSelection();
         if (_manageModePage > 0)
         {
             _manageModePage -= 1;
@@ -56,6 +58,7 @@ internal static class Menu
     {
         if (index is >= 0 and <= MaxManageModePages)
         {
+            if (index != _manageModePage) ResetMenuSelection();
             _manageModePage = index;
         }
     }
@@ -488,11 +491,21 @@ internal static class Menu
 
     #region The main menu of a data file
 
-    // An item of the main menu: its key (or command) and what it does
-    private readonly record struct MenuItem(string Key, string Text);
+    // An item of the main menu: its key (or command), what it does, and what selecting it runs: a key ("N") or a
+    // command (":scheme")
+    private readonly record struct MenuItem(string Key, string Text, string Run);
 
     private const int MenuBoxTop = 2; // The row of the top of the boxes
     private const int MenuKeyWidth = 11; // The room for the key of an item (the dots fill up to it)
+    private const int MenuBoxRows = 8; // The rows of items in a box (a box with fewer items has blank rows)
+
+    // The items of the two boxes of the page shown, and where the boxes are
+    private static MenuItem[][] _menuBoxes = { Array.Empty<MenuItem>(), Array.Empty<MenuItem>() };
+    private static readonly int[] MenuBoxLeft = new int[2];
+
+    // The selected item: the box (0 left, 1 right) and its row
+    private static int _menuBox;
+    private static int _menuRow;
 
     // The main menu of a data file: two pages, each with two boxes of items
     private static void DrawMenuPage(int page)
@@ -504,75 +517,77 @@ internal static class Menu
         Console.Write(" " + GetMenuNavigation((page + 1) + "/" + ManagePageCount));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         static string Check(bool on) => on ? DialogText.CheckedSetting : DialogText.UnCheckedSetting;
-        int rows;
         if (page == 0)
         {
-            rows = DrawMenuBoxes(Lang.T("Notes"), new MenuItem[]
+            DrawMenuBoxes(Lang.T("Notes"), new MenuItem[]
             {
-                new("N", Lang.T("New")),
-                new("S /", Lang.T("Search")),
-                new("R", Lang.T("Reselect")),
-                new("F", Lang.T("Favorites") + " " + Entries.GetFavoritesCount()),
-                new("T", Lang.T("Top 20")),
-                new("M", Lang.T("Session history") + " " + Entries.GetSessionCountAsString()),
-                new("A", Lang.T("List all") + " " + Entries.GetEntriesCountAsString()),
-                new(":undelete", Lang.T("Undo deletion"))
+                new("N", Lang.T("New"), "N"),
+                new("S /", Lang.T("Search"), "S"),
+                new("R", Lang.T("Reselect"), "R"),
+                new("F", Lang.T("Favorites") + " " + Entries.GetFavoritesCount(), "F"),
+                new("T", Lang.T("Top 20"), "T"),
+                new("M", Lang.T("Session history") + " " + Entries.GetSessionCountAsString(), "M"),
+                new("A", Lang.T("List all") + " " + Entries.GetEntriesCountAsString(), "A"),
+                new(":undelete", Lang.T("Undo deletion"), ":undelete")
             }, Lang.T("Data file"), new MenuItem[]
             {
-                new("I", Lang.T("File info")),
-                new(":import", Lang.T("Import text file")),
-                new(":transfer", Lang.T("Transfer") + " " + Entries.GetTransferState()),
-                new(":backup", FileIo.GetBackupStatus() + " " + Lang.T("Backup")),
-                new(":password", Lang.T("Reset password")),
-                new(":", Lang.T("Command line")),
-                new("?", Lang.T("Help")),
-                new("X", Lang.T("Logout"))
+                new("I", Lang.T("File info"), "I"),
+                new(":import", Lang.T("Import text file"), ":import"),
+                new(":transfer", Lang.T("Transfer") + " " + Entries.GetTransferState(), ":transfer"),
+                new(":backup", FileIo.GetBackupStatus() + " " + Lang.T("Backup"), ":backup"),
+                new(":password", Lang.T("Reset password"), ":password"),
+                new(":", Lang.T("Command line"), ":"),
+                new("?", Lang.T("Help"), "?"),
+                new("X", Lang.T("Logout"), "X")
             });
-            // The vignette is shown below the boxes, where there is room for it
-            Vignette.DisplayVignette(MenuBoxTop + rows + 3);
         }
         else
         {
             DrawMenuBoxes(DialogText.CaptionsSettings, new MenuItem[]
             {
-                new(":scheme", Lang.T("Edit color scheme")),
+                new(":scheme", Lang.T("Edit color scheme"), ":scheme"),
                 new(":color 1-" + Actions.ColorPresetCount,
-                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] " + Lang.T("Color preset")),
-                new(":bw", Check(ConsoleColors.Monochrome) + " " + Lang.T("Black and white")),
-                new(":language", "[" + Lang.Current + "] " + Lang.T("Language")),
-                new(":number", Check(TextArea.LineNumbers) + " " + Lang.T("Line numbers")),
-                new(":size", Lang.T("Size") + " " + Init.GetOutputDimensions()),
-                new(":size auto", Check(Init.AutoSize) + " " + Lang.T("Follow the window")),
-                new(":vignette", Lang.T("Text vignette"))
+                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] " + Lang.T("Color preset"), ":color"),
+                new(":bw", Check(ConsoleColors.Monochrome) + " " + Lang.T("Black and white"), ":bw"),
+                new(":language", "[" + Lang.Current + "] " + Lang.T("Language"), ":language"),
+                new(":number", Check(TextArea.LineNumbers) + " " + Lang.T("Line numbers"), ":number"),
+                new(":size", Lang.T("Size") + " " + Init.GetOutputDimensions(), ":size"),
+                new(":size auto", Check(Init.AutoSize) + " " + Lang.T("Follow the window"), ":size auto")
             }, DialogText.ApplicationName, new MenuItem[]
             {
-                new(":browse", Lang.T("Browse files")),
-                new("D", Lang.T("Display timestamp")),
-                new(":guide", DialogText.QuickGuide),
-                new(":about", Lang.T("About")),
-                new(":defaults", Lang.T("Default settings")),
-                new(":restart", Lang.T("Restart Marbles")),
-                new(":logout", Lang.T("Logout")),
-                new(":q", Lang.T("Exit"))
+                new(":browse", Lang.T("Browse files"), ":browse"),
+                new("D", Lang.T("Display timestamp"), "D"),
+                new(":guide", DialogText.QuickGuide, ":guide"),
+                new(":about", Lang.T("About"), ":about"),
+                new(":defaults", Lang.T("Default settings"), ":defaults"),
+                new(":restart", Lang.T("Restart Marbles"), ":restart"),
+                new(":logout", Lang.T("Logout"), ":logout"),
+                new(":q", Lang.T("Exit"), ":q")
             });
         }
 
+        // The keys of the page
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        WriteKeyHints(DialogText.MenuKeys);
+        DrawMenuPointer(true);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.SetCursorEx(Init.LineCount - 1, 0);
     }
 
     // Two boxes side by side, each with a title and its items
-    // <returns>The number of rows of items</returns>
-    private static int DrawMenuBoxes(string leftTitle, MenuItem[] left, string rightTitle, MenuItem[] right)
+    private static void DrawMenuBoxes(string leftTitle, MenuItem[] left, string rightTitle, MenuItem[] right)
     {
         var width = (Init.LineWidth - 1) / 2;
-        var rows = Math.Max(left.Length, right.Length);
-        DrawMenuBox(0, width, rows, leftTitle, left);
-        DrawMenuBox(width + 1, width, rows, rightTitle, right);
-        return rows;
+        _menuBoxes = new[] { left, right };
+        MenuBoxLeft[0] = 0;
+        MenuBoxLeft[1] = width + 1;
+        DrawMenuBox(MenuBoxLeft[0], width, leftTitle, left);
+        DrawMenuBox(MenuBoxLeft[1], width, rightTitle, right);
+        ClampMenuSelection();
     }
 
-    private static void DrawMenuBox(int left, int width, int rows, string title, MenuItem[] items)
+    private static void DrawMenuBox(int left, int width, string title, MenuItem[] items)
     {
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Tools.SetCursorEx(MenuBoxTop, left);
@@ -580,7 +595,7 @@ internal static class Menu
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
         Tools.SetCursorEx(MenuBoxTop, left + 2);
         Console.Write(Tools.FitLine(" " + title + " ", Init.LineWidth - (width - 4)));
-        for (var row = 0; row < rows; row++)
+        for (var row = 0; row < MenuBoxRows; row++)
         {
             var y = MenuBoxTop + 1 + row;
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
@@ -590,7 +605,7 @@ internal static class Menu
             Console.Write('|');
             if (row >= items.Length) continue;
             var item = items[row];
-            Tools.SetCursorEx(y, left + 2);
+            Tools.SetCursorEx(y, left + 3);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(item.Key);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
@@ -602,9 +617,67 @@ internal static class Menu
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(MenuBoxTop + rows + 1, left);
+        Tools.SetCursorEx(MenuBoxTop + MenuBoxRows + 1, left);
         Console.Write(AsciiStyles.GetBottomCorner() + new string('-', width - 2) + AsciiStyles.GetBottomCorner());
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    private static void ClampMenuSelection()
+    {
+        _menuBox = Math.Clamp(_menuBox, 0, 1);
+        _menuRow = Math.Clamp(_menuRow, 0, Math.Max(0, _menuBoxes[_menuBox].Length - 1));
+    }
+
+    // Draw (or remove) the selection pointer at the selected item
+    private static void DrawMenuPointer(bool show)
+    {
+        if (_menuBoxes[_menuBox].Length == 0) return;
+        Tools.SetCursorEx(MenuBoxTop + 1 + _menuRow, MenuBoxLeft[_menuBox] + 1);
+        ConsoleColors.SetColors(show ? ConsoleColors.ColorPreset.HighlightInverted : ConsoleColors.ColorPreset.Normal);
+        Console.Write(show ? "->" : "  ");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+    }
+
+    /// <summary>
+    /// Move the selection of the main menu up or down in its box (only the pointer is drawn again)
+    /// </summary>
+    internal static void MoveMenuSelection(int rows)
+    {
+        var count = _menuBoxes[_menuBox].Length;
+        if (count == 0) return;
+        DrawMenuPointer(false);
+        _menuRow = ((_menuRow + rows) % count + count) % count;
+        DrawMenuPointer(true);
+    }
+
+    /// <summary>
+    /// Select an item of the other box of the main menu (in the same row, or the last item of a shorter box)
+    /// </summary>
+    internal static void SwitchMenuBox()
+    {
+        DrawMenuPointer(false);
+        _menuBox = 1 - _menuBox;
+        ClampMenuSelection();
+        DrawMenuPointer(true);
+    }
+
+    /// <summary>
+    /// Select the first item of the first box (when another page is shown)
+    /// </summary>
+    internal static void ResetMenuSelection()
+    {
+        _menuBox = 0;
+        _menuRow = 0;
+    }
+
+    /// <summary>
+    /// What the selected item of the main menu runs: a key ("N") or a command (":scheme"), or null if none
+    /// </summary>
+    internal static string? SelectedMenuItem()
+    {
+        var items = _menuBoxes[_menuBox];
+        return _menuRow < items.Length ? items[_menuRow].Run : null;
     }
 
     #endregion

@@ -935,9 +935,6 @@ internal static class FileIo
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; OPTIONAL" + Entries.NewLineChar;
-        // Vignette
-        _tempSettings += "vignette=" + Vignette.GetVignetteState() + Entries.NewLineChar;
-        // Preview of the last edited entries on the main menu
         // What to show at startup: select (the choices), notes (the login page) or editor (the file browser)
         _tempSettings += "startmode=" + StartMenu.SettingName(StartMenu.Mode) + Entries.NewLineChar;
         // Starting in the Text Editor: open the favorites list first
@@ -1114,17 +1111,6 @@ internal static class FileIo
         // On unless turned off
         TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) != DialogText.BFalse;
         ConsoleColors.Monochrome = Tools.TrimToLower(Get("monochrome")) == DialogText.BTrue;
-
-        // Vignettes
-        var vignette = Tools.TrimToLower(Get("vignette"));
-        if (vignette == DialogText.BTrue || vignette == DialogText.BFalse)
-        {
-            Vignette.SetVignetteSate(Convert.ToBoolean(vignette));
-        }
-        else
-        {
-            Vignette.SetDefaultVignetteState();
-        }
 
         // ASCII style
         var asciiStyle = GetNumber("asciistyle");

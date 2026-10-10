@@ -28,7 +28,6 @@ kbpreword=N
 kbselect=O
 
 ; OPTIONAL
-vignette=false
 
 ; STYLING
 asciistyle=1
@@ -128,7 +127,7 @@ backup=
         Assert.False(settings.ContainsKey("logo"));
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(34, settings.Count);
+        Assert.Equal(33, settings.Count);
         Assert.Equal("false", settings["startfavorites"]);
         Assert.Equal("en", settings["language"]);
         Assert.Equal("default", settings["background"]);

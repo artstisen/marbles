@@ -49,7 +49,7 @@ internal static class Commands
     private static readonly Dictionary<CommandContext, Table> Tables = new()
     {
         [CommandContext.Menu] = new Table(
-            "quit help about guide new browse number import transfer undelete vignette backup defaults scheme " +
+            "quit help about guide new browse number import transfer undelete backup defaults scheme " +
             "bw size password color restart language" + Common,
             "q h nu" + CommonShort),
         [CommandContext.Entry] = new Table(

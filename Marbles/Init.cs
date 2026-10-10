@@ -244,7 +244,6 @@ internal static class Init
         Log(DialogText.InitSetDefaults, true);
         Entries.ResetRecallId();
         AsciiStyles.ResetAsciiStyle();
-        Vignette.SetDefaultVignetteState();
         Logo.AnimationEnabled = true;
         AutoSize = false;
         StartMenu.Mode = StartMenu.StartMode.Select;

@@ -99,13 +99,35 @@ internal static class Actions
                 // Recall
                 RecallEntry();
             }
-            else if (_c.Key == ConsoleKey.Tab && _c.Modifiers == ConsoleModifiers.Shift)
+            else if (_c.Key == ConsoleKey.Tab)
             {
-                // Previous menuitem (SHIFT+TAB)
-                Menu.PreviousTopMenuManagePage();
-                Menu.DrawTopMenu(false, true, false);
+                // The other box of the page
+                Menu.SwitchMenuBox();
             }
-            else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.Tab or ConsoleKey.L)
+            else if (_c.Key is ConsoleKey.J or ConsoleKey.DownArrow)
+            {
+                Menu.MoveMenuSelection(1);
+            }
+            else if (_c.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+            {
+                Menu.MoveMenuSelection(-1);
+            }
+            else if (_c.Key == ConsoleKey.Enter)
+            {
+                // Run the selected item: a command, or the key of the item
+                var run = Menu.SelectedMenuItem();
+                if (run != null && run.Length > 1 && run[0] == ':')
+                {
+                    RunManageCommand(run[1..]);
+                }
+                else if (run != null)
+                {
+                    var c = run[0];
+                    HandleKey(new ConsoleKeyInfo(c, char.IsAsciiLetter(c) ? ConsoleKey.A + (char.ToUpperInvariant(c) - 'A') : 0,
+                        false, false, false));
+                }
+            }
+            else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.L)
             {
                 // Next menuitem
                 Menu.NextTopMenuManagePage();
@@ -165,7 +187,7 @@ internal static class Actions
                 DefaultListSortOption();
                 FindAll(0, string.Empty, false, false);
             }
-            else if (_c.Key is ConsoleKey.T or ConsoleKey.Enter)
+            else if (_c.Key == ConsoleKey.T)
             {
                 // Top 20
                 FindAll(1, string.Empty, false, false);
@@ -406,16 +428,6 @@ internal static class Actions
                 break;
             case "undelete":
                 UndoDeletion();
-                break;
-            case "vignette":
-                // Create a new vignette
-                Vignette.CreateVignette(true);
-                // Save to file
-                Entries.SaveEntriesToFile();
-                // Display the new vignette
-                DisplayEntry(false);
-                // Ask to toggle favorite
-                ToggleFavorite();
                 break;
             case "backup":
                 ToggleBackup();
@@ -906,7 +918,6 @@ internal static class Actions
         Mode.SetRecallMode(Mode.RecallMode.Top20); // Return to top20 on Esc
         Entries.NewEntry(title, string.Empty);
         Entries.SaveEntriesToFile();
-        Vignette.CheckVignette();
         EditEntry(false);
     }
 
@@ -1012,7 +1023,6 @@ internal static class Actions
         Entries.CurrentEntry.CursorIndex = textArea.GetCursorIndex();
         Entries.UpdateEntry(Entries.CurrentEntry, true);
         Entries.SaveEntriesToFile();
-        Vignette.CheckVignette();
     }
 
 
@@ -1043,7 +1053,6 @@ internal static class Actions
                 Entries.CurrentEntry.Title = _tempText;
                 Entries.UpdateEntry(Entries.CurrentEntry, true);
                 Entries.SaveEntriesToFile();
-                Vignette.CheckVignette();
                 DisplayEntry(false);
             }
         }
@@ -1357,7 +1366,6 @@ internal static class Actions
         TextArea.LineNumbers = true;
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
         ConsoleColors.DefaultColorPresetIndex();
-        Vignette.SetDefaultVignetteState();
         Logo.AnimationEnabled = true;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;
@@ -1396,7 +1404,6 @@ internal static class Actions
                     Menu.StatusMessage(DialogText.EntryDeleted, true, true, true, DialogText.CaptionsDelete,
                         string.Empty, false);
                     Entries.SaveEntriesToFile();
-                    Vignette.CheckVignette();
                 }
 
                 Mode.SetMode(Mode.SelectedMode.Manage);

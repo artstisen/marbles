@@ -16,7 +16,10 @@ The same keys are used everywhere in Marbles:
 - `Esc` Return/Cancel
 
 ## Main menu
-The main menu has 2 pages, each with two boxes of keys and commands. _MENU_ is shown at the top left, and the name of the data file at the top right. Besides `h`/`l` (or `Tab`), the pages can be selected with `1` and `2`, and `gg`/`G` (or `Home`/`End`) go to the first/last page. When a [vignette](#page-2-settings-and-marbles) is made, it is shown below the boxes of the first page.
+The main menu has 2 pages, each with two boxes of keys and commands. _MENU_ is shown at the top left, and the name of the data file at the top right. The keys of the page are shown at the bottom.
+
+- Each item can be used with its key or command, or selected and opened: `j` `k` (or `Down`/`Up`) select an item in the box, `Tab` goes to the other box, and `Enter` opens the selected item
+- `h` `l` (or `Left`/`Right`) show the previous/next page, `1` and `2` select a page, and `gg`/`G` (or `Home`/`End`) go to the first/last page
 
 ### Page 1: Notes and Data file
 **Notes**
@@ -48,7 +51,6 @@ The main menu has 2 pages, each with two boxes of keys and commands. _MENU_ is s
 - `:number` **Line numbers**: Show or hide line numbers in the editor (the same as `:number` in the editor itself).
 - `:size` **Size**: Set the number of rows and columns used by Marbles.
 - `:size auto` **Follow the window**: Turn automatic dimensions on or off. When on, Marbles uses the size of the terminal window (leaving one row and one column unused), checked when the login page, a menu, a list or an entry is shown. A window resized while the editor is open is picked up when the editor is closed. Setting the dimensions yourself with `:size` turns automatic dimensions off.
-- `:vignette` **Text vignette**: Create a text to be shown on the first page of the main menu, below the boxes.
 
 **Marbles**
 - `:browse` **Browse files**: Open the file browser.

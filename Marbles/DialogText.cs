@@ -27,9 +27,9 @@ internal static class DialogText
     //                                                                                \n <- Max line length
     // --------------------------------------------------------------------------------
     public static string MultipleInstances => Lang.T("TIP: Run multiple instances of Marbles using folder duplicates with different\n" +
-        "names. Change color settings or use vignettes to distinguish between\n" +
-        "instances. Running multiple instances from the same folder can overwrite\n" +
-        "notes and application settings when sharing the same pool of data.\n");
+        "names. Change color settings to distinguish between instances. Running\n" +
+        "multiple instances from the same folder can overwrite notes and application\n" +
+        "settings when sharing the same pool of data.\n");
 
 
     // Mode labels and Caption
@@ -46,6 +46,7 @@ internal static class DialogText
     public static string CaptionsMoreOptions => Lang.T("More options");
     public static string CaptionsColorScheme => Lang.T("Edit color scheme");
     public static string CaptionsMenu => Lang.T("Menu");
+    public static string MenuKeys => Lang.T("j/k Select | Enter Open | Tab Box | h/l Page | : Command | ? Help | X Logout");
     public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | ? Help | Esc Close");
     public static string HelpSectionColorScheme => Lang.T("Color scheme editor");
     public static string CaptionsExport => Lang.T("Export");
