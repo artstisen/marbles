@@ -190,6 +190,61 @@ internal static class ChoiceBox
     }
 
     /// <summary>
+    /// Show rows of information (a label and a value) in a box until a key is pressed. A long value (a path)
+    /// continues on the next rows
+    /// </summary>
+    internal static void ShowRows(string caption, IReadOnlyList<(string Label, string Value)> rows)
+    {
+        var inner = Init.LineWidth - 6;
+        // The labels take the width of the longest (translated) label
+        var labelWidth = Math.Max(10, rows.Max(row => TextMetrics.WidthOf(row.Label)) + 1);
+        var room = Math.Max(10, inner - labelWidth - 2);
+        var lines = new List<(string Label, string Value)>();
+        foreach (var (label, value) in rows)
+        {
+            var rest = value;
+            var first = true;
+            do
+            {
+                var part = rest.Length <= room ? rest : rest[..room];
+                lines.Add((first ? label : string.Empty, part));
+                rest = rest[part.Length..];
+                first = false;
+            } while (rest.Length > 0);
+        }
+
+        // The box fits on the screen
+        var most = Math.Max(1, Init.LineCount - 4);
+        if (lines.Count > most) lines = lines.GetRange(0, most);
+        const int left = 2;
+        var top = Math.Max(2, (Init.LineCount - lines.Count - 3) / 2);
+
+        Tools.HideCursor();
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(top, left);
+        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
+        for (var i = 0; i < lines.Count; i++)
+        {
+            Tools.SetCursorEx(top + 1 + i, left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write("| " + lines[i].Label + new string(' ', Math.Max(0, labelWidth - TextMetrics.WidthOf(lines[i].Label))));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(lines[i].Value +
+                          new string(' ', Math.Max(0, inner - labelWidth - 1 - TextMetrics.WidthOf(lines[i].Value))));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+        }
+
+        Tools.SetCursorEx(top + lines.Count + 1, left);
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+        Tools.SetCursorEx(top, left + 2);
+        Console.Write(" " + Tools.TruncateString(caption, inner - 4, true) + " ");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Console.ReadKey(true);
+    }
+
+    /// <summary>
     /// Break a text into lines no wider than a width, between words (a word that is too long is cut)
     /// </summary>
     internal static List<string> Wrap(string text, int width)

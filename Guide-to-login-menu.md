@@ -56,7 +56,7 @@ Press `Esc` and then one of the following keys:
 - `C` Create a copy of the selected data file
 - `D` Delete the selected data file
 - `M` Merge two data files into a new, or export a data file as XML (the exported file is not encrypted)
-- `I` Show information about the data file
+- `I` Show information about the data file in a box (name, type, size, dates, path and backup directory). Any key closes it
 - `h` `l` Select the previous/next data file, `j` `k` Select a directory. The options stay open
 - `R` Refresh the login page
 - `Y` Restart Marbles

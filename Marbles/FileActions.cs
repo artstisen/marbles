@@ -4,47 +4,40 @@ public static class FileActions
 {
     #region Show file info
 
+    /// <summary>
+    /// Show information about the data file in a box on top of the page (the same box as in the file browser),
+    /// with the number of entries and the backup directory as well
+    /// </summary>
+    /// <param name="showEntryCount">True when logged in (the entries can be counted)</param>
     internal static void ShowDataFileInfo(bool showEntryCount)
     {
-        Tools.ClearScreen();
-        Menu.WriteModeLabel(DialogText.CaptionsInfo, String.Empty, 0);
-        Menu.WriteNameInTopBar(true);
-        Tools.CursorDown(3);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.WriteLine(Lang.T(" Working directory and file name:"));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        if (FileBrowser.FilesInDirectory() == 0)
+        FileFavorites.Load();
+        var rows = new List<(string Label, string Value)>();
+        var path = FileIo.GetCurrentFolderAndFileName();
+        if (File.Exists(path))
         {
-            Console.WriteLine(" " + FileIo.GetDataAndSubFolder() + " " + DialogText.NoDataFiles);
+            var full = Path.GetFullPath(path);
+            try
+            {
+                rows = FileExplorer.InfoRows(Path.GetFileName(full), full, false, new FileInfo(full).Length);
+            }
+            catch (Exception e)
+            {
+                rows.Add((DialogText.InfoPath, full));
+                rows.Add((DialogText.InfoType, e.Message));
+            }
+
+            // After the size
+            if (showEntryCount) rows.Insert(Math.Min(3, rows.Count), (DialogText.InfoEntries, Entries.GetEntriesCount().ToString()));
         }
         else
         {
-            Console.WriteLine(" " + FileIo.GetCurrentFolderAndFileName());
+            rows.Add((DialogText.InfoDirectory, Path.GetFullPath(FileIo.GetDataAndSubFolder())));
+            rows.Add((DialogText.InfoName, DialogText.NoDataFiles));
         }
 
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(Lang.T(" File size: "));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.Write(FileIo.GetFileSize(true) + Environment.NewLine);
-        if (showEntryCount)
-        {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(Lang.T(" Entry count: "));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(Entries.GetEntriesCount() + Environment.NewLine);
-        }
-
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.WriteLine(Lang.T(" Absolute path:"));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.WriteLine(" " + FileIo.GetAbsolutePath() + Environment.NewLine + Environment.NewLine);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.WriteLine(Lang.T(" Backup directory:"));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.WriteLine(" " + FileIo.GetBackupPathForDisplay(false) + Environment.NewLine);
-        Tools.CursorDown();
-        Tools.CursorRight();
-        Keyboard.AwaitAnyKey();
+        rows.Add((DialogText.InfoBackup, FileIo.GetBackupPathForDisplay(false)));
+        ChoiceBox.ShowRows(DialogText.InfoCaptionDataFile, rows);
     }
 
     #endregion

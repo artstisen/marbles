@@ -398,6 +398,11 @@ internal static class DialogText
     public static string InfoFavorite => Lang.T("Favorite:");
     public static string InfoFavoriteYes => Lang.T("Yes");
     public static string InfoPath => Lang.T("Path:");
+    // The info box of a data file (in the main menu and on the login page)
+    public static string InfoCaptionDataFile => Lang.T("Data file info");
+    public static string InfoEntries => Lang.T("Entries:");
+    public static string InfoBackup => Lang.T("Backup:");
+    public static string InfoDirectory => Lang.T("Directory:");
     public static string InfoTypeDirectory => Lang.T("Directory");
     public static string InfoTypeDataFile => Lang.T("Marbles data file (encrypted notes)");
     public static string InfoTypeNoExtension => Lang.T("File");

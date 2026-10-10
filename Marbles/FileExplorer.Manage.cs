@@ -535,35 +535,10 @@ internal static partial class FileExplorer
 
     private static void ShowInfo(Item item)
     {
-        var rows = new List<(string Label, string Value)>();
+        List<(string Label, string Value)> rows;
         try
         {
-            FileSystemInfo info = item.IsDirectory ? new DirectoryInfo(item.Path) : new FileInfo(item.Path);
-            rows.Add((DialogText.InfoName, item.Name));
-            rows.Add((DialogText.InfoType, FileType(item, info)));
-            if (item.IsDirectory)
-            {
-                var (files, directories) = FileOperations.Count(item.Path);
-                rows.Add((DialogText.InfoContent, Lang.F("{0} files, {1} directories", files, directories)));
-            }
-            else
-            {
-                rows.Add((DialogText.InfoSize, FileSizeFormatter.FormatSize(item.Size) +
-                                               (item.Size >= 1024 ? " (" + Lang.F("{0} bytes", item.Size.ToString("N0")) + ")" : "")));
-            }
-
-            rows.Add((DialogText.InfoCreated, info.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")));
-            rows.Add((DialogText.InfoChanged, info.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")));
-            if (FileFavorites.Contains(item.Path)) rows.Add((DialogText.InfoFavorite, DialogText.InfoFavoriteYes));
-            // A long path continues on the next rows
-            var width = Init.LineWidth - 8 - InfoLabelWidth;
-            var path = item.Path;
-            for (var label = DialogText.InfoPath; path.Length > 0; label = string.Empty)
-            {
-                var part = path.Length <= width ? path : path[..width];
-                rows.Add((label, part));
-                path = path[part.Length..];
-            }
+            rows = InfoRows(item.Name, item.Path, item.IsDirectory, item.Size);
         }
         catch (Exception e)
         {
@@ -571,34 +546,38 @@ internal static partial class FileExplorer
             return;
         }
 
-        var inner = Init.LineWidth - 6;
-        var top = Math.Max(ListTop, (Init.LineCount - rows.Count - 3) / 2);
-        const int left = 2;
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(top, left);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
-        for (var i = 0; i < rows.Count; i++)
-        {
-            Tools.SetCursorEx(top + 1 + i, left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write("| " + rows[i].Label.PadRight(InfoLabelWidth));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(Tools.TruncateString(rows[i].Value, inner - InfoLabelWidth - 2, true)
-                .PadRight(inner - InfoLabelWidth - 1));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write('|');
-        }
-
-        Tools.SetCursorEx(top + rows.Count + 1, left);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(top, left + 2);
-        Console.Write(" " + (item.IsDirectory ? DialogText.InfoCaptionDirectory : DialogText.InfoCaptionFile) + " ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.ReadKey(true);
+        ChoiceBox.ShowRows(item.IsDirectory ? DialogText.InfoCaptionDirectory : DialogText.InfoCaptionFile, rows);
     }
 
-    private const int InfoLabelWidth = 10;
+    /// <summary>
+    /// What the info box tells about a file or directory: the name, type, size (a directory: what it contains),
+    /// when it was created and changed, whether it is a favorite, and the path. Throws if it cannot be read
+    /// </summary>
+    internal static List<(string Label, string Value)> InfoRows(string name, string path, bool isDirectory,
+        long size)
+    {
+        var item = new Item(name, path, isDirectory, size);
+        var rows = new List<(string Label, string Value)>();
+        FileSystemInfo info = isDirectory ? new DirectoryInfo(path) : new FileInfo(path);
+        rows.Add((DialogText.InfoName, name));
+        rows.Add((DialogText.InfoType, FileType(item, info)));
+        if (isDirectory)
+        {
+            var (files, directories) = FileOperations.Count(path);
+            rows.Add((DialogText.InfoContent, Lang.F("{0} files, {1} directories", files, directories)));
+        }
+        else
+        {
+            rows.Add((DialogText.InfoSize, FileSizeFormatter.FormatSize(size) +
+                                           (size >= 1024 ? " (" + Lang.F("{0} bytes", size.ToString("N0")) + ")" : "")));
+        }
+
+        rows.Add((DialogText.InfoCreated, info.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")));
+        rows.Add((DialogText.InfoChanged, info.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")));
+        if (FileFavorites.Contains(path)) rows.Add((DialogText.InfoFavorite, DialogText.InfoFavoriteYes));
+        rows.Add((DialogText.InfoPath, path));
+        return rows;
+    }
 
     // What kind of file it is, as far as the name tells
     private static string FileType(Item item, FileSystemInfo info)

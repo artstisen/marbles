@@ -37,7 +37,7 @@ The main menu has 2 pages, each with two boxes of keys and commands: four boxes 
 - `:undelete` **Undo deletion**: Undo the last deletion of an entry (since you logged in).
 
 **Data file**
-- `I` **File info**: The directory, name and size of the data file.
+- `I` **File info**: Information about the data file in a box on top of the menu (the same box as `I` in the file browser): name, type, size, the number of entries, when it was created and last changed, the full path, and the backup directory. Any key closes it.
 - `:import` **Import text file**: Import a text file as a new entry. The file is selected in the file browser, and the entry gets the name of the file as its title.
 - `:transfer` **Transfer**: Collect entries for transfer to another data file, protected by a key.
 - `:backup` **Backup**: Turn backup on or off. When on, a copy of the data file is saved in another directory every time it is saved. The directory is selected in the file browser: go to it and press `S`.
