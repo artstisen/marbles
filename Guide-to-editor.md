@@ -67,6 +67,7 @@ Press `v` (text), `V` (whole lines) or `Q` (a block, see below) and select with 
 - `iw` `i"` `i(` Select the word/the text in quotes/the text in brackets
 - `o` Move the cursor to the other end of the selection
 - `v` `V` `Q` Switch to selecting text/lines/a block. The key of the mode you are in leaves it
+- `gv` (in Normal mode) Select again what was selected last, in the same kind of selection, also after the selection was used by a command (like `:ol` or `y`). In Visual mode, `gv` changes places between the selection shown and the last one
 - `Esc` Leave Visual mode
 
 ### Visual block

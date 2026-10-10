@@ -215,6 +215,57 @@ public class BlockTests
         Assert.Equal("文ab\ncd", editor.GetText());
     }
 
+    [Theory]
+    // Selected, and then left with Esc, an operator or the command line
+    [InlineData("lQjjl", "<Esc>", "VisualBlock")]
+    [InlineData("lQjj$", "<Esc>", "VisualBlock")]
+    [InlineData("lvjl", "<Esc>", "Visual")]
+    [InlineData("lVj", "<Esc>", "VisualLine")]
+    [InlineData("lQjjl", "y", "VisualBlock")]
+    [InlineData("lvjl", ":<Esc>", "Visual")]
+    public void Gv_SelectsTheLastSelectionAgain(string select, string leave, string mode)
+    {
+        var selected = Editor(Text);
+        selected.Type(select);
+        var editor = Editor(Text);
+        editor.Type(select + leave + "G0gv");
+        Assert.Equal(mode, editor.Mode.ToString());
+        // The same lines and columns as before
+        for (var line = 0; line < 3; line++)
+        {
+            Assert.Equal(selected.Selection(line), editor.Selection(line));
+        }
+
+        Assert.Equal(selected.Cursor, editor.Cursor);
+    }
+
+    [Fact]
+    public void Gv_InVisualMode_SwapsWithTheLastSelection()
+    {
+        var editor = Editor(Text);
+        editor.Type("vl<Esc>jjVgv");
+        Assert.Equal(EditorMode.Visual, editor.Mode);
+        Assert.Equal((0, 2), editor.Selection(0));
+        Assert.Null(editor.Selection(2));
+        editor.Type("gv");
+        Assert.Equal(EditorMode.VisualLine, editor.Mode);
+        Assert.Equal((0, 6), editor.Selection(2));
+        Assert.Null(editor.Selection(0));
+    }
+
+    [Fact]
+    public void Gv_KeepsTheSelectionWithinTheText()
+    {
+        var editor = Editor(Text);
+        editor.Type("gv");
+        Assert.Equal(EditorMode.Normal, editor.Mode);
+        editor.Type("GQ$<Esc>ggdG");
+        Assert.Equal(string.Empty, editor.GetText());
+        editor.Type("<Esc>gv");
+        Assert.Equal(EditorMode.VisualBlock, editor.Mode);
+        Assert.Equal(new TextPos(0, 0), editor.Cursor);
+    }
+
     [Fact]
     public void Repeat_DoesTheChangeAgainAtTheCursor()
     {

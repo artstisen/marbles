@@ -24,6 +24,10 @@ internal sealed partial class EditorEngine
     private char _operator; // "d", "c", "y", ">", "<", or "u", "U" and "~" for "gu", "gU" and "g~"
     private char _prefix; // A key waiting for a second key: "g", "z", "Z", "r", "f", "F", "t", "T", "i", "a", "[", "]"
     private TextPos _visualAnchor; // Where the selection was started in Visual mode
+    private Selected? _lastSelection; // The selection Visual mode was last left with ("gv")
+
+    // A selection: where it was started, where the cursor was, the kind of selection, and "$" in Visual Block mode
+    private sealed record Selected(TextPos Anchor, TextPos Cursor, EditorMode Mode, bool ToEnd);
 
     private bool HasPending => _count.Length > 0 || _opCount.Length > 0 || _operator != NoKey || _prefix != NoKey;
 
@@ -265,6 +269,9 @@ internal sealed partial class EditorEngine
                     case '~':
                         HandleOperatorKey(cmd);
                         return;
+                    case 'v' when _operator == NoKey:
+                        ReselectLast();
+                        break;
                     case 'j':
                     case 'k':
                     {
@@ -800,6 +807,31 @@ internal sealed partial class EditorEngine
             default:
                 return false;
         }
+    }
+
+    private Selected? CurrentSelection()
+    {
+        return IsVisual ? new Selected(_visualAnchor, Cursor, Mode, _blockToEnd) : null;
+    }
+
+    // "gv": select again what was selected when Visual mode was last left. In Visual mode the selection
+    // shown and the last one change places
+    private void ReselectLast()
+    {
+        if (_lastSelection == null)
+        {
+            Message = "No selection yet";
+            return;
+        }
+
+        var current = CurrentSelection();
+        var last = _lastSelection;
+        // The text may have changed since: the selection is kept within it
+        _visualAnchor = Buffer.Clamp(last.Anchor);
+        Cursor = Buffer.Clamp(last.Cursor);
+        Mode = last.Mode;
+        _blockToEnd = last.ToEnd;
+        if (current != null) _lastSelection = current;
     }
 
     // Move the selected lines down (or up for a negative number of lines), keeping them selected

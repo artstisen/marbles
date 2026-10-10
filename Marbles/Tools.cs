@@ -1449,6 +1449,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("v V Q", "Visual mode (select text/lines/a block)", false));
             _shortcutList.Add(new Shortcut(":vsel :vline", "Select text/lines (as v and V)", false));
             _shortcutList.Add(new Shortcut(":block", "Select a block (as Q)", false));
+            _shortcutList.Add(new Shortcut("gv", "Select the last selection again", false));
             _shortcutList.Add(new Shortcut(":", "Command line (type a command, press Enter)", false));
             _shortcutList.Add(new Shortcut("  Tab", "Complete the command (again: the next, Shift: back)", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Save and close", true));
@@ -1522,6 +1523,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("iw i\" i(", "Select word/text in quotes/in brackets", false));
             _shortcutList.Add(new Shortcut("o", "Move cursor to other end of selection", false));
             _shortcutList.Add(new Shortcut("v V Q", "Switch to text/lines/block (again: leave)", false));
+            _shortcutList.Add(new Shortcut("gv", "Select the last selection again", false));
             _shortcutList.Add(new Shortcut(string.Empty, "Visual block (Q: the same columns on each line)", true));
             _shortcutList.Add(new Shortcut("$", "The block goes to the end of each line", false));
             _shortcutList.Add(new Shortcut("I A", "Type before/after the block on each line", false));

@@ -242,6 +242,8 @@ internal sealed partial class EditorEngine
             _recordedKeys.Add(key);
         }
 
+        // The selection is remembered when Visual mode is left, for "gv"
+        var selectionBefore = IsVisual ? CurrentSelection() : null;
         switch (Mode)
         {
             case EditorMode.Insert:
@@ -255,6 +257,8 @@ internal sealed partial class EditorEngine
                 HandleNormal(key);
                 break;
         }
+
+        if (selectionBefore != null && !IsVisual) _lastSelection = selectionBefore;
 
         // A command is complete when back in Normal mode with nothing pending
         if ((Mode == EditorMode.Normal || IsVisual) && !HasPending)
