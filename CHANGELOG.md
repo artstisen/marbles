@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Lists**: `:ol` makes the selected lines a numbered list and `:ul` a bulleted list (Markdown). Used again on the same lines, the list marks are removed. Indented lines are numbered as a list of their own.
 - **Visual block** in the editor: `Q` (or `:block`) selects a block, the same columns on each of the lines. `I` and `A` type text in front of or after it on every line, `d` `y` `c` `p` `r` and the case changes work on the block, `$` extends it to the end of each line, and a yanked block is pasted as a block. `:vsel` and `:vline` start the other two kinds of selection, and `v` `V` `Q` switch between them.
 - **A background color for the color scheme.** The color scheme editor on menu page 4 has a new last group, _Background_. `[Default]` keeps the terminal's own background (also when it is transparent), which is still the default; a color fills the whole window with it. Saved as `background` in the settings file.
 - **The name at the top of the pages** is now shown as `-- Marbles --` (it was `*** Marbles ***`), and so is the text shown when Marbles exits.

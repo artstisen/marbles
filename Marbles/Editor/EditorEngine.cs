@@ -637,6 +637,10 @@ internal sealed partial class EditorEngine
             {
                 ApplyOperatorToLines('y', first, last);
             }
+            else if (command is "ol" or "ul")
+            {
+                MakeList(first, last, command == "ol");
+            }
             else if (command is "replace" or "rep" && !SingleLine)
             {
                 // Text selected within a line is what to find. Else the selected lines are where to replace
@@ -763,6 +767,10 @@ internal sealed partial class EditorEngine
             case "trim":
                 TrimLines();
                 break;
+            case "ol":
+            case "ul":
+                MakeList(Cursor.Line, Cursor.Line, command == "ol");
+                break;
             case "e":
             case "edit":
             case "reload":
@@ -886,6 +894,61 @@ internal sealed partial class EditorEngine
         }
 
         Cursor = Cursor with { Col = 0 };
+    }
+
+    // The start of a line in a Markdown list: "- ", "* ", "+ ", "1. " or "1) " (after the indentation)
+    private static readonly Regex ListMarker = new(@"^(\s*)(?:[-*+]|\d{1,9}[.)])\s+");
+
+    // True if a line starts a numbered (or else a bulleted) list item
+    private static bool IsListItem(string line, bool ordered)
+    {
+        var match = ListMarker.Match(line);
+        return match.Success && char.IsAsciiDigit(line[match.Groups[1].Length]) == ordered;
+    }
+
+    // ":ol" and ":ul": make lines a numbered ("1. ") or bulleted ("- ") list. Lines that already are a list
+    // of another kind are changed, and lines that all are a list of the kind asked for become plain text again.
+    // Blank lines are left as they are. Numbers count each level of indentation by itself
+    private void MakeList(int first, int last, bool ordered)
+    {
+        if (SingleLine) return;
+        var lines = new List<int>();
+        for (var i = first; i <= last; i++)
+        {
+            if (Buffer[i].Trim().Length > 0) lines.Add(i);
+        }
+
+        if (lines.Count == 0) return;
+        var remove = lines.All(i => IsListItem(Buffer[i], ordered));
+        var levels = new List<(int Indent, int Number)>(); // The numbers of the open levels, the innermost last
+        foreach (var i in lines)
+        {
+            var line = Buffer[i];
+            var match = ListMarker.Match(line);
+            var indent = match.Success ? match.Groups[1].Length : FirstNonBlank(i);
+            var contentStart = match.Success ? match.Length : indent;
+            var marker = string.Empty;
+            if (!remove && ordered)
+            {
+                var width = TextMetrics.WidthOfRange(line, 0, indent);
+                while (levels.Count > 0 && levels[^1].Indent > width) levels.RemoveAt(levels.Count - 1);
+                if (levels.Count == 0 || levels[^1].Indent < width) levels.Add((width, 0));
+                levels[^1] = (width, levels[^1].Number + 1);
+                marker = levels[^1].Number + ". ";
+            }
+            else if (!remove)
+            {
+                marker = "- ";
+            }
+
+            var from = new TextPos(i, indent);
+            var to = new TextPos(i, contentStart);
+            if (Buffer.GetText(from, to) == marker) continue;
+            if (contentStart > indent) Delete(from, to);
+            if (marker.Length > 0) Insert(from, marker);
+        }
+
+        Cursor = new TextPos(first, FirstNonBlank(first));
     }
 
     #endregion
