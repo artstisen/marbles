@@ -1789,58 +1789,24 @@ internal static class Actions
     {
         if (Entries.HasEntries())
         {
-            Tools.ClearScreen();
-            if (!string.IsNullOrEmpty(_searchQuery))
+            // The search text in a box on top of the page (starting with the last search)
+            var query = ChoiceBox.AskText(DialogText.TitleSearch, DialogText.EnterQueryForSearch,
+                DialogText.SearchColon, _searchQuery ?? string.Empty);
+            if (query == null)
             {
-                Menu.WriteModeLabel(DialogText.TitleSearch,
-                    DialogText.EnterQueryForSearch + " " + DialogText.PressEscToExitP,
-                    1);
-            }
-            else
-            {
-                Menu.WriteModeLabel(DialogText.TitleSearch, DialogText.EnterQueryForSearch, 1);
-            }
-
-            Menu.WriteNameInTopBar(true);
-            Tools.CursorDown(3);
-            Console.Write(" " + DialogText.SearchColon);
-            TextArea textArea;
-            if (!string.IsNullOrEmpty(_searchQuery))
-            {
-                textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Tools.GetTitleEditWidth(), 1,
-                    _searchQuery, 0, true, false, false, 0);
-            }
-            else
-            {
-                textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Tools.GetTitleEditWidth(), 1, "", 0, false,
-                    false, false, 0);
-            }
-
-            if (textArea.Canceled)
-            {
+                // Canceled (or nothing to search for)
                 ClearSearchQuery();
                 ResetLastSelectedIndex();
                 RecallPreviousView();
                 return;
             }
 
-            // Fetch data from editor
-            _tempText = textArea.GetText();
-            if (Tools.IsValid(_tempText))
-            {
-                _searchQuery = _tempText;
-                FindAll(0, _searchQuery, true, false);
-            }
-            else
-            {
-                Mode.SetMode(Mode.SelectedMode.Manage);
-                Menu.DrawTopMenu(true, true, false);
-            }
+            _searchQuery = query;
+            FindAll(0, _searchQuery, true, false);
         }
         else
         {
-            Menu.StatusMessage(DialogText.NoEntriesFound, true, true, true, DialogText.CaptionsSearch, string.Empty,
-                false);
+            ChoiceBox.Message(DialogText.CaptionsSearch, DialogText.NoEntriesFound, string.Empty);
             Mode.SetMode(Mode.SelectedMode.Manage);
             Menu.DrawTopMenu(false, true, false);
         }
