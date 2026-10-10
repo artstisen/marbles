@@ -1371,8 +1371,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
             _shortcutList.Add(new Shortcut("h l 1 2", Lang.T("Previous/Next page (as Left/Right)"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Main menu: select an item"), false));
-            _shortcutList.Add(new Shortcut("Tab", Lang.T("Main menu: the other box"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Main menu: the next box (Shift: back)"), false));
             _shortcutList.Add(new Shortcut("Enter", Lang.T("Main menu: open the selected item"), false));
+            _shortcutList.Add(new Shortcut("Esc", Lang.T("Main menu: log out, select mode or exit"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select in lists/Scroll text (as Down/Up)"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last (page, entry or text)"), false));
             _shortcutList.Add(new Shortcut("/", Lang.T("Search"), false));

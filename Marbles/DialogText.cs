@@ -46,6 +46,7 @@ internal static class DialogText
     public static string CaptionsMoreOptions => Lang.T("More options");
     public static string CaptionsColorScheme => Lang.T("Edit color scheme");
     public static string CaptionsMenu => Lang.T("Menu");
+    public static string LeaveKeys => Lang.T("j/k 1-3 Select | Enter Open | Esc Back");
     public static string MenuKeys => Lang.T("j/k Select | Enter Open | Tab Box | h/l Page | : Command | ? Help | X Logout");
     public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | ? Help | Esc Close");
     public static string HelpSectionColorScheme => Lang.T("Color scheme editor");

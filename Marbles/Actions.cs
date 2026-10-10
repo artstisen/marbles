@@ -4,29 +4,6 @@ namespace Marbles;
 
 internal static class Actions
 {
-    #region Escape x 2 to display menu item 1
-
-    private static int _escPressedTimes;
-
-    private static bool EscAction()
-    {
-        if (Menu.GetTopMenuManagePage() > 0)
-        {
-            _escPressedTimes += 1;
-            if (_escPressedTimes <= 1) return false;
-            _escPressedTimes = 0;
-            return true;
-        }
-        else
-        {
-            _escPressedTimes = 0;
-        }
-
-        return false;
-    }
-
-    #endregion
-
     private static ConsoleKeyInfo _c;
 
     /// <summary>
@@ -77,15 +54,24 @@ internal static class Actions
             }
             else if (_c.Key == ConsoleKey.Escape)
             {
-                // Clear screen
+                // Log out, go to the Select mode page or exit
                 ClearSearchQuery();
-                if (EscAction())
+                switch (Menu.LeaveChoice())
                 {
-                    Menu.DrawTopMenu(true, true, false);
-                }
-                else
-                {
-                    Menu.DrawTopMenu(false, true, false);
+                    case 0:
+                        Tools.LoginRoutine(true);
+                        break;
+                    case 1:
+                        StartMenu.Open();
+                        Tools.LoginRoutine(true);
+                        break;
+                    case 2:
+                        // The box was the question
+                        Tools.ExitApplication();
+                        break;
+                    default:
+                        Menu.DrawTopMenu(false, true, false);
+                        break;
                 }
             }
 
@@ -101,8 +87,11 @@ internal static class Actions
             }
             else if (_c.Key == ConsoleKey.Tab)
             {
-                // The other box of the page
-                Menu.SwitchMenuBox();
+                // The next box (Shift: the previous), on this page or the other
+                if (Menu.NextMenuBox((_c.Modifiers & ConsoleModifiers.Shift) != 0))
+                {
+                    Menu.DrawTopMenu(false, true, false);
+                }
             }
             else if (_c.Key is ConsoleKey.J or ConsoleKey.DownArrow)
             {

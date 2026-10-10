@@ -6,6 +6,7 @@ internal static class Menu
     {
         _manageModePage = 0;
         _viewModePage = 0;
+        ResetMenuSelection();
     }
 
     public static int GetTopMenuManagePage()
@@ -502,6 +503,8 @@ internal static class Menu
     // The items of the two boxes of the page shown, and where the boxes are
     private static MenuItem[][] _menuBoxes = { Array.Empty<MenuItem>(), Array.Empty<MenuItem>() };
     private static readonly int[] MenuBoxLeft = new int[2];
+    private static readonly string[] MenuBoxTitles = { string.Empty, string.Empty };
+    private static int _menuBoxWidth;
 
     // The selected item: the box (0 left, 1 right) and its row
     private static int _menuBox;
@@ -579,22 +582,35 @@ internal static class Menu
     private static void DrawMenuBoxes(string leftTitle, MenuItem[] left, string rightTitle, MenuItem[] right)
     {
         var width = (Init.LineWidth - 1) / 2;
+        _menuBoxWidth = width;
         _menuBoxes = new[] { left, right };
         MenuBoxLeft[0] = 0;
         MenuBoxLeft[1] = width + 1;
-        DrawMenuBox(MenuBoxLeft[0], width, leftTitle, left);
-        DrawMenuBox(MenuBoxLeft[1], width, rightTitle, right);
+        MenuBoxTitles[0] = leftTitle;
+        MenuBoxTitles[1] = rightTitle;
         ClampMenuSelection();
+        DrawMenuBox(MenuBoxLeft[0], width, left);
+        DrawMenuBox(MenuBoxLeft[1], width, right);
+        DrawMenuTitle(0);
+        DrawMenuTitle(1);
     }
 
-    private static void DrawMenuBox(int left, int width, string title, MenuItem[] items)
+    // The title of a box: highlighted on the box with the selection, as the panes of the file browser
+    private static void DrawMenuTitle(int box)
+    {
+        Tools.SetCursorEx(MenuBoxTop, MenuBoxLeft[box] + 2);
+        ConsoleColors.SetColors(box == _menuBox
+            ? ConsoleColors.ColorPreset.HighlightInverted
+            : ConsoleColors.ColorPreset.HeaderColor);
+        Console.Write(Tools.FitLine(" " + MenuBoxTitles[box] + " ", Init.LineWidth - (_menuBoxWidth - 4)));
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    private static void DrawMenuBox(int left, int width, MenuItem[] items)
     {
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Tools.SetCursorEx(MenuBoxTop, left);
         Console.Write(AsciiStyles.GetTopCorner() + new string('-', width - 2) + AsciiStyles.GetTopCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(MenuBoxTop, left + 2);
-        Console.Write(Tools.FitLine(" " + title + " ", Init.LineWidth - (width - 4)));
         for (var row = 0; row < MenuBoxRows; row++)
         {
             var y = MenuBoxTop + 1 + row;
@@ -652,14 +668,92 @@ internal static class Menu
     }
 
     /// <summary>
-    /// Select an item of the other box of the main menu (in the same row, or the last item of a shorter box)
+    /// Go to the next box of the main menu (or the previous): the two boxes of the first page, then the two of the
+    /// second, and back to the first. In a box of the same page the row stays (or is the last of a shorter box)
     /// </summary>
-    internal static void SwitchMenuBox()
+    /// <returns>True if the next box is on the other page, which must be drawn</returns>
+    internal static bool NextMenuBox(bool back)
     {
+        var count = ManagePageCount * 2;
+        var next = (_manageModePage * 2 + _menuBox + (back ? count - 1 : 1)) % count;
+        if (next / 2 != _manageModePage)
+        {
+            _manageModePage = next / 2;
+            _menuBox = next % 2;
+            _menuRow = 0;
+            return true;
+        }
+
         DrawMenuPointer(false);
-        _menuBox = 1 - _menuBox;
+        _menuBox = next % 2;
         ClampMenuSelection();
+        DrawMenuTitle(0);
+        DrawMenuTitle(1);
         DrawMenuPointer(true);
+        return false;
+    }
+
+    /// <summary>
+    /// The choices shown with Esc in the main menu: log out, the Select mode page, or exit Marbles
+    /// </summary>
+    /// <returns>The number of the choice (0, 1, 2), or -1 if the box was closed</returns>
+    internal static int LeaveChoice()
+    {
+        var choices = new[] { Lang.T("Logout"), DialogText.StartSelectMode, DialogText.Exit };
+        var inner = Math.Max(TextMetrics.WidthOf(DialogText.CaptionsOptions) + 4,
+            choices.Max(c => TextMetrics.WidthOf(c)) + 12);
+        var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
+        var top = MenuBoxTop + 2;
+        // The box, on top of the menu
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(top, left);
+        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
+        for (var row = 0; row < choices.Length + 2; row++)
+        {
+            Tools.SetCursorEx(top + 1 + row, left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            var text = row >= 1 && row <= choices.Length ? "   " + row + " .... " + choices[row - 1] : string.Empty;
+            Console.Write(text + new string(' ', Math.Max(0, inner - TextMetrics.WidthOf(text))));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+        }
+
+        Tools.SetCursorEx(top + choices.Length + 3, left);
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+        Tools.SetCursorEx(top, left + 2);
+        Console.Write(" " + DialogText.CaptionsOptions + " ");
+        // The keys of the box
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Console.Write(new string(' ', Init.LineWidth - 1));
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        WriteKeyHints(DialogText.LeaveKeys);
+
+        var selected = 0;
+        while (true)
+        {
+            for (var i = 0; i < choices.Length; i++)
+            {
+                Tools.SetCursorEx(top + 2 + i, left + 1);
+                ConsoleColors.SetColors(i == selected
+                    ? ConsoleColors.ColorPreset.HighlightInverted
+                    : ConsoleColors.ColorPreset.Normal);
+                Console.Write(i == selected ? "->" : "  ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            }
+
+            Tools.SetCursorEx(Init.LineCount - 1, 0);
+            var key = Console.ReadKey(true);
+            var navigation = Keyboard.ToNavigationKey(key).Key;
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q || navigation == ConsoleKey.LeftArrow) return -1;
+            if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar || navigation == ConsoleKey.RightArrow) return selected;
+            if (navigation == ConsoleKey.DownArrow) selected = (selected + 1) % choices.Length;
+            if (navigation == ConsoleKey.UpArrow) selected = (selected + choices.Length - 1) % choices.Length;
+            if (key.KeyChar >= '1' && key.KeyChar < '1' + choices.Length) selected = key.KeyChar - '1';
+        }
     }
 
     /// <summary>
