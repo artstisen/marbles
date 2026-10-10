@@ -168,9 +168,9 @@ internal static class StartMenu
         {
             Setting.StartSelect, Setting.StartNotes, Setting.StartEditor, Setting.Monochrome
         };
-        settings.Add(Setting.Language);
         if (!ConsoleColors.Monochrome) settings.Add(Setting.ColorScheme);
         settings.Add(Setting.Logo);
+        settings.Add(Setting.Language);
         settings.Add(Setting.AutoSize);
         if (!Init.AutoSize) settings.Add(Setting.Size);
         settings.Add(Setting.LineNumbers);
