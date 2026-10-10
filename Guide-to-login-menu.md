@@ -21,7 +21,7 @@ The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settin
 Below these are some basic settings, so they can be changed without logging in to a data file:
 
 - **Black and white (no colors)**: Show everything in black and white. Your color scheme is kept and is used again when this is turned off
-- **Language**: The language of the menus, help and messages: English or Danish (Dansk) for now, with more to come. `l` and `h` select the next and the previous. Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
+- **Language**: The language of the menus, help and messages: English, Dansk (Danish), Deutsch (German), Norsk bokmål (Norwegian), Svenska (Swedish), Español (Spanish) or Français (French). `l` and `h` select the next and the previous. Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
 - **Color scheme**: Select one of the color presets (not shown when _Black and white_ is on)
 - **Logo**: Select one of the logo presets
 - **Automatic size**: Follow the size of the terminal window

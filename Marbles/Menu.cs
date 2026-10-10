@@ -929,14 +929,20 @@ internal static class Menu
     internal static void WriteKeyHints(string hints)
     {
         Console.Write(" ");
+        // The hints that fit on the line are shown (a longer text in another language can need more room)
+        var room = Init.LineWidth - 1 - Console.CursorLeft;
         foreach (var hint in hints.Split(" | "))
         {
             var space = hint.IndexOf(' ');
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.NormalInverted);
-            Console.Write(" " + (space < 0 ? hint : hint[..space]) + " ");
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            var key = " " + (space < 0 ? hint : hint[..space]) + " ";
             // One blank space on each side of the description
-            Console.Write(space < 0 ? " " : " " + hint[(space + 1)..] + " ");
+            var description = space < 0 ? " " : " " + hint[(space + 1)..] + " ";
+            room -= TextMetrics.WidthOf(key + description);
+            if (room < 0) break;
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.NormalInverted);
+            Console.Write(key);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(description);
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

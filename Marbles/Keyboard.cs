@@ -138,7 +138,8 @@ class Shortcut
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             Console.Write(_divider);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(" " + _description);
+            // A long description (in another language) is cut at the edge of the window
+            Console.Write(Tools.FitLine(" " + _description, Console.CursorLeft));
         }
         if (newLine)
         {

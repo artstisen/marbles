@@ -1446,7 +1446,9 @@ internal static class Actions
         Menu.DrawTopMenu(false, false, false);
         Menu.WriteNameInTopBar(true);
         Tools.CursorTopLeft();
-        Tools.CursorRight(Init.LineWidth - 28);
+        // The dates end at the right side (the labels can be longer in other languages)
+        var labelWidth = Math.Max(DialogText.DateCreatedColon.Length, DialogText.DateChangedColon.Length);
+        Tools.CursorRight(Math.Min(Init.LineWidth - 28, Init.LineWidth - 1 - labelWidth - 19));
         Tools.CursorDown();
         Tools.SaveCursorPosition(1);
         Console.Write(DialogText.DateCreatedColon + Entries.CurrentEntry.DateCreated);
@@ -2701,8 +2703,8 @@ internal static class Actions
             if (Mode.CurrentSearchMode == Mode.SearchMode.ListAll || Mode.CurrentSearchMode == Mode.SearchMode.Search)
             {
                 Console.Write(" " + DialogText.Select + new string(' ', 4) + DialogText.Title + new string(' ',
-                    Init.LineWidth - ((DialogText.Select.Length + 1) + DialogText.Title.Length +
-                                      GetSortCaption().Length + 4)));
+                    Math.Max(1, Init.LineWidth - ((DialogText.Select.Length + 1) + DialogText.Title.Length +
+                                                  GetSortCaption().Length + 4))));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
                 Console.Write(GetSortCaption());
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -2712,16 +2714,18 @@ internal static class Actions
                  Mode.SearchMode.Favorites) // Favorites uses "date changes" but without changing the header color
             {
                 Console.Write(" " + DialogText.Select + new string(' ', 4) + DialogText.Title + new string(' ',
-                    Init.LineWidth - ((DialogText.Select.Length + 1) + DialogText.Title.Length +
-                                      DialogText.FavoritesSortColumn.Length + 5)));
+                    Math.Max(1, Init.LineWidth - ((DialogText.Select.Length + 1) + DialogText.Title.Length +
+                                                  DialogText.FavoritesSortColumn.Length + 5))));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 Console.Write(DialogText.FavoritesSortColumn);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             }
             else // All other: dynamic search, top 20 are "Date changed" with header color to indicate the sorting
             {
+                // The column name ends 4 columns from the right side, however long it is
                 Console.Write(" " + DialogText.Select + new string(' ', 4) + DialogText.Title +
-                              new string(' ', Init.LineWidth - 32));
+                              new string(' ', Math.Max(1, Init.LineWidth - 4 - (1 + DialogText.Select.Length + 4 +
+                                  DialogText.Title.Length) - DialogText.SortOptionDateChanged.Length)));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
                 Console.Write(DialogText.SortOptionDateChanged);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

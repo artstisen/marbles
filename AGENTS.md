@@ -18,7 +18,9 @@ Text shown to the user is written in English in the code and given to `Lang.T(".
 
 - Write the whole text in the call, as one text: `Lang.F("{0} files found", count)`, not `count + " files found"` (word order differs between languages), and not `Lang.T(condition ? "a" : "b")` (write two calls). A name made while running (a color, a month) is listed in `Lang.Names`
 - What stays English in all languages: commands, keys, the names of the editor modes (NORMAL, INSERT, VISUAL ...), the settings file, the log, and the guides. Keys are not translated in key hints either (`j/k Select`: only `Select` is)
-- After adding or changing texts, run `python tools/langfile.py da` (and for each other language file): new texts get an empty translation, which is shown in English until it is filled in. Then translate them
+- After adding or changing texts, run `python tools/langfile.py xx` for each language file (da, de, nb, sv, es, fr): new texts get an empty translation, which is shown in English until it is filled in. Then translate them, and run `python tools/checklang.py xx` (0 errors; its warnings point at translations that may be too long for the screen)
+- The language files are built into the program: build again to see a change in a file
+- The screen is 80 columns: keep translations about as long as the English. Key hints, help rows and page footers that are too long are cut at the edge (`Tools.FitLine`), labels in boxes take the width of their text, and nothing may be placed at a fixed column after a text that can be translated
 - `LangTests` checks the language files against the code (missing or unknown texts, placeholders, keys, blank space) and fails on text written to the screen without `Lang.T`. A line that is meant to stay English gets a comment containing "English"
 - Text that is kept (a field, a list made at startup) is not translated when the language changes: look it up when it is shown
 

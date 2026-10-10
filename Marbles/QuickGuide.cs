@@ -110,7 +110,7 @@ internal static class QuickGuide
             var page = top >= maxTop ? pages : top / pageSize + 1;
             Tools.SetCursorEx(Init.LineCount - 1, 0);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(" " + Lang.F("Page {0} of {1}", page, pages) + " " + DialogText.QuickGuideKeys);
+            Console.Write(Tools.FitLine(" " + Lang.F("Page {0} of {1}", page, pages) + " " + DialogText.QuickGuideKeys, 0));
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
 
             var key = Console.ReadKey(true);

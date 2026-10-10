@@ -1037,6 +1037,27 @@ internal static class Tools
     }
 
 
+    /// <summary>
+    /// A text cut to fit on a line of the window after a number of columns already used (texts in other
+    /// languages can be longer, and writing past the last column of the bottom line would scroll the window)
+    /// </summary>
+    internal static string FitLine(string text, int used)
+    {
+        var room = Math.Max(0, Init.LineWidth - 1 - used);
+        // Key hints ("a | b | c") lose whole hints from the end
+        while (TextMetrics.WidthOf(text) > room && text.LastIndexOf(" | ", StringComparison.Ordinal) > 0)
+        {
+            text = text[..text.LastIndexOf(" | ", StringComparison.Ordinal)];
+        }
+
+        while (TextMetrics.WidthOf(text) > room)
+        {
+            text = text[..^TextMetrics.PreviousElementLength(text, text.Length)];
+        }
+
+        return text;
+    }
+
     internal static void ClearScreen()
     {
         // The screen is cleared with the background of the color scheme
@@ -1629,16 +1650,17 @@ internal static class Tools
             var page = top >= maxTop ? pages : top / pageSize + 1;
             SetCursorEx(Init.LineCount - 1, 0);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(" " + Lang.F("Page {0} of {1}", page, pages) + " ");
+            var pageText = " " + Lang.F("Page {0} of {1}", page, pages) + " ";
+            Console.Write(pageText);
             if (message.Length > 0)
             {
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-                Console.Write(" " + message + " ");
+                Console.Write(FitLine(" " + message + " ", pageText.Length));
             }
             else
             {
-                Console.Write(topic == HelpTopic.All ? DialogText.HelpKeys :
-                    showAll ? DialogText.HelpKeysAll : DialogText.HelpKeysTopic);
+                Console.Write(FitLine(topic == HelpTopic.All ? DialogText.HelpKeys :
+                    showAll ? DialogText.HelpKeysAll : DialogText.HelpKeysTopic, pageText.Length));
             }
 
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

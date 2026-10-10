@@ -47,7 +47,7 @@ The main menu has 4 pages. Besides `h`/`l`, the pages can be selected with `1`-`
 - `:size` **Change dimensions**: Set the number of rows and columns used by Marbles.
 - `:size auto` **Follow the size of the window**: Turn automatic dimensions on or off. When on, Marbles uses the size of the terminal window (leaving one row and one column unused), checked when the login page, a menu, a list or an entry is shown. A window resized while the editor is open is picked up when the editor is closed. Setting the dimensions yourself with `:size` turns automatic dimensions off.
 - `:color` **Color preset**: Use the next of the color presets, or select one by number: `:color 5` (see page 4 for making your own).
-- `:language` **Language**: Use the next language, or select one by its code: `:language da` (Danish), `:language en` (English). The language is saved as `language` in the settings file, and can also be changed on the Configuration page
+- `:language` **Language**: Use the next language, or select one by its code: `:language en` (English), `da` (Danish), `de` (German), `nb` (Norwegian), `sv` (Swedish), `es` (Spanish), `fr` (French). The language is saved as `language` in the settings file, and can also be changed on the Configuration page
 - `:logo` **Logo preset**: Use the next of the logo presets, or select one by number: `:logo 3` (the last preset shows a text of your own, set as `logotxt` in the settings file).
 - `:backup` **Toggle backup**: Save a copy of the data file in another directory every time it is saved. The directory is selected in the file browser: go to it and press `S`.
 - `:password` **Reset password**: Change the password of the data file. It is not possible to recover your notes if you forget your password.
