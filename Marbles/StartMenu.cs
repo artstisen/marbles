@@ -108,7 +108,7 @@ internal static class StartMenu
         {
             Init.ApplyAutoSize();
             Tools.ClearScreen();
-            Logo.DrawLogo(true, animate);
+            Logo.DrawLogo(true, animate, false);
             animate = false;
             var result = Select(DialogText.StartSelectMode, Choices, ref selected, false, DialogText.StartKeys);
             if (result == Result.Redraw) continue;
@@ -231,7 +231,7 @@ internal static class StartMenu
                 Init.ApplyAutoSize();
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Tools.ClearScreen();
-                Logo.DrawLogo(true, false);
+                Logo.DrawLogo(true, false, false);
                 Tools.SetCursorEx(FirstRow - 2, 1);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
                 Console.Write(DialogText.StartConfiguration + ":");

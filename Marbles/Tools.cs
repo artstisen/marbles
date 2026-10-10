@@ -368,12 +368,12 @@ internal static class Tools
         _reopenLoginOptions = false;
         var tempShortcuts = new List<Shortcut>
         {
-            new("I", DialogText.FileInfo, false, 13),
+            new("F/T", DialogText.BrowseFilesSelectMode, false, 13),
             new("N", DialogText.NewFile, false, 13),
             new("X", DialogText.RenameFile, false, 13),
             new("C/D", DialogText.CopyDeleteFile, false, 13),
             new("M", DialogText.MergeFiles, false, 13),
-            new("F/T", DialogText.BrowseFilesSelectMode, false, 13),
+            new("I", DialogText.FileInfo, false, 13),
             new(string.Empty, "-", true, 13),
             new("h l / j k", DialogText.SelectFileDirectory, false, 13),
             new("R/Y", DialogText.Refresh + "/" + DialogText.Restart, false, 13),
@@ -1366,12 +1366,12 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Up Down", Lang.T("Select a directory"), false));
             _shortcutList.Add(new Shortcut("Space", Lang.T("Move the data file to another directory"), false));
             _shortcutList.Add(new Shortcut("Esc", Lang.T("Clear the password. When empty: Options"), false));
-            _shortcutList.Add(new Shortcut("Esc I", Lang.T("Information about the data file"), false));
+            _shortcutList.Add(new Shortcut("Esc F", Lang.T("Browse and edit text files"), false));
+            _shortcutList.Add(new Shortcut("Esc T", Lang.T("Select mode (notes/text editor/startup)"), false));
             _shortcutList.Add(new Shortcut("Esc N", Lang.T("New data file"), false));
             _shortcutList.Add(new Shortcut("Esc X C D", Lang.T("Rename/Copy/Delete the data file"), false));
             _shortcutList.Add(new Shortcut("Esc M", Lang.T("Merge two data files, or export one as XML"), false));
-            _shortcutList.Add(new Shortcut("Esc F", Lang.T("Browse and edit text files"), false));
-            _shortcutList.Add(new Shortcut("Esc T", Lang.T("Select mode (notes/text editor/startup)"), false));
+            _shortcutList.Add(new Shortcut("Esc I", Lang.T("Information about the data file"), false));
             _shortcutList.Add(new Shortcut("Esc h l j k", Lang.T("Select data file/directory"), false));
             _shortcutList.Add(new Shortcut("Esc R Y", Lang.T("Refresh the page/Restart Marbles"), false));
             _shortcutList.Add(new Shortcut("Esc G S", Lang.T("Show the log/Edit settings.ini"), false));

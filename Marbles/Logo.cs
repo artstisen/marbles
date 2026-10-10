@@ -17,7 +17,7 @@ internal static class Logo
         @" ### . ### ###  ### ###  ### ###__##"" ""##__### ""##__### ###__##""",
         // The block letters drawn with % (and M inside)
         @" ",
-        @" %_  .  _%""""""""""""%%_""""""""""""%%_""""""""""""%%_%%%% %%%%""""""""""""%%%""""""""""""%%%",
+        @" %_  .  _%""""""""""""%%_""""""""""""%%_""""""""""""%%_ %%% %%%%""""""""""""%%%""""""""""""%%%",
         @" %%%_ _%%% %%% _%M% %%% _%%"" %%% _%%"" %M%  ___ %%%_ """""" %M% ___",
         @" %M% "" %M% M%M"" %M% %M%"" %M% %M%"" %M% %M%  %M% %M%  ___  """""" %M%",
         @" %%% . %%% %%%  %%% %%%  %%% %%%__%%"" ""%%__%%% ""%%__%%% %%%__%%""",
@@ -170,7 +170,10 @@ internal static class Logo
         DrawLogo(showVersionNumber, false);
     }
 
-    internal static void DrawLogo(bool showVersionNumber, bool animate)
+    /// <param name="showVersionNumber">Show the version number on the first line</param>
+    /// <param name="animate">Sweep the logo in from the left</param>
+    /// <param name="showDataFile">Show the name of the selected data file at the top right (not on the start page)</param>
+    internal static void DrawLogo(bool showVersionNumber, bool animate, bool showDataFile = true)
     {
         // The lines of the preset, and its margin
         _startIndex = _logoIndex * 5;
@@ -213,7 +216,7 @@ internal static class Logo
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
         }
 
-        Menu.WriteDataFileName();
+        if (showDataFile) Menu.WriteDataFileName();
     }
 
     // Reveal the logo column by column from left to right. A key press ends the sweep

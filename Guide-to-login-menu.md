@@ -50,14 +50,14 @@ Log in to the selected data file by typing its password and pressing `Enter`.
 ## Options
 Press `Esc` and then one of the following keys:
 
-- `I` Show information about the data file
+- `F` Browse files: open the [file browser](#file-browser) to edit plain text files
+- `T` Go to the [Select mode](#select-mode) page
 - `N` Create a new data file
 - `X` Rename the selected data file
 - `C` Create a copy of the selected data file
 - `D` Delete the selected data file
 - `M` Merge two data files into a new, or export a data file as XML (the exported file is not encrypted)
-- `F` Browse files: open the [file browser](#file-browser) to edit plain text files
-- `T` Go to the [Select mode](#select-mode) page
+- `I` Show information about the data file
 - `h` `l` Select the previous/next data file, `j` `k` Select a directory. The options stay open
 - `R` Refresh the login page
 - `Y` Restart Marbles
