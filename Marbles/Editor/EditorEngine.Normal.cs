@@ -975,6 +975,11 @@ internal sealed partial class EditorEngine
                     // The command will work on the selected lines
                     _selectionFirstLine = Math.Min(_visualAnchor.Line, Cursor.Line);
                     _selectionLastLine = Math.Max(_visualAnchor.Line, Cursor.Line);
+                    // The selection itself, for ":dup"
+                    _commandSelectionMode = Mode;
+                    _commandSelectionFrom = _visualAnchor < Cursor ? _visualAnchor : Cursor;
+                    _commandSelectionTo = _visualAnchor < Cursor ? Cursor : _visualAnchor;
+                    if (Mode == EditorMode.VisualBlock) _commandBlock = BlockBounds();
                     // Text selected within a line (a word) can be used by the command
                     _selectionText = string.Empty;
                     if (Mode == EditorMode.Visual && _visualAnchor.Line == Cursor.Line && CurrentLine.Length > 0)
@@ -992,6 +997,7 @@ internal sealed partial class EditorEngine
                 else
                 {
                     _selectionText = string.Empty;
+                    _commandSelectionMode = EditorMode.Normal;
                     OpenCommandLine(':');
                 }
 

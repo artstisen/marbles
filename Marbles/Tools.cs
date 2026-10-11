@@ -1651,6 +1651,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":pw", Lang.T("Insert generated strong password"), false));
             _shortcutList.Add(new Shortcut(":trim", Lang.T("Trim blank space (line start/end)"), false));
             _shortcutList.Add(new Shortcut(":ol :ul", Lang.T("Numbered/Bulleted list (selected lines)"), false));
+            _shortcutList.Add(new Shortcut(":dup", Lang.T("Duplicate the selection (or the line)"), false));
             _shortcutList.Add(new Shortcut(":syntax", Lang.T("Colors on/off (md html css js json xml files: on)"), false));
             _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md, css, js, json, xml)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Entries"), Lang.T("Remember their colors (shown as MD, HTML ...)"), false));

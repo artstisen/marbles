@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Duplicate in the editor**: `:dup` (or `:duplicate`) copies the selection right after itself: text selected with `v` after its last character, lines selected with `V` below them, a block selected with `Q` to its right. Without a selection it duplicates the line of the cursor (`:2,5dup` lines 2 to 5).
 - **Picking the color scheme and the language**: `:color` and `:language` in the main menu, and `Enter` on _Color scheme_ and _Language_ on the Configuration page, show the choices in a box on top of the page (`j`/`k`, `gg`/`G` or the number, and `Enter`). The last choice of the color schemes opens the color scheme editor. `h`/`l` on the Configuration page still select the previous/next, and `:color 5` and `:language da` still select at once.
 - **Automatic size off** (`:size auto`, or the Configuration page) goes back to the default size.
 - **Entries remember their syntax colors**: `:syntax md` (or `html`, `css`, `js`, `json`, `xml`) when editing an entry is kept in the entry, as the favorite and pin tags (a letter in its options, in the encrypted data file), so it is colored when it is opened again, and in the preview of the _INSPECT_ page. `:syntax off` removes it. The lists show the kind (_MD_, _HTML_ ...) before the date, and the info box (`i`) tells the syntax. Earlier versions of Marbles ignore the tag.

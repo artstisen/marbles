@@ -613,6 +613,9 @@ internal sealed partial class EditorEngine
         if (command.Length == 0) return;
         // Logged by name only: the text of the document (as in a replace command) is not
         if (!SingleLine) EventLog.AddCommand(DialogText.LogEditorCommand, command);
+        // The range of a selection ("'<,'>", given when ":" is pressed in a Visual mode)
+        var fromSelection = command.StartsWith("'<,'>", StringComparison.Ordinal) &&
+                            _commandSelectionMode != EditorMode.Normal;
         // Commands may start with the lines to work on, like ":%s/a/b/" or ":2,5d"
         if (!ParseRange(ref command, out var range))
         {
@@ -644,6 +647,10 @@ internal sealed partial class EditorEngine
             else if (command is "ol" or "ul")
             {
                 MakeList(first, last, command == "ol");
+            }
+            else if (command is "dup" or "duplicate")
+            {
+                Duplicate(first, last, fromSelection);
             }
             else if (command is "replace" or "rep" && !SingleLine)
             {
@@ -770,6 +777,10 @@ internal sealed partial class EditorEngine
                 break;
             case "trim":
                 TrimLines();
+                break;
+            case "dup":
+            case "duplicate":
+                Duplicate(Cursor.Line, Cursor.Line, false);
                 break;
             case "ol":
             case "ul":
@@ -913,6 +924,76 @@ internal sealed partial class EditorEngine
     // ":ol" and ":ul": make lines a numbered ("1. ") or bulleted ("- ") list. Lines that already are a list
     // of another kind are changed, and lines that all are a list of the kind asked for become plain text again.
     // Blank lines are left as they are. Numbers count each level of indentation by itself
+    // The selection when ":" was pressed in a Visual mode (Normal: none), for ":dup"
+    private EditorMode _commandSelectionMode = EditorMode.Normal;
+    private TextPos _commandSelectionFrom;
+    private TextPos _commandSelectionTo; // The last selected char (included)
+    private (int First, int Last, int Left, int Right) _commandBlock;
+
+    /// <summary>
+    /// ":dup": put a copy of the selection right after it. Text selected in Visual mode is copied after its last
+    /// char, the lines of Visual Line mode (or of a range, or the line of the cursor) below the last of them, and a
+    /// block of Visual Block mode to the right of the block. The cursor goes to the start of the copy
+    /// </summary>
+    private void Duplicate(int first, int last, bool fromSelection)
+    {
+        if (SingleLine) return;
+        var mode = fromSelection ? _commandSelectionMode : EditorMode.VisualLine;
+        _commandSelectionMode = EditorMode.Normal;
+        switch (mode)
+        {
+            case EditorMode.Visual:
+            {
+                var from = _commandSelectionFrom;
+                var to = _commandSelectionTo;
+                // The last char is part of the selection (at the end of a line: the line break)
+                if (to.Col < Buffer.LineLength(to.Line))
+                {
+                    to = new TextPos(to.Line, to.Col + TextMetrics.ElementLength(Buffer[to.Line], to.Col));
+                }
+                else if (to.Line + 1 < Buffer.LineCount)
+                {
+                    to = new TextPos(to.Line + 1, 0);
+                }
+
+                var text = Buffer.GetText(from, to);
+                if (text.Length == 0) return;
+                Insert(to, text);
+                Cursor = to;
+                break;
+            }
+            case EditorMode.VisualBlock:
+            {
+                var (top, bottom, left, right) = _commandBlock;
+                var copyStart = BlockRange(top, left, right).End;
+                for (var line = top; line <= bottom; line++)
+                {
+                    var (start, end) = BlockRange(line, left, right);
+                    if (start >= end) continue;
+                    var piece = Buffer[line][start..end];
+                    // Text to the right of the block stays in line
+                    if (right != int.MaxValue && end < Buffer.LineLength(line))
+                    {
+                        piece += new string(' ', Math.Max(0, right - left - TextMetrics.WidthOf(piece)));
+                    }
+
+                    Insert(new TextPos(line, end), piece);
+                }
+
+                Cursor = new TextPos(top, copyStart);
+                break;
+            }
+            default:
+            {
+                var lines = string.Join(TextBuffer.NewLine,
+                    Enumerable.Range(first, last - first + 1).Select(line => Buffer[line]));
+                Insert(new TextPos(last, Buffer.LineLength(last)), TextBuffer.NewLine + lines);
+                Cursor = new TextPos(last + 1, FirstNonBlank(last + 1));
+                break;
+            }
+        }
+    }
+
     private void MakeList(int first, int last, bool ordered)
     {
         if (SingleLine) return;

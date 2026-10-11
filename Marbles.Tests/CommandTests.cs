@@ -73,7 +73,7 @@ public class CommandTests
     [Fact]
     public void Tab_InTheEditor_KeepsTheLinesInFrontOfTheCommand()
     {
-        Assert.Equal("%delete %d", Tabs(CommandContext.Editor, "%d", 2));
+        Assert.Equal("%delete %dup %duplicate %d", Tabs(CommandContext.Editor, "%d", 4));
         Assert.Equal("'<,'>yank", Tabs(CommandContext.Editor, "'<,'>y", 1));
         Assert.Equal("2,5replace", Tabs(CommandContext.Editor, "2,5rep", 1));
         // "quit" is a command, and there is one more that starts with it
