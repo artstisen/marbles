@@ -108,21 +108,7 @@ internal static class Menu
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.Search)
         {
-            if (Mode.CurrentRecallMode != Mode.RecallMode.Favorites)
-            {
-                WriteMenuItem("j k", Lang.T("Select"), true);
-            }
-            WriteMenuItem("1-9+0 :12", Lang.T("Select by number"), true);
-            WriteMenuItem("P", Lang.T("Toggle favorite/pin"), true);
-            if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites)
-            {
-                WriteMenuItem(":pin", Lang.T("Pinned color"), true);
-                WriteMenuItem("Tab V", Lang.T("Move pinned (j/k, Esc)"), true);
-            }
-            else
-            {
-                WriteMenuItem(":title", Lang.T("Change title (:delete Delete)"), true);
-            }
+            // A list of entries draws its own page (Actions.DisplayResultPages)
         }
         else
         {

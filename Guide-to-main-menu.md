@@ -18,12 +18,13 @@ The same keys are used everywhere in Marbles:
 ## Main menu
 The main menu has 2 pages, each with two boxes of keys and commands: four boxes in all, numbered 1 to 4 on the line below them, where the number of the box with the selection is highlighted. _MENU_ is shown at the top left, and the name of the data file at the top right, above a dividing line. The keys of the page are shown at the bottom.
 
-- Each item can be used with its key or command, or selected and opened: `j` `k` (or `Down`/`Up`) select an item, and `Enter` opens the selected item. The title of the box with the selection is highlighted
+- Each item can be used with its key or command, or selected and opened: `j` `k` (or `Down`/`Up`) select an item, and `Enter` or `l` (or `Right`) opens the selected item. The title of the box with the selection is highlighted
 - `j` on the last item of a box goes on to the first item of the next box (on the next page after box 2, and back to box 1 after box 4). `k` on the first item goes back to the last item of the previous box
 - `gg` (or `Home`) selects the first item of box 1, and `G` (or `End`) the last item of box 4
 - `Tab` goes to the next box: from the two boxes of the first page to the two of the second, and back to the first. `Shift+Tab` goes the other way
 - `Esc` shows a small box with three choices: **1 Logout**, **2 Select mode** (log out and go to the [Select mode](Guide-to-login-menu.md#select-mode) page) and **3 Exit** (close Marbles, without asking again). Select with `j` `k` (`gg` `G`: the first/last) or the number and press `Enter`, or `Esc` to close the box
-- `h` `l` (or `Left`/`Right`) show the previous/next page, and `1` and `2` select a page
+- `h` (or `Left`) shows the previous page, and `1` and `2` select a page
+- `?` shows the keys of the main menu (a section of the help of its own)
 
 ### Page 1: Notes and Data file
 **Notes**
@@ -83,10 +84,11 @@ The colors of Marbles are edited on a page of their own, opened with `:scheme` i
 With _Black and white_ on, the colors can still be edited: they are used when black and white is turned off.
 
 ## Lists of entries
-Search results, Top 20, Favorites, Session history and List all are shown as lists.
+Search results, Top 20, Favorites, Session history and List all are shown as lists. The kind of list (_ALL_, _TOP 20_, _FAVORITES_, _SESSION HISTORY_, _SEARCH_) is shown at the top left, the most used keys at the bottom, and `?` shows all the keys of the lists.
 
-- `j` `k` Select an entry, `gg` `G` Select the first/last entry on the page, `PgUp` `PgDn` Move 3 entries
-- `h` `l` Previous/Next page of the list
+- `j` `k` Select an entry, `PgUp` `PgDn` Move 3 entries
+- `gg` `G` Select the first/last entry of the list (on the first/last page)
+- `h` `l` Previous/Next page of the list, `Home` `End` the first/last page
 - `Enter` or `Space` Open the selected entry
 - `1`-`9` and `0` Open entry 1-10 directly. `:12` opens entry 12
 - `P` Add the selected entry to (or remove it from) the favorites, or pin it to the top of the favorites list

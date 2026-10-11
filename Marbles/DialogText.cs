@@ -47,7 +47,10 @@ internal static class DialogText
     public static string CaptionsColorScheme => Lang.T("Edit color scheme");
     public static string CaptionsMenu => Lang.T("Menu");
     public static string LeaveKeys => Lang.T("j/k 1-3 Select | Enter Open | Esc Back");
-    public static string MenuKeys => Lang.T("j/k Select | Enter Open | Tab Box | h/l Page | : Command | ? Help | X Logout");
+    public static string MenuKeys => Lang.T("j/k Select | l/Enter Open | Tab Box | h Back | ? Help | X Logout");
+    // The keys of a list of entries (All, Top 20, Favorites, Session history, Search)
+    public static string ListKeys => Lang.T("Enter Open | h/l Page | gg/G First/Last | ? Help | Esc Back");
+    public static string HelpSectionMainMenu => Lang.T("Main menu");
     public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | ? Help | Esc Close");
     public static string HelpSectionColorScheme => Lang.T("Color scheme editor");
     public static string CaptionsExport => Lang.T("Export");
@@ -474,7 +477,7 @@ internal static class DialogText
     public static string HelpKeysAll => Lang.T("| h/l Page | j/k Line | / Search | n/N Next | ? This page | Esc Close");
     public static string HelpSectionStart => Lang.T("Start page");
     public static string HelpSectionLogin => Lang.T("Login page");
-    public static string HelpSectionMenus => Lang.T("Menus and lists");
+    public static string HelpSectionMenus => Lang.T("Lists of entries");
     public static string HelpSectionEditor => Lang.T("Editor");
     public static string HelpNotFound => Lang.T("Not found: ");
     public static string NotEncrypted => Lang.T("[Not encrypted]");

@@ -1334,7 +1334,8 @@ internal static class Tools
         All,
         Start, // The page shown at startup, and its configuration
         Login,
-        Menus, // The main menu and the lists of entries
+        MainMenu, // The main menu of a data file
+        Menus, // The lists of entries
         Inspect, // An entry being inspected (the preview before it is edited)
         Files, // The file browser
         Favorites, // The favorites of the file browser
@@ -1389,27 +1390,46 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc U", Lang.T("Quick guide: a short introduction"), false));
             _shortcutList.Add(new Shortcut("Esc ?", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Exit Marbles"), false));
-            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
-            _shortcutList.Add(new Shortcut("h l 1 2", Lang.T("Previous/Next page (as Left/Right)"), false));
-            _shortcutList.Add(new Shortcut("j k", Lang.T("Main menu: select an item (on into the next box)"), false));
-            _shortcutList.Add(new Shortcut("Tab", Lang.T("Main menu: the next box (Shift: back)"), false));
-            _shortcutList.Add(new Shortcut("Enter", Lang.T("Main menu: open the selected item"), false));
-            _shortcutList.Add(new Shortcut("Esc", Lang.T("Main menu: log out, select mode or exit"), false));
-            _shortcutList.Add(new Shortcut("j k", Lang.T("Select in lists/Scroll text (as Down/Up)"), false));
-            _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last (item, entry or text)"), false));
-            _shortcutList.Add(new Shortcut("/", Lang.T("Search"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMainMenu, true));
+            _shortcutList.Add(new Shortcut("j k", Lang.T("Select an item (on into the next box)"), false));
+            _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the selected item"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("The next box (Shift: back)"), false));
+            _shortcutList.Add(new Shortcut("h", Lang.T("The previous page"), false));
+            _shortcutList.Add(new Shortcut("1 2", Lang.T("Page 1/Page 2"), false));
+            _shortcutList.Add(new Shortcut("gg G", Lang.T("The first/last item"), false));
+            _shortcutList.Add(new Shortcut("Esc", Lang.T("Log out, select mode or exit"), false));
+            _shortcutList.Add(new Shortcut("N S / A T F M", Lang.T("The keys of the items (shown in the boxes)"), false));
             _shortcutList.Add(new Shortcut("?", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (commands are shown in the menus)"), false));
             _shortcutList.Add(new Shortcut("  Tab", Lang.T("Complete the command (again: the next, Shift: back)"), false));
-            _shortcutList.Add(new Shortcut(":q", Lang.T("Close/Return (in the main menu: Exit Marbles)"), false));
-            _shortcutList.Add(new Shortcut(":qa", Lang.T("Exit Marbles"), false));
+            _shortcutList.Add(new Shortcut(":q :qa", Lang.T("Exit Marbles"), false));
             _shortcutList.Add(new Shortcut(":new :new Title", Lang.T("New entry (asks for the title if not given)"), false));
             _shortcutList.Add(new Shortcut(":logout", Lang.T("Logout"), false));
-            _shortcutList.Add(new Shortcut(":guide", Lang.T("Main menu: Quick guide (a short introduction)"), false));
+            _shortcutList.Add(new Shortcut(":guide", Lang.T("Quick guide (a short introduction)"), false));
+            _shortcutList.Add(new Shortcut(":browse", Lang.T("Browse files (opening a file logs out)"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
+            _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
+            _shortcutList.Add(new Shortcut("Enter Space", Lang.T("Inspect the selected entry"), false));
+            _shortcutList.Add(new Shortcut("1-9 0 :12", Lang.T("Select by number (0 is the 10th)"), false));
+            _shortcutList.Add(new Shortcut("h l", Lang.T("The previous/next page"), false));
+            _shortcutList.Add(new Shortcut("gg G", Lang.T("The first/last entry (on the first/last page)"), false));
+            _shortcutList.Add(new Shortcut("Home End", Lang.T("The first/last page"), false));
+            _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("Three entries up/down"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("All and Search: change the sorting"), false));
+            _shortcutList.Add(new Shortcut("P", Lang.T("Add to/Remove from the favorites (or pin)"), false));
+            _shortcutList.Add(new Shortcut(":title", Lang.T("Change the title of the selected entry"), false));
+            _shortcutList.Add(new Shortcut(":delete", Lang.T("Delete the selected entry (asks first)"), false));
+            _shortcutList.Add(new Shortcut(":transfer", Lang.T("Add the entry to the transfer collection"), false));
             _shortcutList.Add(new Shortcut("Tab v", Lang.T("Favorites: Move the pinned entry (j k, then Esc)"), false));
             _shortcutList.Add(new Shortcut(":pin", Lang.T("Favorites: Pick the color of the pinned entry"), false));
-            _shortcutList.Add(new Shortcut("Esc", Lang.T("Return/Cancel"), false));
-            _shortcutList.Add(new Shortcut(":browse", Lang.T("Browse files (opening a file logs out)"), false));
+            _shortcutList.Add(new Shortcut("A T F M", Lang.T("All, Top 20, Favorites, Session history"), false));
+            _shortcutList.Add(new Shortcut("S /", Lang.T("Search"), false));
+            _shortcutList.Add(new Shortcut("N :new", Lang.T("New entry"), false));
+            _shortcutList.Add(new Shortcut("D", Lang.T("Display timestamp"), false));
+            _shortcutList.Add(new Shortcut("?", Lang.T("Show this help"), false));
+            _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("X :logout", Lang.T("Logout"), false));
+            _shortcutList.Add(new Shortcut("Esc :q", Lang.T("Back to the main menu"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionInspect, true));
             _shortcutList.Add(new Shortcut("Enter :edit", Lang.T("Edit the text in the editor"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Scroll the text"), false));
@@ -1650,6 +1670,7 @@ internal static class Tools
         {
             HelpTopic.Start => DialogText.HelpSectionStart,
             HelpTopic.Login => DialogText.HelpSectionLogin,
+            HelpTopic.MainMenu => DialogText.HelpSectionMainMenu,
             HelpTopic.Menus => DialogText.HelpSectionMenus,
             HelpTopic.Inspect => DialogText.HelpSectionInspect,
             HelpTopic.Files => DialogText.HelpSectionFiles,

@@ -29,7 +29,7 @@ internal static class Actions
             else if (_c.KeyChar == '?')
             {
                 // Help
-                Tools.WriteEditorHelp(false, Tools.HelpTopic.Menus);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.MainMenu);
                 Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.KeyChar == 'G')
@@ -101,9 +101,9 @@ internal static class Actions
             {
                 if (Menu.MoveMenuSelection(-1)) Menu.DrawTopMenu(false, true, false);
             }
-            else if (_c.Key == ConsoleKey.Enter)
+            else if (_c.Key is ConsoleKey.Enter or ConsoleKey.L or ConsoleKey.RightArrow)
             {
-                // Run the selected item: a command, or the key of the item
+                // Run the selected item (l as Enter): a command, or the key of the item
                 var run = Menu.SelectedMenuItem();
                 if (run != null && run.Length > 1 && run[0] == ':')
                 {
@@ -116,15 +116,9 @@ internal static class Actions
                         false, false, false));
                 }
             }
-            else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.L)
-            {
-                // Next menuitem
-                Menu.NextTopMenuManagePage();
-                Menu.DrawTopMenu(false, true, false);
-            }
             else if (_c.Key is ConsoleKey.LeftArrow or ConsoleKey.H)
             {
-                // Previous menuitem
+                // The previous page
                 Menu.PreviousTopMenuManagePage();
                 Menu.DrawTopMenu(false, true, false);
             }
@@ -352,7 +346,7 @@ internal static class Actions
                 break;
             case "h":
             case "help":
-                Tools.WriteEditorHelp(false, Tools.HelpTopic.Menus);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.MainMenu);
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "about":
@@ -2120,9 +2114,10 @@ internal static class Actions
                 }
 
                 // Split the result into pages
-                if (_foundEntries.Count > Init.LineCount - 9) // Menu, dividers + page count = 9
+                // A page has the rows between the column names and the line above the keys, less the page number
+                if (_foundEntries.Count > Init.LineCount - 7)
                 {
-                    _resultPages = Tools.SplitIntoChunks(_foundEntries, Init.LineCount - 9);
+                    _resultPages = Tools.SplitIntoChunks(_foundEntries, Init.LineCount - 7);
                 }
                 else
                 {
@@ -2246,27 +2241,19 @@ internal static class Actions
         {
             Mode.SetMode(Mode.SelectedMode.Search);
             Menu.DrawTopMenu(true, true, false);
-            Menu.WriteNameInTopBar(true);
-            Tools.CursorTopLeft();
-            Tools.CursorDown(4);
-            switch (Mode.CurrentSearchMode)
+            // The kind of list at the top left (as MENU, INSPECT and EDITOR on their pages)
+            Menu.WriteModeLabel(Mode.CurrentSearchMode switch
             {
-                case Mode.SearchMode.Search:
-                    WriteHorizontalRule(false, DialogText.CaptionsSearch, false, ConsoleColors.ColorPreset.Normal);
-                    break;
-                case Mode.SearchMode.Favorites:
-                    WriteHorizontalRule(false, DialogText.CaptionsFavorites, true, ConsoleColors.ColorPreset.Favorites);
-                    break;
-                case Mode.SearchMode.Top20:
-                    WriteHorizontalRule(false, DialogText.CaptionsTop20, false, ConsoleColors.ColorPreset.Normal);
-                    break;
-                case Mode.SearchMode.Session:
-                    WriteHorizontalRule(false, DialogText.CaptionsSession, false, ConsoleColors.ColorPreset.Normal);
-                    break;
-                case Mode.SearchMode.ListAll:
-                    WriteHorizontalRule(false, DialogText.CaptionsAll, false, ConsoleColors.ColorPreset.Normal);
-                    break;
-            }
+                Mode.SearchMode.Search => DialogText.CaptionsSearch,
+                Mode.SearchMode.Favorites => DialogText.CaptionsFavorites,
+                Mode.SearchMode.Top20 => DialogText.CaptionsTop20,
+                Mode.SearchMode.Session => DialogText.CaptionsSession,
+                _ => DialogText.CaptionsAll
+            }, string.Empty, 0);
+            Menu.WriteNameInTopBar(true);
+            Tools.SetCursorEx(1, 0);
+            WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
+            Tools.SetCursorEx(ListHeaderRow, 0);
 
             // Write column names
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
@@ -2305,11 +2292,13 @@ internal static class Actions
             Tools.CursorReturn();
             Tools.CursorDown();
             WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-            Tools.SaveCursorPosition(1);
-            Tools.CursorTopLeft();
-            Tools.CursorDown(Init.LineCount - 1);
+            // The line above the keys, and the keys on the bottom line
+            Tools.SetCursorEx(Init.LineCount - 2, 0);
             WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-            Tools.LoadCursorPosition(1);
+            Tools.SetCursorEx(Init.LineCount - 1, 0);
+            // (while a pinned entry is moved, the keys for moving it are shown instead)
+            if (!_movingPinned) Menu.WriteKeyHints(DialogText.ListKeys);
+            Tools.SetCursorEx(ListFirstRow, 0);
 
             // Draw content
             for (int j = 0; j < _resultPages[page].Count; j++)
@@ -2480,8 +2469,7 @@ internal static class Actions
         {
             // Place selection cursor:
             _resultBottom = _resultPages[_lastSelectedPage].Count - 1;
-            Tools.CursorTopLeft();
-            Tools.CursorDown(7);
+            Tools.SetCursorEx(ListFirstRow, 0);
             _resultIndex = _lastSelectedIndex;
             if (_resultIndex <= _resultBottom)
             {
@@ -2525,6 +2513,9 @@ internal static class Actions
     private static int _resultIndex;
     private static int _resultBottom;
 
+    private const int ListHeaderRow = 2; // The names of the columns of a list of entries
+    private const int ListFirstRow = 4; // The first entry of a list
+
     private static void SelectFromSearchResult(int pageNumber, bool isRecall)
     {
         _isSelectingResult = false;
@@ -2535,8 +2526,7 @@ internal static class Actions
             {
                 // Place selection cursor:
                 _resultBottom = _resultPages[pageNumber].Count - 1;
-                Tools.CursorTopLeft();
-                Tools.CursorDown(7);
+                Tools.SetCursorEx(ListFirstRow, 0);
                 Menu.WriteSelectionPointer(false);
                 _resultIndex = 0;
             }
@@ -2589,13 +2579,30 @@ internal static class Actions
         }
         else if (_c.KeyChar == 'G')
         {
-            // Last entry on the page
-            MoveSelection(_resultBottom);
+            // The last entry of the list (on the last page)
+            if (pageNumber == _resultPages.Count - 1)
+            {
+                MoveSelection(_resultBottom);
+            }
+            else
+            {
+                ShowListAt(_resultPages.Count - 1, _resultPages[^1].Count - 1);
+            }
         }
         else if (_c.KeyChar == 'g')
         {
-            // "gg": First entry on the page
-            if (Console.ReadKey(true).KeyChar == 'g') MoveSelection(ResultTop);
+            // "gg": The first entry of the list (on the first page)
+            if (Console.ReadKey(true).KeyChar == 'g')
+            {
+                if (pageNumber == 0)
+                {
+                    MoveSelection(ResultTop);
+                }
+                else
+                {
+                    ShowListAt(0, 0);
+                }
+            }
         }
         else if (_c.Key == ConsoleKey.P)
         {
@@ -2816,6 +2823,14 @@ internal static class Actions
         {
             SelectResultFromNumericValue(pageNumber, _c, false, 0);
         }
+    }
+
+    // Show a page of the list with an entry selected
+    private static void ShowListAt(int page, int index)
+    {
+        _lastSelectedPage = page;
+        _lastSelectedIndex = index;
+        RecallSelectionInSearchResult();
     }
 
     private static void ExitNumericSelect(int page, int index)
