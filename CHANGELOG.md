@@ -1,6 +1,8 @@
 # Changes
 
 ## v1.5.3
+- **Picking the color scheme and the language**: `:color` and `:language` in the main menu, and `Enter` on _Color scheme_ and _Language_ on the Configuration page, show the choices in a box on top of the page (`j`/`k`, `gg`/`G` or the number, and `Enter`). The last choice of the color schemes opens the color scheme editor. `h`/`l` on the Configuration page still select the previous/next, and `:color 5` and `:language da` still select at once.
+- **Automatic size off** (`:size auto`, or the Configuration page) goes back to the default size.
 - **Entries remember their syntax colors**: `:syntax md` (or `html`, `css`, `js`, `json`, `xml`) when editing an entry is kept in the entry, as the favorite and pin tags (a letter in its options, in the encrypted data file), so it is colored when it is opened again, and in the preview of the _INSPECT_ page. `:syntax off` removes it. The lists show the kind (_MD_, _HTML_ ...) before the date, and the info box (`i`) tells the syntax. Earlier versions of Marbles ignore the tag.
 - **Colors of pinned entries**: `C` in the favorites list of a data file opens the list of colors for the selected pinned entry, as `C` in the favorites of the file browser. The command `:pin` is renamed `:color` (`:color 13` picks color 13 directly).
 - **Lists of entries** (All, Top 20, Favorites, Session history, Search): the kind of list is shown at the top left (_ALL_, _TOP 20_ ...), the keys at the top are replaced by the most used keys on the bottom line, and `?` shows the keys of the lists in a section of the help of its own. A page has room for more entries. `gg` and `G` select the first and last entry of the whole list (going to the first/last page); `Home` and `End` go to the first/last page.
