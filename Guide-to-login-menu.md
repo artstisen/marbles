@@ -89,6 +89,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `I` or `:info` (also in the list of favorites) Show information about the selected file or directory: type, size (for a directory: the number of files and directories in it), when it was created and last changed, and the full path. Any key closes the box
 - See [Managing files](#managing-files), [Favorites](#favorites) and [File history](#file-history) below for the other keys
 - `R` Refresh
+- `:match` With two panes: the other pane shows the directory of the pane with the focus (with the same file or directory selected). The focus stays where it is
 - `:cd path` Go to a directory. `:home` Go to the Marbles data directory
 - `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again (see [the command line](Guide-to-main-menu.md))
 - `?` Help

@@ -56,7 +56,7 @@ internal static class Commands
             "quit close help browse new title delete color transfer size duplicate revert export import info" + Common,
             "q h" + CommonShort),
         [CommandContext.Files] = new Table(
-            "quit close home help cd new info mkdir rename copy duplicate move delete favorite favorites history panes find",
+            "quit close home help cd new info mkdir rename copy duplicate move delete favorite favorites history panes match find",
             "q h fav favs hist"),
         [CommandContext.FilePicker] = new Table(
             "quit close home help cd",

@@ -1442,6 +1442,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show names containing \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut("Tab", Lang.T("Go to the other pane"), false));
             _shortcutList.Add(new Shortcut("T :panes", Lang.T("Show two panes or one"), false));
+            _shortcutList.Add(new Shortcut(":match", Lang.T("The other pane shows this directory too"), false));
             _shortcutList.Add(new Shortcut("N :new name", Lang.T("Create a new file and open it"), false));
             _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
             _shortcutList.Add(new Shortcut("A :mkdir name", Lang.T("Create a new directory"), false));

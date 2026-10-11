@@ -97,6 +97,9 @@ internal static partial class FileExplorer
             case "panes":
                 TogglePanes();
                 break;
+            case "match":
+                MatchPanes();
+                break;
             case "find":
                 return SearchFiles();
             default:
@@ -410,6 +413,29 @@ internal static partial class FileExplorer
         LogOperation("Rename", item.Path + " -> " + name, result);
         Finish(result, result == DialogText.Success ? path : item.Path, string.Empty);
         if (result == DialogText.Success && FileFavorites.PathChanged(item.Path, path)) SaveFavorites();
+    }
+
+    // ":match": the other pane shows the directory of the pane with the focus (the focus stays)
+    private static void MatchPanes()
+    {
+        if (!IsDual)
+        {
+            _message = DialogText.MatchNeedsTwoPanes;
+            return;
+        }
+
+        if (ActivePane.Directory.Length == 0)
+        {
+            _message = DialogText.DirectoryNotFound;
+            return;
+        }
+
+        OtherPane.Directory = ActivePane.Directory;
+        OtherPane.Filter = string.Empty;
+        // The same file or directory is selected in it
+        var selected = ActivePane.Items.Count > 0 ? ActivePane.Items[ActivePane.Index].Name : null;
+        LoadItems(OtherPane, selected);
+        OtherPane.ShownTop = -1;
     }
 
     private static void CopySelected()

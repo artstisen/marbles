@@ -372,6 +372,7 @@ internal static class DialogText
     // The keys of a box of choices (ChoiceBox)
     public static string ChoiceKeys => Lang.T("j/k Select | Enter Choose | Esc Cancel");
     public static string AskTextKeys => Lang.T("Enter OK | Esc Cancel");
+    public static string MatchNeedsTwoPanes => Lang.T("Only with two panes (T shows them)");
     public static string PickNumberKeys => Lang.T("h/l Change | Enter OK | Esc Cancel");
     public static string TypeNameAndPressEnter => Lang.T("Type the name and press Enter");
     public static string ChoiceYes => Lang.T("Yes");

@@ -9,10 +9,10 @@ internal static class Logo
     private static readonly string[] Lines =
     {
         @" ",
-        @" M_  .  _M""""""""""""MM_""""""""""""MM_""""""""""""MM_ MMM ....""""""""""""MMM""""""""""""MMM",
+        @" M_     _M """"""""""MM_ """"""""""MM_ """"""""""MM_ MMM      """"""""""MMM """"""""""MMM",
         @" MMM_ _MMM MMM _M%M MMM _MM"" MMM _MM"" M%M  ___ MMM_ """""" M%M ___ ",
         @" M%M "" M%M M%M"" M%M M%M"" M%M M%M"" M%M M%M  M%M M%M  ___  """""" M%M",
-        @" MMM . MMM MMM  MMM MMM  MMM MMM__MM"" ""MM__MMM ""MM__MMM MMM__MM"""
+        @" MMM   MMM MMM  MMM MMM  MMM MMM__MM"" ""MM__MMM ""MM__MMM MMM__MM"""
     };
 
     private const int LogoMargin = 1; // The column the logo starts in
