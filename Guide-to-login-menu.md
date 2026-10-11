@@ -42,7 +42,7 @@ A default data file "data.mbls" is created when first starting Marbles, where yo
 Log in to the selected data file by typing its password and pressing `Enter`.
 
 - `Left`/`Right` (or `Tab`) Select a data file in the current directory
-- `Up`/`Down` Select a directory
+- `Up`/`Down` Select a directory: `data` (the data directory itself) or one of the directories in it, shown as `data/notes`
 - `Space` Move the selected data file to another directory: select the directory and press `Enter`
 - `Esc` Clear the password field. When the field is empty: open the options
 

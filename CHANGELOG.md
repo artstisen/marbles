@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Login page**: the data directory is shown by its name, "Directory: data" (and "data/notes" for a directory in it), instead of "~", which on Linux and macOS stands for the home directory.
 - **Duplicate in the editor**: `:dup` (or `:duplicate`) copies the selection right after itself: text selected with `v` after its last character, lines selected with `V` below them, a block selected with `Q` to its right. Without a selection it duplicates the line of the cursor (`:2,5dup` lines 2 to 5).
 - **Picking the color scheme and the language**: `:color` and `:language` in the main menu, and `Enter` on _Color scheme_ and _Language_ on the Configuration page, show the choices in a box on top of the page (`j`/`k`, `gg`/`G` or the number, and `Enter`). The last choice of the color schemes opens the color scheme editor. `h`/`l` on the Configuration page still select the previous/next, and `:color 5` and `:language da` still select at once.
 - **Automatic size off** (`:size auto`, or the Configuration page) goes back to the default size.

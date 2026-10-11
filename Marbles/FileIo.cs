@@ -85,6 +85,10 @@ internal static class FileIo
     }
 
 
+    /// <summary>
+    /// The directory of the data files as shown on the login page: "data", or "data/notes" for a directory in it
+    /// (the name of the data directory, not a "~", which stands for the home directory on Linux and macOS)
+    /// </summary>
     internal static string GetDataAndSubFolderForDisplay()
     {
         if (Tools.IsValid(_currentSubFolder) && Directory.Exists(Path.Combine(DataDirectory, _currentSubFolder)))
@@ -92,7 +96,7 @@ internal static class FileIo
             return Path.Combine(DataDirectory, _currentSubFolder);
         }
 
-        return "~";
+        return DataDirectory;
     }
 
     internal static string GetFileNameWithoutExtension()
