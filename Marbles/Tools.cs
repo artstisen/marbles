@@ -1334,7 +1334,8 @@ internal static class Tools
         All,
         Start, // The page shown at startup, and its configuration
         Login,
-        Menus, // The main menu, the lists of entries and the entry view
+        Menus, // The main menu and the lists of entries
+        Inspect, // An entry being inspected (the preview before it is edited)
         Files, // The file browser
         Favorites, // The favorites of the file browser
         History, // The files opened from the file browser
@@ -1409,6 +1410,25 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":pin", Lang.T("Favorites: Pick the color of the pinned entry"), false));
             _shortcutList.Add(new Shortcut("Esc", Lang.T("Return/Cancel"), false));
             _shortcutList.Add(new Shortcut(":browse", Lang.T("Browse files (opening a file logs out)"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionInspect, true));
+            _shortcutList.Add(new Shortcut("Enter :edit", Lang.T("Edit the text in the editor"), false));
+            _shortcutList.Add(new Shortcut("j k", Lang.T("Scroll the text"), false));
+            _shortcutList.Add(new Shortcut("Space b", Lang.T("One page down/up (also PgDn PgUp)"), false));
+            _shortcutList.Add(new Shortcut("gg G", Lang.T("The start/end of the text"), false));
+            _shortcutList.Add(new Shortcut("T", Lang.T("Change the title"), false));
+            _shortcutList.Add(new Shortcut("F P", Lang.T("Add to/Remove from the favorites (or pin)"), false));
+            _shortcutList.Add(new Shortcut("S /", Lang.T("Search in the text (opens the editor)"), false));
+            _shortcutList.Add(new Shortcut("i", Lang.T("Info: dates, words, characters and lines"), false));
+            _shortcutList.Add(new Shortcut("D", Lang.T("Duplicate the entry"), false));
+            _shortcutList.Add(new Shortcut("N :new", Lang.T("New entry"), false));
+            _shortcutList.Add(new Shortcut(":delete", Lang.T("Delete the entry (asks first)"), false));
+            _shortcutList.Add(new Shortcut(":revert", Lang.T("Revert to the previous edit"), false));
+            _shortcutList.Add(new Shortcut(":transfer", Lang.T("Add the entry to the transfer collection"), false));
+            _shortcutList.Add(new Shortcut(":import", Lang.T("Import a text file as a new entry"), false));
+            _shortcutList.Add(new Shortcut(":export", Lang.T("Export the text as a text file"), false));
+            _shortcutList.Add(new Shortcut(":browse", Lang.T("Browse files (opening a file logs out)"), false));
+            _shortcutList.Add(new Shortcut("X :logout", Lang.T("Logout"), false));
+            _shortcutList.Add(new Shortcut("Esc :q", Lang.T("Back to the list or the menu"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFiles, true));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last"), false));
@@ -1631,6 +1651,7 @@ internal static class Tools
             HelpTopic.Start => DialogText.HelpSectionStart,
             HelpTopic.Login => DialogText.HelpSectionLogin,
             HelpTopic.Menus => DialogText.HelpSectionMenus,
+            HelpTopic.Inspect => DialogText.HelpSectionInspect,
             HelpTopic.Files => DialogText.HelpSectionFiles,
             HelpTopic.Favorites => DialogText.HelpSectionFavorites,
             HelpTopic.History => DialogText.HelpSectionHistory,

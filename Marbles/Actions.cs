@@ -222,7 +222,7 @@ internal static class Actions
             else if (_c.KeyChar == '?')
             {
                 // Help
-                Tools.WriteEditorHelp(false, Tools.HelpTopic.Menus);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Inspect);
                 DisplayEntry(false);
             }
             else if (_c.Key == ConsoleKey.Escape) // Return to manage mode
@@ -234,51 +234,21 @@ internal static class Actions
                 // Edit title
                 ChangeTitle();
             }
-            else if (_c.Key is ConsoleKey.Enter or ConsoleKey.I)
+            else if (_c.Key == ConsoleKey.Enter)
             {
                 // Edit content text
                 EditEntry(false);
+            }
+            else if (_c.Key == ConsoleKey.I)
+            {
+                // The dates and the size of the entry
+                ShowEntryInfo();
+                DisplayEntry(false);
             }
             else if (_c.Key == ConsoleKey.S || _c.KeyChar == '/')
             {
                 // Search entry content
                 EditEntry(true);
-            }
-            else if (_c.Key == ConsoleKey.Tab && _c.Modifiers == ConsoleModifiers.Shift)
-            {
-                // Previous menuitem (SHIFT+TAB)
-                Menu.PreviousTopMenuViewPage();
-                Menu.DrawTopMenu(false, false, false);
-            }
-            else if (_c.Key is ConsoleKey.RightArrow or ConsoleKey.Tab or ConsoleKey.L)
-            {
-                // Next menuitem
-                Menu.NextTopMenuViewPage();
-                Menu.DrawTopMenu(false, false, false);
-            }
-            else if (_c.Key is ConsoleKey.LeftArrow or ConsoleKey.H)
-            {
-                // Previous menuitem
-                Menu.PreviousTopMenuViewPage();
-                Menu.DrawTopMenu(false, false, false);
-            }
-            else if (_c.Key == ConsoleKey.D1)
-            {
-                // Menuitem 1
-                Menu.SetTopMenuViewPage(0);
-                Menu.DrawTopMenu(false, false, false);
-            }
-            else if (_c.Key == ConsoleKey.D2)
-            {
-                // Menuitem 2
-                Menu.SetTopMenuViewPage(1);
-                Menu.DrawTopMenu(false, false, false);
-            }
-            else if (_c.Key == ConsoleKey.D3)
-            {
-                // Menuitem 3
-                Menu.SetTopMenuViewPage(2);
-                Menu.DrawTopMenu(false, false, false);
             }
             else if (_c.Key == ConsoleKey.X)
             {
@@ -566,7 +536,7 @@ internal static class Actions
                 break;
             case "h":
             case "help":
-                Tools.WriteEditorHelp(false, Tools.HelpTopic.Menus);
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Inspect);
                 DisplayEntry(false);
                 break;
             case "import":
@@ -1077,41 +1047,26 @@ internal static class Actions
     }
 
 
+    /// <summary>
+    /// The frame of the page where an entry is inspected: the label INSPECT and the title at the top, as in the
+    /// editor, a line below the text (with the scroll instructions) and the most used keys on the bottom line
+    /// </summary>
     internal static void DrawViewMenu(bool displayMenuFromPageOne)
     {
-        Menu.DrawTopMenu(false, false, false);
+        Menu.WriteModeLabel(DialogText.CaptionsInspect, string.Empty, 0);
         Menu.WriteNameInTopBar(true);
-        Tools.CursorTopLeft();
-        // The dates end at the right side (the labels can be longer in other languages)
-        var labelWidth = Math.Max(DialogText.DateCreatedColon.Length, DialogText.DateChangedColon.Length);
-        Tools.CursorRight(Math.Min(Init.LineWidth - 28, Init.LineWidth - 1 - labelWidth - 19));
-        Tools.CursorDown();
-        Tools.SaveCursorPosition(1);
-        Console.Write(DialogText.DateCreatedColon + Entries.CurrentEntry.DateCreated);
-        Tools.LoadCursorPosition(1);
-        Tools.CursorDown();
-        Console.Write(DialogText.DateChangedColon + Entries.CurrentEntry.DateChanged);
-        Tools.LoadCursorPosition(1);
-        Tools.CursorDown(2);
-        Console.Write(Lang.T("Words: ") + Tools.WordCount(Entries.CurrentEntry.Text).ToString());
-        Tools.LoadCursorPosition(1);
-        Tools.CursorDown(3);
-        Console.Write(Lang.T("Chars: ") + Tools.CharacterCount(Entries.CurrentEntry.Text));
-        Tools.LoadCursorPosition(1);
-        Tools.CursorDown(4);
-        Console.Write(Lang.T("Lines: ") + Tools.LineCount(Entries.CurrentEntry.Text));
-        Tools.CursorTopLeft();
-        Tools.CursorDown(6);
+        Tools.SetCursorEx(1, 0);
+        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
+        Tools.SetCursorEx(2, 0);
+        Menu.WriteTitleLabel();
+        Tools.SetCursorEx(3, 0);
         WriteHorizontalRule(false, DialogText.CaptionsPreview, true, ConsoleColors.ColorPreset.PreviewTitle);
-        Menu.WriteTitleLabel(); // Insert title
-        Tools.CursorReturn();
-        Tools.CursorDown();
+        Tools.SetCursorEx(Init.LineCount - 2, 0);
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Tools.SaveCursorPosition(1);
-        Tools.CursorTopLeft();
-        Tools.CursorDown(Init.LineCount - 1); // Insert bottom line
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Tools.LoadCursorPosition(1);
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        Menu.WriteKeyHints(DialogText.InspectKeys);
+        // The text starts below the title
+        Tools.SetCursorEx(4, 0);
     }
 
     private static void DisplayEntry(bool displayMenuFromPageOne)
@@ -1128,7 +1083,7 @@ internal static class Actions
             // Preview text content
             // Convert text to lines and display them with top and left margin in the preview
             var textPreviewArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                Init.LineCount - 10, Entries.CurrentEntry.Text, Entries.CurrentEntry.CursorIndex, false, true, false, 0);
+                Init.LineCount - 6, Entries.CurrentEntry.Text, Entries.CurrentEntry.CursorIndex, false, true, false, 0);
             _previewArea = null;
             if (textPreviewArea.GetText().Length > 0)
             {
@@ -1199,9 +1154,25 @@ internal static class Actions
 
     private static void RemoveDocumentScrollLabel()
     {
-        Tools.CursorTopLeft();
-        Tools.CursorDown(Init.LineCount - 1); // Insert bottom line
+        // The line below the text
+        Tools.SetCursorEx(Init.LineCount - 2, 0);
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
+    }
+
+    // The dates and the size of the entry being inspected, in a box on top of the page
+    private static void ShowEntryInfo()
+    {
+        if (!Entries.CurrentEntryExists()) return;
+        var entry = Entries.CurrentEntry;
+        ChoiceBox.ShowRows(DialogText.InspectInfoCaption, new List<(string Label, string Value)>
+        {
+            (DialogText.TitleColon, entry.Title),
+            (DialogText.InfoCreated, entry.DateCreated),
+            (DialogText.InfoChanged, entry.DateChanged),
+            (Lang.T("Words:"), Tools.WordCount(entry.Text).ToString()),
+            (Lang.T("Characters:"), Tools.CharacterCount(entry.Text).ToString()),
+            (Lang.T("Lines:"), Tools.LineCount(entry.Text).ToString())
+        }, 60);
     }
 
 

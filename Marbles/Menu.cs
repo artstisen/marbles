@@ -5,7 +5,6 @@ internal static class Menu
     private static void ResetTopMenuDisplayIndex()
     {
         _manageModePage = 0;
-        _viewModePage = 0;
         ResetMenuSelection();
     }
 
@@ -64,42 +63,7 @@ internal static class Menu
         }
     }
 
-    public static void SetTopMenuViewPage(int index)
-    {
-        if (index is >= 0 and <= 2)
-        {
-            _viewModePage = index;
-        }
-    }
-
-
-    public static void NextTopMenuViewPage()
-    {
-        if (_viewModePage < 2)
-        {
-            _viewModePage += 1;
-        }
-        else
-        {
-            _viewModePage = 0;
-        }
-    }
-
-    public static void PreviousTopMenuViewPage()
-    {
-        if (_viewModePage > 0)
-        {
-            _viewModePage -= 1;
-        }
-        else
-        {
-            _viewModePage = 2;
-        }
-    }
-
-
     private static int _manageModePage;
-    private static int _viewModePage;
     internal static bool BypassAwaitAction { get; set; }
 
     public static void DrawTopMenu(bool displayMenuFromPageOne, bool clearScreen, bool useEditorColors)
@@ -136,40 +100,7 @@ internal static class Menu
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.View)
         {
-            if (_viewModePage == 0)
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                WriteMenuExtension(GetMenuNavigation("1/3"));
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem("Enter I", Lang.T("Edit"), true);
-                WriteMenuItem("T", Lang.T("Title"), true);
-                WriteExtendedMenuItem("F", GetFavoriteState(), Lang.T("Favorite"), ConsoleColors.ColorPreset.Favorites,
-                    true, true, Entries.CurrentEntry);
-                WriteMenuItem("D", Lang.T("Duplicate"), true);
-                WriteMenuItem("S /", Lang.T("Content search"), true);
-            }
-            else if (_viewModePage == 1)
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                WriteMenuExtension(GetMenuNavigation("2/3"));
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem(":delete", Lang.T("Delete"), true);
-                WriteMenuItem(":revert", Lang.T("Revert"), true);
-                WriteMenuItem(":transfer", Lang.T("Transfer") + " " + Entries.GetTransferState(), true);
-                WriteMenuItem(":import", Lang.T("Import"), true);
-                WriteMenuItem(":export", Lang.T("Export"), true);
-            }
-            else if (_viewModePage == 2)
-            {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                WriteMenuExtension(GetMenuNavigation("3/3"));
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                WriteMenuItem("N", Lang.T("New"), true);
-                WriteMenuItem("?", Lang.T("Help"), true);
-                WriteMenuItem("X", Lang.T("Logout"), true);
-                WriteMenuItem("Esc :q", Lang.T("Return"), true);
-                WriteMenuItem("", "", true);
-            }
+            // The entry view draws its own page (Actions.DrawViewMenu)
         }
         else if (Mode.CurrentMode == Mode.SelectedMode.Edit)
         {
@@ -943,7 +874,8 @@ internal static class Menu
 
     public static void WriteDocumentScrollLabel()
     {
-        Console.SetCursorPosition((Init.LineWidth / 2) - (DialogText.DocumentScroll.Length / 2), Init.LineCount - 1);
+        Console.SetCursorPosition(Math.Max(0, (Init.LineWidth / 2) - (DialogText.DocumentScroll.Length / 2)),
+            Init.LineCount - 2);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.PreviewTitle);
         Console.Write(DialogText.DocumentScroll);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
