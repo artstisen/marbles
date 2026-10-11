@@ -1035,7 +1035,9 @@ public class TextArea
 
         if (text.Length == 0 && _engine.Message.Length > 0)
         {
-            text = " " + _engine.Message + " ";
+            // A message follows the blank space after the mode ("-- NORMAL -- Saved ---"). An error is
+            // highlighted, with a blank space on each side inside the highlight
+            text = (_engine.MessageIsError ? " " : string.Empty) + _engine.Message + " ";
         }
 
         // Pending keys, string memory, line:column and position in the document
