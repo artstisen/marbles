@@ -1421,7 +1421,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":delete", Lang.T("Delete the selected entry (asks first)"), false));
             _shortcutList.Add(new Shortcut(":transfer", Lang.T("Add the entry to the transfer collection"), false));
             _shortcutList.Add(new Shortcut("Tab v", Lang.T("Favorites: Move the pinned entry (j k, then Esc)"), false));
-            _shortcutList.Add(new Shortcut(":pin", Lang.T("Favorites: Pick the color of the pinned entry"), false));
+            _shortcutList.Add(new Shortcut("C :color", Lang.T("Favorites: Pick the color of the pinned entry"), false));
             _shortcutList.Add(new Shortcut("A T F M", Lang.T("All, Top 20, Favorites, Session history"), false));
             _shortcutList.Add(new Shortcut("S /", Lang.T("Search"), false));
             _shortcutList.Add(new Shortcut("N :new", Lang.T("New entry"), false));

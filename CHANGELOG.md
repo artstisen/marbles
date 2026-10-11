@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Colors of pinned entries**: `C` in the favorites list of a data file opens the list of colors for the selected pinned entry, as `C` in the favorites of the file browser. The command `:pin` is renamed `:color` (`:color 13` picks color 13 directly).
 - **Lists of entries** (All, Top 20, Favorites, Session history, Search): the kind of list is shown at the top left (_ALL_, _TOP 20_ ...), the keys at the top are replaced by the most used keys on the bottom line, and `?` shows the keys of the lists in a section of the help of its own. A page has room for more entries. `gg` and `G` select the first and last entry of the whole list (going to the first/last page); `Home` and `End` go to the first/last page.
 - **Main menu**: `l` (or `Right`) opens the selected item, as `Enter`; `h` still shows the previous page. `?` shows the keys of the main menu in a section of the help of its own.
 - **Inspecting an entry** (the page shown when an entry is opened): _INSPECT_ is shown at the top left, with the title below it and _PREVIEW_ on the line above the text, as in the editor. The menu of 3 pages at the top is replaced by the most used keys on the bottom line (`Enter` Edit, `T` Title, `F` Favorite, `S` Search, `i` Info, `?` Help, `Esc` Back), and `?`/`:help` shows the keys of the page in a section of its own. The dates and the number of words, characters and lines are shown in a box with `i` (`I` no longer opens the editor: `Enter` does). The text has more room.

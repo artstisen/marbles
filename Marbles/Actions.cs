@@ -603,18 +603,11 @@ internal static class Actions
             case "delete":
                 SelectResultFromIndex(pageNumber, _resultIndex, 2);
                 break;
-            case "pin":
-                // Set the text color of a pinned favorite: picked from a list, or given by its number in the list
+            case "color":
+                // Set the text color of a pinned favorite: picked from a list (as C), or given by its number in the list
                 if (CommandLine.Argument(command).Length == 0)
                 {
-                    if (!ValidateNumericSelectionInput(pageNumber, _resultIndex)) break;
-                    var entry = _resultPages[pageNumber][_resultIndex];
-                    if (!IsPinned(entry) || PinColors.Pick(PinColors.Get(entry.Options), out _pinColor))
-                    {
-                        SelectResultFromIndex(pageNumber, _resultIndex, 3);
-                    }
-
-                    RecallPreviousView();
+                    PickPinColor(pageNumber);
                 }
                 else if (int.TryParse(CommandLine.Argument(command), out var color) &&
                          color >= 1 && color <= ColorPicker.Count)
@@ -2610,6 +2603,12 @@ internal static class Actions
             SelectResultFromIndex(pageNumber, _resultIndex, 7);
             LoadCursorPosition();
         }
+        else if (_c.Key == ConsoleKey.C)
+        {
+            // The text color of a pinned favorite (as C in the favorites of the file browser)
+            PickPinColor(pageNumber);
+            return;
+        }
         // Date time
         else if (_c.Key == ConsoleKey.D)
         {
@@ -2831,6 +2830,19 @@ internal static class Actions
         _lastSelectedPage = page;
         _lastSelectedIndex = index;
         RecallSelectionInSearchResult();
+    }
+
+    // Pick the text color of the selected entry (a pinned favorite) from the list of colors
+    private static void PickPinColor(int pageNumber)
+    {
+        if (!ValidateNumericSelectionInput(pageNumber, _resultIndex)) return;
+        var entry = _resultPages[pageNumber][_resultIndex];
+        if (!IsPinned(entry) || PinColors.Pick(PinColors.Get(entry.Options), out _pinColor))
+        {
+            SelectResultFromIndex(pageNumber, _resultIndex, 3);
+        }
+
+        RecallPreviousView();
     }
 
     private static void ExitNumericSelect(int page, int index)

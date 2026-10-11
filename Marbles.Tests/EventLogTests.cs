@@ -69,7 +69,7 @@ public class EventLogTests
     [InlineData("'<,'>s/secret/x/", "s ...")]
     [InlineData("2,5d", "d")]
     [InlineData("12", "(number)")]
-    [InlineData("pin 3", "pin ...")]
+    [InlineData("color 3", "color ...")]
     [InlineData("mypassword123", "(not a command)")]
     [InlineData("secret words here", "(not a command)")]
     [InlineData("  ", "")]
