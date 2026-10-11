@@ -57,12 +57,7 @@ internal static class DialogText
     public static string CaptionsImport => Lang.T("Import");
     public static string CaptionsBackup => Lang.T("Backup");
     public static string CaptionsInstructions => Lang.T("Instructions");
-    public static string CaptionsPreview => Lang.T("PREVIEW");
-    // The page where an entry is inspected before it is edited
-    public static string CaptionsInspect => Lang.T("Inspect");
-    public static string InspectKeys => Lang.T("Enter Edit | T Title | F Favorite | S Search | i Info | ? Help | Esc Back");
     public static string InspectInfoCaption => Lang.T("Entry info");
-    public static string HelpSectionInspect => Lang.T("Inspecting an entry (preview)");
     public static string CaptionsInfo => Lang.T("INFO");
     public static string CaptionsRecall => Lang.T("RECALL");
     public static string CaptionsClear => Lang.T("CLEAR");
@@ -142,7 +137,6 @@ internal static class DialogText
     public const string Spacebar = "Spacebar";
 
     // Indicators/Misc. texts
-    public static string DocumentScroll => Lang.T(" (Press j/k to scroll, Spacebar/b for page down/up) ");
     public static string TitleCopyText => Lang.T(" (copy)");
     public static string InitNoData => Lang.T("No data");
     public const string CheckedSetting = "[x]";

@@ -11,7 +11,6 @@ class Mode
         Login,
         Manage,
         Search,
-        View,
         Edit
     }
 

@@ -190,89 +190,6 @@ internal static class Actions
 
             #endregion
         }
-        else if (Mode.CurrentMode == Mode.SelectedMode.View)
-        {
-            #region View actions
-
-            // Scrolling the text of the entry
-            if (HandlePreviewKey())
-            {
-                return;
-            }
-
-            if (_c.KeyChar == ':')
-            {
-                // Command line
-                var command = CommandLine.Read(CommandContext.Entry);
-                if (command != null)
-                {
-                    RunViewCommand(command);
-                }
-                else
-                {
-                    DisplayEntry(false);
-                }
-            }
-            else if (_c.KeyChar == '?')
-            {
-                // Help
-                Tools.WriteEditorHelp(false, Tools.HelpTopic.Inspect);
-                DisplayEntry(false);
-            }
-            else if (_c.Key == ConsoleKey.Escape) // Return to manage mode
-            {
-                RecallPreviousView();
-            }
-            else if (_c.Key == ConsoleKey.T)
-            {
-                // Edit title
-                ChangeTitle();
-            }
-            else if (_c.Key == ConsoleKey.Enter)
-            {
-                // Edit content text
-                EditEntry(false);
-            }
-            else if (_c.Key == ConsoleKey.I)
-            {
-                // The dates and the size of the entry
-                ShowEntryInfo();
-                DisplayEntry(false);
-            }
-            else if (_c.Key == ConsoleKey.S || _c.KeyChar == '/')
-            {
-                // Search entry content
-                EditEntry(true);
-            }
-            else if (_c.Key == ConsoleKey.X)
-            {
-                // Logout
-                Tools.LoginRoutine(true);
-            }
-            else if (_c.Key is ConsoleKey.F or ConsoleKey.P)
-            {
-                // Favorite
-                ToggleFavorite();
-            }
-            else if (_c.Key == ConsoleKey.N)
-            {
-                // New
-                NewEntry();
-            }
-            else if (_c.Key == ConsoleKey.D)
-            {
-                // Duplicate
-                DuplicateCurrentEntry();
-            }
-
-            // Still viewing the entry: show the scroll instructions again
-            if (Mode.CurrentMode == Mode.SelectedMode.View)
-            {
-                UpdateDocumentScrollLabel();
-            }
-
-            #endregion
-        }
         else if (Mode.CurrentMode == Mode.SelectedMode.Search)
         {
             #region Search actions
@@ -552,60 +469,6 @@ internal static class Actions
         ConsoleColors.SetColorPresetIndex(index);
     }
 
-    // Commands when viewing an entry
-    private static void RunViewCommand(string command)
-    {
-        if (RunCommonCommand(command)) return;
-        if (CommandLine.Name(command) == "new")
-        {
-            NewEntry(CommandLine.LastArgument);
-            return;
-        }
-
-        switch (command)
-        {
-            case "q":
-            case "quit":
-            case "close":
-                // Return to the list
-                RecallPreviousView();
-                break;
-            case "e":
-            case "edit":
-                EditEntry(false);
-                break;
-            case "browse":
-                BrowseFiles();
-                DisplayEntry(false);
-                break;
-            case "h":
-            case "help":
-                Tools.WriteEditorHelp(false, Tools.HelpTopic.Inspect);
-                DisplayEntry(false);
-                break;
-            case "import":
-                ImportEntry();
-                break;
-            case "export":
-                ExportCurrentEntry();
-                break;
-            case "transfer":
-                Entries.TransferEntry();
-                DisplayEntry(false);
-                break;
-            case "delete":
-                DeleteCurrentEntry();
-                break;
-            case "revert":
-                RestoreBackup();
-                break;
-            default:
-                CommandLine.ShowUnknown(command);
-                DisplayEntry(false);
-                break;
-        }
-    }
-
     // Commands when selecting from a list of entries. The commands work on the selected entry
     private static void RunListCommand(string command, int pageNumber)
     {
@@ -649,6 +512,22 @@ internal static class Actions
                 break;
             case "title":
                 SelectResultFromIndex(pageNumber, _resultIndex, 1);
+                break;
+            case "duplicate":
+                SelectResultFromIndex(pageNumber, _resultIndex, 8);
+                break;
+            case "revert":
+                SelectResultFromIndex(pageNumber, _resultIndex, 9);
+                break;
+            case "export":
+                SelectResultFromIndex(pageNumber, _resultIndex, 10);
+                break;
+            case "info":
+                SelectResultFromIndex(pageNumber, _resultIndex, 11);
+                break;
+            case "import":
+                _isSelectingResult = false;
+                ImportEntry();
                 break;
             case "delete":
                 SelectResultFromIndex(pageNumber, _resultIndex, 2);
@@ -992,7 +871,7 @@ internal static class Actions
                 Init.LineCount - 5, Entries.CurrentEntry.Text, Entries.CurrentEntry.CursorIndex, false, false, search, 0);
             // Cleanup
             textArea.ClearUndoRedoCache();
-            DisplayEntry(false);
+            ReturnFromEntry();
         }
         else
         {
@@ -1055,7 +934,7 @@ internal static class Actions
             }
             else
             {
-                DisplayEntry(false);
+                ReturnFromEntry();
             }
         }
         else
@@ -1074,7 +953,7 @@ internal static class Actions
                 if (Entries.SelectEntryById(Entries.RecallEntryId))
                 {
                     ResetLastSelectedIndex();
-                    DisplayEntry(false);
+                    EditEntry(false);
                 }
                 else
                 {
@@ -1099,120 +978,14 @@ internal static class Actions
     }
 
 
-    /// <summary>
-    /// The frame of the page where an entry is inspected: the label INSPECT and the title at the top, as in the
-    /// editor, a line below the text (with the scroll instructions) and the most used keys on the bottom line
-    /// </summary>
-    internal static void DrawViewMenu(bool displayMenuFromPageOne)
+    // After editing an entry (or an action on it): back to where it was opened from, the list (with the entry
+    // selected) or the main menu
+    private static void ReturnFromEntry()
     {
-        Menu.WriteModeLabel(DialogText.CaptionsInspect, string.Empty, 0);
-        Menu.WriteNameInTopBar(true);
-        Tools.SetCursorEx(1, 0);
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Tools.SetCursorEx(2, 0);
-        Menu.WriteTitleLabel();
-        Tools.SetCursorEx(3, 0);
-        WriteHorizontalRule(false, DialogText.CaptionsPreview, true, ConsoleColors.ColorPreset.PreviewTitle);
-        Tools.SetCursorEx(Init.LineCount - 2, 0);
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        Menu.WriteKeyHints(DialogText.InspectKeys);
-        // The text starts below the title
-        Tools.SetCursorEx(4, 0);
+        RecallPreviousView();
     }
 
-    private static void DisplayEntry(bool displayMenuFromPageOne)
-    {
-        if (Entries.EntryExists(Entries.CurrentEntry.Id))
-        {
-            // Add entry ID to session ID list
-            Entries.RegisterSessionId(Entries.CurrentEntry.Id);
-            
-            Mode.SetMode(Mode.SelectedMode.View);
-            Init.ApplyAutoSize();
-            Tools.ClearScreen();
-            DrawViewMenu(displayMenuFromPageOne);
-            // Preview text content
-            // Convert text to lines and display them with top and left margin in the preview
-            TextArea.NextEntrySyntax = EntrySyntax.Get(Entries.CurrentEntry.Options);
-            var textPreviewArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                Init.LineCount - 6, Entries.CurrentEntry.Text, Entries.CurrentEntry.CursorIndex, false, true, false, 0);
-            _previewArea = null;
-            if (textPreviewArea.GetText().Length > 0)
-            {
-                _previewArea = textPreviewArea;
-                UpdateDocumentScrollLabel();
-                // The entry is shown: wait for the next key
-                Navigation.Wait();
-            }
-        }
-    }
-
-    private static TextArea? _previewArea; // The text shown when viewing an entry (null if it has no text)
-
-    // Scroll the text of the entry being viewed
-    private static bool HandlePreviewKey()
-    {
-        if (_previewArea == null) return false;
-        if (_c.Modifiers == ConsoleModifiers.Shift && _c.Key == ConsoleKey.Spacebar ||
-            _c.Key is ConsoleKey.PageUp or ConsoleKey.B || Keyboard.IsControl(_c, ConsoleKey.U))
-        {
-            _previewArea.PageUp();
-        }
-        else if (_c.Key is ConsoleKey.Spacebar or ConsoleKey.PageDown ||
-                 Keyboard.IsControl(_c, ConsoleKey.D) || Keyboard.IsControl(_c, ConsoleKey.F))
-        {
-            _previewArea.PageDown();
-        }
-        else if (_c.Key is ConsoleKey.J or ConsoleKey.DownArrow)
-        {
-            _previewArea.ScrollRows(1);
-        }
-        else if (_c.Key is ConsoleKey.K or ConsoleKey.UpArrow)
-        {
-            _previewArea.ScrollRows(-1);
-        }
-        else if (_c.KeyChar == 'G')
-        {
-            _previewArea.ScrollRows(int.MaxValue / 2);
-        }
-        else if (_c.KeyChar == 'g')
-        {
-            // "gg": Top
-            if (Console.ReadKey(true).KeyChar == 'g') _previewArea.ScrollRows(int.MinValue / 2);
-        }
-        else
-        {
-            RemoveDocumentScrollLabel();
-            return false;
-        }
-
-        UpdateDocumentScrollLabel();
-        return true;
-    }
-
-    // Show how to scroll if the text of the entry being viewed is longer than the preview
-    private static void UpdateDocumentScrollLabel()
-    {
-        if (_previewArea == null) return;
-        if (_previewArea.CanScroll)
-        {
-            Menu.WriteDocumentScrollLabel();
-        }
-        else
-        {
-            RemoveDocumentScrollLabel();
-        }
-    }
-
-    private static void RemoveDocumentScrollLabel()
-    {
-        // The line below the text
-        Tools.SetCursorEx(Init.LineCount - 2, 0);
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-    }
-
-    // The dates and the size of the entry being inspected, in a box on top of the page
+    // The dates and the size of an entry, in a box on top of the page
     private static void ShowEntryInfo()
     {
         if (!Entries.CurrentEntryExists()) return;
@@ -1275,7 +1048,7 @@ internal static class Actions
             }
         }
 
-        DisplayEntry(false);
+        ReturnFromEntry();
     }
 
     private static void ToggleBackup()
@@ -1350,7 +1123,8 @@ internal static class Actions
                 if (!Tools.IsValid(title)) title = DialogText.CaptionsImport + " " + IsoDateTime.GetDateTimeNow();
                 Entries.NewEntry(title, text);
                 Entries.SaveEntriesToFile();
-                DisplayEntry(false);
+                // The new entry is opened in the editor
+                EditEntry(false);
                 return;
             }
         }
@@ -1419,7 +1193,7 @@ internal static class Actions
             }
             else
             {
-                DisplayEntry(false);
+                ReturnFromEntry();
             }
         }
     }
@@ -1440,13 +1214,13 @@ internal static class Actions
                     ResetLastSelectedIndex();
                     Entries.SaveEntriesToFile();
                     Entries.SelectEntryById(_duplicateEntryId); // Select and show entry
-                    DisplayEntry(false);
+                    ReturnFromEntry();
                 }
                 else
                 {
                     Menu.StatusMessage(DialogText.ErrorDuplicatingEntry, true, true, true, DialogText.CaptionsDuplicate,
                         string.Empty, false);
-                    DisplayEntry(false);
+                    ReturnFromEntry();
                 }
             }
             else
@@ -1459,7 +1233,7 @@ internal static class Actions
         }
         else
         {
-            DisplayEntry(false);
+            ReturnFromEntry();
         }
     }
 
@@ -1469,23 +1243,23 @@ internal static class Actions
         {
             if (Menu.YesNoPrompt(DialogText.CaptionsRevert, DialogText.RevertEditYn, string.Empty, true))
             {
-                ResetLastSelectedIndex();
                 Entries.SetAsCurrentEntry(Entries.BackupEntry);
+                Entries.UpdateEntry(Entries.CurrentEntry, true);
                 Menu.StatusMessage(DialogText.EntryRestored, true, true, true, DialogText.CaptionsRevert, string.Empty,
                     false);
                 Entries.SaveEntriesToFile();
-                DisplayEntry(false);
+                ReturnFromEntry();
             }
             else
             {
-                DisplayEntry(false);
+                ReturnFromEntry();
             }
         }
         else
         {
             Menu.StatusMessage(DialogText.NoBackupFound, true, true, true, DialogText.CaptionsRevert, string.Empty,
                 false);
-            DisplayEntry(false);
+            ReturnFromEntry();
         }
     }
 
@@ -1530,7 +1304,7 @@ internal static class Actions
                         string.Empty, false);
                     // Remove deleted entry after the restore
                     Entries.ResetDeletedEntry();
-                    DisplayEntry(false);
+                    ReturnFromEntry();
                 }
                 catch (Exception e) when (e is not NavigationException)
                 {
@@ -1646,7 +1420,7 @@ internal static class Actions
             }
             else
             {
-                DisplayEntry(false);
+                ReturnFromEntry();
             }
         }
         else if (Entries.CurrentEntryExists())
@@ -1695,7 +1469,7 @@ internal static class Actions
                 }
             }
             
-            DisplayEntry(false);
+            ReturnFromEntry();
             
         }
     }
@@ -2033,7 +1807,7 @@ internal static class Actions
                 //    if (Entries.EntryExists(foundEntries[0].ID))
                 //    {
                 //        Entries.SelectEntryByID(foundEntries[0].ID);
-                //        DisplayEntry(true);
+                //        EditEntry(false);
                 //        return;
                 //    }
                 //}
@@ -2767,12 +2541,8 @@ internal static class Actions
         }
         else if (_c.Key == ConsoleKey.I)
         {
-            // Data file info
-            FileActions.ShowDataFileInfo(true);
-            // Return to main
-            _isSelectingResult = false;
-            Mode.SetMode(Mode.SelectedMode.Manage);
-            Menu.DrawTopMenu(true, true, false);
+            // The dates and the size of the selected entry
+            SelectResultFromIndex(pageNumber, _resultIndex, 11);
         }
         // Logout
         else if (_c.Key == ConsoleKey.X)
@@ -2965,7 +2735,7 @@ internal static class Actions
                 Entries.SelectEntryById(_resultPages[pageNumber][resultIndex].Id);
                 if (action == 0)
                 {
-                    DisplayEntry(true);
+                    EditEntry(false);
                 }
                 else if (action == 1)
                 {
@@ -2982,6 +2752,33 @@ internal static class Actions
                 else if (action == 6)
                 {
                     Entries.TransferEntry();
+                }
+                else if (action == 8)
+                {
+                    DuplicateCurrentEntry();
+                }
+                else if (action == 9)
+                {
+                    // Only the entry whose last edit was kept can be reverted
+                    if (Entries.BackupEntry.Id == Entries.CurrentEntry.Id)
+                    {
+                        RestoreBackup();
+                    }
+                    else
+                    {
+                        Menu.StatusMessage(DialogText.NoBackupFound, true, true, true, DialogText.CaptionsRevert,
+                            string.Empty, false);
+                        ReturnFromEntry();
+                    }
+                }
+                else if (action == 10)
+                {
+                    ExportCurrentEntry();
+                }
+                else if (action == 11)
+                {
+                    ShowEntryInfo();
+                    ReturnFromEntry();
                 }
                 else if (action == 7)
                 {
@@ -3027,7 +2824,7 @@ internal static class Actions
                     _lastSelectedIndex = tempNumber;
                     _lastSelectedPage = pageNumber;
                     Entries.SelectEntryById(_resultPages[pageNumber][tempNumber].Id);
-                    DisplayEntry(true);
+                    EditEntry(false);
                 }
             }
         }

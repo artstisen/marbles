@@ -6,7 +6,6 @@
 internal enum CommandContext
 {
     Menu, // The main menu of a data file
-    Entry, // An entry being viewed
     List, // A list of entries
     Files, // The file browser
     FilePicker, // The file browser when a file or directory is picked for something
@@ -53,11 +52,8 @@ internal static class Commands
             "quit help about guide new browse number import transfer undelete backup defaults scheme " +
             "bw size password color restart language" + Common,
             "q h nu" + CommonShort),
-        [CommandContext.Entry] = new Table(
-            "quit close edit browse help import export transfer delete revert new" + Common,
-            "q e h" + CommonShort),
         [CommandContext.List] = new Table(
-            "quit close help browse new title delete color transfer size" + Common,
+            "quit close help browse new title delete color transfer size duplicate revert export import info" + Common,
             "q h" + CommonShort),
         [CommandContext.Files] = new Table(
             "quit close home help cd new info mkdir rename copy duplicate move delete favorite favorites history panes find",

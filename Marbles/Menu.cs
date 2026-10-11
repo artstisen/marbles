@@ -98,10 +98,6 @@ internal static class Menu
             // The menu is shown: wait for the next key
             Navigation.Wait();
         }
-        else if (Mode.CurrentMode == Mode.SelectedMode.View)
-        {
-            // The entry view draws its own page (Actions.DrawViewMenu)
-        }
         else if (Mode.CurrentMode == Mode.SelectedMode.Edit)
         {
             // The editor writes its own top row (WriteEditorTop)
@@ -856,15 +852,6 @@ internal static class Menu
             Console.Write(" " + DialogText.TitleColon + " ");
             Console.Write(_tempTitleLabel);
         }
-    }
-
-    public static void WriteDocumentScrollLabel()
-    {
-        Console.SetCursorPosition(Math.Max(0, (Init.LineWidth / 2) - (DialogText.DocumentScroll.Length / 2)),
-            Init.LineCount - 2);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.PreviewTitle);
-        Console.Write(DialogText.DocumentScroll);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
     /// <summary>

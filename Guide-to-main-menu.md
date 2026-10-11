@@ -28,7 +28,7 @@ The main menu has 2 pages, each with two boxes of keys and commands: four boxes 
 
 ### Page 1: Notes and Data file
 **Notes**
-- `N` **New**: Create a new entry (write a title and enter your notes). With the command `:new My title` the entry is created with that title and opened in the editor; `:new` alone asks for the title. The command also works in lists and when viewing an entry.
+- `N` **New**: Create a new entry (write a title and enter your notes). With the command `:new My title` the entry is created with that title and opened in the editor; `:new` alone asks for the title. The command also works in the lists.
 - `S` or `/` **Search**: Search the entries of the data file (the search text is typed in a box on top of the page, starting with the last search). All the words you type must be found in the title or text of an entry. The result can be sorted (press `Tab`) by _date changed_, _date created_ and alphabetically by _title_.
 - `R` **Reselect**: Select the last edited entry again.
 - `F` **Favorites**: Show the entries added to the favorites list.
@@ -89,32 +89,19 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 - `j` `k` Select an entry, `PgUp` `PgDn` Move 3 entries
 - `gg` `G` Select the first/last entry of the list (on the first/last page)
 - `h` `l` Previous/Next page of the list, `Home` `End` the first/last page
-- `Enter` or `Space` Open the selected entry
+- `Enter` or `Space` Open the selected entry in the [editor](Guide-to-editor.md). Closing the editor (`:q`) returns to the list, with the entry selected (to the main menu when the entry was opened from there, as with `R`)
 - `1`-`9` and `0` Open entry 1-10 directly. `:12` opens entry 12
 - `P` Add the selected entry to (or remove it from) the favorites, or pin it to the top of the favorites list
 - `Tab` Change the sorting
 - `Tab` or `V` In the favorites list: move the selected pinned entry. The entry is highlighted and follows `j` `k` up and down among the pinned entries (also to the next page) until you press `Esc` or `Enter`. The order is saved as you go
 - `:title` Change the title of the selected entry, in a box on top of the list. The list is shown again afterwards
-- `:delete` Delete the selected entry
+- `:delete` Delete the selected entry. You are asked once; a deleted entry can be brought back with `:undelete` in the main menu
+- `I` or `:info` Info about the selected entry: when it was created and last changed, the number of words, characters and lines, and its syntax colors (set with `:syntax` in the editor), in a box on top of the list. Any key closes it
+- `:duplicate` Make a copy of the selected entry (named "(copy)"), which is selected in the list
+- `:revert` Revert the selected entry to the text before its last edit (since you logged in)
+- `:export` Export the text of the selected entry as a text file. Select the directory in the file browser (go to it and press `S`), then enter the file name (the title of the entry is suggested). The exported file is not encrypted
+- `:import` Import a text file as a new entry (selected in the file browser). It is opened in the editor
 - `C` or `:color` Set the text color of a pinned entry (in the favorites list), as `C` in the favorites of the file browser. The 16 colors are shown in a list, as they look with your color scheme: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. _Default_ removes the color. `:color 13` sets color 13 of the list directly
 - `:transfer` Add the selected entry to the transfer collection
 - `/` or `S` Search, `A` List all, `T` Top 20, `F` Favorites, `M` Session history, `N` New entry
 - `Esc` or `:q` Return to the main menu
-
-## Viewing an entry
-Opening an entry shows it on the _INSPECT_ page, arranged as in the editor: the title at the top, and below it the text (_PREVIEW_ on the line above it). When the text is longer than the page, the line below it tells how to scroll. The most used keys are shown on the bottom line, and `?` (or `:help`) shows all the keys of the page.
-
-- `Enter` or `:edit` Edit the text (see the [guide to the editor](Guide-to-editor.md))
-- `i` Info: when the entry was created and last changed, the number of words, characters and lines, and its syntax colors (set with `:syntax` in the editor), in a box on top of the page. Any key closes it
-- `j` `k` Scroll the text one row, `Space` and `b` (or `PgDn`/`PgUp`) one page, `gg` `G` to the top/end
-- `T` Change the title
-- `F` Add to/remove from the favorites
-- `D` Duplicate the entry
-- `S` or `/` Open the editor and search the text
-- `N` or `:new` New entry (`:new My title` to give the title at once)
-- `:delete` Delete the entry. You are asked once; a deleted entry can be brought back with `:undelete` in the main menu
-- `:revert` Revert to the text before the last edit (since you logged in)
-- `:transfer` Add the entry to the transfer collection
-- `:import` Import a text file as a new entry (selected in the file browser)
-- `:export` Export the text of the entry as a text file. Select the directory in the file browser (go to it and press `S`), then enter the file name (the title of the entry is suggested). The exported file is not encrypted
-- `Esc` or `:q` Return to the list

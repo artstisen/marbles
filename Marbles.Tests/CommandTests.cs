@@ -162,7 +162,6 @@ public class CommandTests
     {
         var common = Method("Actions.cs", "RunCommonCommand");
         AssertSame(CommandContext.Menu, Compared(common, Method("Actions.cs", "RunManageCommand")));
-        AssertSame(CommandContext.Entry, Compared(common, Method("Actions.cs", "RunViewCommand")));
         AssertSame(CommandContext.List, Compared(common, Method("Actions.cs", "RunListCommand")));
     }
 
