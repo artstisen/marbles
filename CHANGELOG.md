@@ -3,6 +3,7 @@
 ## v1.5.3
 - **Logo**: drawn with "M" instead of "#", and with fewer dots and dashes, which looks better in more terminals (as on the Raspberry Pi).
 - **File browser**: `:match` makes the other pane show the directory of the pane with the focus.
+- **Color scheme editor**: moving the selection only moves the pointer, instead of drawing the whole page again.
 - **Entries open in the editor**: opening an entry (from a list, `R`, `:import`) goes straight to the editor, and closing the editor returns to the list it was opened from, with the entry selected (or to the main menu). The page that showed the entry before it was edited is removed, and what could only be done there is done in the lists, on the selected entry: `I` or `:info` (dates, words, characters, lines and syntax in a box), `:duplicate`, `:revert`, `:export` and `:import`. `:revert` now changes the saved entry too (before, the reverted text was only kept when the entry was edited afterwards).
 - **Login page**: the data directory is shown by its name, "Directory: data" (and "data/notes" for a directory in it), instead of "~", which on Linux and macOS stands for the home directory.
 - **Duplicate in the editor**: `:dup` (or `:duplicate`) copies the selection right after itself: text selected with `v` after its last character, lines selected with `V` below them, a block selected with `Q` to its right. Without a selection it duplicates the line of the cursor (`:2,5dup` lines 2 to 5).

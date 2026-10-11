@@ -43,10 +43,21 @@ internal static class SchemeEditor
         _changed = false;
         ConsoleColors.InitializePreviewColors();
         var selected = 1; // 0 is the preset, 1 and on the groups
+        var redraw = true;
         while (true)
         {
-            Init.ApplyAutoSize();
-            Draw(selected);
+            // Moving the selection only moves the pointer (the page is drawn when something else has changed)
+            if (Init.ApplyAutoSize()) redraw = true;
+            if (redraw)
+            {
+                Draw(selected);
+            }
+            else
+            {
+                MovePointer(selected);
+            }
+
+            redraw = true;
             var key = Console.ReadKey(true);
             var navigation = Keyboard.ToNavigationKey(key).Key;
             var count = Groups.Length + 1;
@@ -75,18 +86,22 @@ internal static class SchemeEditor
             else if (navigation == ConsoleKey.DownArrow)
             {
                 selected = (selected + 1) % count;
+                redraw = false;
             }
             else if (navigation == ConsoleKey.UpArrow)
             {
                 selected = (selected + count - 1) % count;
+                redraw = false;
             }
             else if (key.KeyChar == 'g')
             {
                 if (Console.ReadKey(true).KeyChar == 'g') selected = 0;
+                redraw = false;
             }
             else if (key.KeyChar == 'G')
             {
                 selected = count - 1;
+                redraw = false;
             }
             else if (key.Key == ConsoleKey.E)
             {
@@ -215,11 +230,31 @@ internal static class SchemeEditor
         Menu.WriteKeyHints(DialogText.SchemeEditorKeys);
 
         // The selection
-        var row = selected == 0 ? PresetRow : FirstGroupRow + selected - 1;
-        Tools.SetCursorEx(row, 0);
+        _shownSelected = -1;
+        MovePointer(selected);
+    }
+
+    private static int _shownSelected = -1; // The row with the pointer on the screen (-1: none)
+
+    // The row of the preset (0) or of a group (1 and on)
+    private static int RowOf(int selected) => selected == 0 ? PresetRow : FirstGroupRow + selected - 1;
+
+    // Move the selection pointer to a row (only the pointer is drawn)
+    private static void MovePointer(int selected)
+    {
+        if (_shownSelected >= 0 && _shownSelected != selected)
+        {
+            Tools.SetCursorEx(RowOf(_shownSelected), 0);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write("  ");
+        }
+
+        Tools.SetCursorEx(RowOf(selected), 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
         Console.Write("->");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        _shownSelected = selected;
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
     }
 
     // The names of the colors of a group
