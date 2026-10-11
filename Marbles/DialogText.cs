@@ -201,6 +201,12 @@ internal static class DialogText
     public static string TransferComplete => Lang.T("Complete transfer");
     public static string TransferDiscard => Lang.T("Discard transfer");
     public static string ChoiceCancel => Lang.T("Cancel");
+    // The boxes for picking a color scheme and a language
+    public static string PickSchemeCaption => Lang.T("Color scheme");
+    public static string PickSchemeQuestion => Lang.T("Select a color scheme");
+    public static string PickSchemeEditor => Lang.T("Edit the color scheme...");
+    public static string PickLanguageCaption => Lang.T("Language");
+    public static string PickLanguageQuestion => Lang.T("Select the language");
     // The choices when an entry is made a favorite, or is a favorite already (in a box, with keys in front)
     public static string FavoriteChoicePinned => Lang.T("Yes, pinned (at the top of the favorites)");
     public static string FavoriteChoicePin => Lang.T("No, pin it (at the top of the favorites)");

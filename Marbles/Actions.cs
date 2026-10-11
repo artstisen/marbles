@@ -409,6 +409,8 @@ internal static class Actions
                     // Toggle automatic dimensions (following the size of the terminal window)
                     ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
                     Init.AutoSize = !Init.AutoSize;
+                    // Turned off: back to the default size
+                    if (!Init.AutoSize) Init.SetDefaultOutputDimensions();
                     Init.ApplyAutoSize();
                     FileIo.SaveSettings();
                 }
@@ -424,9 +426,14 @@ internal static class Actions
                 break;
             case "language":
             {
-                // A code selects the language, and without one the next is used
+                // A code selects the language, and without one it is picked in a box
                 var code = CommandLine.Argument(command);
-                if (code.Length == 0) code = Lang.Next(true);
+                if (code.Length == 0)
+                {
+                    PickLanguage();
+                    code = Lang.Current;
+                }
+
                 if (!Lang.Set(code))
                 {
                     Menu.StatusMessage(DialogText.LanguageUnknown + string.Join(", ", Lang.Available.Select(l => l.Code)),
@@ -448,11 +455,17 @@ internal static class Actions
 
                 // Switch to the page of the colors if on a different one
                 ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
-                // Select the color preset, or use the next
-                SetColorPreset(number > 0
-                    ? number - 1
-                    : (ConsoleColors.GetColorPresetIndex() + 1) % ColorPresets.Length);
-                FileIo.SaveSettings();
+                // A number selects the color preset, and without one it is picked in a box
+                if (number > 0)
+                {
+                    SetColorPreset(number - 1);
+                    FileIo.SaveSettings();
+                }
+                else
+                {
+                    PickColorScheme();
+                }
+
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "restart":
@@ -494,6 +507,43 @@ internal static class Actions
     /// The name of a color preset
     /// </summary>
     internal static string ColorPresetName(int index) => index == 0 ? Lang.T("Default") : ColorPresetNames[index];
+
+    /// <summary>
+    /// Pick a color scheme in a box on top of the page. The last choice opens the color scheme editor. The choice
+    /// is saved in the settings file
+    /// </summary>
+    internal static void PickColorScheme()
+    {
+        var count = ColorPresets.Length;
+        var choices = Enumerable.Range(0, count).Select(ColorPresetName).Append(DialogText.PickSchemeEditor).ToArray();
+        var keys = Enumerable.Range(1, count).Select(n => n.ToString()).Append("E").ToArray();
+        var picked = ChoiceBox.Pick(DialogText.PickSchemeCaption, DialogText.PickSchemeQuestion, string.Empty, choices,
+            keys, ConsoleColors.GetColorPresetIndex(), false);
+        if (picked < 0) return;
+        if (picked == count)
+        {
+            SchemeEditor.Show();
+            return;
+        }
+
+        SetColorPreset(picked);
+        FileIo.SaveSettings();
+    }
+
+    /// <summary>
+    /// Pick the language in a box on top of the page. The choice is saved in the settings file
+    /// </summary>
+    internal static void PickLanguage()
+    {
+        var languages = Lang.Available;
+        var choices = languages.Select(language => language.Name + " (" + language.Code + ")").ToArray();
+        var keys = Enumerable.Range(1, languages.Length).Select(n => n.ToString()).ToArray();
+        var picked = ChoiceBox.Pick(DialogText.PickLanguageCaption, DialogText.PickLanguageQuestion, string.Empty,
+            choices, keys, Math.Max(0, Array.FindIndex(languages, language => language.Code == Lang.Current)), false);
+        if (picked < 0) return;
+        Lang.Set(languages[picked].Code);
+        FileIo.SaveSettings();
+    }
 
     // Use a color preset. The index is saved in the settings file
     internal static void SetColorPreset(int index)

@@ -292,8 +292,13 @@ internal static class StartMenu
             }
             else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && settings[selected] == Setting.ColorScheme)
             {
-                // The color scheme editor (l and h select the next and previous preset)
-                SchemeEditor.Show();
+                // Pick the color scheme in a box, or open the editor from it (l and h select the next and previous)
+                Actions.PickColorScheme();
+            }
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && settings[selected] == Setting.Language)
+            {
+                // Pick the language in a box (l and h select the next and previous)
+                Actions.PickLanguage();
             }
             else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow)
             {
@@ -350,6 +355,8 @@ internal static class StartMenu
             }
             case Setting.AutoSize:
                 Init.AutoSize = !Init.AutoSize;
+                // Turned off: back to the default size
+                if (!Init.AutoSize) Init.SetDefaultOutputDimensions();
                 Init.ApplyAutoSize();
                 break;
             case Setting.Size:

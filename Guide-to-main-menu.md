@@ -50,12 +50,12 @@ The main menu has 2 pages, each with two boxes of keys and commands: four boxes 
 ### Page 2: Settings and Marbles
 **Settings**
 - `:scheme` **Edit color scheme**: Open the [color scheme editor](#color-scheme-editor)
-- `:color` **Color preset**: Use the next of the color presets, or select one by number: `:color 5`
+- `:color` **Color preset**: Pick one of the color presets in a box on top of the menu (`j` `k`, `gg` `G` or the number, and `Enter`; `Esc` cancels). The last choice, _Edit the color scheme..._ (or `E`), opens the [color scheme editor](#color-scheme-editor). `:color 5` selects preset 5 at once
 - `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the terminal's own background is used
-- `:language` **Language**: Use the next language, or select one by its code: `:language en` (English), `da` (Danish), `de` (German), `nb` (Norwegian), `sv` (Swedish), `es` (Spanish), `fr` (French). The language is saved as `language` in the settings file, and can also be changed on the Configuration page
+- `:language` **Language**: Pick the language in a box on top of the menu, or select one by its code: `:language en` (English), `da` (Danish), `de` (German), `nb` (Norwegian), `sv` (Swedish), `es` (Spanish), `fr` (French). The language is saved as `language` in the settings file, and can also be changed on the Configuration page
 - `:number` **Line numbers**: Show or hide line numbers in the editor (the same as `:number` in the editor itself).
 - `:size` **Size**: Set the number of rows and columns used by Marbles.
-- `:size auto` **Follow the window**: Turn automatic dimensions on or off. When on, Marbles uses the size of the terminal window (leaving one row and one column unused), checked when the login page, a menu, a list or an entry is shown. A window resized while the editor is open is picked up when the editor is closed. Setting the dimensions yourself with `:size` turns automatic dimensions off.
+- `:size auto` **Follow the window**: Turn automatic dimensions on or off. When on, Marbles uses the size of the terminal window (leaving one row and one column unused), checked when the login page, a menu, a list or an entry is shown. A window resized while the editor is open is picked up when the editor is closed. Setting the dimensions yourself with `:size` turns automatic dimensions off. Turning automatic dimensions off goes back to the default size (80 x 23).
 
 **Marbles**
 - `:browse` **Browse files**: Open the file browser.

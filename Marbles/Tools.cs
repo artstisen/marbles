@@ -1370,7 +1370,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Startup"), Lang.T("Text Editor can start in the favorites list"), false));
             _shortcutList.Add(new Shortcut("Enter Space", Lang.T("Change the selected setting"), false));
             _shortcutList.Add(new Shortcut("l h", Lang.T("Next/Previous color scheme or language"), false));
-            _shortcutList.Add(new Shortcut("  " + Lang.T("Color scheme"), Lang.T("Enter: edit the colors"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Color scheme"), Lang.T("Enter: pick from a list (or edit the colors)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Language"), Lang.T("Enter: pick from a list"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("View log"), Lang.T("/text only shows lines containing \"text\""), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogin, true));
             _shortcutList.Add(new Shortcut("Enter", Lang.T("Log in with the password typed"), false));
@@ -1406,6 +1407,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":new :new Title", Lang.T("New entry (asks for the title if not given)"), false));
             _shortcutList.Add(new Shortcut(":logout", Lang.T("Logout"), false));
             _shortcutList.Add(new Shortcut(":guide", Lang.T("Quick guide (a short introduction)"), false));
+            _shortcutList.Add(new Shortcut(":color :language", Lang.T("Pick the color scheme/language from a list"), false));
+            _shortcutList.Add(new Shortcut(":color 3 :language da", Lang.T("Use color scheme 3/Danish at once"), false));
             _shortcutList.Add(new Shortcut(":browse", Lang.T("Browse files (opening a file logs out)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
