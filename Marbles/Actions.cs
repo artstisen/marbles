@@ -936,7 +936,8 @@ internal static class Actions
             Mode.SetMode(Mode.SelectedMode.Edit);
             Tools.ClearScreen();
             DrawEditMenu();
-            // Insert editor at current cursor position
+            // Insert editor at current cursor position (colored as set for the entry)
+            TextArea.NextEntrySyntax = EntrySyntax.Get(Entries.CurrentEntry.Options);
             TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
                 Init.LineCount - 5, Entries.CurrentEntry.Text, Entries.CurrentEntry.CursorIndex, false, false, search, 0);
             // Cleanup
@@ -948,6 +949,20 @@ internal static class Actions
             Menu.StatusMessage(DialogText.NoEntrySelected, true, true, true, DialogText.CaptionsEdit, string.Empty,
                 false);
         }
+    }
+
+    /// <summary>
+    /// Keep the syntax highlighting of the entry being edited (set with :syntax in the editor) in the entry, and
+    /// save the data file
+    /// </summary>
+    internal static void SetEntrySyntax(SyntaxType type)
+    {
+        if (!Entries.CurrentEntryExists()) return;
+        var options = EntrySyntax.Set(Entries.CurrentEntry.Options, type);
+        if (options == Entries.CurrentEntry.Options) return;
+        Entries.CurrentEntry.Options = options;
+        Entries.UpdateEntry(Entries.CurrentEntry, false);
+        Entries.SaveEntriesToFile();
     }
 
     internal static bool LatestEntryWasEdited;
@@ -1069,6 +1084,7 @@ internal static class Actions
             DrawViewMenu(displayMenuFromPageOne);
             // Preview text content
             // Convert text to lines and display them with top and left margin in the preview
+            TextArea.NextEntrySyntax = EntrySyntax.Get(Entries.CurrentEntry.Options);
             var textPreviewArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
                 Init.LineCount - 6, Entries.CurrentEntry.Text, Entries.CurrentEntry.CursorIndex, false, true, false, 0);
             _previewArea = null;
@@ -1158,7 +1174,10 @@ internal static class Actions
             (DialogText.InfoChanged, entry.DateChanged),
             (Lang.T("Words:"), Tools.WordCount(entry.Text).ToString()),
             (Lang.T("Characters:"), Tools.CharacterCount(entry.Text).ToString()),
-            (Lang.T("Lines:"), Tools.LineCount(entry.Text).ToString())
+            (Lang.T("Lines:"), Tools.LineCount(entry.Text).ToString()),
+            (Lang.T("Syntax:"), EntrySyntax.Get(entry.Options) == SyntaxType.None
+                ? Lang.T("None (:syntax in the editor)")
+                : SyntaxHighlighter.Name(EntrySyntax.Get(entry.Options)))
         }, 60);
     }
 
@@ -2368,8 +2387,20 @@ internal static class Actions
 
                 Console.Write(_tempTruncatedTitle);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                // Dots
-                Console.Write(" " + new string('.', (Init.LineWidth - (_tempTruncatedTitle.Length + 29))));
+                // Dots, ending with the syntax of the entry if it has one ("MD")
+                var dots = Init.LineWidth - (_tempTruncatedTitle.Length + 29);
+                var syntax = EntrySyntax.ShortName(EntrySyntax.Get(_resultPages[page][j].Options));
+                if (syntax.Length > 0 && dots > syntax.Length + 2)
+                {
+                    Console.Write(" " + new string('.', dots - syntax.Length - 1) + " ");
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
+                    Console.Write(syntax);
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                }
+                else
+                {
+                    Console.Write(" " + new string('.', dots));
+                }
                 // Changed date
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 //  [    PINNED    ]

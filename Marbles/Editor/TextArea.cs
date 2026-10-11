@@ -57,6 +57,12 @@ public class TextArea
     internal const int SaveAsEntry = 0;
     internal const int SaveAsSettings = 1;
     internal const int SaveAsFile = 2; // A plain text file opened from the file browser
+
+    /// <summary>
+    /// The syntax highlighting of the entry shown in the next text area that is made for an entry (the editor or
+    /// the preview). It is used once
+    /// </summary>
+    internal static SyntaxType NextEntrySyntax { get; set; }
     private readonly int _saveMode;
     private readonly string _leftMargin;
     private bool _exit;
@@ -124,6 +130,15 @@ public class TextArea
             _engine.SyntaxDefault = fileType;
             if (SyntaxHighlighter.ColorFiles) _engine.Syntax = fileType;
         }
+
+        // An entry is colored as set for the entry (a tag in its options)
+        if (saveMode == SaveAsEntry && !_singleLine && NextEntrySyntax != SyntaxType.None)
+        {
+            _engine.SyntaxDefault = NextEntrySyntax;
+            _engine.Syntax = NextEntrySyntax;
+        }
+
+        NextEntrySyntax = SyntaxType.None;
         if (scrollToEnd)
         {
             _engine.CursorToEnd();
@@ -336,6 +351,13 @@ public class TextArea
                 ReloadFile(request == EditorRequest.ReloadForce);
                 break;
             case EditorRequest.SyntaxChanged:
+                // An entry remembers its syntax
+                if (_saveMode == SaveAsEntry)
+                {
+                    Actions.SetEntrySyntax(_engine.Syntax);
+                    _shownStatus = null;
+                }
+
                 // Colors on or off is remembered for the files that are colored when they are opened
                 if (_saveMode == SaveAsFile &&
                     SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName) != SyntaxType.None)

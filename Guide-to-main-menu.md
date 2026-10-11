@@ -105,7 +105,7 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 Opening an entry shows it on the _INSPECT_ page, arranged as in the editor: the title at the top, and below it the text (_PREVIEW_ on the line above it). When the text is longer than the page, the line below it tells how to scroll. The most used keys are shown on the bottom line, and `?` (or `:help`) shows all the keys of the page.
 
 - `Enter` or `:edit` Edit the text (see the [guide to the editor](Guide-to-editor.md))
-- `i` Info: when the entry was created and last changed, and the number of words, characters and lines, in a box on top of the page. Any key closes it
+- `i` Info: when the entry was created and last changed, the number of words, characters and lines, and its syntax colors (set with `:syntax` in the editor), in a box on top of the page. Any key closes it
 - `j` `k` Scroll the text one row, `Space` and `b` (or `PgDn`/`PgUp`) one page, `gg` `G` to the top/end
 - `T` Change the title
 - `F` Add to/remove from the favorites

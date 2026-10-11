@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Entries remember their syntax colors**: `:syntax md` (or `html`, `css`, `js`, `json`, `xml`) when editing an entry is kept in the entry, as the favorite and pin tags (a letter in its options, in the encrypted data file), so it is colored when it is opened again, and in the preview of the _INSPECT_ page. `:syntax off` removes it. The lists show the kind (_MD_, _HTML_ ...) before the date, and the info box (`i`) tells the syntax. Earlier versions of Marbles ignore the tag.
 - **Colors of pinned entries**: `C` in the favorites list of a data file opens the list of colors for the selected pinned entry, as `C` in the favorites of the file browser. The command `:pin` is renamed `:color` (`:color 13` picks color 13 directly).
 - **Lists of entries** (All, Top 20, Favorites, Session history, Search): the kind of list is shown at the top left (_ALL_, _TOP 20_ ...), the keys at the top are replaced by the most used keys on the bottom line, and `?` shows the keys of the lists in a section of the help of its own. A page has room for more entries. `gg` and `G` select the first and last entry of the whole list (going to the first/last page); `Home` and `End` go to the first/last page.
 - **Main menu**: `l` (or `Right`) opens the selected item, as `Enter`; `h` still shows the previous page. `?` shows the keys of the main menu in a section of the help of its own.
