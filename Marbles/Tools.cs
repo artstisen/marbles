@@ -1388,7 +1388,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Exit Marbles"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMainMenu, true));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select an item (on into the next box)"), false));
-            _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the selected item"), false));
+            _shortcutList.Add(new Shortcut("l Enter Space", Lang.T("Open the selected item (Space: also on/off)"), false));
             _shortcutList.Add(new Shortcut("Tab", Lang.T("The next box (Shift: back)"), false));
             _shortcutList.Add(new Shortcut("h", Lang.T("The previous page"), false));
             _shortcutList.Add(new Shortcut("1 2", Lang.T("Page 1/Page 2"), false));
@@ -1432,7 +1432,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("?", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("X :logout", Lang.T("Logout"), false));
-            _shortcutList.Add(new Shortcut("Esc :q", Lang.T("Back to the main menu"), false));
+            _shortcutList.Add(new Shortcut("Esc - :q", Lang.T("Back to the main menu"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFiles, true));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last"), false));

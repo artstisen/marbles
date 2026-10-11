@@ -101,9 +101,10 @@ internal static class Actions
             {
                 if (Menu.MoveMenuSelection(-1)) Menu.DrawTopMenu(false, true, false);
             }
-            else if (_c.Key is ConsoleKey.Enter or ConsoleKey.L or ConsoleKey.RightArrow)
+            else if (_c.Key is ConsoleKey.Enter or ConsoleKey.L or ConsoleKey.RightArrow or ConsoleKey.Spacebar)
             {
-                // Run the selected item (l as Enter): a command, or the key of the item
+                // Run the selected item (l and Space as Enter, Space for the settings that are on or off): a command,
+                // or the key of the item
                 var run = Menu.SelectedMenuItem();
                 if (run != null && run.Length > 1 && run[0] == ':')
                 {
@@ -176,7 +177,7 @@ internal static class Actions
                 // Top 20
                 FindAll(1, string.Empty, false, false);
             }
-            else if (_c.Key is ConsoleKey.F or ConsoleKey.Spacebar)
+            else if (_c.Key == ConsoleKey.F)
             {
                 // Favorites
                 FindAll(2, string.Empty, false, false);
@@ -198,7 +199,7 @@ internal static class Actions
             {
                 HandleListKey();
             }
-            else if (_c.Key == ConsoleKey.Escape)
+            else if (_c.Key == ConsoleKey.Escape || _c.KeyChar == '-')
             {
                 Mode.SetMode(Mode.SelectedMode.Manage);
                 Menu.DrawTopMenu(false, true, false);
@@ -2657,9 +2658,9 @@ internal static class Actions
         {
             DisplayResultPages(_resultPages.Count - 1, false);
         }
-        else if (_c.Key == ConsoleKey.Escape)
+        else if (_c.Key == ConsoleKey.Escape || _c.KeyChar == '-')
         {
-            // Return to main
+            // Return to main (Esc, or "-" as in the file browser)
             _isSelectingResult = false;
             Mode.SetRecallMode(Mode.RecallMode.None);
             Mode.SetMode(Mode.SelectedMode.Manage);

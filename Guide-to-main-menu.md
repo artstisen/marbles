@@ -18,7 +18,7 @@ The same keys are used everywhere in Marbles:
 ## Main menu
 The main menu has 2 pages, each with two boxes of keys and commands: four boxes in all, numbered 1 to 4 on the line below them, where the number of the box with the selection is highlighted. _MENU_ is shown at the top left, and the name of the data file at the top right, above a dividing line. The keys of the page are shown at the bottom.
 
-- Each item can be used with its key or command, or selected and opened: `j` `k` (or `Down`/`Up`) select an item, and `Enter` or `l` (or `Right`) opens the selected item. The title of the box with the selection is highlighted
+- Each item can be used with its key or command, or selected and opened: `j` `k` (or `Down`/`Up`) select an item, and `Enter`, `l` (or `Right`) or `Space` opens the selected item. For the settings that are on or off (`[x]`), `Space` and `Enter` turn them on or off. The title of the box with the selection is highlighted
 - `j` on the last item of a box goes on to the first item of the next box (on the next page after box 2, and back to box 1 after box 4). `k` on the first item goes back to the last item of the previous box
 - `gg` (or `Home`) selects the first item of box 1, and `G` (or `End`) the last item of box 4
 - `Tab` goes to the next box: from the two boxes of the first page to the two of the second, and back to the first. `Shift+Tab` goes the other way
@@ -104,4 +104,4 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 - `C` or `:color` Set the text color of a pinned entry (in the favorites list), as `C` in the favorites of the file browser. The 16 colors are shown in a list, as they look with your color scheme: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. _Default_ removes the color. `:color 13` sets color 13 of the list directly
 - `:transfer` Add the selected entry to the transfer collection
 - `/` or `S` Search, `A` List all, `T` Top 20, `F` Favorites, `M` Session history, `N` New entry
-- `Esc` or `:q` Return to the main menu
+- `Esc`, `-` or `:q` Return to the main menu
