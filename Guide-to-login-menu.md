@@ -19,7 +19,7 @@ Move the selection with `j`/`k` (or the arrow keys) or the number, and press `En
 
 The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to showing the choices.
 
-The settings are on two pages: the first has the start page and the display (colors, language, size), the second the editor and the rest. `Tab` goes to the other page, and `j` `k` go on from the last setting of a page to the first of the next (the page is shown at the bottom right). The number of a row selects it on the page shown.
+The settings are on two pages: the first has the start page and the display (colors, language, size), the second the editor and the rest. They are shown in a frame with a tab for each page at the top (_1_ and _2_, the one shown highlighted). `Tab` goes to the other page, and `j` `k` go on from the last setting of a page to the first of the next. The number of a row selects it on the page shown.
 
 Below these are some basic settings, so they can be changed without logging in to a data file:
 

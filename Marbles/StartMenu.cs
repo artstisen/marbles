@@ -228,6 +228,72 @@ internal static class StartMenu
 
     private const int PageCount = 2;
 
+    // The settings are in a frame with a tab for each page on its top: the tabs (two rows), the top of the frame,
+    // a blank row, the settings, and the bottom of the frame on the row above the keys
+    private const int TabRow = FirstRow - 2;
+    private const int FrameTop = FirstRow;
+    private const int SettingsTop = FrameTop + 2;
+    private const int TabLeft = 2;
+    private const int TabWidth = 5; // ".---."
+    private const int TabGap = 1;
+    private static int FrameBottom => Init.LineCount - 2;
+
+    // The frame of the settings, with the tabs of the pages on its top (the one shown open into the frame)
+    private static void DrawSettingsFrame(int page)
+    {
+        var top = AsciiStyles.GetTopCorner();
+        var bottom = AsciiStyles.GetBottomCorner();
+        var right = Init.LineWidth - 2;
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        for (var tab = 0; tab < PageCount; tab++)
+        {
+            var left = TabLeft + tab * (TabWidth + TabGap);
+            Tools.SetCursorEx(TabRow, left);
+            Console.Write(top + new string('-', TabWidth - 2) + top);
+            Tools.SetCursorEx(TabRow + 1, left);
+            Console.Write('|');
+            // The number of the page shown is highlighted
+            ConsoleColors.SetColors(tab == page
+                ? ConsoleColors.ColorPreset.HighlightInverted
+                : ConsoleColors.ColorPreset.Normal);
+            Console.Write(" " + (tab + 1) + " ");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write('|');
+        }
+
+        // The top of the frame: open below the tab of the page shown
+        var line = new char[right];
+        Array.Fill(line, '-');
+        line[0] = top;
+        line[right - 1] = top;
+        for (var tab = 0; tab < PageCount; tab++)
+        {
+            var left = TabLeft + tab * (TabWidth + TabGap) - 1;
+            line[left] = bottom;
+            line[left + TabWidth - 1] = bottom;
+            if (tab != page) continue;
+            for (var i = left + 1; i < left + TabWidth - 1; i++) line[i] = ' ';
+        }
+
+        Tools.SetCursorEx(FrameTop, 1);
+        Console.Write(line);
+        for (var row = FrameTop + 1; row < FrameBottom; row++)
+        {
+            Tools.SetCursorEx(row, 1);
+            Console.Write('|');
+            Tools.SetCursorEx(row, right);
+            Console.Write('|');
+        }
+
+        Tools.SetCursorEx(FrameBottom, 1);
+        Console.Write(bottom + new string('-', right - 2) + bottom);
+        // The title, after the tabs
+        Tools.SetCursorEx(TabRow + 1, TabLeft + PageCount * (TabWidth + TabGap) + 1);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+        Console.Write(DialogText.StartConfiguration);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
     // The settings of the start page and some basic settings. A change is saved in the settings file at once
     private static void Configure()
     {
@@ -251,23 +317,14 @@ internal static class StartMenu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Tools.ClearScreen();
                 Logo.DrawLogo(true, false, false);
-                Tools.SetCursorEx(FirstRow - 2, 1);
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-                Console.Write(DialogText.StartConfiguration + ":");
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                DrawSettingsFrame(page);
                 for (var i = first; i <= last; i++)
                 {
                     // The basic settings follow the ones of the start page after a blank row
                     Tools.SetCursorEx(SettingRow(settings, i, first, last), Left + 2);
-                    Console.Write(" " + SettingText(settings[i]));
+                    Console.Write(" " + Tools.TruncateString(SettingText(settings[i]), Init.LineWidth - Left - 7, true));
                 }
 
-                // The page, above the keys at the right
-                var pageText = Lang.F("Page {0} of {1}", page + 1, PageCount) + " (Tab)";
-                Tools.SetCursorEx(Init.LineCount - 2, Math.Max(0, Init.LineWidth - 2 - TextMetrics.WidthOf(pageText)));
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                Console.Write(pageText);
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Tools.SetCursorEx(Init.LineCount - 1, 0);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 Console.Write(" " + DialogText.StartConfigKeys);
@@ -358,8 +415,9 @@ internal static class StartMenu
     private static int SettingRow(List<Setting> settings, int index, int first, int last)
     {
         // A blank row between the settings of the start page and the basic settings, when there is room for it
-        var gap = FirstRow + (last - first + 1) + 1 <= Init.LineCount - 2 ? 1 : 0;
-        return FirstRow + index - first + (settings[index] >= Setting.Monochrome && PageOf(settings[index]) == 0 ? gap : 0);
+        var gap = SettingsTop + (last - first + 1) + 1 <= FrameBottom ? 1 : 0;
+        return SettingsTop + index - first +
+               (settings[index] >= Setting.Monochrome && PageOf(settings[index]) == 0 ? gap : 0);
     }
 
     private static void ChangeSetting(Setting setting, bool next)
