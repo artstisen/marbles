@@ -245,7 +245,7 @@ internal static class ChoiceBox
 
     // Draw the frame of a box with its title and a blank inside, in the middle of the screen. A box shown
     // before it (the page not drawn again) is covered. Returns where the box is and how big it is inside
-    private static (int Top, int Left, int Inner, int Height) DrawFrame(string caption, int inner, int height)
+    internal static (int Top, int Left, int Inner, int Height) DrawFrame(string caption, int inner, int height)
     {
         var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
         var top = Math.Max(1, (Init.LineCount - height - 2) / 2);
@@ -307,7 +307,7 @@ internal static class ChoiceBox
     }
 
     // The keys of a box, on the bottom line
-    private static void WriteHints(string hints)
+    internal static void WriteHints(string hints)
     {
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

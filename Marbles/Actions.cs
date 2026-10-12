@@ -869,15 +869,25 @@ internal static class Actions
             // Add entry ID to session ID list
             Entries.RegisterSessionId((Entries.CurrentEntry.Id));
             
-            Mode.SetMode(Mode.SelectedMode.Edit);
-            Tools.ClearScreen();
-            DrawEditMenu();
-            // Insert editor at current cursor position (colored as set for the entry)
-            TextArea.NextEntrySyntax = EntrySyntax.Get(Entries.CurrentEntry.Options);
-            TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                Init.LineCount - 5, Entries.CurrentEntry.Text, Entries.CurrentEntry.CursorIndex, false, false, search, 0);
-            // Cleanup
-            textArea.ClearUndoRedoCache();
+            var cursorIndex = Entries.CurrentEntry.CursorIndex;
+            while (true)
+            {
+                Mode.SetMode(Mode.SelectedMode.Edit);
+                Tools.ClearScreen();
+                DrawEditMenu();
+                // Insert editor at current cursor position (colored as set for the entry)
+                TextArea.NextEntrySyntax = EntrySyntax.Get(Entries.CurrentEntry.Options);
+                TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
+                    Init.LineCount - 5, Entries.CurrentEntry.Text, cursorIndex, false, false, search, 0);
+                // Cleanup
+                textArea.ClearUndoRedoCache();
+                // ":snip edit": the file of snippets, and then the entry again
+                if (TextArea.TakeSnippetsRequest() is not { } line) break;
+                cursorIndex = textArea.GetCursorIndex();
+                search = false;
+                FileExplorer.EditSnippets(line);
+            }
+
             ReturnFromEntry();
         }
         else
@@ -1154,6 +1164,7 @@ internal static class Actions
         FileExplorer.DualPane = true;
         TextArea.LineNumbers = false;
         TextArea.WordWrap = true;
+        Snippets.Sort = Snippets.SortOrder.File;
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
         ConsoleColors.DefaultColorPresetIndex();
         Logo.AnimationEnabled = true;

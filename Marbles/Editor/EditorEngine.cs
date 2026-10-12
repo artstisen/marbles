@@ -43,7 +43,10 @@ internal enum EditorRequest
     PasteBinClear, // ":pbclear": empty the paste bin
     ClipboardSettings, // ":clipboard": show the clipboard settings
     WrapChanged, // Wrapping of long lines was turned on or off
-    CopyPath // ":path": the path of the file being edited to the clipboard
+    CopyPath, // ":path": the path of the file being edited to the clipboard
+    Snippets, // ":snip": show the snippets (SnippetText: the selected text, which can be added)
+    SnippetAdd, // ":snip add": add SnippetText as a snippet
+    SnippetsEdit // ":snip edit": open the file of the snippets
 }
 
 /// <summary>
@@ -141,6 +144,11 @@ internal sealed partial class EditorEngine
     internal string PasteBinText { get; private set; } = string.Empty;
 
     internal bool? PasteBinAppend { get; private set; }
+
+    /// <summary>
+    /// The text for EditorRequest.Snippets and EditorRequest.SnippetAdd (the selection, or the line)
+    /// </summary>
+    internal string SnippetText { get; private set; } = string.Empty;
 
 
     internal bool MessageIsError { get; private set; }
@@ -480,6 +488,29 @@ internal sealed partial class EditorEngine
     }
 
     /// <summary>
+    /// Insert a snippet after the cursor (as "p"), as one change. The lines after the first are indented as the line of the
+    /// cursor. If the snippet has the cursor mark ("$0"), the cursor is placed there in Insert mode
+    /// </summary>
+    internal void InsertSnippet(string text)
+    {
+        if (SingleLine) return;
+        ResetPending();
+        Mode = EditorMode.Normal;
+        text = TextBuffer.Normalize(text).Replace("\t", new string(' ', TabWidth));
+        var at = Buffer.Clamp(Cursor);
+        if (at.Col < Buffer.LineLength(at.Line)) at = at with { Col = at.Col + TextMetrics.ElementLength(CurrentLine, at.Col) };
+        var (inserted, mark) = Snippets.Prepare(text, CurrentLine[..FirstNonBlank(at.Line)]);
+        if (inserted.Length == 0) return;
+        _stepCursor = Cursor;
+        var end = Insert(at, inserted);
+        Cursor = mark < 0 ? end : Buffer.FromIndex(Buffer.ToIndex(at) + mark);
+        Buffer.EndStep(Cursor);
+        if (mark >= 0) Mode = EditorMode.Insert;
+        ClampCursor();
+        EnsureCursorVisible();
+    }
+
+    /// <summary>
     /// Replace the text with the text of the file as it is on disk now. The text is not changed as far as
     /// saving goes, and what was done before cannot be undone
     /// </summary>
@@ -764,6 +795,11 @@ internal sealed partial class EditorEngine
             {
                 WriteToPasteBin(SelectedText(first, last, fromSelection), command == "pbappend");
             }
+            else if (command is "snip" or "snip add" && !SingleLine)
+            {
+                SnippetText = SelectedText(first, last, fromSelection);
+                _request = command == "snip" ? EditorRequest.Snippets : EditorRequest.SnippetAdd;
+            }
             else if (command is "replace" or "rep" && !SingleLine)
             {
                 // Text selected within a line is what to find. Else the selected lines are where to replace
@@ -954,6 +990,17 @@ internal sealed partial class EditorEngine
                 break;
             case "path":
                 if (!SingleLine) _request = EditorRequest.CopyPath;
+                break;
+            case "snip":
+                SnippetText = string.Empty;
+                if (!SingleLine) _request = EditorRequest.Snippets;
+                break;
+            case "snip add":
+                SnippetText = CurrentLine;
+                if (!SingleLine) _request = EditorRequest.SnippetAdd;
+                break;
+            case "snip edit":
+                if (!SingleLine) _request = EditorRequest.SnippetsEdit;
                 break;
             case "vsel":
                 StartVisual(EditorMode.Visual);

@@ -68,6 +68,20 @@ public class TextArea
     /// the preview). It is used once
     /// </summary>
     internal static SyntaxType NextEntrySyntax { get; set; }
+
+    // The line to open the file of snippets at, when the editor was closed to open it (":snip edit")
+    private static int? _snippetsLine;
+
+    /// <summary>
+    /// The editor was closed to open the file of snippets (":snip edit"): the line to open it at (and it is
+    /// forgotten). The caller opens the file, and the text that was edited again when it is closed
+    /// </summary>
+    internal static int? TakeSnippetsRequest()
+    {
+        var line = _snippetsLine;
+        _snippetsLine = null;
+        return line;
+    }
     private readonly int _saveMode;
     private readonly string _leftMargin;
     private bool _exit;
@@ -380,6 +394,28 @@ public class TextArea
                 _shownStatus = null;
                 break;
             }
+            case EditorRequest.Snippets:
+            {
+                Tools.HideCursor();
+                DrawStatusLine(); // Remove the command from the bottom line
+                var result = SnippetBox.Show(_engine.SnippetText, SnippetSyntax(), _saveMode == SaveAsEntry);
+                RedrawAll();
+                if (result.Action == SnippetBox.Action.Insert) _engine.InsertSnippet(result.Text);
+                if (result.Action == SnippetBox.Action.Edit) OpenSnippets(result.Line);
+                break;
+            }
+            case EditorRequest.SnippetAdd:
+            {
+                Tools.HideCursor();
+                DrawStatusLine();
+                var title = SnippetBox.Add(_engine.SnippetText, _saveMode == SaveAsEntry);
+                RedrawAll();
+                if (title != null) _engine.ShowMessage(DialogText.SnippetAdded, false);
+                break;
+            }
+            case EditorRequest.SnippetsEdit:
+                OpenSnippets(0);
+                break;
             case EditorRequest.ClipboardSettings:
                 Tools.HideCursor();
                 ClipboardPage.Show();
@@ -451,6 +487,57 @@ public class TextArea
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
                 break;
         }
+    }
+
+    // The kind of text being edited, for the snippets made for it (a file of a known kind with its colors off too)
+    private SyntaxType SnippetSyntax()
+    {
+        if (_engine.Syntax != SyntaxType.None) return _engine.Syntax;
+        return _saveMode == SaveAsFile ? SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName) : SyntaxType.None;
+    }
+
+    // ":snip edit": close the editor to open the file of snippets (at a line). The caller opens it, and this text
+    // again when it is closed. Changes that are not saved are asked about first
+    private void OpenSnippets(int line)
+    {
+        if (_saveMode == SaveAsSettings)
+        {
+            _engine.ShowMessage(DialogText.SnippetsNotHere, true);
+            return;
+        }
+
+        Tools.HideCursor();
+        DrawStatusLine();
+        if (!SnippetBox.EnsureFile())
+        {
+            RedrawAll();
+            return;
+        }
+
+        // The file of snippets is the one being edited: go to the line
+        if (_saveMode == SaveAsFile && FileOperations.SamePath(FileExplorer.CurrentFilePath,
+                System.IO.Path.GetFullPath(Snippets.FilePath)))
+        {
+            RedrawAll();
+            _engine.SetCursorIndex(Snippets.IndexOfLine(GetText(), line));
+            _engine.ShowMessage(DialogText.SnippetsFileOpen, false);
+            return;
+        }
+
+        if (_engine.IsModified)
+        {
+            var answer = Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn,
+                DialogText.SnippetSwitchNote, false);
+            if (answer == 3 || (answer == 1 && !Save()))
+            {
+                RedrawAll();
+                return;
+            }
+        }
+
+        _snippetsLine = line;
+        Canceled = _engine.IsModified;
+        _exit = true;
     }
 
     // Read the file from disk again. Changes that are not saved are only given up if that is asked for

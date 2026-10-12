@@ -1666,6 +1666,10 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("\"+y", Lang.T("Yank to the system clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut(":pb :pbread", Lang.T("Write to/Read from the paste bin"), false));
             _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path of the file to the clipboard"), false));
+            _shortcutList.Add(new Shortcut(":snip", Lang.T("Snippets: insert, filter, sort, add, rename, delete"), false));
+            _shortcutList.Add(new Shortcut(":snip add", Lang.T("Keep the selection (or the line) as a snippet"), false));
+            _shortcutList.Add(new Shortcut(":snip edit", Lang.T("Edit the file of snippets (snippets.txt)"), false));
+            _shortcutList.Add(new Shortcut("  $0 (css)", Lang.T("Snippets: the cursor goes to $0, (css) first in css"), false));
             _shortcutList.Add(new Shortcut(":syntax", Lang.T("Colors on/off (md html css js json xml files: on)"), false));
             _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md, css, js, json, xml)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Entries"), Lang.T("Remember their colors (shown as MD, HTML ...)"), false));

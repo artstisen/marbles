@@ -955,6 +955,8 @@ internal static class FileIo
         _tempSettings += "pastebinappend=" + (SystemClipboard.PasteBinAppend ? DialogText.BTrue : DialogText.BFalse) +
                          Entries.NewLineChar;
         _tempSettings += "pastebinfile=" + SystemClipboard.PasteBinFile + Entries.NewLineChar;
+        // The order of the snippets in the editor (file, title or used)
+        _tempSettings += "snipsort=" + Snippets.SortName(Snippets.Sort) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; STYLING" + Entries.NewLineChar;
@@ -1128,6 +1130,7 @@ internal static class FileIo
         SystemClipboard.PasteBinAppend = Tools.TrimToLower(Get("pastebinappend")) == DialogText.BTrue;
         var pasteBinFile = Get("pastebinfile").Trim();
         SystemClipboard.PasteBinFile = pasteBinFile.Length > 0 ? pasteBinFile : SystemClipboard.DefaultPasteBinFile;
+        Snippets.Sort = Snippets.ParseSort(Get("snipsort"));
         Lang.Set(Get("language"));
         // On unless turned off
         // (named "mdcolors" in an earlier version)

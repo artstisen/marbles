@@ -612,16 +612,64 @@ internal static partial class FileExplorer
         Mode.SetMode(Mode.SelectedMode.Edit);
         try
         {
-            Tools.ClearScreen();
-            Actions.DrawEditFileMenu();
-            var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                Init.LineCount - 5, file.Text, _openAtIndex, false, false, false, TextArea.SaveAsFile, modified);
-            textArea.ClearUndoRedoCache();
+            var cursorIndex = _openAtIndex;
+            while (true)
+            {
+                Tools.ClearScreen();
+                Actions.DrawEditFileMenu();
+                var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
+                    Init.LineCount - 5, _file?.Text ?? string.Empty, cursorIndex, false, false, false, TextArea.SaveAsFile, modified);
+                textArea.ClearUndoRedoCache();
+                // ":snip edit": the file of snippets, and then this file again (as it is on disk)
+                if (TextArea.TakeSnippetsRequest() is not { } line) break;
+                cursorIndex = textArea.GetCursorIndex();
+                EditSnippets(line);
+                if (!File.Exists(file.Path)) break;
+                _file = TextFile.Load(file.Path);
+                modified = false;
+            }
+        }
+        catch (Exception e) when (e is not NavigationException)
+        {
+            _message = e.Message;
         }
         finally
         {
             Mode.SetMode(Mode.SelectedMode.Login);
             _file = null;
+        }
+    }
+
+    /// <summary>
+    /// Open the file of snippets in the editor (at a line), from the editor of a file or an entry (":snip edit").
+    /// The file or entry being edited is kept, and the data file stays open
+    /// </summary>
+    internal static void EditSnippets(int line)
+    {
+        var outer = _file;
+        var mode = Mode.CurrentMode;
+        try
+        {
+            _file = TextFile.Load(Snippets.FilePath);
+            EventLog.Add(DialogText.LogFile + "Open: " + _file.Path);
+            Mode.SetMode(Mode.SelectedMode.Edit);
+            Tools.ClearScreen();
+            Actions.DrawEditFileMenu();
+            var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
+                Init.LineCount - 5, _file.Text, Snippets.IndexOfLine(_file.Text, line), false, false, false,
+                TextArea.SaveAsFile);
+            textArea.ClearUndoRedoCache();
+            TextArea.TakeSnippetsRequest();
+        }
+        catch (Exception e) when (e is not NavigationException)
+        {
+            Tools.ClearScreen();
+            ChoiceBox.Message(DialogText.CaptionsSnippets, e.Message, string.Empty);
+        }
+        finally
+        {
+            _file = outer;
+            Mode.SetMode(mode);
         }
     }
 

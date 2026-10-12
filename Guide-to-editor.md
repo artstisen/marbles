@@ -147,6 +147,42 @@ The numbers are shown to the left of the text, with a small gap. A long line tha
 
 When text is copied from the terminal window with the mouse, the line numbers are copied too: turn them off first (`:nu`). Text yanked in the editor never has them.
 
+## Snippets
+Snippets are pieces of text (a tag, a block of CSS, a whole page) with a title, kept for inserting again. They are kept in `snippets.txt` in the data directory, for notes and text files alike.
+
+- `:snip` Show the snippets in a box. The first time, the box asks to make the file (with two examples)
+- `:snip add` Keep the selected text as a snippet (select it and type `:snip add`), or the line without a selection. The title is asked for. In a note of a data file it asks first, as the file of snippets is not encrypted
+- `:snip edit` Open the file of snippets in the editor. Changes to the text being edited are asked about (saved or not) first, and when the file of snippets is closed, the text is opened again where the cursor was
+
+In the box:
+
+- `j` `k` `gg` `G` Select a snippet. The first lines of it are shown below the list
+- `Enter` Insert the snippet after the cursor (as `p`), as one change (one `u` undoes it). The lines after the first are indented as the line of the cursor
+- `/` Filter the titles: type, and `Enter` keeps the filter (`Esc` takes it away)
+- `S` The order: as in the file, by title, or the last used first (in this session). The order is remembered (`snipsort` in the settings file)
+- `A` Add a snippet: the selected text (if `:snip` was typed with a selection), or a new one, which is then written in the file
+- `R` Rename, `D` Delete (asks first)
+- `E` Open the file of snippets at the selected one (as `:snip edit`)
+- `Esc` `q` Close
+
+In the file, a line starting with `===` starts a snippet, and the rest of the line is its title. The lines after it, up to the next title, are the snippet:
+
+```
+=== Card (html)
+<div class="card">
+    $0
+</div>
+
+=== Center (css)
+display: flex;
+justify-content: center;
+```
+
+- `$0` marks where the cursor goes when the snippet is inserted: the editor is then in Insert mode, ready to type there
+- A tag at the end of the title, like `(html)`, `(css)`, `(js)`, `(json)`, `(xml)` or `(md)`, shows the snippet first in the list when that kind of text is edited
+- Blank lines at the end of a snippet are not part of it. A line of a snippet that starts with `===` is written with a `\` in front of it (`\===`)
+- The text above the first title is not used (the file starts with a short explanation)
+
 ## Long lines
 Lines wider than the editor are wrapped onto the next rows (at a blank space when possible). With wrapping turned off, each line is one row, and the view scrolls sideways to follow the cursor. A `<` at the left side or a `>` at the right side tells that the line goes on there.
 
@@ -227,6 +263,7 @@ The paste bin is not encrypted: text from a note written to it can be read by an
 - `:dup` (or `:duplicate`) Duplicate the selection: select the text and type `:dup` (the command line starts with `'<,'>`). Text selected with `v` is copied right after itself, the lines selected with `V` are copied below the last of them, and a block selected with `Q` is copied to the right of the block (the text to the right of it stays in line). Without a selection the line of the cursor is duplicated, and `:2,5dup` copies lines 2 to 5 below line 5. The cursor goes to the start of the copy, and one `u` undoes it
 - `:%y` `:%d` Yank all/Delete all, `:2,9d` Delete line 2 to 9
 - `:clear` Clear all text
+- `:snip` `:snip add` `:snip edit` Snippets (see [Snippets](#snippets))
 
 ## Title and other single line fields
 Titles, file names and search queries are typed in a simple field without modes: type the text and press `Enter` to accept or `Esc` to cancel. `Home`/`End` and `CTRL+Left`/`CTRL+Right` move the cursor, and `CTRL+W`, `CTRL+U` and `CTRL+R` work as in Insert mode.

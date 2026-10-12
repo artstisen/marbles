@@ -391,6 +391,31 @@ internal static class DialogText
     public static string PasteBinCleared => Lang.T("The paste bin is empty now");
     public static string PasteBinEmpty => Lang.T("The paste bin is empty");
     public static string NoFilePath => Lang.T("A note has no file path");
+
+    // Snippets (":snip" in the editor)
+    public static string CaptionsSnippets => Lang.T("Snippets");
+    public static string SnippetKeys =>
+        Lang.T("Enter Insert | / Filter | S Sort | A Add | R Rename | D Delete | E Edit");
+    public static string SnippetFilterKeys => Lang.T("Enter OK | Esc Clear");
+    public static string SnippetSortFile => Lang.T("Sort: as in the file");
+    public static string SnippetSortTitle => Lang.T("Sort: by title");
+    public static string SnippetSortUsed => Lang.T("Sort: last used first");
+    public static string SnippetNone => Lang.T("No snippets yet (A: add one)");
+    public static string SnippetNoMatch => Lang.T("No titles match the filter");
+    public static string SnippetCreate => Lang.T("There is no file of snippets. Make one?");
+    public static string SnippetAdd => Lang.T("Add a snippet");
+    public static string SnippetAddPrompt => Lang.T("Type the title of the snippet and press Enter");
+    public static string SnippetRename => Lang.T("Rename the snippet");
+    public static string SnippetRenamePrompt => Lang.T("Type the new title and press Enter");
+    public static string SnippetTitleTaken => Lang.T("A snippet has that title already");
+    public static string SnippetDeleteNote => Lang.T("It is taken out of the file of snippets.");
+    public static string SnippetFromNote => Lang.T("Keep text from a note as a snippet?");
+    public static string SnippetFromNoteNote =>
+        Lang.T("The file of snippets is not encrypted: the text can be read by anyone with access to it.");
+    public static string SnippetAdded => Lang.T("Snippet added");
+    public static string SnippetsFileOpen => Lang.T("This is the file of snippets");
+    public static string SnippetsNotHere => Lang.T("Not while the settings are edited");
+    public static string SnippetSwitchNote => Lang.T("The file of snippets is opened, and this text again when it is closed.");
     public static string MatchNeedsTwoPanes => Lang.T("Only with two panes (T shows them)");
     public static string PickNumberKeys => Lang.T("h/l Change | Enter OK | Esc Cancel");
     public static string TypeNameAndPressEnter => Lang.T("Type the name and press Enter");
