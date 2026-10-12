@@ -62,7 +62,8 @@ internal static class ConsoleColors
         TabShown, // The name of the tab shown, when the tab is not highlighted
         OtherTabs, // The names of the tabs not shown
         KeyHint, // The keys on the bottom line: what they do
-        KeyHintInverted // The keys on the bottom line: the key
+        KeyHintInverted, // The keys on the bottom line: the key
+        UnsavedInverted // The label "Unsaved" (a text has changes that are not saved)
     }
 
     // The colors of text on the normal background: the background of the color scheme, or that of the terminal
@@ -86,6 +87,7 @@ internal static class ConsoleColors
                 break;
             case ColorPreset.NormalInverted:
             case ColorPreset.KeyHintInverted:
+            case ColorPreset.UnsavedInverted:
             case ColorPreset.HighlightInverted:
             case ColorPreset.AttentionInverted:
             case ColorPreset.WarningInverted:
@@ -138,6 +140,10 @@ internal static class ConsoleColors
             case ColorPreset.KeyHintInverted:
                 Console.BackgroundColor = scheme.KeyHintsColor;
                 Console.ForegroundColor = scheme.BackgroundColor;
+                return;
+            case ColorPreset.UnsavedInverted:
+                Console.BackgroundColor = scheme.UnsavedColor;
+                Console.ForegroundColor = scheme.UnsavedTextColor;
                 return;
             case ColorPreset.HighlightInverted:
                 Console.BackgroundColor = scheme.Highlight;

@@ -1580,7 +1580,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Open"), Lang.T(":scheme, or Configuration: Color scheme"), false));
             _shortcutList.Add(new Shortcut(":scheme Name", Lang.T("Use the color scheme with the name"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogos, true));
-            _shortcutList.Add(new Shortcut("Tab", Lang.T("Logos, Editor"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Logos, Editor, Colors"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Logos"), Lang.T("Enter: use, E: edit, D: delete one of your own"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Editor"), Lang.T("4 rows of 63 characters, with a ruler above"), false));
             _shortcutList.Add(new Shortcut("h j k l", Lang.T("Move (0 $: start/end of the row, gg G: first/last row)"), false));
@@ -1588,6 +1588,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("a", Lang.T("REPLACE mode after the cursor"), false));
             _shortcutList.Add(new Shortcut("x r", Lang.T("Clear the character/Replace it with the next key"), false));
             _shortcutList.Add(new Shortcut("dd u", Lang.T("Clear the row/Undo"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Colors"), Lang.T("Each row in a color of its own, or all in one"), false));
             _shortcutList.Add(new Shortcut("S", Lang.T("Save as a logo of your own (asks for a name)"), false));
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Close (asks to save changes)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Open"), Lang.T(":logo, or Configuration: Logo"), false));

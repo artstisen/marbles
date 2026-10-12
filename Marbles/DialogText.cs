@@ -209,6 +209,7 @@ internal static class DialogText
     public static string LogoBuiltInDelete => Lang.T("The built-in logo cannot be deleted");
     public static string LogoListKeys => Lang.T("j/k Select | Enter Use | E Edit | D Delete | Tab Editor | Esc Close");
     public static string LogoEditorKeys => Lang.T("hjkl Move | i/R Draw | x Clear | r Char | u Undo | S Save | Esc Close");
+    public static string LogoColorKeys => Lang.T("j/k Select | l Pick | S Save | Tab Next | ? Help | Esc Close");
     public static string LogoReplaceKeys => Lang.T("Backspace Clear | Enter Next row | Esc NORMAL");
     public static string SchemeSavePrompt => Lang.T("Type a name for the color scheme and press Enter");
     public static string SchemeNameInvalid => Lang.T("Not a name a color scheme can have");

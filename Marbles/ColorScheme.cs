@@ -26,7 +26,9 @@ internal enum ColorItem
     TabText, // The text of the tab shown when it is highlighted (null: the color of TabShown)
     TabShown, // The name of the tab shown when it is not highlighted (null: the text)
     OtherTabs, // The names of the other tabs (null: the text)
-    KeyHints // The keys on the bottom line (null: the text)
+    KeyHints, // The keys on the bottom line (null: the text)
+    Unsaved, // The background of the label "Unsaved" (null: the text)
+    UnsavedText // The text of the label "Unsaved" (null: the background)
 }
 
 /// <summary>
@@ -61,6 +63,8 @@ internal sealed class ColorScheme
     internal ConsoleColor? TabShown { get; set; }
     internal ConsoleColor? OtherTabs { get; set; }
     internal ConsoleColor? KeyHints { get; set; }
+    internal ConsoleColor? Unsaved { get; set; }
+    internal ConsoleColor? UnsavedText { get; set; }
 
     /// <summary>
     /// The tab (and sub-tab) shown is highlighted in the colors of the tabs; else only its frame tells it apart
@@ -76,6 +80,8 @@ internal sealed class ColorScheme
     internal ConsoleColor TabShownColor => TabShown ?? Text;
     internal ConsoleColor OtherTabsColor => OtherTabs ?? Text;
     internal ConsoleColor KeyHintsColor => KeyHints ?? Text;
+    internal ConsoleColor UnsavedColor => Unsaved ?? Text;
+    internal ConsoleColor UnsavedTextColor => UnsavedText ?? BackgroundColor;
 
     internal ColorScheme Clone() => (ColorScheme)MemberwiseClone();
 
@@ -84,7 +90,8 @@ internal sealed class ColorScheme
     /// </summary>
     internal static bool CanBeDefault(ColorItem item) =>
         item is ColorItem.Background or ColorItem.TabFrames or ColorItem.BoxBorders or ColorItem.Tab
-            or ColorItem.TabText or ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints;
+            or ColorItem.TabText or ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints
+            or ColorItem.Unsaved or ColorItem.UnsavedText;
 
     internal ConsoleColor? Get(ColorItem item)
     {
@@ -109,7 +116,9 @@ internal sealed class ColorScheme
             ColorItem.TabText => TabText,
             ColorItem.TabShown => TabShown,
             ColorItem.OtherTabs => OtherTabs,
-            _ => KeyHints
+            ColorItem.KeyHints => KeyHints,
+            ColorItem.Unsaved => Unsaved,
+            _ => UnsavedText
         };
     }
 
@@ -128,6 +137,8 @@ internal sealed class ColorScheme
             ColorItem.TabShown => TabShownColor,
             ColorItem.OtherTabs => OtherTabsColor,
             ColorItem.KeyHints => KeyHintsColor,
+            ColorItem.Unsaved => UnsavedColor,
+            ColorItem.UnsavedText => UnsavedTextColor,
             _ => Get(item)!.Value
         };
     }
@@ -159,7 +170,9 @@ internal sealed class ColorScheme
             case ColorItem.TabText: TabText = color; break;
             case ColorItem.TabShown: TabShown = color; break;
             case ColorItem.OtherTabs: OtherTabs = color; break;
-            default: KeyHints = color; break;
+            case ColorItem.KeyHints: KeyHints = color; break;
+            case ColorItem.Unsaved: Unsaved = color; break;
+            default: UnsavedText = color; break;
         }
     }
 
@@ -174,7 +187,8 @@ internal sealed class ColorScheme
     private static readonly (ColorItem Background, ColorItem Text)[] Pairs =
     {
         (ColorItem.Highlight, ColorItem.HighlightText), (ColorItem.Attention, ColorItem.AttentionText),
-        (ColorItem.Warning, ColorItem.WarningText), (ColorItem.Tab, ColorItem.TabText)
+        (ColorItem.Warning, ColorItem.WarningText), (ColorItem.Tab, ColorItem.TabText),
+        (ColorItem.Unsaved, ColorItem.UnsavedText)
     };
 
     /// <summary>
@@ -211,7 +225,7 @@ internal sealed class ColorScheme
         ("warning", ColorItem.Warning), ("warningtext", ColorItem.WarningText),
         ("tabframes", ColorItem.TabFrames), ("boxborders", ColorItem.BoxBorders), ("tab", ColorItem.Tab),
         ("tabtext", ColorItem.TabText), ("tabshown", ColorItem.TabShown), ("othertabs", ColorItem.OtherTabs),
-        ("keyhints", ColorItem.KeyHints)
+        ("keyhints", ColorItem.KeyHints), ("unsaved", ColorItem.Unsaved), ("unsavedtext", ColorItem.UnsavedText)
     };
 
     private const string HighlightKey = "tabhighlight";

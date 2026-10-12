@@ -64,9 +64,12 @@ internal static class Logo
         var lines = Lines;
         for (var i = 0; i < lines.Length; i++)
         {
+            SetRowColor(i);
             Tools.SetCursorEx(i, LogoMargin);
             Console.Write(lines[i]);
         }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
 
         if (showVersionNumber)
         {
@@ -77,6 +80,13 @@ internal static class Logo
         }
 
         if (showDataFile) Menu.WriteDataFileName();
+    }
+
+    // The color of a line: a row of the logo with a color of its own, or the color of the logo
+    private static void SetRowColor(int line)
+    {
+        if (line > 0 && Current.RowColor(line - 1) is { } color) ConsoleColors.SetTextColor(color);
+        else ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
     }
 
     // Reveal the logo column by column from left to right. A key press ends the sweep
@@ -93,6 +103,7 @@ internal static class Logo
                 for (var i = 0; i < lines.Length; i++)
                 {
                     if (column >= lines[i].Length || lines[i][column] == ' ') continue;
+                    SetRowColor(i);
                     Tools.SetCursorEx(i, LogoMargin + column);
                     Console.Write(lines[i][column]);
                     drawn = true;

@@ -862,7 +862,7 @@ internal static class Menu
             Tools.CursorDown(2);
             Tools.CursorRight(Init.LineWidth - (DialogText.SavIndicator.Length));
             _tempCurrentSaveIndicator = DialogText.SavIndicator;
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.NormalInverted);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.UnsavedInverted);
             Console.Write(_tempCurrentSaveIndicator);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         }

@@ -44,6 +44,25 @@ public class LogoTests : IDisposable
     }
 
     [Fact]
+    public void TheRows_CanHaveColorsOfTheirOwn()
+    {
+        var logo = new LogoArt("Mine", new[] { "a", "b", "c", "d" });
+        Assert.DoesNotContain("colors=", logo.Serialize());
+        logo.SetRowColor(0, ConsoleColor.Cyan);
+        logo.SetRowColor(2, ConsoleColor.Red);
+        Assert.EndsWith("d\ncolors=Cyan,default,Red,default\n", logo.Serialize());
+        var read = LogoArt.Parse(logo.Serialize(), "Mine");
+        Assert.Equal(ConsoleColor.Cyan, read.RowColor(0));
+        Assert.Null(read.RowColor(1));
+        Assert.Equal(ConsoleColor.Red, read.RowColor(2));
+        // A copy has the colors too
+        Assert.Equal(ConsoleColor.Red, read.Clone().RowColor(2));
+        // A row cannot be read as the colors
+        Assert.Equal("colors=Red".PadRight(63), LogoArt.Parse("colors=Red\n", "X").Row(0));
+        Assert.Null(LogoArt.Parse("colors=Red\n", "X").RowColor(0));
+    }
+
+    [Fact]
     public void ACharacterTakesOneCell()
     {
         // Wide characters and control characters are blank space

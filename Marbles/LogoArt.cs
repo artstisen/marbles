@@ -3,9 +3,10 @@
 namespace Marbles;
 
 /// <summary>
-/// A logo of the start and login pages: 4 rows of 63 characters, drawn in the color of the logo. The built-in
-/// logo is "Marbles"; the ones made by the user are kept as files (Logos). It does not touch the console, so it
-/// can be tested.
+/// A logo of the start and login pages: 4 rows of 63 characters, each row in a color of its own or in the color
+/// of the logo (of the color scheme). The built-in logo is "Marbles"; the ones made by the user are kept as files
+/// (Logos): the 4 rows, and a line "colors=" with the color of each row ("default" for the color of the logo).
+/// It does not touch the console, so it can be tested.
 /// </summary>
 internal sealed class LogoArt
 {
@@ -16,6 +17,8 @@ internal sealed class LogoArt
     internal string Name { get; set; } = BuiltInName;
 
     private readonly char[][] _cells;
+    private readonly ConsoleColor?[] _colors = new ConsoleColor?[Rows];
+    private const string ColorsKey = "colors=";
 
     internal LogoArt(string name, IReadOnlyList<string> rows)
     {
@@ -58,18 +61,52 @@ internal sealed class LogoArt
 
     internal IReadOnlyList<string> AllRows => Enumerable.Range(0, Rows).Select(Row).ToList();
 
-    internal LogoArt Clone() => new(Name, AllRows);
+    /// <summary>
+    /// The color of a row (null: the color of the logo)
+    /// </summary>
+    internal ConsoleColor? RowColor(int row) => _colors[row];
+
+    internal void SetRowColor(int row, ConsoleColor? color) => _colors[row] = color;
+
+    internal LogoArt Clone()
+    {
+        var copy = new LogoArt(Name, AllRows);
+        Array.Copy(_colors, copy._colors, Rows);
+        return copy;
+    }
 
     /// <summary>
-    /// The logo as text: its rows, without blank space at their ends
+    /// The logo as text: its rows (without blank space at their ends), and the colors of the rows when one has a
+    /// color of its own
     /// </summary>
-    internal string Serialize() => string.Join("\n", AllRows.Select(row => row.TrimEnd())) + "\n";
+    internal string Serialize()
+    {
+        var text = string.Join("\n", AllRows.Select(row => row.TrimEnd())) + "\n";
+        if (_colors.All(color => color == null)) return text;
+        return text + ColorsKey + string.Join(",", _colors.Select(color => color?.ToString() ?? "default")) + "\n";
+    }
 
     /// <summary>
-    /// A logo from its text: the first 4 lines, each cut or filled with blank space to 63 characters
+    /// A logo from its text: the first 4 lines, each cut or filled with blank space to 63 characters, and the
+    /// colors of the rows from a line "colors=" after them
     /// </summary>
-    internal static LogoArt Parse(string text, string name) =>
-        new(name, TextBuffer.Normalize(text).Split('\n').Take(Rows).ToList());
+    internal static LogoArt Parse(string text, string name)
+    {
+        var lines = TextBuffer.Normalize(text).Split('\n');
+        var logo = new LogoArt(name, lines.Take(Rows).ToList());
+        var colors = lines.Skip(Rows).FirstOrDefault(line => line.StartsWith(ColorsKey, StringComparison.OrdinalIgnoreCase));
+        if (colors == null) return logo;
+        var names = colors[ColorsKey.Length..].Split(',');
+        for (var row = 0; row < Rows && row < names.Length; row++)
+        {
+            if (Enum.TryParse<ConsoleColor>(names[row].Trim(), true, out var color) && Enum.IsDefined(color))
+            {
+                logo._colors[row] = color;
+            }
+        }
+
+        return logo;
+    }
 
     /// <summary>
     /// The logo of Marbles (a copy)

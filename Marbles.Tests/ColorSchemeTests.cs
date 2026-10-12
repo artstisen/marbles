@@ -92,6 +92,10 @@ public class ColorSchemeTests : IDisposable
         Assert.Contains("othertabs=DarkGray\n", scheme.Serialize());
         Assert.Contains("tabshown=default\n", scheme.Serialize());
         Assert.False(scheme.Allowed(ColorItem.TabShown, ConsoleColor.Black));
+        // The label "Unsaved": the text inverted
+        Assert.Equal(scheme.Text, scheme.UnsavedColor);
+        Assert.Equal(ConsoleColor.Black, scheme.UnsavedTextColor);
+        Assert.False(scheme.Allowed(ColorItem.UnsavedText, scheme.Text));
         scheme.TabFrames = ConsoleColor.Red;
         Assert.Equal(ConsoleColor.Red, scheme.TabColor);
         Assert.Equal(ConsoleColor.Blue, scheme.BoxBorderColor);

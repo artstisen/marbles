@@ -78,10 +78,11 @@ The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEM
 - `D` Delete a scheme of your own (you are asked first). The built-in schemes cannot be deleted
 - `:scheme Name` in the main menu uses a scheme by its name at once
 
-**Colors** shows the colors of the scheme being edited, each group with a sample and the names of its colors. _Page 1_ has Text, Logo and labels, Dividers, Favorites, Preview title, Editor title, Key hints and Background; _Page 2_ has Highlight, Attention, Warning, Tab frames, Box borders, Tab highlight, Tab focus and Other tabs, and _Highlight focused tabs_.
+**Colors** shows the colors of the scheme being edited, each group with a sample and the names of its colors. _Page 1_ has Text, Logo and labels, Dividers, Favorites, Preview title, Editor title, Key hints, Unsaved label and Background; _Page 2_ has Highlight, Attention, Warning, Tab frames, Box borders, Tab highlight, Tab focus and Other tabs, and _Highlight focused tabs_.
 
 - `j` `k` Select a group
 - `l` (or `Enter`, `Space`, `Right`) Pick its color from a list of the 16 colors: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. For Highlight, Attention, Warning and Tabs (shown inverted) this is the background color, and `T` picks the text color
+- **Unsaved label**: the label _Unsaved_ shown at the top right of the editor when the text has changes that are not saved. `l` picks its background and `T` its text; `[Default]` is the text inverted
 - **Key hints**: the keys on the bottom line of the pages (the key shown inverted, and what it does). `[Default]` is the color of the text
 - **Tab frames**: the frames with tabs (the start page, the main menu, this page). **Box borders**: the borders and title tabs of the boxes shown on top of a page. `[Default]` (the default) is the color of the dividers
 - **Tab highlight**: the tab and sub-tab shown (the focused tab), and the titles of the boxes, when they are highlighted. `[Default]` is the color of the tab frames as the background, with the text in the color of **Tab focus**, so the focused tab keeps its color also when it is highlighted (`T` gives the text a color of its own). In black and white the highlight is shown inverted. **Highlight focused tabs** (`Enter` or `Space` on it): off, the focused tab is not highlighted: its name has the color of **Tab focus**, and it is open into the frame
@@ -101,7 +102,7 @@ The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEM
 With _Black and white_ on, the colors can still be edited: they are used when black and white is turned off.
 
 ### Logos
-The logo of the start and login pages can be one of your own. The logos are chosen and drawn on a page of their own, _LOGOS_, opened with `:logo` in the main menu (or its item on the Settings tab) or from the Configuration page of the start page (select _Logo_ and press `Enter`). It is a frame with two tabs: **Logos** and **Editor**. `Tab` goes from one to the other.
+The logo of the start and login pages can be one of your own. The logos are chosen and drawn on a page of their own, _LOGOS_, opened with `:logo` in the main menu (or its item on the Settings tab) or from the Configuration page of the start page (select _Logo_ and press `Enter`). It is a frame with three tabs: **Logos**, **Editor** and **Colors**. `Tab` goes from one to the next.
 
 **Logos** shows the selected logo at the top and the logos below it: the built-in logo, _Marbles_, and the ones you have saved yourself. The one in use is marked `[x]`.
 
@@ -118,7 +119,9 @@ The logo of the start and login pages can be one of your own. The logos are chos
 - `S` Save the logo as one of your own: type a name for it and press `Enter` (a logo of your own is suggested by its name; _Marbles_ cannot be used, and another logo of yours with the name is replaced if you want that). The logo is then the one in use
 - `Esc` (or `Q`) in NORMAL mode closes the page. If something was changed and not saved, you are asked in a box whether to save it (`Y`, `N`, or `Esc` to stay)
 
-Only the printable ASCII characters can be typed (letters, digits and signs such as `_ - " % # /`), so the logo looks the same in every terminal. **Logos of your own** are kept as text files in the directory `logos` in the data directory (the name of the logo and `.txt`), with the 4 rows of the logo. They can be copied to another computer or edited by hand; a file can have other characters that take one column (as the block characters `█ ▀ ▄`), but not all terminal fonts have them (the console of a Raspberry Pi does not), so ASCII is the safe choice. Rows longer than 63 characters are cut, and shorter ones filled with blank space. If the logo in use is missing when Marbles starts, _Marbles_ is used. `:defaults` goes back to _Marbles_. The logo is drawn in the color of _Logo and labels_ of the color scheme.
+**Colors** shows the logo at the top and the color of each of its rows below it. `j` `k` select a row and `l` (or `Enter`, `Space`) picks its color from the list of colors; `[Default]` is the color of _Logo and labels_ of the color scheme. **All rows** gives all four rows the color picked, or with `[Default]` sets them all back to the color of the logo. The colors are saved with the logo (`S`), as a line `colors=` after its rows in the file (`colors=Cyan,Cyan,Blue,default`). In black and white the logo is white.
+
+Only the printable ASCII characters can be typed (letters, digits and signs such as `_ - " % # /`), so the logo looks the same in every terminal. **Logos of your own** are kept as text files in the directory `logos` in the data directory (the name of the logo and `.txt`), with the 4 rows of the logo. They can be copied to another computer or edited by hand; a file can have other characters that take one column (as the block characters `█ ▀ ▄`), but not all terminal fonts have them (the console of a Raspberry Pi does not), so ASCII is the safe choice. Rows longer than 63 characters are cut, and shorter ones filled with blank space. If the logo in use is missing when Marbles starts, _Marbles_ is used. `:defaults` goes back to _Marbles_. Rows without a color of their own are drawn in the color of _Logo and labels_ of the color scheme.
 
 ## Lists of entries
 Search results, Top 20, Favorites, Session history and List all are shown as lists. The kind of list (_ALL_, _TOP 20_, _FAVORITES_, _SESSION HISTORY_, _SEARCH_) is shown at the top left, the most used keys at the bottom, and `?` shows all the keys of the lists.

@@ -1,6 +1,8 @@
 # Changes
 
 ## v1.5.3
+- **Logos**: a **Colors** tab: each row of a logo can have a color of its own (or all rows one color), with the logo shown above. The colors are saved in the logo file (`colors=`).
+- **Color schemes**: the label **Unsaved** of the editor has colors of its own (`unsaved`, `unsavedtext`; by default the text inverted).
 - **Logos**: the logo of the start and login pages can be one of your own. _LOGOS_ (`:logo` in the main menu, or _Logo_ on the Configuration page) is a frame with two tabs: **Logos** (select and use a logo, with a preview) and **Editor** (a grid of 4 rows of 63 characters with a ruler, edited in NORMAL and REPLACE mode, with undo). Saving asks for a name and keeps the logo as a text file in `data/logos`, which is then the logo in use (setting `logo`). `:logo Name` uses a logo by its name.
 - **Color schemes**: a color of its own for the **Key hints** on the bottom line (`keyhints`; by default the text).
 - **Clipboard**: every yank goes to the system clipboard by default (`clipboardyank=all`); only with `"+` in front can still be chosen on the clipboard settings page.

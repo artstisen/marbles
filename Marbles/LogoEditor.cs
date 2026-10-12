@@ -2,15 +2,17 @@
 
 /// <summary>
 /// The logos: a page of their own, opened from the Configuration page and with ":logo" in the main menu. It is a
-/// frame with two tabs (TabFrame): Logos, where a logo is selected and used (the built-in one and the ones saved
-/// by the user), and Editor, where a logo is drawn on a grid of 4 rows of 63 characters, with the modes of the
-/// text editor: NORMAL (move, clear, replace one character) and REPLACE (typing draws). A logo is saved as one of
-/// the user's own (a file in the directory "logos"), which is then the logo in use.
+/// frame with three tabs (TabFrame): Logos, where a logo is selected and used (the built-in one and the ones saved
+/// by the user), Editor, where a logo is drawn on a grid of 4 rows of 63 characters, with the modes of the text
+/// editor: NORMAL (move, clear, replace one character) and REPLACE (typing draws), and Colors, where each row gets
+/// a color of its own (or the color of the logo). A logo is saved as one of the user's own (a file in the
+/// directory "logos"), which is then the logo in use.
 /// </summary>
 internal static class LogoEditor
 {
     private const int TabRow = 2; // Below the top bar
     private const int MaxUndo = 100;
+    private const int PickerLeft = 52;
 
     private static LogoArt _editing = LogoArt.BuiltIn; // The logo being edited
     private static bool _changed; // ... is not saved
@@ -32,7 +34,8 @@ internal static class LogoEditor
                 Menu.WriteNameInTopBar(false);
             },
             new TabItem(() => Lang.T("Logos"), new ListPage()),
-            new TabItem(() => Lang.T("Editor"), new EditorPage()));
+            new TabItem(() => Lang.T("Editor"), new EditorPage()),
+            new TabItem(() => Lang.T("Colors"), new ColorsPage()));
         frame.Run();
         Tools.HideCursor();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -119,17 +122,150 @@ internal static class LogoEditor
         }
     }
 
-    // Draw a logo (in the color of the logo) from a row and column
+    // Draw a logo from a row and column: each row in its color (or the color of the logo)
     private static void DrawLogo(LogoArt logo, int top, int left)
     {
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
         for (var row = 0; row < LogoArt.Rows; row++)
         {
+            if (logo.RowColor(row) is { } color) ConsoleColors.SetTextColor(color);
+            else ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
             Tools.SetCursorEx(top + row, left);
             Console.Write(logo.Row(row));
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    /// <summary>
+    /// The Colors tab: the logo at the top, and the color of each row below it, and a row to give them all one
+    /// color (or the color of the logo again)
+    /// </summary>
+    private sealed class ColorsPage : ITabPage
+    {
+        private int _selected;
+        private int _shown = -1;
+
+        public string Title => Lang.T("Colors");
+        public string Keys => DialogText.LogoColorKeys;
+        public Tools.HelpTopic Help => Tools.HelpTopic.Logos;
+
+        private const int ListTop = LogoArt.Rows + 2; // Below the logo and a line
+        private const int Count = LogoArt.Rows + 1; // The rows, and all of them
+
+        private static int RowOf(TabArea area, int selected) =>
+            area.Top + ListTop + selected + (selected == LogoArt.Rows ? 1 : 0);
+
+        public void Draw(TabArea area, bool full)
+        {
+            if (full)
+            {
+                DrawLogo(_editing, area.Top, area.Left + 2);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                Tools.SetCursorEx(area.Top + LogoArt.Rows + 1, area.Left + 2);
+                Console.Write(new string('-', Math.Min(LogoArt.Width, area.Width - 2)));
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                var sample = " " + Lang.T("Sample") + " ";
+                var labels = Enumerable.Range(1, LogoArt.Rows).Select(row => Lang.F("Row {0}", row))
+                    .Append(Lang.T("All rows")).ToList();
+                var width = labels.Max(TextMetrics.WidthOf) + 2;
+                for (var i = 0; i < Count; i++)
+                {
+                    Tools.SetCursorEx(RowOf(area, i), area.Left + 3);
+                    Console.Write(labels[i] + new string(' ', width - TextMetrics.WidthOf(labels[i])));
+                    if (i == LogoArt.Rows)
+                    {
+                        // All the rows: one color for all of them, or [Default] for the color of the logo
+                        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                        Console.Write(Tools.TruncateString(Lang.T("Pick one color for all the rows ([Default]: reset)"),
+                            Math.Max(0, area.Left + area.Width - Console.CursorLeft), true));
+                        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                        continue;
+                    }
+
+                    var color = _editing.RowColor(i);
+                    if (color is { } own) ConsoleColors.SetTextColor(own);
+                    else ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
+                    Console.Write(sample);
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                    Console.Write("  " + (color is { } named ? ColorPicker.Name(named) : Lang.T("[Default]: the logo color")));
+                }
+
+                _shown = -1;
+            }
+
+            // The pointer
+            if (_shown >= 0 && _shown != _selected)
+            {
+                Tools.SetCursorEx(RowOf(area, _shown), area.Left);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Console.Write("  ");
+            }
+
+            Tools.SetCursorEx(RowOf(area, _selected), area.Left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            Console.Write("->");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            _shown = _selected;
+        }
+
+        public TabResult HandleKey(ConsoleKeyInfo key)
+        {
+            var navigation = Keyboard.ToNavigationKey(key).Key;
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return Close();
+            if (key.Key == ConsoleKey.S)
+            {
+                Save();
+                return TabResult.Redraw;
+            }
+
+            if (navigation == ConsoleKey.DownArrow)
+            {
+                _selected = (_selected + 1) % Count;
+            }
+            else if (navigation == ConsoleKey.UpArrow)
+            {
+                _selected = (_selected + Count - 1) % Count;
+            }
+            else if (key.KeyChar == 'G')
+            {
+                _selected = Count - 1;
+            }
+            else if (key.KeyChar == 'g')
+            {
+                if (Console.ReadKey(true).KeyChar == 'g') _selected = 0;
+            }
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar || navigation == ConsoleKey.RightArrow)
+            {
+                Pick(_selected);
+                return TabResult.Redraw;
+            }
+
+            return TabResult.None;
+        }
+
+        // Pick the color of a row (or of all of them) from the list of colors. [Default] is the color of the logo.
+        // The colors of the background cannot be picked
+        private static void Pick(int row)
+        {
+            var all = row == LogoArt.Rows;
+            var current = all ? null : _editing.RowColor(row);
+            if (!ColorPicker.Pick(DialogText.ColorCaption, PickerLeft, true, current,
+                    color => !ConsoleColors.IsBackgroundColor(color), color =>
+                    {
+                        Console.BackgroundColor = ConsoleColors.Current.BackgroundColor;
+                        Console.ForegroundColor = color;
+                    }, out var picked))
+            {
+                return;
+            }
+
+            for (var i = 0; i < LogoArt.Rows; i++)
+            {
+                if (all || i == row) _editing.SetRowColor(i, picked);
+            }
+
+            _changed = true;
+        }
     }
 
     /// <summary>

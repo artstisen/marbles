@@ -24,6 +24,8 @@ internal static class SchemeEditor
             new Group(Lang.T("Preview title"), ColorItem.PreviewTitle, null, ConsoleColors.ColorPreset.PreviewTitle),
             new Group(Lang.T("Editor title"), ColorItem.EditorTitle, null, ConsoleColors.ColorPreset.EditorTitle),
             new Group(Lang.T("Key hints"), ColorItem.KeyHints, null, ConsoleColors.ColorPreset.KeyHint),
+            new Group(Lang.T("Unsaved label"), ColorItem.Unsaved, ColorItem.UnsavedText,
+                ConsoleColors.ColorPreset.UnsavedInverted),
             // The background of the whole screen (or the one of the terminal)
             new Group(Lang.T("Background"), ColorItem.Background, null, ConsoleColors.ColorPreset.Normal)
         }
@@ -507,7 +509,8 @@ internal static class SchemeEditor
         var caption = item switch
         {
             ColorItem.Background => DialogText.BackgroundCaption,
-            ColorItem.HighlightText or ColorItem.AttentionText or ColorItem.WarningText or ColorItem.TabText =>
+            ColorItem.HighlightText or ColorItem.AttentionText or ColorItem.WarningText or ColorItem.TabText
+                or ColorItem.UnsavedText =>
                 DialogText.TextColorCaption,
             _ => DialogText.ColorCaption
         };
@@ -534,6 +537,10 @@ internal static class SchemeEditor
                 case ColorItem.Tab or ColorItem.TabText:
                     Console.BackgroundColor = scheme.TabColor;
                     Console.ForegroundColor = scheme.TabTextColor;
+                    break;
+                case ColorItem.Unsaved or ColorItem.UnsavedText:
+                    Console.BackgroundColor = scheme.UnsavedColor;
+                    Console.ForegroundColor = scheme.UnsavedTextColor;
                     break;
                 case ColorItem.Background:
                     Console.BackgroundColor = color;
@@ -569,6 +576,11 @@ internal static class SchemeEditor
                 ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints => Lang.T("[Default]: the text"),
                 _ => DialogText.ColorDefault
             };
+        }
+
+        if (group.Color == ColorItem.Unsaved && Preview.Unsaved == null && Preview.UnsavedText == null)
+        {
+            return Lang.T("[Default]: the text inverted");
         }
 
         if (group.Color == ColorItem.Tab && Preview.Tab == null && Preview.TabText == null)
@@ -630,7 +642,8 @@ internal static class SchemeEditor
         Tools.SetCursorEx(top + 4, left + 1);
         Part(ConsoleColors.ColorPreset.KeyHintInverted, " " + Lang.T("Key") + " ");
         Part(ConsoleColors.ColorPreset.KeyHint, " " + Lang.T("Key hints"));
-        Part(ConsoleColors.ColorPreset.Normal, "  " + Lang.T("Text on the background"));
+        Part(ConsoleColors.ColorPreset.Normal, "  " + Lang.T("Text on the background") + "  ");
+        Part(ConsoleColors.ColorPreset.UnsavedInverted, DialogText.SavIndicator);
 
         // A frame with tabs (in the color of the tab frames), as the start page and this page
         if (area.Height < 12) return;
