@@ -2,7 +2,7 @@
 
 The same keys are used everywhere in Marbles:
 
-- `h` `l` (or `Left`/`Right`, `Tab`) Previous/Next menu page
+- `h` (or `Left`) and `Tab` Previous/Next tab of the main menu
 - `j` `k` (or `Down`/`Up`) Select in a list, or scroll the text of an entry
 - `gg` `G` First/Last (menu page, entry in a list, or top/end of a text)
 - `/` Search
@@ -16,14 +16,14 @@ The same keys are used everywhere in Marbles:
 - `Esc` Return/Cancel
 
 ## Main menu
-The main menu has 2 pages, each with two boxes of keys and commands: four boxes in all, numbered 1 to 4 on the line below them, where the number of the box with the selection is highlighted. _MENU_ is shown at the top left, and the name of the data file at the top right, above a dividing line. The keys of the page are shown at the bottom.
+The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** and **Marbles**, each with its keys and commands. The tab shown is highlighted (in the colors of the tabs, set in the [color scheme editor](#color-scheme-editor)). _MENU_ is shown at the top left, and the name of the data file at the top right, above a dividing line. The keys of the page are shown at the bottom.
 
-- Each item can be used with its key or command, or selected and opened: `j` `k` (or `Down`/`Up`) select an item, and `Enter`, `l` (or `Right`) or `Space` opens the selected item. For the settings that are on or off (`[x]`), `Space` and `Enter` turn them on or off. The title of the box with the selection is highlighted
-- `j` on the last item of a box goes on to the first item of the next box (on the next page after box 2, and back to box 1 after box 4). `k` on the first item goes back to the last item of the previous box
-- `gg` (or `Home`) selects the first item of box 1, and `G` (or `End`) the last item of box 4
-- `Tab` goes to the next box: from the two boxes of the first page to the two of the second, and back to the first. `Shift+Tab` goes the other way
+- Each item can be used with its key or command, or selected and opened: `j` `k` (or `Down`/`Up`) select an item, and `Enter`, `l` (or `Right`) or `Space` opens the selected item. For the settings that are on or off (`[x]`), `Space` and `Enter` turn them on or off. The keys and commands of all the tabs can be used whichever tab is shown
+- `j` on the last item of a tab goes on to the first item of the next tab (and back to Notes after Marbles). `k` on the first item goes back to the last item of the previous tab
+- `gg` (or `Home`) selects the first item of Notes, and `G` (or `End`) the last item of Marbles
+- `Tab` goes to the next tab, and `Shift+Tab` the other way. After a command, the tab it is on is shown
 - `Esc` shows a small box with three choices: **1 Logout**, **2 Select mode** (log out and go to the [Select mode](Guide-to-login-menu.md#select-mode) page) and **3 Exit** (close Marbles, without asking again). Select with `j` `k` (`gg` `G`: the first/last) or the number and press `Enter`, or `Esc` to close the box
-- `h` (or `Left`) shows the previous page, and `1` and `2` select a page
+- `h` (or `Left`) shows the previous tab, and `1` to `4` select a tab
 - `?` shows the keys of the main menu (a section of the help of its own)
 
 ### Page 1: Notes and Data file

@@ -171,32 +171,58 @@ internal sealed class TabFrame
         Tools.HideCursor();
         _drawAbove?.Invoke();
         var (tab, page) = _pages[Selected];
+        var pages = _tabs[tab].Pages;
+        var subNames = pages.Count > 1 ? pages.Select(item => item.Title).ToList() : null;
+        _area = DrawChrome(_top, _tabs.Select(item => item.Title()).ToList(), tab, subNames,
+            pages.ToList().IndexOf(page));
+        page.Draw(_area, true);
+
+        // The keys of the page
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(" " + Tools.TruncateString(page.Keys, Init.LineWidth - 2, false));
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    /// <summary>
+    /// Draw a frame with tabs, from a row to the row above the bottom line, with a row of sub-tabs inside it when
+    /// there are names for them. The rows inside the frame are not cleared. It is used by a TabFrame, and by a
+    /// page that reads its keys itself (the main menu of a data file)
+    /// </summary>
+    /// <param name="top">The row of the tops of the tabs (the frame starts two rows below)</param>
+    /// <param name="names">The names of the tabs</param>
+    /// <param name="tab">The tab shown</param>
+    /// <param name="subNames">The names of the sub-tabs of the tab shown, or null</param>
+    /// <param name="sub">The sub-tab shown</param>
+    /// <returns>The area inside the frame where the page is drawn</returns>
+    internal static TabArea DrawChrome(int top, IReadOnlyList<string> names, int tab,
+        IReadOnlyList<string>? subNames, int sub)
+    {
         var width = Init.LineWidth - 2; // From column 1, with a corner at each end
         var right = width; // The column of the right side
         var bottom = Init.LineCount - 2;
-        var names = TabLayout.Fit(_tabs.Select(item => item.Title()).ToList(), width);
-        var (tops, labels, starts) = TabLayout.Tabs(names, AsciiStyles.GetTopCorner());
+        var fitted = TabLayout.Fit(names, width);
+        var (tops, labels, starts) = TabLayout.Tabs(fitted, AsciiStyles.GetTopCorner());
 
-        // The tabs, the name of the tab shown highlighted
+        // The tabs, the name of the tab shown in the colors of the tabs
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(_top, 1);
+        Tools.SetCursorEx(top, 1);
         Console.Write(tops);
-        Tools.SetCursorEx(_top + 1, 1);
+        Tools.SetCursorEx(top + 1, 1);
         Console.Write(labels);
-        for (var i = 0; i < names.Count; i++)
+        for (var i = 0; i < fitted.Count; i++)
         {
-            Tools.SetCursorEx(_top + 1, 1 + starts[i] - 1);
-            // The name of the tab shown in the colors of the frame, inverted
+            Tools.SetCursorEx(top + 1, 1 + starts[i] - 1);
             if (i == tab) ConsoleColors.SetTabColors();
             else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(" " + names[i] + " ");
+            Console.Write(" " + fitted[i] + " ");
         }
 
         // The frame
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(_top + 2, 1);
-        Console.Write(TabLayout.Edge(names, tab, width, AsciiStyles.GetTopCorner(), AsciiStyles.GetBottomCorner()));
-        for (var row = _top + 3; row < bottom; row++)
+        Tools.SetCursorEx(top + 2, 1);
+        Console.Write(TabLayout.Edge(fitted, tab, width, AsciiStyles.GetTopCorner(), AsciiStyles.GetBottomCorner()));
+        for (var row = top + 3; row < bottom; row++)
         {
             Tools.SetCursorEx(row, 1);
             Console.Write('|');
@@ -207,35 +233,26 @@ internal sealed class TabFrame
         Tools.SetCursorEx(bottom, 1);
         Console.Write(AsciiStyles.GetBottomCorner() + new string('-', width - 2) + AsciiStyles.GetBottomCorner());
 
-        // The sub-tabs of a tab with several pages, in a row with a line below it
-        var contentTop = _top + 4;
-        var pages = _tabs[tab].Pages;
-        if (pages.Count > 1)
+        // The sub-tabs, in a row with a line below it
+        var contentTop = top + 4;
+        if (subNames is { Count: > 0 })
         {
-            var subNames = pages.Select(item => item.Title).ToList();
             var subStarts = TabLayout.SubTabStarts(subNames);
             for (var i = 0; i < subNames.Count; i++)
             {
-                Tools.SetCursorEx(_top + 3, 3 + subStarts[i] - 1);
-                if (ReferenceEquals(pages[i], page)) ConsoleColors.SetTabColors();
+                Tools.SetCursorEx(top + 3, 3 + subStarts[i] - 1);
+                if (i == sub) ConsoleColors.SetTabColors();
                 else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Console.Write(" " + subNames[i] + " ");
             }
 
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Tools.SetCursorEx(_top + 4, 3);
+            Tools.SetCursorEx(top + 4, 3);
             Console.Write(new string('-', Math.Max(0, width - 4)));
-            contentTop = _top + 5;
+            contentTop = top + 5;
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        _area = new TabArea(contentTop, 3, Math.Max(0, width - 4), Math.Max(0, bottom - contentTop));
-        page.Draw(_area, true);
-
-        // The keys of the page
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(" " + Tools.TruncateString(page.Keys, Init.LineWidth - 2, false));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        return new TabArea(contentTop, 3, Math.Max(0, width - 4), Math.Max(0, bottom - contentTop));
     }
 }

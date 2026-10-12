@@ -13,19 +13,25 @@ internal static class Menu
         return _manageModePage;
     }
 
-    private const int MaxManageModePages = 1;
+    private const int MaxManageModePages = 3;
 
     /// <summary>
-    /// The number of pages of the main menu
+    /// The number of tabs of the main menu (Notes, Data file, Settings, Marbles)
     /// </summary>
     internal static int ManagePageCount => MaxManageModePages + 1;
 
     /// <summary>
-    /// The page of the main menu a command is shown on
+    /// The tab of the main menu a command is shown on
     /// </summary>
     internal static int PageOfCommand(string command)
     {
-        return command is "undelete" or "import" or "transfer" or "backup" or "password" ? 0 : 1;
+        return command switch
+        {
+            "undelete" => 0,
+            "import" or "transfer" or "backup" or "password" => 1,
+            "scheme" or "color" or "bw" or "language" or "number" or "size" or "clipboard" => 2,
+            _ => 3
+        };
     }
 
     public static void NextTopMenuManagePage()
@@ -238,33 +244,27 @@ internal static class Menu
     // command (":scheme")
     private readonly record struct MenuItem(string Key, string Text, string Run);
 
-    private const int MenuBoxTop = 2; // The row of the top of the boxes
+    private const int MenuTabRow = 2; // The row of the tabs (below the top bar)
     private const int MenuKeyWidth = 11; // The room for the key of an item (the dots fill up to it)
-    private const int MenuBoxRows = 8; // The rows of items in a box (a box with fewer items has blank rows)
 
-    // The items of the two boxes of the page shown, and where the boxes are
-    private static MenuItem[][] _menuBoxes = { Array.Empty<MenuItem>(), Array.Empty<MenuItem>() };
-    private static readonly int[] MenuBoxLeft = new int[2];
-    private static readonly string[] MenuBoxTitles = { string.Empty, string.Empty };
-    private static int _menuBoxWidth;
-
-    // The selected item: the box (0 left, 1 right) and its row
-    private static int _menuBox;
+    // The items of the tab shown, the selected one, and where they are
+    private static MenuItem[] _menuItems = Array.Empty<MenuItem>();
     private static int _menuRow;
+    private static TabArea _menuArea;
 
-    // The main menu of a data file: two pages, each with two boxes of items
-    private static void DrawMenuPage(int page)
+    // The names of the tabs (in the language in use)
+    private static string[] MenuTabTitles => new[]
     {
-        WriteModeLabel(DialogText.CaptionsMenu, string.Empty, 0);
-        WriteNameInTopBar(true);
-        Tools.SetCursorEx(1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Lang.T("Notes"), Lang.T("Data file"), DialogText.CaptionsSettings, DialogText.ApplicationName
+    };
+
+    // The items of a tab
+    private static MenuItem[] MenuItems(int tab)
+    {
         static string Check(bool on) => on ? DialogText.CheckedSetting : DialogText.UnCheckedSetting;
-        if (page == 0)
+        return tab switch
         {
-            DrawMenuBoxes(Lang.T("Notes"), new MenuItem[]
+            0 => new MenuItem[]
             {
                 new("N", Lang.T("New"), "N"),
                 new("S /", Lang.T("Search"), "S"),
@@ -274,7 +274,8 @@ internal static class Menu
                 new("M", Lang.T("Session history") + " " + Entries.GetSessionCountAsString(), "M"),
                 new("A", Lang.T("List all") + " " + Entries.GetEntriesCountAsString(), "A"),
                 new(":undelete", Lang.T("Undo deletion"), ":undelete")
-            }, Lang.T("Data file"), new MenuItem[]
+            },
+            1 => new MenuItem[]
             {
                 new("I", Lang.T("File info"), "I"),
                 new(":import", Lang.T("Import text file"), ":import"),
@@ -284,11 +285,8 @@ internal static class Menu
                 new(":", Lang.T("Command line"), ":"),
                 new("?", Lang.T("Help"), "?"),
                 new("X", Lang.T("Logout"), "X")
-            });
-        }
-        else
-        {
-            DrawMenuBoxes(DialogText.CaptionsSettings, new MenuItem[]
+            },
+            2 => new MenuItem[]
             {
                 new(":scheme", Lang.T("Edit color scheme"), ":scheme"),
                 new(":color 1-" + Actions.ColorPresetCount,
@@ -299,7 +297,8 @@ internal static class Menu
                 new(":size", Lang.T("Size") + " " + Init.GetOutputDimensions(), ":size"),
                 new(":size auto", Check(Init.AutoSize) + " " + Lang.T("Follow the window"), ":size auto"),
                 new(":clipboard", Lang.T("Clipboard"), ":clipboard")
-            }, DialogText.ApplicationName, new MenuItem[]
+            },
+            _ => new MenuItem[]
             {
                 new(":browse", Lang.T("Browse files"), ":browse"),
                 new("D", Lang.T("Display timestamp"), "D"),
@@ -309,90 +308,59 @@ internal static class Menu
                 new(":restart", Lang.T("Restart Marbles"), ":restart"),
                 new(":logout", Lang.T("Logout"), ":logout"),
                 new(":q", Lang.T("Exit"), ":q")
-            });
+            }
+        };
+    }
+
+    // The main menu of a data file: a frame with four tabs (Notes, Data file, Settings, Marbles), the items of
+    // the tab shown in it
+    private static void DrawMenuPage(int tab)
+    {
+        WriteModeLabel(DialogText.CaptionsMenu, string.Empty, 0);
+        WriteNameInTopBar(true);
+        Tools.SetCursorEx(1, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(new string('-', Init.LineWidth));
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        _menuItems = MenuItems(tab);
+        ClampMenuSelection();
+        _menuArea = TabFrame.DrawChrome(MenuTabRow, MenuTabTitles, tab, null, 0);
+        for (var row = 0; row < _menuArea.Height; row++)
+        {
+            Tools.SetCursorEx(_menuArea.Top + row, _menuArea.Left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(new string(' ', _menuArea.Width));
+            if (row >= _menuItems.Length) continue;
+            var item = _menuItems[row];
+            Tools.SetCursorEx(_menuArea.Top + row, _menuArea.Left + 3);
+            Console.Write(item.Key);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write(" " + new string('.', Math.Max(1, MenuKeyWidth - item.Key.Length)) + " ");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            // A long text (in another language) is cut at the side of the frame
+            var room = _menuArea.Left + _menuArea.Width - Console.CursorLeft;
+            Console.Write(Tools.TruncateString(item.Text, Math.Max(0, room), true));
         }
 
         // The keys of the page
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         WriteKeyHints(DialogText.MenuKeys);
-        DrawMenuBoxNumbers();
         DrawMenuPointer(true);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.SetCursorEx(Init.LineCount - 1, 0);
     }
 
-    // Two boxes side by side, each with a title and its items
-    private static void DrawMenuBoxes(string leftTitle, MenuItem[] left, string rightTitle, MenuItem[] right)
-    {
-        var width = (Init.LineWidth - 1) / 2;
-        _menuBoxWidth = width;
-        _menuBoxes = new[] { left, right };
-        MenuBoxLeft[0] = 0;
-        MenuBoxLeft[1] = width + 1;
-        MenuBoxTitles[0] = leftTitle;
-        MenuBoxTitles[1] = rightTitle;
-        ClampMenuSelection();
-        DrawMenuBox(MenuBoxLeft[0], width, left);
-        DrawMenuBox(MenuBoxLeft[1], width, right);
-        DrawMenuTitle(0);
-        DrawMenuTitle(1);
-    }
-
-    // The title of a box: highlighted on the box with the selection, as the panes of the file browser
-    private static void DrawMenuTitle(int box)
-    {
-        Tools.SetCursorEx(MenuBoxTop, MenuBoxLeft[box] + 2);
-        ConsoleColors.SetColors(box == _menuBox
-            ? ConsoleColors.ColorPreset.HighlightInverted
-            : ConsoleColors.ColorPreset.HeaderColor);
-        Console.Write(Tools.FitLine(" " + MenuBoxTitles[box] + " ", Init.LineWidth - (_menuBoxWidth - 4)));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-    }
-
-    private static void DrawMenuBox(int left, int width, MenuItem[] items)
-    {
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(MenuBoxTop, left);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', width - 2) + AsciiStyles.GetTopCorner());
-        for (var row = 0; row < MenuBoxRows; row++)
-        {
-            var y = MenuBoxTop + 1 + row;
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Tools.SetCursorEx(y, left);
-            Console.Write('|');
-            Tools.SetCursorEx(y, left + width - 1);
-            Console.Write('|');
-            if (row >= items.Length) continue;
-            var item = items[row];
-            Tools.SetCursorEx(y, left + 3);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(item.Key);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(" " + new string('.', Math.Max(1, MenuKeyWidth - item.Key.Length)) + " ");
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            // A long text (in another language) is cut at the side of the box
-            var room = left + width - 2 - Console.CursorLeft;
-            Console.Write(Tools.FitLine(item.Text, Init.LineWidth - 1 - room));
-        }
-
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(MenuBoxTop + MenuBoxRows + 1, left);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', width - 2) + AsciiStyles.GetBottomCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-    }
-
     private static void ClampMenuSelection()
     {
-        _menuBox = Math.Clamp(_menuBox, 0, 1);
-        _menuRow = Math.Clamp(_menuRow, 0, Math.Max(0, _menuBoxes[_menuBox].Length - 1));
+        _menuRow = Math.Clamp(_menuRow, 0, Math.Max(0, _menuItems.Length - 1));
     }
 
     // Draw (or remove) the selection pointer at the selected item
     private static void DrawMenuPointer(bool show)
     {
-        if (_menuBoxes[_menuBox].Length == 0) return;
-        Tools.SetCursorEx(MenuBoxTop + 1 + _menuRow, MenuBoxLeft[_menuBox] + 1);
+        if (_menuItems.Length == 0) return;
+        Tools.SetCursorEx(_menuArea.Top + _menuRow, _menuArea.Left);
         ConsoleColors.SetColors(show ? ConsoleColors.ColorPreset.HighlightInverted : ConsoleColors.ColorPreset.Normal);
         Console.Write(show ? "->" : "  ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -400,14 +368,13 @@ internal static class Menu
     }
 
     /// <summary>
-    /// Move the selection of the main menu up or down in its box (only the pointer is drawn again)
+    /// Move the selection of the main menu up or down in its tab (only the pointer is drawn again)
     /// </summary>
-    /// <returns>True if the selection has gone to the other page, which must be drawn</returns>
+    /// <returns>True if the selection has gone to another tab, which must be drawn</returns>
     internal static bool MoveMenuSelection(int rows)
     {
-        var count = _menuBoxes[_menuBox].Length;
         var row = _menuRow + rows;
-        if (row >= 0 && row < count)
+        if (row >= 0 && row < _menuItems.Length)
         {
             DrawMenuPointer(false);
             _menuRow = row;
@@ -415,86 +382,40 @@ internal static class Menu
             return false;
         }
 
-        // Past the last item: the first of the next box. Before the first: the last of the previous box
+        // Past the last item: the first of the next tab. Before the first: the last of the previous tab
         var forward = rows > 0;
-        var changedPage = NextMenuBox(!forward);
-        if (changedPage)
-        {
-            _menuRow = forward ? 0 : int.MaxValue; // The last of the box, when it is drawn
-            return true;
-        }
-
-        DrawMenuPointer(false);
-        _menuRow = forward ? 0 : Math.Max(0, _menuBoxes[_menuBox].Length - 1);
-        DrawMenuPointer(true);
-        return false;
+        NextMenuBox(!forward);
+        _menuRow = forward ? 0 : int.MaxValue; // The last of the tab, when it is drawn
+        return true;
     }
 
     /// <summary>
-    /// Go to the next box of the main menu (or the previous): the two boxes of the first page, then the two of the
-    /// second, and back to the first. In a box of the same page the row stays (or is the last of a shorter box)
+    /// Go to the next tab of the main menu (or the previous), and round from the last to the first
     /// </summary>
-    /// <returns>True if the next box is on the other page, which must be drawn</returns>
+    /// <returns>True: the tab must be drawn</returns>
     internal static bool NextMenuBox(bool back)
     {
-        var count = ManagePageCount * 2;
-        var next = (_manageModePage * 2 + _menuBox + (back ? count - 1 : 1)) % count;
-        if (next / 2 != _manageModePage)
-        {
-            _manageModePage = next / 2;
-            _menuBox = next % 2;
-            _menuRow = 0;
-            return true;
-        }
-
-        DrawMenuPointer(false);
-        _menuBox = next % 2;
-        ClampMenuSelection();
-        DrawMenuTitle(0);
-        DrawMenuTitle(1);
-        DrawMenuBoxNumbers();
-        DrawMenuPointer(true);
-        return false;
-    }
-
-    // The numbers of the four boxes below them, with the one of the box with the selection highlighted
-    private static void DrawMenuBoxNumbers()
-    {
-        Tools.SetCursorEx(MenuBoxTop + MenuBoxRows + 2, 1);
-        var active = _manageModePage * 2 + _menuBox;
-        for (var i = 0; i < ManagePageCount * 2; i++)
-        {
-            ConsoleColors.SetColors(i == active
-                ? ConsoleColors.ColorPreset.HighlightInverted
-                : ConsoleColors.ColorPreset.Divider);
-            // Each number has a blank space on each side: " 1  2  3  4  (Tab)"
-            Console.Write(" " + (i + 1) + " ");
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        }
-
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(" " + DialogText.TabBrackets);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        _manageModePage = TabLayout.Next(_manageModePage, ManagePageCount, back);
+        _menuRow = 0;
+        return true;
     }
 
     /// <summary>
-    /// Select the first item of the first box of the main menu (gg)
+    /// Select the first item of the first tab of the main menu (gg)
     /// </summary>
     internal static void SelectFirstMenuItem()
     {
         _manageModePage = 0;
-        _menuBox = 0;
         _menuRow = 0;
     }
 
     /// <summary>
-    /// Select the last item of the last box of the main menu (G)
+    /// Select the last item of the last tab of the main menu (G)
     /// </summary>
     internal static void SelectLastMenuItem()
     {
         _manageModePage = ManagePageCount - 1;
-        _menuBox = 1;
-        _menuRow = int.MaxValue; // The last of the box, when it is drawn
+        _menuRow = int.MaxValue; // The last of the tab, when it is drawn
     }
 
     /// <summary>
@@ -507,7 +428,7 @@ internal static class Menu
         var inner = Math.Max(TextMetrics.WidthOf(DialogText.CaptionsOptions) + 4,
             choices.Max(c => TextMetrics.WidthOf(c)) + 12);
         var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
-        var top = MenuBoxTop + 2;
+        var top = MenuTabRow + 6;
         // The box, on top of the menu, with the tab of its title above it
         ChoiceBox.DrawTitleTab(top - 1, left, inner, DialogText.CaptionsOptions);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
@@ -560,11 +481,10 @@ internal static class Menu
     }
 
     /// <summary>
-    /// Select the first item of the first box (when another page is shown)
+    /// Select the first item (when another tab is shown)
     /// </summary>
     internal static void ResetMenuSelection()
     {
-        _menuBox = 0;
         _menuRow = 0;
     }
 
@@ -573,8 +493,7 @@ internal static class Menu
     /// </summary>
     internal static string? SelectedMenuItem()
     {
-        var items = _menuBoxes[_menuBox];
-        return _menuRow < items.Length ? items[_menuRow].Run : null;
+        return _menuRow < _menuItems.Length ? _menuItems[_menuRow].Run : null;
     }
 
     #endregion

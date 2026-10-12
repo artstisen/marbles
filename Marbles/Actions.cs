@@ -87,7 +87,7 @@ internal static class Actions
             }
             else if (_c.Key == ConsoleKey.Tab)
             {
-                // The next box (Shift: the previous), on this page or the other
+                // The next tab (Shift: the previous)
                 if (Menu.NextMenuBox((_c.Modifiers & ConsoleModifiers.Shift) != 0))
                 {
                     Menu.DrawTopMenu(false, true, false);
@@ -119,7 +119,7 @@ internal static class Actions
             }
             else if (_c.Key is ConsoleKey.LeftArrow or ConsoleKey.H)
             {
-                // The previous page
+                // The previous tab
                 Menu.PreviousTopMenuManagePage();
                 Menu.DrawTopMenu(false, true, false);
             }
@@ -135,16 +135,10 @@ internal static class Actions
                 Menu.SelectLastMenuItem();
                 Menu.DrawTopMenu(false, true, false);
             }
-            else if (_c.Key == ConsoleKey.D1)
+            else if (_c.Key is ConsoleKey.D1 or ConsoleKey.D2 or ConsoleKey.D3 or ConsoleKey.D4)
             {
-                // Menuitem 1
-                Menu.SetTopMenuManagePage(0);
-                Menu.DrawTopMenu(false, true, false);
-            }
-            else if (_c.Key == ConsoleKey.D2)
-            {
-                // Menuitem 2
-                Menu.SetTopMenuManagePage(1);
+                // The tab with the number (Notes, Data file, Settings, Marbles)
+                Menu.SetTopMenuManagePage(_c.Key - ConsoleKey.D1);
                 Menu.DrawTopMenu(false, true, false);
             }
             else if (_c.Key == ConsoleKey.I)
