@@ -23,7 +23,9 @@ internal enum ColorItem
     TabFrames, // The frames with tabs (null: the color of the dividers)
     BoxBorders, // The borders of the boxes on top of a page (null: the color of the dividers)
     Tab, // The background of the tab shown (null: the color of the tab frames)
-    TabText // The text of the tab shown (null: the background)
+    TabText, // The text of the tab shown (null: the background)
+    TabShown, // The name of the tab shown when it is not highlighted (null: the text)
+    OtherTabs // The names of the other tabs (null: the text)
 }
 
 /// <summary>
@@ -55,6 +57,8 @@ internal sealed class ColorScheme
     internal ConsoleColor? BoxBorders { get; set; }
     internal ConsoleColor? Tab { get; set; }
     internal ConsoleColor? TabText { get; set; }
+    internal ConsoleColor? TabShown { get; set; }
+    internal ConsoleColor? OtherTabs { get; set; }
 
     /// <summary>
     /// The tab (and sub-tab) shown is highlighted in the colors of the tabs; else only its frame tells it apart
@@ -67,6 +71,8 @@ internal sealed class ColorScheme
     internal ConsoleColor BoxBorderColor => BoxBorders ?? Dividers;
     internal ConsoleColor TabColor => Tab ?? TabFrameColor;
     internal ConsoleColor TabTextColor => TabText ?? BackgroundColor;
+    internal ConsoleColor TabShownColor => TabShown ?? Text;
+    internal ConsoleColor OtherTabsColor => OtherTabs ?? Text;
 
     internal ColorScheme Clone() => (ColorScheme)MemberwiseClone();
 
@@ -75,7 +81,7 @@ internal sealed class ColorScheme
     /// </summary>
     internal static bool CanBeDefault(ColorItem item) =>
         item is ColorItem.Background or ColorItem.TabFrames or ColorItem.BoxBorders or ColorItem.Tab
-            or ColorItem.TabText;
+            or ColorItem.TabText or ColorItem.TabShown or ColorItem.OtherTabs;
 
     internal ConsoleColor? Get(ColorItem item)
     {
@@ -97,7 +103,9 @@ internal sealed class ColorScheme
             ColorItem.TabFrames => TabFrames,
             ColorItem.BoxBorders => BoxBorders,
             ColorItem.Tab => Tab,
-            _ => TabText
+            ColorItem.TabText => TabText,
+            ColorItem.TabShown => TabShown,
+            _ => OtherTabs
         };
     }
 
@@ -113,6 +121,8 @@ internal sealed class ColorScheme
             ColorItem.BoxBorders => BoxBorderColor,
             ColorItem.Tab => TabColor,
             ColorItem.TabText => TabTextColor,
+            ColorItem.TabShown => TabShownColor,
+            ColorItem.OtherTabs => OtherTabsColor,
             _ => Get(item)!.Value
         };
     }
@@ -141,7 +151,9 @@ internal sealed class ColorScheme
             case ColorItem.TabFrames: TabFrames = color; break;
             case ColorItem.BoxBorders: BoxBorders = color; break;
             case ColorItem.Tab: Tab = color; break;
-            default: TabText = color; break;
+            case ColorItem.TabText: TabText = color; break;
+            case ColorItem.TabShown: TabShown = color; break;
+            default: OtherTabs = color; break;
         }
     }
 
@@ -149,7 +161,7 @@ internal sealed class ColorScheme
     private static readonly ColorItem[] OnBackground =
     {
         ColorItem.Text, ColorItem.Logo, ColorItem.Dividers, ColorItem.Favorites, ColorItem.PreviewTitle,
-        ColorItem.EditorTitle, ColorItem.TabFrames, ColorItem.BoxBorders
+        ColorItem.EditorTitle, ColorItem.TabFrames, ColorItem.BoxBorders, ColorItem.TabShown, ColorItem.OtherTabs
     };
 
     private static readonly (ColorItem Background, ColorItem Text)[] Pairs =
@@ -187,7 +199,7 @@ internal sealed class ColorScheme
         ("attention", ColorItem.Attention), ("attentiontext", ColorItem.AttentionText),
         ("warning", ColorItem.Warning), ("warningtext", ColorItem.WarningText),
         ("tabframes", ColorItem.TabFrames), ("boxborders", ColorItem.BoxBorders), ("tab", ColorItem.Tab),
-        ("tabtext", ColorItem.TabText)
+        ("tabtext", ColorItem.TabText), ("tabshown", ColorItem.TabShown), ("othertabs", ColorItem.OtherTabs)
     };
 
     private const string HighlightKey = "tabhighlight";

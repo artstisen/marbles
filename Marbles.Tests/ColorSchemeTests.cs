@@ -74,6 +74,14 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(ConsoleColor.DarkGray, scheme.TabFrameColor);
         Assert.Equal(ConsoleColor.DarkGray, scheme.TabColor);
         Assert.Equal(ConsoleColor.Black, scheme.TabTextColor);
+        // The names of the tabs (the one shown without highlight, and the others) are the text
+        Assert.Equal(ConsoleColor.Gray, scheme.TabShownColor);
+        Assert.Equal(ConsoleColor.Gray, scheme.OtherTabsColor);
+        scheme.Set(ColorItem.OtherTabs, ConsoleColor.DarkGray);
+        Assert.Equal(ConsoleColor.DarkGray, scheme.OtherTabsColor);
+        Assert.Contains("othertabs=DarkGray\n", scheme.Serialize());
+        Assert.Contains("tabshown=default\n", scheme.Serialize());
+        Assert.False(scheme.Allowed(ColorItem.TabShown, ConsoleColor.Black));
         scheme.TabFrames = ConsoleColor.Blue;
         Assert.Equal(ConsoleColor.Blue, scheme.TabColor);
         Assert.Equal(ConsoleColor.DarkGray, scheme.BoxBorderColor);

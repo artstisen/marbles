@@ -214,7 +214,7 @@ internal sealed class TabFrame
         {
             Tools.SetCursorEx(top + 1, 1 + starts[i] - 1);
             if (i == tab) ConsoleColors.SetTabColors();
-            else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            else ConsoleColors.SetColors(ConsoleColors.ColorPreset.OtherTabs);
             Console.Write(" " + fitted[i] + " ");
         }
 
@@ -242,7 +242,7 @@ internal sealed class TabFrame
             {
                 Tools.SetCursorEx(top + 3, 3 + subStarts[i] - 1);
                 if (i == sub) ConsoleColors.SetTabColors();
-                else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                else ConsoleColors.SetColors(ConsoleColors.ColorPreset.OtherTabs);
                 Console.Write(" " + subNames[i] + " ");
             }
 

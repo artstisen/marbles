@@ -58,7 +58,9 @@ internal static class ConsoleColors
         AttentionInverted,
         WarningInverted,
         TabFrame, // The frames with tabs
-        BoxBorder // The borders of the boxes on top of a page
+        BoxBorder, // The borders of the boxes on top of a page
+        TabShown, // The name of the tab shown, when the tab is not highlighted
+        OtherTabs // The names of the tabs not shown
     }
 
     // The colors of text on the normal background: the background of the color scheme, or that of the terminal
@@ -154,6 +156,8 @@ internal static class ConsoleColors
             ColorPreset.EditorTitle => scheme.EditorTitle,
             ColorPreset.TabFrame => scheme.TabFrameColor,
             ColorPreset.BoxBorder => scheme.BoxBorderColor,
+            ColorPreset.TabShown => scheme.TabShownColor,
+            ColorPreset.OtherTabs => scheme.OtherTabsColor,
             _ => scheme.Text
         };
     }
@@ -179,7 +183,7 @@ internal static class ConsoleColors
     /// <summary>
     /// Write in the colors of the tab shown in a frame with tabs, and of the titles of boxes (with preview: the
     /// colors being edited). By default the colors of the tab frames inverted. When the highlight of the tabs is
-    /// off, normal text
+    /// off, in the color of the tab shown on the normal background
     /// </summary>
     internal static void SetTabColors(bool preview = false)
     {
@@ -193,7 +197,7 @@ internal static class ConsoleColors
 
         if (!scheme.TabHighlight)
         {
-            SetStyle(scheme, ColorPreset.Normal);
+            SetStyle(scheme, ColorPreset.TabShown);
             return;
         }
 

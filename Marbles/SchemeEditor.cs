@@ -36,7 +36,9 @@ internal static class SchemeEditor
                 ConsoleColors.ColorPreset.WarningInverted),
             new Group(Lang.T("Tab frames"), ColorItem.TabFrames, null, ConsoleColors.ColorPreset.TabFrame),
             new Group(Lang.T("Box borders"), ColorItem.BoxBorders, null, ConsoleColors.ColorPreset.BoxBorder),
-            new Group(Lang.T("Tabs"), ColorItem.Tab, ColorItem.TabText, ConsoleColors.ColorPreset.Normal)
+            new Group(Lang.T("Tabs"), ColorItem.Tab, ColorItem.TabText, ConsoleColors.ColorPreset.Normal),
+            new Group(Lang.T("Tab shown"), ColorItem.TabShown, null, ConsoleColors.ColorPreset.TabShown),
+            new Group(Lang.T("Other tabs"), ColorItem.OtherTabs, null, ConsoleColors.ColorPreset.OtherTabs)
         };
 
     private const int TabRow = 2; // Below the top bar
@@ -563,6 +565,7 @@ internal static class SchemeEditor
             return item switch
             {
                 ColorItem.TabFrames or ColorItem.BoxBorders => Lang.T("[Default]: the dividers"),
+                ColorItem.TabShown or ColorItem.OtherTabs => Lang.T("[Default]: the text"),
                 _ => DialogText.ColorDefault
             };
         }
@@ -640,7 +643,7 @@ internal static class SchemeEditor
         Tools.SetCursorEx(top + 7, x + starts[0] - 1);
         Tab(" " + names[0] + " ");
         Tools.SetCursorEx(top + 7, x + starts[1] - 1);
-        Part(ConsoleColors.ColorPreset.Normal, " " + names[1] + " ");
+        Part(ConsoleColors.ColorPreset.OtherTabs, " " + names[1] + " ");
         Tools.SetCursorEx(top + 8, x);
         Part(ConsoleColors.ColorPreset.TabFrame,
             TabLayout.Edge(names, 0, frameWidth, AsciiStyles.GetTopCorner(), AsciiStyles.GetBottomCorner()));
@@ -648,7 +651,8 @@ internal static class SchemeEditor
         Part(ConsoleColors.ColorPreset.TabFrame, "|");
         Part(ConsoleColors.ColorPreset.Normal, " ");
         Tab(" " + Lang.F("Page {0}", 1) + " ");
-        Part(ConsoleColors.ColorPreset.Normal, "  " + Lang.F("Page {0}", 2) + " ");
+        Part(ConsoleColors.ColorPreset.Normal, " ");
+        Part(ConsoleColors.ColorPreset.OtherTabs, " " + Lang.F("Page {0}", 2) + " ");
         Tools.SetCursorEx(top + 9, x + frameWidth - 1);
         Part(ConsoleColors.ColorPreset.TabFrame, "|");
         Tools.SetCursorEx(top + 10, x);

@@ -1570,6 +1570,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("l Enter Space", Lang.T("On a group: pick its color from a list"), false));
             _shortcutList.Add(new Shortcut("T", Lang.T("Pick the text color (Highlight, Attention ... Tabs)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tabs"), Lang.T("The tab shown ([Default]: the tab frames inverted)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Tab shown"), Lang.T("Its name, when the tab is not highlighted"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Other tabs"), Lang.T("The names of the tabs not shown"), false));
             _shortcutList.Add(new Shortcut("E", Lang.T("Back to the colors of the scheme in use"), false));
             _shortcutList.Add(new Shortcut("S", Lang.T("Save as a scheme of your own (asks for a name)"), false));
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Close (asks to save changes)"), false));
