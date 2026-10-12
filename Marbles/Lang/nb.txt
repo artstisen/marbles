@@ -1783,8 +1783,8 @@ en: "Pattern not found: "
 nb: "Ikke funnet: "
 
 # Editor/EditorEngine.Normal.cs
-en: "Only the register + is used ("+y): {0}"
-nb: "Bare registeret + brukes ("+y): {0}"
+en: "Type "+y for the clipboard"
+nb: "Tast "+y for utklippstavle"
 en: "{0} fewer lines"
 nb: "{0} færre linjer"
 en: "{0} lines yanked"

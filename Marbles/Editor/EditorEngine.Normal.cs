@@ -222,7 +222,8 @@ internal sealed partial class EditorEngine
                 }
                 else
                 {
-                    SetError(Lang.F("Only the register + is used (\"+y): {0}", cmd.ToString()));
+                    // (short, to fit on the status line next to the position)
+                    SetError(Lang.T("Type \"+y for the clipboard"));
                 }
 
                 return;

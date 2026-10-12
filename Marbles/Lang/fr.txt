@@ -1783,8 +1783,8 @@ en: "Pattern not found: "
 fr: "Introuvable : "
 
 # Editor/EditorEngine.Normal.cs
-en: "Only the register + is used ("+y): {0}"
-fr: "Seul le registre + est utilisé ("+y) : {0}"
+en: "Type "+y for the clipboard"
+fr: "Tapez "+y : presse-papiers"
 en: "{0} fewer lines"
 fr: "{0} lignes en moins"
 en: "{0} lines yanked"
