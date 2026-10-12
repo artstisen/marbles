@@ -307,6 +307,12 @@ internal static class Actions
             case "defaults":
                 ResetSettings();
                 break;
+            case "clipboard":
+                // The clipboard settings, a page of their own
+                ClipboardPage.Show();
+                ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
+                Menu.DrawTopMenu(false, true, false);
+                break;
             case "scheme":
                 // The color scheme editor, a page of its own
                 SchemeEditor.Show();
@@ -1152,6 +1158,7 @@ internal static class Actions
         Logo.AnimationEnabled = true;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;
+        SystemClipboard.SetDefaults();
         Init.AutoSize = false;
         Init.SetDefaultOutputDimensions();
         FileIo.SaveSettings();

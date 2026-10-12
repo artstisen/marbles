@@ -22,7 +22,9 @@ internal sealed partial class EditorEngine
     private string _count = string.Empty; // The count being typed
     private string _opCount = string.Empty; // The count typed before the operator
     private char _operator; // "d", "c", "y", ">", "<", or "u", "U" and "~" for "gu", "gU" and "g~"
-    private char _prefix; // A key waiting for a second key: "g", "z", "Z", "r", "f", "F", "t", "T", "i", "a", "[", "]"
+    private char _prefix; // A key waiting for a second key: "g", "z", "Z", "r", "f", "F", "t", "T", "i", "a", "[", "]", '"'
+    private bool _clipboardAsked; // '"+' was typed: the next yank goes to the clipboard
+    private bool _clipboardJustAsked; // ... it was typed with the key just handled
     private TextPos _visualAnchor; // Where the selection was started in Visual mode
     private Selected? _lastSelection; // The selection Visual mode was last left with ("gv")
 
@@ -142,7 +144,8 @@ internal sealed partial class EditorEngine
             cmd is 'f' or 'F' or 't' or 'T' or 'g' or 'z' ||
             (cmd == 'Z' && !IsVisual || cmd == 'r' && (!IsVisual || Mode == EditorMode.VisualBlock)) &&
             !operatorPending ||
-            cmd is '[' or ']' && !operatorPending)
+            cmd is '[' or ']' && !operatorPending ||
+            cmd == '"' && !operatorPending)
         {
             _prefix = cmd;
             return;
@@ -210,6 +213,19 @@ internal sealed partial class EditorEngine
         var last = Buffer.LineCount - 1;
         switch (prefix)
         {
+            case '"':
+                // A register: only "+ (and "*), the system clipboard, for the next yank
+                if (cmd is '+' or '*')
+                {
+                    _clipboardAsked = true;
+                    _clipboardJustAsked = true;
+                }
+                else
+                {
+                    SetError(Lang.F("Only the register + is used (\"+y): {0}", cmd.ToString()));
+                }
+
+                return;
             case 'f':
             case 'F':
             case 't':
@@ -433,6 +449,7 @@ internal sealed partial class EditorEngine
                 break;
             case 'y':
                 StoreRegister(text, false, false);
+                Yanked(text);
                 Cursor = from;
                 break;
             case 'u':
@@ -479,6 +496,7 @@ internal sealed partial class EditorEngine
                 break;
             case 'y':
                 StoreRegister(Buffer.GetText(start, end), true, false);
+                Yanked(Buffer.GetText(start, end) + TextBuffer.NewLine);
                 Cursor = new TextPos(first, Cursor.Col);
                 if (count > 2) Message = Lang.F("{0} lines yanked", count);
                 break;
@@ -1170,6 +1188,17 @@ internal sealed partial class EditorEngine
     // current string acts as the register used by "p". Text ending with a newline is whole lines.
     private string _smallRegister = string.Empty; // The last text deleted within a line
     private bool _useSmallRegister;
+
+    // Text was yanked: it also goes to the clipboard when every yank does, or when "+ was typed before it. The
+    // host sends it on (the system clipboard and/or the paste bin, as set)
+    private void Yanked(string text)
+    {
+        var asked = _clipboardAsked;
+        _clipboardAsked = false;
+        if (text.Length == 0 || SingleLine || !(ClipboardEveryYank || asked)) return;
+        ClipboardText = text;
+        _request = EditorRequest.Clipboard;
+    }
 
     private void StoreRegister(string text, bool linewise, bool small)
     {

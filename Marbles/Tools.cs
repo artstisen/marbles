@@ -1337,6 +1337,7 @@ internal static class Tools
         History, // The files opened from the file browser
         Search, // The files found by a search in the file browser
         ColorScheme, // The color scheme editor
+        Clipboard, // The clipboard settings
         Editor
     }
 
@@ -1404,6 +1405,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":guide", Lang.T("Quick guide (a short introduction)"), false));
             _shortcutList.Add(new Shortcut(":color :language", Lang.T("Pick the color scheme/language from a list"), false));
             _shortcutList.Add(new Shortcut(":color 3 :language da", Lang.T("Use color scheme 3/Danish at once"), false));
+            _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings"), false));
             _shortcutList.Add(new Shortcut(":browse", Lang.T("Browse files (opening a file logs out)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
@@ -1514,6 +1516,19 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q O h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.F("The last {0} files opened, kept in history.txt", FileHistory.MaxCount), false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionClipboard, true));
+            _shortcutList.Add(new Shortcut("\"+y \"+yy", Lang.T("Editor: yank to the clipboard (and/or the paste bin)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Every yank"), Lang.T("Can be set to go out too (not deletes)"), false));
+            _shortcutList.Add(new Shortcut(":pb", Lang.T("Write the selection (or the text) to the paste bin"), false));
+            _shortcutList.Add(new Shortcut(":pbappend", Lang.T("Add the selection (or the text) to the paste bin"), false));
+            _shortcutList.Add(new Shortcut(":pbread", Lang.T("Insert the text of the paste bin at the cursor"), false));
+            _shortcutList.Add(new Shortcut(":pbclear", Lang.T("Empty the paste bin"), false));
+            _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings (main menu, editor)"), false));
+            _shortcutList.Add(new Shortcut("j k Enter Space", Lang.T("Settings: select and change"), false));
+            _shortcutList.Add(new Shortcut("h l", Lang.T("Settings: the choice of a row (every yank, add/replace)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Notes"), Lang.T("Copying out of a data file is off until allowed"), false));
+            _shortcutList.Add(new Shortcut("  OSC 52", Lang.T("Windows Terminal, iTerm2, kitty, WezTerm, tmux, SSH"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Paste bin"), Lang.T("For terminals without OSC 52 (Raspberry Pi)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionColorScheme, true));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select the preset or a group of colors"), false));
             _shortcutList.Add(new Shortcut("h l", Lang.T("On the preset: the previous/next preset"), false));
@@ -1634,6 +1649,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":trim", Lang.T("Trim blank space (line start/end)"), false));
             _shortcutList.Add(new Shortcut(":ol :ul", Lang.T("Numbered/Bulleted list (selected lines)"), false));
             _shortcutList.Add(new Shortcut(":dup", Lang.T("Duplicate the selection (or the line)"), false));
+            _shortcutList.Add(new Shortcut("\"+y", Lang.T("Yank to the system clipboard (:clipboard)"), false));
+            _shortcutList.Add(new Shortcut(":pb :pbread", Lang.T("Write to/Read from the paste bin"), false));
             _shortcutList.Add(new Shortcut(":syntax", Lang.T("Colors on/off (md html css js json xml files: on)"), false));
             _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md, css, js, json, xml)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Entries"), Lang.T("Remember their colors (shown as MD, HTML ...)"), false));
@@ -1663,6 +1680,7 @@ internal static class Tools
             HelpTopic.Favorites => DialogText.HelpSectionFavorites,
             HelpTopic.History => DialogText.HelpSectionHistory,
             HelpTopic.Search => DialogText.HelpSectionSearch,
+            HelpTopic.Clipboard => DialogText.HelpSectionClipboard,
             HelpTopic.ColorScheme => DialogText.HelpSectionColorScheme,
             HelpTopic.Editor => DialogText.HelpSectionEditor,
             _ => string.Empty

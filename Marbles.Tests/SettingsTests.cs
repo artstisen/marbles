@@ -127,8 +127,14 @@ backup=
         Assert.False(settings.ContainsKey("logo"));
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(33, settings.Count);
+        Assert.Equal(39, settings.Count);
         Assert.Equal("false", settings["startfavorites"]);
+        Assert.Equal("true", settings["osc52"]);
+        Assert.Equal("false", settings["pastebin"]);
+        Assert.Equal("plus", settings["clipboardyank"]);
+        Assert.Equal("false", settings["clipboardnotes"]);
+        Assert.Equal("false", settings["pastebinappend"]);
+        Assert.Equal("paste-bin.txt", settings["pastebinfile"]);
         Assert.Equal("en", settings["language"]);
         Assert.Equal("default", settings["background"]);
         Assert.Equal("false", settings["linenumbers"]);

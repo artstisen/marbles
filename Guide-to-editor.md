@@ -186,6 +186,22 @@ Text that is yanked, and lines that are deleted, are kept in the string memory (
 - `:putall` Insert all memory strings
 - `:regclear` Clear the string memory
 
+## System clipboard and paste bin
+What is yanked (`y`, `yy`, `Y`, `:y` ...) is kept in the string memory of Marbles. It can also be sent out of Marbles, to be used in other programs:
+
+- **The system clipboard** through the terminal (OSC 52). This works in Windows Terminal, iTerm2, kitty, WezTerm and tmux, also over SSH (the text lands on the clipboard of the computer you sit at). It does not work in the console of a Raspberry Pi or in the Terminal of macOS; there nothing happens.
+- **The paste bin**, a text file (`paste-bin.txt` in the directory Marbles is started from, unless set otherwise) that other programs can read. Use it where OSC 52 does not work.
+
+Only yanks go out, never text that is deleted. By default a yank goes out when `"+` is typed in front of it: `"+yy` (the line), `"+yw`, or select text and type `"+y` (`"*` works as `"+`). It can be set so that every yank goes out. Text from the notes of a data file, which are encrypted, is not sent out until that is allowed on the clipboard settings page.
+
+- `:pb` Write the selection (select and type `:`, as for `:dup`), or else the whole text, to the paste bin. It replaces the text of the paste bin, or is added to its end, as set
+- `:pbappend` Add the selection (or the whole text) to the end of the paste bin, on lines of its own
+- `:pbread` Insert the text of the paste bin at the cursor (text written to the file by other programs comes in this way)
+- `:pbclear` Empty the paste bin
+- `:clipboard` The clipboard settings (also in the main menu, and on the Configuration page of the start page): the system clipboard (OSC 52) on or off, the paste bin on or off, every yank or only with `"+`, also from the notes of a data file, the paste bin file, and whether text is added to it or replaces it. `h` `l` change the choice of a row, `Enter` or `Space` change a setting. The settings are `osc52`, `pastebin`, `clipboardyank` (`plus` or `all`), `clipboardnotes`, `pastebinappend` and `pastebinfile` in the settings file
+
+The paste bin is not encrypted: text from a note written to it can be read by anyone with access to the file. Empty it with `:pbclear` when it is not needed any more.
+
 ## Other commands
 - `:ts` Insert an ISO timestamp (YYYY-MM-DD HH:MM:SS)
 - `:cal` Insert a calendar (select start month and year, and the length)

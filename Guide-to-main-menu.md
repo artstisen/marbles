@@ -56,6 +56,7 @@ The main menu has 2 pages, each with two boxes of keys and commands: four boxes 
 - `:number` **Line numbers**: Show or hide line numbers in the editor (the same as `:number` in the editor itself).
 - `:size` **Size**: Set the number of rows and columns used by Marbles.
 - `:size auto` **Follow the window**: Turn automatic dimensions on or off. When on, Marbles uses the size of the terminal window (leaving one row and one column unused), checked when the login page, a menu, a list or an entry is shown. A window resized while the editor is open is picked up when the editor is closed. Setting the dimensions yourself with `:size` turns automatic dimensions off. Turning automatic dimensions off goes back to the default size (80 x 23).
+- `:clipboard` **Clipboard**: The clipboard settings: yanked text sent to the system clipboard and/or the paste bin file (see [the guide to the editor](Guide-to-editor.md#system-clipboard-and-paste-bin))
 
 **Marbles**
 - `:browse` **Browse files**: Open the file browser.

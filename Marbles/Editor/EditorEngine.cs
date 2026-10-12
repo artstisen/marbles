@@ -36,7 +36,12 @@ internal enum EditorRequest
     LineNumbersChanged, // The line numbers were turned on or off
     Reload, // Read the file from disk again
     ReloadForce, // ... also when the text has changes that are not saved
-    SaveSettings
+    SaveSettings,
+    Clipboard, // Text was yanked to go to the system clipboard and/or the paste bin (ClipboardText)
+    PasteBinWrite, // ":pb": write PasteBinText to the paste bin (PasteBinAppend: add it to the end)
+    PasteBinRead, // ":pbread": insert the text of the paste bin at the cursor
+    PasteBinClear, // ":pbclear": empty the paste bin
+    ClipboardSettings // ":clipboard": show the clipboard settings
 }
 
 /// <summary>
@@ -85,6 +90,34 @@ internal sealed partial class EditorEngine
     /// A message for the user set by the last key press
     /// </summary>
     internal string Message { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// Show a message from the host on the status line (an error is highlighted)
+    /// </summary>
+    internal void ShowMessage(string message, bool isError)
+    {
+        Message = message;
+        MessageIsError = isError;
+    }
+
+    /// <summary>
+    /// Every yank goes to the clipboard (else only the ones with "+ in front, as "+y)
+    /// </summary>
+    internal bool ClipboardEveryYank { get; set; }
+
+    /// <summary>
+    /// The text yanked for the clipboard (with EditorRequest.Clipboard)
+    /// </summary>
+    internal string ClipboardText { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// The text for the paste bin (with EditorRequest.PasteBinWrite), and if it is added to the end of it (null:
+    /// as set in the clipboard settings)
+    /// </summary>
+    internal string PasteBinText { get; private set; } = string.Empty;
+
+    internal bool? PasteBinAppend { get; private set; }
+
 
     internal bool MessageIsError { get; private set; }
 
@@ -264,6 +297,15 @@ internal sealed partial class EditorEngine
         if ((Mode == EditorMode.Normal || IsVisual) && !HasPending)
         {
             Buffer.EndStep(Cursor);
+            // "+ is for the next command only (it is kept while that command is typed)
+            if (_clipboardJustAsked)
+            {
+                _clipboardJustAsked = false;
+            }
+            else
+            {
+                _clipboardAsked = false;
+            }
         }
 
         if (!_replaying && Mode == EditorMode.Normal && !HasPending && !_doNotRecord &&
@@ -652,6 +694,10 @@ internal sealed partial class EditorEngine
             {
                 Duplicate(first, last, fromSelection);
             }
+            else if (command is "pb" or "pbappend")
+            {
+                WriteToPasteBin(SelectedText(first, last, fromSelection), command == "pbappend");
+            }
             else if (command is "replace" or "rep" && !SingleLine)
             {
                 // Text selected within a line is what to find. Else the selected lines are where to replace
@@ -808,6 +854,19 @@ internal sealed partial class EditorEngine
                 break;
             case "putall":
                 PutAllRegisters();
+                break;
+            case "pb":
+            case "pbappend":
+                WriteToPasteBin(Buffer.GetText(), command == "pbappend");
+                break;
+            case "pbread":
+                if (!SingleLine) _request = EditorRequest.PasteBinRead;
+                break;
+            case "pbclear":
+                _request = EditorRequest.PasteBinClear;
+                break;
+            case "clipboard":
+                _request = EditorRequest.ClipboardSettings;
                 break;
             case "vsel":
                 StartVisual(EditorMode.Visual);
@@ -992,6 +1051,46 @@ internal sealed partial class EditorEngine
                 break;
             }
         }
+    }
+
+    // The text of the selection when ":" was pressed in a Visual mode, or else of the lines
+    private string SelectedText(int first, int last, bool fromSelection)
+    {
+        var mode = fromSelection ? _commandSelectionMode : EditorMode.VisualLine;
+        _commandSelectionMode = EditorMode.Normal;
+        switch (mode)
+        {
+            case EditorMode.Visual:
+            {
+                var to = _commandSelectionTo;
+                if (to.Col < Buffer.LineLength(to.Line))
+                {
+                    to = new TextPos(to.Line, to.Col + TextMetrics.ElementLength(Buffer[to.Line], to.Col));
+                }
+                else if (to.Line + 1 < Buffer.LineCount)
+                {
+                    to = new TextPos(to.Line + 1, 0);
+                }
+
+                return Buffer.GetText(_commandSelectionFrom, to);
+            }
+            case EditorMode.VisualBlock:
+            {
+                var (top, bottom, left, right) = _commandBlock;
+                return string.Join(TextBuffer.NewLine, BlockText(top, bottom, left, right));
+            }
+            default:
+                return Buffer.GetText(new TextPos(first, 0), new TextPos(last, Buffer.LineLength(last)));
+        }
+    }
+
+    // ":pb" and ":pbappend": the host writes the text to the paste bin
+    private void WriteToPasteBin(string text, bool append)
+    {
+        if (SingleLine) return;
+        PasteBinText = text;
+        PasteBinAppend = append ? true : null;
+        _request = EditorRequest.PasteBinWrite;
     }
 
     private void MakeList(int first, int last, bool ordered)

@@ -944,6 +944,17 @@ internal static class FileIo
         // Starting in the Text Editor: open the favorites list first
         _tempSettings += "startfavorites=" + (StartMenu.StartInFavorites ? DialogText.BTrue : DialogText.BFalse) +
                          Entries.NewLineChar;
+        // The clipboard: yanks to the system clipboard (OSC 52) and/or the paste bin, every yank ("all") or only
+        // with "+ in front ("plus"), also from the notes of a data file, and the paste bin file
+        _tempSettings += "osc52=" + (SystemClipboard.Osc52 ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        _tempSettings += "pastebin=" + (SystemClipboard.PasteBin ? DialogText.BTrue : DialogText.BFalse) +
+                         Entries.NewLineChar;
+        _tempSettings += "clipboardyank=" + (SystemClipboard.EveryYank ? "all" : "plus") + Entries.NewLineChar;
+        _tempSettings += "clipboardnotes=" + (SystemClipboard.FromNotes ? DialogText.BTrue : DialogText.BFalse) +
+                         Entries.NewLineChar;
+        _tempSettings += "pastebinappend=" + (SystemClipboard.PasteBinAppend ? DialogText.BTrue : DialogText.BFalse) +
+                         Entries.NewLineChar;
+        _tempSettings += "pastebinfile=" + SystemClipboard.PasteBinFile + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; STYLING" + Entries.NewLineChar;
@@ -1107,6 +1118,14 @@ internal static class FileIo
         Init.AutoSize = Tools.TrimToLower(Get("autosize")) == DialogText.BTrue;
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
         StartMenu.StartInFavorites = Tools.TrimToLower(Get("startfavorites")) == DialogText.BTrue;
+        // The clipboard (OSC 52 on unless turned off, the rest off unless turned on)
+        SystemClipboard.Osc52 = Tools.TrimToLower(Get("osc52")) != DialogText.BFalse;
+        SystemClipboard.PasteBin = Tools.TrimToLower(Get("pastebin")) == DialogText.BTrue;
+        SystemClipboard.EveryYank = Tools.TrimToLower(Get("clipboardyank")) == "all";
+        SystemClipboard.FromNotes = Tools.TrimToLower(Get("clipboardnotes")) == DialogText.BTrue;
+        SystemClipboard.PasteBinAppend = Tools.TrimToLower(Get("pastebinappend")) == DialogText.BTrue;
+        var pasteBinFile = Get("pastebinfile").Trim();
+        SystemClipboard.PasteBinFile = pasteBinFile.Length > 0 ? pasteBinFile : SystemClipboard.DefaultPasteBinFile;
         Lang.Set(Get("language"));
         // On unless turned off
         // (named "mdcolors" in an earlier version)

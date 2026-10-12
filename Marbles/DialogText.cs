@@ -372,6 +372,21 @@ internal static class DialogText
     // The keys of a box of choices (ChoiceBox)
     public static string ChoiceKeys => Lang.T("j/k Select | Enter Choose | Esc Cancel");
     public static string AskTextKeys => Lang.T("Enter OK | Esc Cancel");
+    // The clipboard: yanked text sent to the system clipboard (OSC 52) and/or the paste bin file
+    public static string CaptionsClipboard => Lang.T("Clipboard");
+    public static string HelpSectionClipboard => Lang.T("Clipboard and paste bin");
+    public static string ClipboardKeys => Lang.T("j/k Select | Enter/Space Change | h/l Choice | ? Help | Esc Back");
+    public static string ClipboardNote => Lang.T("The system clipboard is reached through the terminal (OSC 52): it works in Windows Terminal, iTerm2, kitty, WezTerm and tmux, also over SSH, but not in the console of a Raspberry Pi or the Terminal of macOS. There the paste bin file can be used: other programs can read it, and :pbread puts its text in the editor.");
+    public static string ClipboardAllOff => Lang.T("The clipboard is off (:clipboard)");
+    public static string ClipboardNotesOff => Lang.T("Not allowed from notes (:clipboard)");
+    public static string CopiedToClipboard => Lang.T("Copied to the clipboard");
+    public static string CopiedToPasteBin => Lang.T("Copied to the paste bin");
+    public static string CopiedToBoth => Lang.T("Copied (clipboard, paste bin)");
+    public static string PasteBinWritten => Lang.T("Written to the paste bin");
+    public static string PasteBinAdded => Lang.T("Added to the paste bin");
+    public static string PasteBinInserted => Lang.T("Inserted from the paste bin");
+    public static string PasteBinCleared => Lang.T("The paste bin is empty now");
+    public static string PasteBinEmpty => Lang.T("The paste bin is empty");
     public static string MatchNeedsTwoPanes => Lang.T("Only with two panes (T shows them)");
     public static string PickNumberKeys => Lang.T("h/l Change | Enter OK | Esc Cancel");
     public static string TypeNameAndPressEnter => Lang.T("Type the name and press Enter");

@@ -131,6 +131,9 @@ public class TextArea
             if (SyntaxHighlighter.ColorFiles) _engine.Syntax = fileType;
         }
 
+        // Yanks go to the clipboard as set (every yank, or only with "+ in front)
+        _engine.ClipboardEveryYank = SystemClipboard.EveryYank;
+
         // An entry is colored as set for the entry (a tag in its options)
         if (saveMode == SaveAsEntry && !_singleLine && NextEntrySyntax != SyntaxType.None)
         {
@@ -309,6 +312,58 @@ public class TextArea
             case EditorRequest.Help:
                 Tools.HideCursor();
                 Tools.WriteEditorHelp(false, Tools.HelpTopic.Editor);
+                RedrawAll();
+                break;
+            case EditorRequest.Clipboard:
+            {
+                // Yanked text: to the system clipboard and/or the paste bin (the notes of a data file only if allowed)
+                var (message, isError) = SystemClipboard.Copy(_engine.ClipboardText, _saveMode == SaveAsEntry,
+                    !SystemClipboard.EveryYank);
+                if (message.Length > 0) _engine.ShowMessage(message, isError);
+                _shownStatus = null;
+                break;
+            }
+            case EditorRequest.PasteBinWrite:
+            {
+                if (_saveMode == SaveAsEntry && !SystemClipboard.FromNotes)
+                {
+                    _engine.ShowMessage(DialogText.ClipboardNotesOff, true);
+                    break;
+                }
+
+                var append = _engine.PasteBinAppend ?? SystemClipboard.PasteBinAppend;
+                var result = SystemClipboard.WritePasteBin(_engine.PasteBinText, append);
+                _engine.ShowMessage(result == DialogText.Success
+                    ? append ? DialogText.PasteBinAdded : DialogText.PasteBinWritten
+                    : result, result != DialogText.Success);
+                break;
+            }
+            case EditorRequest.PasteBinRead:
+            {
+                var result = SystemClipboard.ReadPasteBin(out var text);
+                if (result == DialogText.Success)
+                {
+                    _engine.InsertAtCursor(text);
+                    _engine.ShowMessage(DialogText.PasteBinInserted, false);
+                }
+                else
+                {
+                    _engine.ShowMessage(result, true);
+                }
+
+                break;
+            }
+            case EditorRequest.PasteBinClear:
+            {
+                var result = SystemClipboard.ClearPasteBin();
+                _engine.ShowMessage(result == DialogText.Success ? DialogText.PasteBinCleared : result,
+                    result != DialogText.Success);
+                break;
+            }
+            case EditorRequest.ClipboardSettings:
+                Tools.HideCursor();
+                ClipboardPage.Show();
+                _engine.ClipboardEveryYank = SystemClipboard.EveryYank;
                 RedrawAll();
                 break;
             case EditorRequest.InsertCalendar:

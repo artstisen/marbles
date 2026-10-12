@@ -145,6 +145,7 @@ internal sealed partial class EditorEngine
                 return;
             case 'y':
                 StoreBlock(BlockText(first, last, left, right));
+                Yanked(string.Join(TextBuffer.NewLine, BlockText(first, last, left, right)));
                 break;
             case 'd':
             case 'c':

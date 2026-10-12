@@ -50,7 +50,7 @@ internal static class Commands
     {
         [CommandContext.Menu] = new Table(
             "quit help about guide new browse number import transfer undelete backup defaults scheme " +
-            "bw size password color restart language" + Common,
+            "bw size password color restart language clipboard" + Common,
             "q h nu" + CommonShort),
         [CommandContext.List] = new Table(
             "quit close help browse new title delete color transfer size duplicate revert export import info" + Common,
@@ -73,7 +73,7 @@ internal static class Commands
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
-            "calendar trim clear registers regclear putall vsel vline block ol ul dup duplicate",
+            "calendar trim clear registers regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard",
             "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw cal reg")
     };
 

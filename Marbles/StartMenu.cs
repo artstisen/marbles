@@ -162,6 +162,7 @@ internal static class StartMenu
         AutoSize,
         Size,
         LineNumbers,
+        Clipboard,
         Reset,
         Restart,
         ViewLog
@@ -181,6 +182,7 @@ internal static class StartMenu
         settings.Add(Setting.AutoSize);
         if (!Init.AutoSize) settings.Add(Setting.Size);
         settings.Add(Setting.LineNumbers);
+        settings.Add(Setting.Clipboard);
         settings.Add(Setting.Reset);
         settings.Add(Setting.Restart);
         settings.Add(Setting.ViewLog);
@@ -207,6 +209,7 @@ internal static class StartMenu
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
             Setting.LineNumbers => Check(TextArea.LineNumbers) + DialogText.ConfigLineNumbers,
+            Setting.Clipboard => indent + Lang.T("Clipboard and paste bin (Enter: Change)"),
             Setting.Restart => indent + DialogText.ConfigRestart,
             Setting.ViewLog => indent + DialogText.ConfigViewLog,
             _ => indent + DialogText.ConfigReset
@@ -368,6 +371,10 @@ internal static class StartMenu
                 break;
             case Setting.ViewLog:
                 EventLog.Show();
+                return;
+            case Setting.Clipboard:
+                // Saves the settings itself
+                ClipboardPage.Show();
                 return;
             case Setting.Restart:
                 if (ChoiceBox.Confirm(DialogText.Restart, DialogText.RestartQuestion, string.Empty, false))
