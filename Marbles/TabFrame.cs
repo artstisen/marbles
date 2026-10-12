@@ -205,7 +205,7 @@ internal sealed class TabFrame
         var (tops, labels, starts) = TabLayout.Tabs(fitted, AsciiStyles.GetTopCorner());
 
         // The tabs, the name of the tab shown in the colors of the tabs
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabFrame);
         Tools.SetCursorEx(top, 1);
         Console.Write(tops);
         Tools.SetCursorEx(top + 1, 1);
@@ -219,7 +219,7 @@ internal sealed class TabFrame
         }
 
         // The frame
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabFrame);
         Tools.SetCursorEx(top + 2, 1);
         Console.Write(TabLayout.Edge(fitted, tab, width, AsciiStyles.GetTopCorner(), AsciiStyles.GetBottomCorner()));
         for (var row = top + 3; row < bottom; row++)
@@ -246,7 +246,7 @@ internal sealed class TabFrame
                 Console.Write(" " + subNames[i] + " ");
             }
 
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabFrame);
             Tools.SetCursorEx(top + 4, 3);
             Console.Write(new string('-', Math.Max(0, width - 4)));
             contentTop = top + 5;

@@ -262,14 +262,14 @@ internal static class ChoiceBox
         var bottom = AsciiStyles.GetBottomCorner();
         caption = Tools.TruncateString(caption.Trim(), Math.Max(1, inner - 4), true);
         var width = TextMetrics.WidthOf(caption);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
         Tools.SetCursorEx(tabRow, left);
         Console.Write(top + new string('-', width + 2) + top);
         Tools.SetCursorEx(tabRow + 1, left);
         Console.Write('|');
         ConsoleColors.SetTabColors();
         Console.Write(" " + caption + " ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
         Console.Write(bottom + new string('-', Math.Max(0, inner - width - 3)) + top);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
@@ -296,15 +296,15 @@ internal static class ChoiceBox
         _shown = (tabRow, left, left + inner + 1, top + height + 1);
         Tools.HideCursor();
         DrawTitleTab(tabRow, left, inner, caption);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
         for (var row = 0; row < height; row++)
         {
             Tools.SetCursorEx(top + 1 + row, left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(new string(' ', inner));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
         }
 

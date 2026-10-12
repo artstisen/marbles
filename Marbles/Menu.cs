@@ -29,7 +29,7 @@ internal static class Menu
         {
             "undelete" => 0,
             "import" or "transfer" or "backup" or "password" => 1,
-            "scheme" or "color" or "bw" or "language" or "number" or "size" or "clipboard" => 2,
+            "scheme" or "bw" or "language" or "number" or "size" or "clipboard" => 2,
             _ => 3
         };
     }
@@ -288,9 +288,8 @@ internal static class Menu
             },
             2 => new MenuItem[]
             {
-                new(":scheme", Lang.T("Edit color scheme"), ":scheme"),
-                new(":color 1-" + Actions.ColorPresetCount,
-                    "[" + (ConsoleColors.GetColorPresetIndex() + 1) + "] " + Lang.T("Color preset"), ":color"),
+                new(":scheme", "[" + ColorSchemes.DisplayName(ConsoleColors.Current.Name) + "] " +
+                               DialogText.CaptionsColorScheme, ":scheme"),
                 new(":bw", Check(ConsoleColors.Monochrome) + " " + Lang.T("Black and white"), ":bw"),
                 new(":language", "[" + Lang.Current + "] " + Lang.T("Language"), ":language"),
                 new(":number", Check(TextArea.LineNumbers) + " " + Lang.T("Line numbers"), ":number"),
@@ -431,16 +430,16 @@ internal static class Menu
         var top = MenuTabRow + 6;
         // The box, on top of the menu, with the tab of its title above it
         ChoiceBox.DrawTitleTab(top - 1, left, inner, DialogText.CaptionsOptions);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
         for (var row = 0; row < choices.Length + 2; row++)
         {
             Tools.SetCursorEx(top + 1 + row, left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             var text = row >= 1 && row <= choices.Length ? "   " + row + " .... " + choices[row - 1] : string.Empty;
             Console.Write(text + new string(' ', Math.Max(0, inner - TextMetrics.WidthOf(text))));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
         }
 
@@ -640,7 +639,7 @@ internal static class Menu
             Tools.CursorReturn();
             Tools.CursorDown();
             Tools.CursorRight(left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write("|" + new string(' ', menuWidth) + "|");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Tools.CursorReturn();
@@ -661,7 +660,7 @@ internal static class Menu
         Tools.CursorReturn();
         Tools.CursorDown();
         Tools.CursorRight(left);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
         Console.Write(AsciiStyles.GetBottomCorner() + new string('-', menuWidth) + AsciiStyles.GetBottomCorner());
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         LoadCursorPosition();

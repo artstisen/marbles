@@ -30,7 +30,7 @@ public class CommandTests
         // Shift+Tab goes the other way
         Assert.Equal("color collapse co color", Tabs(CommandContext.Favorites, "co", 4, false));
         // Each place has its own commands
-        Assert.Equal("color co", Tabs(CommandContext.Menu, "co", 2));
+        Assert.Equal("scheme sc", Tabs(CommandContext.Menu, "sc", 2));
         Assert.Equal("copy co", Tabs(CommandContext.Files, "co", 2));
         // Capital letters are completed too
         Assert.Equal("undelete", Tabs(CommandContext.Menu, "UND", 1));

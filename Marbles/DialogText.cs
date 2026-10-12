@@ -44,16 +44,16 @@ internal static class DialogText
     public static string CaptionsSettings => Lang.T("Settings");
     public static string CaptionsOptions => Lang.T("Options");
     public static string CaptionsMoreOptions => Lang.T("More options");
-    public static string CaptionsColorScheme => Lang.T("Edit color scheme");
+    public static string CaptionsColorScheme => Lang.T("Color schemes");
     public static string CaptionsMenu => Lang.T("Menu");
     public static string LeaveKeys => Lang.T("j/k 1-3 Select | Enter Open | Esc Back");
     public static string MenuKeys => Lang.T("j/k Select | l/Enter Open | Tab/h Next/Previous tab | ? Help | X Logout");
     // The keys of a list of entries (All, Top 20, Favorites, Session history, Search)
     public static string ListKeys => Lang.T("Enter Open | h/l Page | gg/G First/Last | ? Help | Esc Back");
     public static string HelpSectionMainMenu => Lang.T("Main menu");
-    public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | Tab Preview | Esc Close");
-    public static string SchemePreviewKeys => Lang.T("Tab Colors | S Save | ? Help | Esc Close");
-    public static string HelpSectionColorScheme => Lang.T("Color scheme editor");
+    public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | Tab Next | Esc Close");
+    public static string SchemePreviewKeys => Lang.T("Tab Schemes | S Save | ? Help | Esc Close");
+    public static string HelpSectionColorScheme => Lang.T("Color schemes");
     public static string CaptionsExport => Lang.T("Export");
     public static string CaptionsImport => Lang.T("Import");
     public static string CaptionsBackup => Lang.T("Backup");
@@ -197,9 +197,15 @@ internal static class DialogText
     public static string TransferDiscard => Lang.T("Discard transfer");
     public static string ChoiceCancel => Lang.T("Cancel");
     // The boxes for picking a color scheme and a language
-    public static string PickSchemeCaption => Lang.T("Color scheme");
-    public static string PickSchemeQuestion => Lang.T("Select a color scheme");
-    public static string PickSchemeEditor => Lang.T("Edit the color scheme...");
+    public static string SchemeSaveCaption => Lang.T("Save the color scheme");
+    public static string SchemeSavePrompt => Lang.T("Type a name for the color scheme and press Enter");
+    public static string SchemeNameInvalid => Lang.T("Not a name a color scheme can have");
+    public static string SchemeNameBuiltIn => Lang.T("A built-in color scheme has that name");
+    public static string SchemeNotFound => Lang.T("There is no color scheme with that name");
+    public static string SchemeDiscardQuestion => Lang.T("Use another scheme? The changes are not saved.");
+    public static string SchemeBuiltInDelete => Lang.T("The built-in color schemes cannot be deleted");
+    public static string SchemeDeleteNote => Lang.T("Its file is deleted.");
+    public static string SchemeListKeys => Lang.T("j/k Select | Enter Use | D Delete | Tab Colors | ? Help | Esc Close");
     public static string PickLanguageCaption => Lang.T("Language");
     public static string PickLanguageQuestion => Lang.T("Select the language");
     // The choices when an entry is made a favorite, or is a favorite already (in a box, with keys in front)

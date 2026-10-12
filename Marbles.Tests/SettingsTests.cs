@@ -82,7 +82,6 @@ backup=
         Assert.Equal(100, Init.LineWidth);
         Assert.Equal(30, Init.LineCount);
         Assert.Equal(1, AsciiStyles.GetAsciiStyle());
-        Assert.Equal(5, ConsoleColors.GetColorPresetIndex());
         Assert.Equal("notes.mbls", FileIo.GetFileName());
         Assert.False(FileIo.BackupEnabled());
     }
@@ -127,13 +126,15 @@ backup=
         Assert.False(settings.ContainsKey("logo"));
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(45, settings.Count);
+        Assert.Equal(30, settings.Count);
         Assert.Equal("true", settings["wrap"]);
         Assert.Equal("file", settings["snipsort"]);
         Assert.Equal("true", settings["scrolloff"]);
         Assert.Equal("12", settings["scrolllines"]);
-        Assert.Equal(string.Empty, settings["tabcolor"]);
-        Assert.Equal(string.Empty, settings["tabtext"]);
+        // The colors are kept in the color schemes: only the name of the one in use is a setting
+        Assert.Equal("Default", settings["colorscheme"]);
+        Assert.False(settings.ContainsKey("color1"));
+        Assert.False(settings.ContainsKey("background"));
         Assert.Equal("false", settings["startfavorites"]);
         Assert.Equal("true", settings["osc52"]);
         Assert.Equal("false", settings["pastebin"]);
@@ -142,7 +143,6 @@ backup=
         Assert.Equal("false", settings["pastebinappend"]);
         Assert.Equal("paste-bin.txt", settings["pastebinfile"]);
         Assert.Equal("en", settings["language"]);
-        Assert.Equal("default", settings["background"]);
         Assert.Equal("false", settings["linenumbers"]);
         Assert.Equal("true", settings["browsedual"]);
         Assert.Equal("1", settings["browsepane"]);
@@ -167,82 +167,32 @@ backup=
     }
 
     [Theory]
-    [InlineData("background=5", "DarkBlue", "5")]
-    [InlineData("background=default", null, "default")]
-    [InlineData("background=nonsense", null, "default")]
-    [InlineData("background=16", null, "default")]
-    [InlineData("", null, "default")]
-    public void Background_IsLoadedAndSaved(string setting, string? expected, string saved)
+    [InlineData("colorscheme=Deep Blue", "Deep Blue")]
+    [InlineData("colorscheme=ice warp", "Ice Warp")]
+    [InlineData("colorscheme=Mine", "Mine")]
+    [InlineData("colorscheme=Missing", "Default")]
+    [InlineData("", "Default")]
+    public void TheColorScheme_IsLoadedAndSavedByName(string setting, string expected)
     {
-        File.WriteAllText(SettingsFile, LegacySettings + "\n" + setting + "\n");
-        File.WriteAllText(Path.Combine(_workDirectory, "data", "notes.mbls"), "x");
+        ColorSchemes.DirectoryOverride = Path.Combine(_workDirectory, "data", ColorSchemes.DirectoryName);
         try
         {
+            var mine = ColorScheme.Default;
+            mine.Name = "Mine";
+            mine.Text = ConsoleColor.White;
+            Assert.Equal(DialogText.Success, ColorSchemes.Save(mine));
+            File.WriteAllText(SettingsFile, setting + "\n");
+            File.WriteAllText(Path.Combine(_workDirectory, "data", "notes.mbls"), "x");
             Assert.True(FileIo.LoadSettings());
-            Assert.Equal(expected, ConsoleColors.Background?.ToString());
+            Assert.Equal(expected, ConsoleColors.Current.Name);
+            if (expected == "Mine") Assert.Equal(ConsoleColor.White, ConsoleColors.Current.Text);
             FileIo.SaveSettings();
-            Assert.Equal(saved, FileIo.ParseSettings(File.ReadAllText(SettingsFile))["background"]);
-            // A color preset uses the background of the terminal
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.IceWarp);
-            Assert.Null(ConsoleColors.Background);
+            Assert.Equal(expected, FileIo.ParseSettings(File.ReadAllText(SettingsFile))["colorscheme"]);
         }
         finally
         {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
-        }
-    }
-
-    [Fact]
-    public void TheDeepBluePreset_IsTheSecond_AndHasABackground()
-    {
-        try
-        {
-            Assert.Equal(8, Actions.ColorPresetCount);
-            Assert.Equal("Deep Blue", Actions.ColorPresetName(1));
-            Assert.Equal("Marbles Quest", Actions.ColorPresetName(2));
-            Actions.SetColorPreset(1);
-            Assert.Equal(ConsoleColor.DarkBlue, ConsoleColors.Background);
-            FileIo.SaveSettings();
-            var saved = FileIo.ParseSettings(File.ReadAllText(SettingsFile));
-            var expected = new[] { "2", "4", "4", "14", "8", "15", "12", "0", "10", "15", "6", "4" };
-            for (var i = 1; i <= expected.Length; i++)
-            {
-                Assert.Equal(expected[i - 1], saved["color" + i]);
-            }
-
-            Assert.Equal("5", saved["background"]);
-            Assert.Equal("1", saved["(clpreset)"]);
-            // The others use the background of the terminal
-            Actions.SetColorPreset(2);
-            Assert.Null(ConsoleColors.Background);
-        }
-        finally
-        {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
-            ConsoleColors.DefaultColorPresetIndex();
-        }
-    }
-
-    [Fact]
-    public void TheBackground_CannotHaveTheColorOfTheText()
-    {
-        try
-        {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
-            ConsoleColors.InitializePreviewColors();
-            // The default text is gray, the logo cyan
-            Assert.False(ConsoleColors.IsPreviewColorAllowed(0, ConsoleColor.Gray));
-            Assert.False(ConsoleColors.IsPreviewColorAllowed(0, ConsoleColor.Cyan));
-            Assert.True(ConsoleColors.IsPreviewColorAllowed(0, ConsoleColor.DarkBlue));
-            ConsoleColors.PreviewBackground = ConsoleColor.DarkBlue;
-            ConsoleColors.SavePreviewToCurrentColors();
-            Assert.Equal(ConsoleColor.DarkBlue, ConsoleColors.Background);
-            // Text on it cannot have its color
-            Assert.True(ConsoleColors.IsBackgroundColor(ConsoleColor.DarkBlue));
-        }
-        finally
-        {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
+            ColorSchemes.DirectoryOverride = null;
+            ConsoleColors.Use(ColorScheme.Default);
         }
     }
 

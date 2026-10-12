@@ -238,11 +238,9 @@ internal static class Actions
     private static void RunManageCommand(string command)
     {
         if (RunCommonCommand(command)) return;
-        // A number after the command selects a preset directly, like ":color 5"
-        var number = int.TryParse(CommandLine.Argument(command), out var parsedNumber) ? parsedNumber : 0;
-        if (CommandLine.Argument(command).Length > 0 &&
-            !(CommandLine.Name(command) == "color" && number > 0) && command != "size auto" &&
-            CommandLine.Name(command) is not ("new" or "language"))
+        // Only some commands have something after them (":new Title", ":scheme Name")
+        if (CommandLine.Argument(command).Length > 0 && command != "size auto" &&
+            CommandLine.Name(command) is not ("new" or "language" or "scheme"))
         {
             CommandLine.ShowUnknown(command);
             Menu.DrawTopMenu(false, true, false);
@@ -308,9 +306,21 @@ internal static class Actions
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "scheme":
-                // The color scheme editor, a page of its own
-                SchemeEditor.Show();
+                // The color schemes, a page of their own: select and edit them. With a name: use that scheme
                 ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
+                if (CommandLine.Argument(command).Length > 0)
+                {
+                    if (!SchemeEditor.UseByName(CommandLine.Argument(command)))
+                    {
+                        Menu.StatusMessage(DialogText.SchemeNotFound, true, false, true,
+                            DialogText.CaptionsColorScheme, string.Empty, false);
+                    }
+                }
+                else
+                {
+                    SchemeEditor.Show();
+                }
+
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "bw":
@@ -363,29 +373,6 @@ internal static class Actions
                 Menu.DrawTopMenu(false, true, false);
                 break;
             }
-            case "color":
-                if (number > ColorPresets.Length)
-                {
-                    CommandLine.ShowUnknown(command);
-                    Menu.DrawTopMenu(false, true, false);
-                    break;
-                }
-
-                // Switch to the page of the colors if on a different one
-                ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
-                // A number selects the color preset, and without one it is picked in a box
-                if (number > 0)
-                {
-                    SetColorPreset(number - 1);
-                    FileIo.SaveSettings();
-                }
-                else
-                {
-                    PickColorScheme();
-                }
-
-                Menu.DrawTopMenu(false, true, false);
-                break;
             case "restart":
                 Tools.Restart();
                 break;
@@ -394,58 +381,6 @@ internal static class Actions
                 Menu.DrawTopMenu(false, true, false);
                 break;
         }
-    }
-
-    // The color presets in the order they are numbered (the first is the default colors)
-    private static readonly ConsoleColors.ColorPreset[] ColorPresets =
-    {
-        ConsoleColors.ColorPreset.Reset,
-        ConsoleColors.ColorPreset.DeepBlue,
-        ConsoleColors.ColorPreset.MarblesQuest,
-        ConsoleColors.ColorPreset.NightWriter,
-        ConsoleColors.ColorPreset.YellowMonochrome,
-        ConsoleColors.ColorPreset.GreenMonochrome,
-        ConsoleColors.ColorPreset.IceWarp,
-        ConsoleColors.ColorPreset.WaterSport
-    };
-
-    internal static int ColorPresetCount => ColorPresets.Length;
-
-    /// <summary>
-    /// A color preset by its number (from 0)
-    /// </summary>
-    internal static ConsoleColors.ColorPreset ColorPresetAt(int index) => ColorPresets[index];
-
-    private static readonly string[] ColorPresetNames =
-    {
-        "Default", "Deep Blue", "Marbles Quest", "Night Writer", "Yellow Monochrome", "Green Monochrome", "Ice Warp", "Water Sport"
-    };
-
-    /// <summary>
-    /// The name of a color preset
-    /// </summary>
-    internal static string ColorPresetName(int index) => index == 0 ? Lang.T("Default") : ColorPresetNames[index];
-
-    /// <summary>
-    /// Pick a color scheme in a box on top of the page. The last choice opens the color scheme editor. The choice
-    /// is saved in the settings file
-    /// </summary>
-    internal static void PickColorScheme()
-    {
-        var count = ColorPresets.Length;
-        var choices = Enumerable.Range(0, count).Select(ColorPresetName).Append(DialogText.PickSchemeEditor).ToArray();
-        var keys = Enumerable.Range(1, count).Select(n => n.ToString()).Append("E").ToArray();
-        var picked = ChoiceBox.Pick(DialogText.PickSchemeCaption, DialogText.PickSchemeQuestion, string.Empty, choices,
-            keys, ConsoleColors.GetColorPresetIndex(), false);
-        if (picked < 0) return;
-        if (picked == count)
-        {
-            SchemeEditor.Show();
-            return;
-        }
-
-        SetColorPreset(picked);
-        FileIo.SaveSettings();
     }
 
     /// <summary>
@@ -461,16 +396,6 @@ internal static class Actions
         if (picked < 0) return;
         Lang.Set(languages[picked].Code);
         FileIo.SaveSettings();
-    }
-
-    // Use a color preset. The index is saved in the settings file
-    internal static void SetColorPreset(int index)
-    {
-        ConsoleColors.SetColors(ColorPresets[index]);
-        ConsoleColors.SetColorPresetIndex(index);
-        // The presets have the default colors of the tabs (those of the frames)
-        ConsoleColors.TabColor = null;
-        ConsoleColors.TabTextColor = null;
     }
 
     // Commands when selecting from a list of entries. The commands work on the selected entry
@@ -1168,10 +1093,7 @@ internal static class Actions
         TextArea.ScrollOff = true;
         TextArea.ScrollOffLines = TextArea.DefaultScrollOffLines;
         Snippets.Sort = Snippets.SortOrder.File;
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
-        ConsoleColors.DefaultColorPresetIndex();
-        ConsoleColors.TabColor = null;
-        ConsoleColors.TabTextColor = null;
+        ConsoleColors.Use(ColorScheme.Default);
         Logo.AnimationEnabled = true;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;

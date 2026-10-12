@@ -155,14 +155,14 @@ internal static class ReplaceDialog
     private static void DrawFrame()
     {
         ChoiceBox.DrawTitleTab(_top - 1, _left, InnerWidth, DialogText.ReplaceCaption);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
         for (var row = 1; row < Height - 1; row++)
         {
             Tools.SetCursorEx(_top + row, _left);
             Console.Write('|');
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(new string(' ', InnerWidth));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
         }
 

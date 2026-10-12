@@ -964,31 +964,10 @@ internal static class FileIo
         _tempSettings += "asciistyle=" + AsciiStyles.GetAsciiStyle() + Entries.NewLineChar;
         // Logo animation on the login page
         _tempSettings += "logoanim=" + (Logo.AnimationEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
-        // Color scheme (for the color preset selector)
-        _tempSettings += "(clpreset)=" + ConsoleColors.GetColorPresetIndex()+ Entries.NewLineChar;
-        // Black and white: the colors below are kept, but not used
+        // The color scheme: a built-in one, or the name of one in the directory "colorschemes"
+        _tempSettings += "colorscheme=" + ConsoleColors.Current.Name + Entries.NewLineChar;
+        // Black and white: the colors of the scheme are kept, but not used
         _tempSettings += "monochrome=" + (ConsoleColors.Monochrome ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
-        // The background: a color number, or "default" for the background of the terminal
-        _tempSettings += "background=" + (ConsoleColors.Background is { } background
-            ? ConsoleColors.GetIndexFromColor(background).ToString()
-            : DialogText.BackgroundDefault) + Entries.NewLineChar;
-        _tempSettings += "color1=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(1))+ Entries.NewLineChar;
-        _tempSettings += "color2=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(2))+ Entries.NewLineChar;
-        _tempSettings += "color3=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(3))+ Entries.NewLineChar;
-        _tempSettings += "color4=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(4))+ Entries.NewLineChar;
-        _tempSettings += "color5=" +ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(5))+ Entries.NewLineChar;
-        _tempSettings += "color6=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(6))+ Entries.NewLineChar;
-        _tempSettings += "color7=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(7))+ Entries.NewLineChar;
-        _tempSettings += "color8=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(8))+ Entries.NewLineChar;
-        _tempSettings += "color9=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(9))+ Entries.NewLineChar;
-        _tempSettings += "color10=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(10))+ Entries.NewLineChar;
-        _tempSettings += "color11=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(11))+ Entries.NewLineChar;
-        _tempSettings += "color12=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(12))+ Entries.NewLineChar;
-        // The colors of the tab shown in a frame with tabs (empty: the frame color, and the background as text)
-        _tempSettings += "tabcolor=" + (ConsoleColors.TabColor is { } tabColor
-            ? ConsoleColors.GetIndexFromColor(tabColor).ToString() : string.Empty) + Entries.NewLineChar;
-        _tempSettings += "tabtext=" + (ConsoleColors.TabTextColor is { } tabText
-            ? ConsoleColors.GetIndexFromColor(tabText).ToString() : string.Empty) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; FILES" + Entries.NewLineChar;
@@ -1056,7 +1035,6 @@ internal static class FileIo
 
 
     internal static string LoadSettingsErrorMessage = "";
-    private const int ColorSettingsCount = 12; // color1 - color12 (the background color, 0, is not used)
 
     /// <summary>
     /// Load the settings file. The settings are read by name, so they can be in any order.
@@ -1123,9 +1101,6 @@ internal static class FileIo
             return value.Length is > 0 and < 9 && Tools.IsNumeric(value) ? Convert.ToInt32(value) : null;
         }
 
-        // A color by its number (null if there is none)
-        ConsoleColor? ColorOf(int? index) => index is >= 0 and <= 15 ? ConsoleColors.ColorFromIndex(index.Value) : null;
-
         // Dimensions
         Init.SetLineWidth((byte)Math.Clamp(GetNumber("linewidth") ?? Init.MinLineWidth, 0, byte.MaxValue));
         Init.SetLineCount((byte)Math.Clamp(GetNumber("linecount") ?? Init.MinLineCount, 0, byte.MaxValue));
@@ -1171,26 +1146,8 @@ internal static class FileIo
         // Logo animation (on unless turned off)
         Logo.AnimationEnabled = Tools.TrimToLower(Get("logoanim")) != DialogText.BFalse;
 
-        // Color scheme preset
-        var colorPreset = GetNumber("(clpreset)");
-        if (colorPreset.HasValue)
-        {
-            ConsoleColors.SetColorPresetIndex(colorPreset.Value);
-        }
-        else
-        {
-            ConsoleColors.DefaultColorPresetIndex();
-        }
-
-        // Colors (starting at 1 to match the text color)
-        for (var i = 1; i <= ColorSettingsCount; i++)
-        {
-            ConsoleColors.SetColorFromIndex(i, GetNumber("color" + i) ?? 15);
-        }
-
-        ConsoleColors.SetBackgroundFromIndex(GetNumber("background"));
-        ConsoleColors.TabColor = ColorOf(GetNumber("tabcolor"));
-        ConsoleColors.TabTextColor = ColorOf(GetNumber("tabtext"));
+        // The color scheme by its name (the default if there is none with the name)
+        ConsoleColors.Use(ColorSchemes.Load(Get("colorscheme")) ?? ColorScheme.Default);
 
         // Sub directory
         var subFolder = Get("subdir");

@@ -16,7 +16,7 @@ The same keys are used everywhere in Marbles:
 - `Esc` Return/Cancel
 
 ## Main menu
-The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** and **Marbles**, each with its keys and commands. The tab shown is highlighted (in the colors of the tabs, set in the [color scheme editor](#color-scheme-editor)). _MENU_ is shown at the top left, and the name of the data file at the top right, above a dividing line. The keys of the page are shown at the bottom.
+The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** and **Marbles**, each with its keys and commands. The tab shown is highlighted (in the colors of the tabs, set in the [color schemes](#color-schemes)). _MENU_ is shown at the top left, and the name of the data file at the top right, above a dividing line. The keys of the page are shown at the bottom.
 
 - Each item can be used with its key or command, or selected and opened: `j` `k` (or `Down`/`Up`) select an item, and `Enter`, `l` (or `Right`) or `Space` opens the selected item. For the settings that are on or off (`[x]`), `Space` and `Enter` turn them on or off. The keys and commands of all the tabs can be used whichever tab is shown
 - `j` on the last item of a tab goes on to the first item of the next tab (and back to Notes after Marbles). `k` on the first item goes back to the last item of the previous tab
@@ -49,8 +49,7 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 
 ### Page 2: Settings and Marbles
 **Settings**
-- `:scheme` **Edit color scheme**: Open the [color scheme editor](#color-scheme-editor)
-- `:color` **Color preset**: Pick one of the color presets in a box on top of the menu (`j` `k`, `gg` `G` or the number, and `Enter`; `Esc` cancels). The last choice, _Edit the color scheme..._ (or `E`), opens the [color scheme editor](#color-scheme-editor). `:color 5` selects preset 5 at once
+- `:scheme` **Color schemes**: Select a color scheme, edit the colors and save them as a scheme of your own, on [a page of their own](#color-schemes). The item shows the scheme in use. `:scheme Name` uses the scheme with the name at once
 - `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the terminal's own background is used
 - `:language` **Language**: Pick the language in a box on top of the menu, or select one by its code: `:language en` (English), `da` (Danish), `de` (German), `nb` (Norwegian), `sv` (Swedish), `es` (Spanish), `fr` (French). The language is saved as `language` in the settings file, and can also be changed on the Configuration page
 - `:number` **Line numbers**: Show or hide line numbers in the editor (the same as `:number` in the editor itself).
@@ -68,21 +67,33 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 - `:logout` **Logout**
 - `:q` **Exit**
 
-### Color scheme editor
-The colors of Marbles are edited on a page of their own, opened with `:scheme` in the main menu or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It is a frame with two tabs, as the start page: **Colors** has the preset at the top and the eleven groups of colors below it, each with a sample and the names of its colors, and **Preview** shows them all on a small screen on the background, with a frame with tabs. `Tab` goes from one to the other. Nothing is used until you save.
+### Color schemes
+The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEMES_, opened with `:scheme` in the main menu (or its item on the Settings tab) or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It is a frame with three tabs, as the start page: **Schemes**, **Colors** (with the sub-tabs _Page 1_ and _Page 2_) and **Preview**. `Tab` goes from tab to tab, and `Shift+Tab` the other way.
 
-- `j` `k` (or `Up`/`Down`, `gg` `G`) Select the preset or a group
-- On the preset: `l` and `h` (or `Enter`) Start from the next/previous preset. The groups get the colors of the preset
-- On a group: `l` (or `Enter`, `Space`, `Right`) Pick its color from a list of the 16 colors: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. For Highlight, Attention and Warning (shown inverted) this is the background color
-- `T` Pick the text color of Highlight, Attention, Warning or Tabs
-- **Tabs**: the colors of the tab and sub-tab shown in a frame with tabs (the start page, this editor). `[Default]` (the default) is the color of the dividers inverted: the divider color as the background, and the background as the text. `l` picks the background of the tab and `T` its text, and either can be `[Default]` again. The color presets (`:color`) and `:defaults` use `[Default]`. The settings are `tabcolor` and `tabtext` in the settings file (a color number, or empty for the default)
-- **Background**: the last group. `[Default]` (the default) shows the text on the terminal's own background, so a transparent or blurred terminal window stays that way. Pick a color to give Marbles a background of its own: the whole window is filled with it, and the terminal's background is used again when Marbles exits. The background cannot have the color of the text, the logo, dividers, favorites or titles. The color presets (`:color`) and `:defaults` use `[Default]`. The setting is `background` in the settings file (a color number, or `default`)
+**Schemes** lists the color schemes: the eight built-in ones, and below them the ones you have saved yourself. The one in use is marked `[x]`.
+
+- `j` `k` (or `Up`/`Down`, `gg` `G`) Select a scheme
+- `Enter` (or `Space`, `l`) Use the selected scheme: it is used at once, and its name is saved (`colorscheme` in the settings file). Its colors are then the ones edited on the Colors tab
+- `D` Delete a scheme of your own (you are asked first). The built-in schemes cannot be deleted
+- `:scheme Name` in the main menu uses a scheme by its name at once
+
+**Colors** shows the colors of the scheme being edited, each group with a sample and the names of its colors. _Page 1_ has Text, Logo and labels, Dividers, Favorites, Preview title, Editor title and Background; _Page 2_ has Highlight, Attention, Warning, Tab frames, Box borders and Tabs, and _Highlight the tab shown_.
+
+- `j` `k` Select a group
+- `l` (or `Enter`, `Space`, `Right`) Pick its color from a list of the 16 colors: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. For Highlight, Attention, Warning and Tabs (shown inverted) this is the background color, and `T` picks the text color
+- **Tab frames**: the frames with tabs (the start page, the main menu, this page). **Box borders**: the borders and title tabs of the boxes shown on top of a page. `[Default]` (the default) is the color of the dividers
+- **Tabs**: the tab and sub-tab shown, and the titles of the boxes. `[Default]` is the tab frames inverted: the color of the tab frames as the background, and the background as the text. **Highlight the tab shown** (`Enter` or `Space` on it): off, the names of the tabs are all normal text, and the tab shown is only told apart by being open into the frame
+- **Background**: `[Default]` shows the text on the terminal's own background, so a transparent or blurred terminal window stays that way. Pick a color to give Marbles a background of its own: the whole window is filled with it, and the terminal's background is used again when Marbles exits. The background cannot have the color of the text on it
 - A color shown in brackets in the list cannot be picked, as the text would not be visible on its background
-- `E` Back to the colors of the preset
-- `S` Save the colors and close the editor
-- `Esc` (or `Q`) Close. If something was changed, you are asked in a box whether to save it (`Y`/`N`, or `j`/`k` and `Enter`)
-- `?` Show the help of the editor
-- On the Preview tab: `S` saves, `Esc` closes, and `Tab` goes back to the colors
+- `E` Back to the colors of the scheme in use
+- `S` Save the colors as a scheme of your own: type a name for it and press `Enter` (a scheme of your own is suggested by its name; a built-in name cannot be used, and another scheme of yours with the name is replaced if you want that). The scheme is then the one in use. Nothing you change is used until you save
+
+**Preview** shows the colors being edited on a small screen on their background, with a frame with tabs and a box.
+
+- `Esc` (or `Q`) Close. If something was changed and not saved, you are asked in a box whether to save it (`Y`, `N`, or `Esc` to stay)
+- `?` Show the help of the page
+
+**Schemes of your own** are kept as text files in the directory `colorschemes` in the data directory (the name of the scheme and `.txt`), with a line for each color (`text=Gray`, `tabframes=default`, `tabhighlight=true`). They can be copied to another computer, or edited by hand: the colors are Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow and White, and `default` for the colors that can have it. If the scheme in use is missing when Marbles starts, the default scheme is used. `:defaults` goes back to the default scheme.
 
 With _Black and white_ on, the colors can still be edited: they are used when black and white is turned off.
 

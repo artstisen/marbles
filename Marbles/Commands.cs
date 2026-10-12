@@ -50,7 +50,7 @@ internal static class Commands
     {
         [CommandContext.Menu] = new Table(
             "quit help about guide new browse number import transfer undelete backup defaults scheme " +
-            "bw size password color restart language clipboard" + Common,
+            "bw size password restart language clipboard" + Common,
             "q h nu" + CommonShort),
         [CommandContext.List] = new Table(
             "quit close help browse new title delete color transfer size duplicate revert export import info clipboard" +

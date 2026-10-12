@@ -172,9 +172,8 @@ internal static class StartMenu
             Setting.StartFavorites => indent + Check(StartInFavorites) + Lang.T("Open the favorites list first"),
             Setting.Monochrome => Check(ConsoleColors.Monochrome) + DialogText.ConfigMonochrome,
             Setting.Language => indent + DialogText.ConfigLanguage + Lang.CurrentName,
-            Setting.ColorScheme => indent + Lang.F("Color scheme: {0} of {1}", ConsoleColors.GetColorPresetIndex() + 1,
-                                       Actions.ColorPresetCount) + " (" +
-                                   Actions.ColorPresetName(ConsoleColors.GetColorPresetIndex()) + ")",
+            Setting.ColorScheme => indent + Lang.F("Color scheme: {0} (Enter: Select/Edit)",
+                ColorSchemes.DisplayName(ConsoleColors.Current.Name)),
             Setting.AutoSize => Check(Init.AutoSize) + DialogText.ConfigAutoSize,
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
@@ -364,10 +363,11 @@ internal static class StartMenu
             {
                 _selected = settings[0];
             }
-            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && setting == Setting.ColorScheme)
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow &&
+                     setting == Setting.ColorScheme)
             {
-                // Pick the color scheme in a box, or open the editor from it (l and h select the next and previous)
-                Actions.PickColorScheme();
+                // The color schemes: select and edit them
+                SchemeEditor.Show();
                 return TabResult.Redraw;
             }
             else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && setting == Setting.Language)
@@ -382,10 +382,9 @@ internal static class StartMenu
                 _selected = setting;
                 return TabResult.Redraw;
             }
-            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow &&
-                     setting is Setting.ColorScheme or Setting.Language)
+            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow && setting is Setting.Language)
             {
-                // The previous color scheme or language
+                // The previous language
                 ChangeSetting(setting, false);
                 return TabResult.Redraw;
             }
@@ -416,12 +415,6 @@ internal static class StartMenu
             case Setting.Language:
                 Lang.Set(Lang.Next(next));
                 break;
-            case Setting.ColorScheme:
-            {
-                var count = Actions.ColorPresetCount;
-                Actions.SetColorPreset((ConsoleColors.GetColorPresetIndex() + (next ? 1 : count - 1)) % count);
-                break;
-            }
             case Setting.AutoSize:
                 Init.AutoSize = !Init.AutoSize;
                 // Turned off: back to the default size

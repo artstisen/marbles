@@ -1,125 +1,382 @@
 ﻿namespace Marbles;
 
 /// <summary>
-/// The color scheme editor: a page of its own, opened from the Configuration page and with ":scheme" in the main
-/// menu. It is a frame with two tabs (TabFrame): Colors, where a preset is chosen at the top and the colors of each
-/// group below it are picked from a list, and Preview, a small screen in the colors being edited (also a frame
-/// with tabs). Nothing is used until it is saved.
+/// The color schemes: a page of their own, opened from the Configuration page and with ":scheme" in the main
+/// menu. It is a frame with three tabs (TabFrame): Schemes, where a scheme is selected and used (the built-in
+/// ones and the ones saved by the user), Colors, where the colors of the scheme are picked (on two pages), and
+/// Preview, a small screen in the colors being edited. Edited colors are only used when they are saved, as a
+/// scheme of the user's own (a file in the directory "colorschemes"), which is then the scheme in use.
 /// </summary>
 internal static class SchemeEditor
 {
-    // A group of the color scheme: its name, the style it is shown in, and where its colors are kept among the
-    // colors being edited (the text, and for the inverted styles the background; -1 if there is none). The tabs
-    // have colors of their own, which by default are those of the frames (Tab)
-    private sealed record Group(string Name, ConsoleColors.ColorPreset Style, int Color, int Background,
-        bool Tab = false);
+    // A group of colors: its name, its color (for the inverted ones the background) and the text on it, and the
+    // style its sample is shown in
+    private sealed record Group(string Name, ColorItem Color, ColorItem? Text, ConsoleColors.ColorPreset Style);
 
-    private static Group[] Groups => new[]
-    {
-        new Group(Lang.T("Text"), ConsoleColors.ColorPreset.Normal, 1, -1),
-        new Group(Lang.T("Logo and labels"), ConsoleColors.ColorPreset.HeaderColor, 2, -1),
-        new Group(Lang.T("Dividers"), ConsoleColors.ColorPreset.Divider, 3, -1),
-        new Group(Lang.T("Favorites"), ConsoleColors.ColorPreset.Favorites, 4, -1),
-        new Group(Lang.T("Preview title"), ConsoleColors.ColorPreset.PreviewTitle, 5, -1),
-        new Group(Lang.T("Editor title"), ConsoleColors.ColorPreset.EditorTitle, 6, -1),
-        new Group(Lang.T("Highlight"), ConsoleColors.ColorPreset.HighlightInverted, 8, 7),
-        new Group(Lang.T("Attention"), ConsoleColors.ColorPreset.AttentionInverted, 10, 9),
-        new Group(Lang.T("Warning"), ConsoleColors.ColorPreset.WarningInverted, 12, 11),
-        new Group(Lang.T("Tabs"), ConsoleColors.ColorPreset.Divider, -1, -1, true),
-        // The background of the whole screen (or the one of the terminal)
-        new Group(Lang.T("Background"), ConsoleColors.ColorPreset.Normal, -1, 0)
-    };
+    // The groups on the two pages of the Colors tab
+    private static Group[] GroupsOf(int page) => page == 0
+        ? new[]
+        {
+            new Group(Lang.T("Text"), ColorItem.Text, null, ConsoleColors.ColorPreset.Normal),
+            new Group(Lang.T("Logo and labels"), ColorItem.Logo, null, ConsoleColors.ColorPreset.HeaderColor),
+            new Group(Lang.T("Dividers"), ColorItem.Dividers, null, ConsoleColors.ColorPreset.Divider),
+            new Group(Lang.T("Favorites"), ColorItem.Favorites, null, ConsoleColors.ColorPreset.Favorites),
+            new Group(Lang.T("Preview title"), ColorItem.PreviewTitle, null, ConsoleColors.ColorPreset.PreviewTitle),
+            new Group(Lang.T("Editor title"), ColorItem.EditorTitle, null, ConsoleColors.ColorPreset.EditorTitle),
+            // The background of the whole screen (or the one of the terminal)
+            new Group(Lang.T("Background"), ColorItem.Background, null, ConsoleColors.ColorPreset.Normal)
+        }
+        : new[]
+        {
+            new Group(Lang.T("Highlight"), ColorItem.Highlight, ColorItem.HighlightText,
+                ConsoleColors.ColorPreset.HighlightInverted),
+            new Group(Lang.T("Attention"), ColorItem.Attention, ColorItem.AttentionText,
+                ConsoleColors.ColorPreset.AttentionInverted),
+            new Group(Lang.T("Warning"), ColorItem.Warning, ColorItem.WarningText,
+                ConsoleColors.ColorPreset.WarningInverted),
+            new Group(Lang.T("Tab frames"), ColorItem.TabFrames, null, ConsoleColors.ColorPreset.TabFrame),
+            new Group(Lang.T("Box borders"), ColorItem.BoxBorders, null, ConsoleColors.ColorPreset.BoxBorder),
+            new Group(Lang.T("Tabs"), ColorItem.Tab, ColorItem.TabText, ConsoleColors.ColorPreset.Normal)
+        };
 
     private const int TabRow = 2; // Below the top bar
     private const int PickerLeft = 52;
 
-    private static int _preset; // The preset the colors are based on
-    private static bool _changed;
+    private static bool _changed; // The colors being edited are not saved
+    private static bool _selectInUse; // The list of schemes selects the one in use when it is drawn again
+
+    private static ColorScheme Preview => ConsoleColors.Preview;
 
     /// <summary>
-    /// Edit the color scheme until it is saved or closed. The page it was opened from must be drawn again afterwards
+    /// Select and edit the color schemes until the page is closed. The page it was opened from must be drawn
+    /// again afterwards
     /// </summary>
     internal static void Show()
     {
-        _preset = ConsoleColors.GetColorPresetIndex();
+        ConsoleColors.Preview = ConsoleColors.Current.Clone();
         _changed = false;
-        ConsoleColors.InitializePreviewColors();
         var frame = new TabFrame(TabRow, () =>
             {
                 Menu.WriteModeLabel(DialogText.CaptionsColorScheme, string.Empty, 0);
                 Menu.WriteNameInTopBar(false);
             },
-            new TabItem(() => Lang.T("Colors"), new ColorsPage()),
+            new TabItem(() => Lang.T("Schemes"), new SchemesPage()),
+            new TabItem(() => Lang.T("Colors"), new ColorsPage(0), new ColorsPage(1)),
             new TabItem(() => Lang.T("Preview"), new PreviewPage()));
         frame.Run();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.ClearScreen();
     }
 
-    // Esc or Q: changes are only kept when saved
+    /// <summary>
+    /// Use a color scheme by its name (":scheme Name")
+    /// </summary>
+    /// <returns>False if there is no scheme with the name</returns>
+    internal static bool UseByName(string name)
+    {
+        var scheme = ColorSchemes.Load(name);
+        if (scheme == null) return false;
+        Use(scheme);
+        return true;
+    }
+
+    // Use a scheme: it is shown at once, and its name is saved in the settings
+    private static void Use(ColorScheme scheme)
+    {
+        ConsoleColors.Use(scheme);
+        FileIo.SaveSettings();
+        _selectInUse = true;
+    }
+
+    // Esc or Q: changes that are not saved are asked about
     private static TabResult Close()
     {
-        if (_changed && ChoiceBox.Confirm(DialogText.CaptionsColorScheme, DialogText.SaveChangesQuestion,
-                string.Empty, false))
+        if (!_changed) return TabResult.Close;
+        switch (Menu.YesNoCancelPrompt(DialogText.CaptionsColorScheme, DialogText.SaveChangesQuestion, string.Empty,
+                    false))
         {
-            Save();
+            case 1:
+                return Save() ? TabResult.Close : TabResult.Redraw;
+            case 2:
+                return TabResult.Close;
+            default:
+                return TabResult.Redraw;
         }
-
-        return TabResult.Close;
     }
 
-    // Start over from the colors of a preset
-    private static void UsePreset(int preset)
+    // Save the colors being edited as a scheme of the user's own (the name is asked for), and use it
+    private static bool Save()
     {
-        _preset = preset;
-        ConsoleColors.PreviewPreset(Actions.ColorPresetAt(preset));
-        _changed = true;
-    }
+        var suggested = ColorSchemes.IsBuiltIn(Preview.Name) ? string.Empty : Preview.Name;
+        while (true)
+        {
+            ChoiceBox.Forget();
+            var name = ChoiceBox.AskText(DialogText.SchemeSaveCaption, DialogText.SchemeSavePrompt,
+                DialogText.NameColon, suggested);
+            if (name == null) return false;
+            suggested = name;
+            if (!ColorSchemes.IsValidName(name))
+            {
+                ChoiceBox.Forget();
+                ChoiceBox.Message(DialogText.SchemeSaveCaption,
+                    ColorSchemes.IsBuiltIn(name) ? DialogText.SchemeNameBuiltIn : DialogText.SchemeNameInvalid,
+                    string.Empty);
+                continue;
+            }
 
-    private static void Save()
-    {
-        ConsoleColors.SavePreviewToCurrentColors();
-        ConsoleColors.SetColorPresetIndex(_preset);
-        FileIo.SaveSettings();
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            // Another scheme of the user's own with the name is replaced, if the user wants that
+            if (ColorSchemes.Exists(name) && !name.Equals(Preview.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                ChoiceBox.Forget();
+                if (!ChoiceBox.Confirm(DialogText.SchemeSaveCaption,
+                        Lang.F("Replace the color scheme \"{0}\"?", name), string.Empty, true))
+                {
+                    continue;
+                }
+            }
+
+            Preview.Name = name.Trim();
+            var status = ColorSchemes.Save(Preview);
+            if (status != DialogText.Success)
+            {
+                ChoiceBox.Forget();
+                ChoiceBox.Message(DialogText.SchemeSaveCaption, status, string.Empty);
+                return false;
+            }
+
+            Use(Preview);
+            _changed = false;
+            return true;
+        }
     }
 
     /// <summary>
-    /// The Colors tab: the preset at the top, and the groups of colors below it
+    /// The Schemes tab: the built-in schemes and the ones of the user's own, the one in use marked
+    /// </summary>
+    private sealed class SchemesPage : ITabPage
+    {
+        private int _selected = -1;
+        private int _scroll;
+        private int _shown = -1;
+
+        public string Title => Lang.T("Schemes");
+        public string Keys => DialogText.SchemeListKeys;
+        public Tools.HelpTopic Help => Tools.HelpTopic.ColorScheme;
+
+        private static List<string> Names => ColorSchemes.AllNames();
+
+        // The rows of the list (the last row of the page tells where the schemes are kept)
+        private static int Rows(TabArea area) => Math.Max(1, area.Height - 2);
+
+        public void Draw(TabArea area, bool full)
+        {
+            var names = Names;
+            if (_selectInUse)
+            {
+                _selected = -1;
+                _selectInUse = false;
+            }
+
+            if (_selected < 0)
+            {
+                // The scheme in use is selected from the start
+                _selected = Math.Max(0, names.FindIndex(name =>
+                    name.Equals(ConsoleColors.Current.Name, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            _selected = Math.Clamp(_selected, 0, Math.Max(0, names.Count - 1));
+            var rows = Rows(area);
+            var scroll = Math.Clamp(_scroll, Math.Max(0, _selected - rows + 1), _selected);
+            if (scroll != _scroll || full)
+            {
+                _scroll = scroll;
+                var builtIn = ColorScheme.BuiltIn.Count;
+                for (var row = 0; row < rows; row++)
+                {
+                    var i = _scroll + row;
+                    Tools.SetCursorEx(area.Top + row, area.Left);
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                    Console.Write(new string(' ', area.Width));
+                    if (i >= names.Count) continue;
+                    Tools.SetCursorEx(area.Top + row, area.Left + 3);
+                    var inUse = names[i].Equals(ConsoleColors.Current.Name, StringComparison.OrdinalIgnoreCase);
+                    Console.Write((inUse ? "[x] " : "[ ] ") + ColorSchemes.DisplayName(names[i]));
+                    if (i < builtIn)
+                    {
+                        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                        Console.Write("  " + Lang.T("(built-in)"));
+                        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                    }
+                }
+
+                // Where the schemes of the user's own are kept
+                Tools.SetCursorEx(area.Top + area.Height - 1, area.Left + 3);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                Console.Write(Tools.TruncateString(Lang.F("Your own schemes are saved in {0}",
+                    Path.Combine(FileIo.GetDataDirectoryName(), ColorSchemes.DirectoryName)), area.Width - 3, true));
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                _shown = -1;
+            }
+
+            // The pointer
+            if (_shown >= 0 && _shown != _selected)
+            {
+                Tools.SetCursorEx(area.Top + _shown - _scroll, area.Left);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Console.Write("  ");
+            }
+
+            Tools.SetCursorEx(area.Top + _selected - _scroll, area.Left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            Console.Write("->");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            _shown = _selected;
+        }
+
+        public TabResult HandleKey(ConsoleKeyInfo key)
+        {
+            var names = Names;
+            var navigation = Keyboard.ToNavigationKey(key).Key;
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return Close();
+            if (key.Key == ConsoleKey.S)
+            {
+                if (_changed) Save();
+                return TabResult.Redraw;
+            }
+
+            if (navigation == ConsoleKey.DownArrow)
+            {
+                _selected = Math.Min(_selected + 1, names.Count - 1);
+            }
+            else if (navigation == ConsoleKey.UpArrow)
+            {
+                _selected = Math.Max(_selected - 1, 0);
+            }
+            else if (key.KeyChar == 'G')
+            {
+                _selected = names.Count - 1;
+            }
+            else if (key.KeyChar == 'g')
+            {
+                if (Console.ReadKey(true).KeyChar == 'g') _selected = 0;
+            }
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar || navigation == ConsoleKey.RightArrow)
+            {
+                return UseSelected(names[_selected]);
+            }
+            else if (key.Key == ConsoleKey.D)
+            {
+                return Delete(names[_selected]);
+            }
+
+            return TabResult.None;
+        }
+
+        // Use the selected scheme (its colors are then the ones edited). Changes that are not saved are given up
+        // if the user wants that
+        private static TabResult UseSelected(string name)
+        {
+            if (_changed)
+            {
+                ChoiceBox.Forget();
+                if (!ChoiceBox.Confirm(DialogText.CaptionsColorScheme, DialogText.SchemeDiscardQuestion, string.Empty,
+                        true))
+                {
+                    return TabResult.Redraw;
+                }
+            }
+
+            var scheme = ColorSchemes.Load(name);
+            if (scheme == null) return TabResult.Redraw;
+            Use(scheme);
+            ConsoleColors.Preview = scheme.Clone();
+            _changed = false;
+            return TabResult.Redraw;
+        }
+
+        // Delete a scheme of the user's own (the built-in ones cannot be deleted)
+        private TabResult Delete(string name)
+        {
+            ChoiceBox.Forget();
+            if (ColorSchemes.IsBuiltIn(name))
+            {
+                ChoiceBox.Message(DialogText.CaptionsColorScheme, DialogText.SchemeBuiltInDelete, string.Empty);
+                return TabResult.Redraw;
+            }
+
+            if (!ChoiceBox.Confirm(DialogText.CaptionsColorScheme, Lang.F("Delete the color scheme \"{0}\"?", name),
+                    DialogText.SchemeDeleteNote, true))
+            {
+                return TabResult.Redraw;
+            }
+
+            var status = ColorSchemes.Delete(name);
+            if (status != DialogText.Success)
+            {
+                ChoiceBox.Forget();
+                ChoiceBox.Message(DialogText.CaptionsColorScheme, status, string.Empty);
+                return TabResult.Redraw;
+            }
+
+            // The scheme in use was deleted: the default is used
+            if (name.Equals(ConsoleColors.Current.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                Use(ColorScheme.Default);
+                if (!_changed) ConsoleColors.Preview = ColorScheme.Default;
+            }
+
+            _selected = Math.Max(0, _selected - 1);
+            return TabResult.Redraw;
+        }
+    }
+
+    /// <summary>
+    /// A page of the Colors tab: the name of the scheme being edited at the top, and the groups of colors below it
     /// </summary>
     private sealed class ColorsPage : ITabPage
     {
-        private int _selected = 1; // 0 is the preset, 1 and on the groups
-        private int _shown = -1; // The row with the pointer on the screen (-1: none)
+        private readonly int _page;
+        private int _selected;
+        private int _shown = -1;
 
-        public string Title => Lang.T("Colors");
+        internal ColorsPage(int page)
+        {
+            _page = page;
+        }
+
+        public string Title => Lang.F("Page {0}", _page + 1);
         public string Keys => DialogText.SchemeEditorKeys;
         public Tools.HelpTopic Help => Tools.HelpTopic.ColorScheme;
 
-        // The row of the preset (0) or of a group (1 and on)
-        private static int RowOf(TabArea area, int selected) => area.Top + (selected == 0 ? 0 : selected + 1);
+        private Group[] Groups => GroupsOf(_page);
+
+        // The rows that can be selected: the groups, and on the second page the highlight of the tabs (on/off)
+        private int Count => Groups.Length + (_page == 1 ? 1 : 0);
+        private bool OnHighlight => _page == 1 && _selected == Groups.Length;
+
+        private static int RowOf(TabArea area, int selected) => area.Top + 2 + selected;
 
         public void Draw(TabArea area, bool full)
         {
             if (full)
             {
-                // The preset the colors are based on
+                // The scheme being edited
                 Tools.SetCursorEx(area.Top, area.Left + 3);
-                Console.Write(Tools.TruncateString(Lang.F("Preset: {0} of {1} ({2})", _preset + 1,
-                    Actions.ColorPresetCount, Actions.ColorPresetName(_preset)) + "  " +
-                    Lang.T("(h/l: the previous/next)"), area.Width - 3, true));
+                Console.Write(Tools.TruncateString(
+                    Lang.F("Color scheme: {0}", ColorSchemes.DisplayName(Preview.Name)) +
+                    (_changed ? "  " + Lang.T("(changed, S: save)") : string.Empty), area.Width - 3, true));
 
                 // The groups: name, sample and colors
                 var groups = Groups;
-                var nameWidth = groups.Max(g => TextMetrics.WidthOf(g.Name)) + 2;
+                var nameWidth = GroupsOf(0).Concat(GroupsOf(1)).Max(g => TextMetrics.WidthOf(g.Name)) + 2;
                 var sample = " " + Lang.T("Sample") + " ";
                 for (var i = 0; i < groups.Length; i++)
                 {
                     var group = groups[i];
-                    Tools.SetCursorEx(RowOf(area, i + 1), area.Left + 3);
+                    Tools.SetCursorEx(RowOf(area, i), area.Left + 3);
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                     Console.Write(group.Name + new string(' ', nameWidth - TextMetrics.WidthOf(group.Name)));
-                    if (group.Tab) ConsoleColors.SetTabColors(true);
+                    if (group.Color == ColorItem.Tab) ConsoleColors.SetTabColors(true);
                     else ConsoleColors.SetColorsFromPreview(group.Style);
                     Console.Write(sample);
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -127,7 +384,14 @@ internal static class SchemeEditor
                     Console.Write(Tools.TruncateString("  " + ColorsOf(group), Math.Max(0, room), true));
                 }
 
-                if (ConsoleColors.Monochrome && area.Height > groups.Length + 3)
+                if (_page == 1)
+                {
+                    // The highlight of the tab shown, on or off
+                    Tools.SetCursorEx(RowOf(area, groups.Length), area.Left + 3);
+                    Console.Write((Preview.TabHighlight ? "[x] " : "[ ] ") + Lang.T("Highlight the tab shown"));
+                }
+
+                if (ConsoleColors.Monochrome && area.Height > Count + 3)
                 {
                     Tools.SetCursorEx(area.Top + area.Height - 1, area.Left + 3);
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
@@ -156,12 +420,12 @@ internal static class SchemeEditor
         public TabResult HandleKey(ConsoleKeyInfo key)
         {
             var navigation = Keyboard.ToNavigationKey(key).Key;
-            var count = Groups.Length + 1;
+            var count = Count;
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return Close();
             if (key.Key == ConsoleKey.S)
             {
                 Save();
-                return TabResult.Close;
+                return TabResult.Redraw;
             }
 
             if (navigation == ConsoleKey.DownArrow)
@@ -182,26 +446,27 @@ internal static class SchemeEditor
             }
             else if (key.Key == ConsoleKey.E)
             {
-                // Back to the colors of the preset
-                UsePreset(_preset);
+                // Back to the colors of the scheme in use
+                ConsoleColors.Preview = ConsoleColors.Current.Clone();
+                _changed = false;
                 return TabResult.Redraw;
             }
-            else if (_selected == 0 && navigation is ConsoleKey.RightArrow or ConsoleKey.LeftArrow ||
-                     _selected == 0 && key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar)
+            else if (OnHighlight && (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar ||
+                                     navigation == ConsoleKey.RightArrow))
             {
-                var presets = Actions.ColorPresetCount;
-                UsePreset((_preset + (navigation == ConsoleKey.LeftArrow ? presets - 1 : 1)) % presets);
+                Preview.TabHighlight = !Preview.TabHighlight;
+                _changed = true;
                 return TabResult.Redraw;
             }
-            else if (_selected > 0 &&
+            else if (!OnHighlight &&
                      (navigation == ConsoleKey.RightArrow || key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar))
             {
-                Pick(Groups[_selected - 1], false);
+                Pick(Groups[_selected].Color);
                 return TabResult.Redraw;
             }
-            else if (_selected > 0 && key.Key == ConsoleKey.T)
+            else if (!OnHighlight && key.Key == ConsoleKey.T && Groups[_selected].Text is { } text)
             {
-                Pick(Groups[_selected - 1], true);
+                Pick(text);
                 return TabResult.Redraw;
             }
 
@@ -210,7 +475,7 @@ internal static class SchemeEditor
     }
 
     /// <summary>
-    /// The Preview tab: a small screen in the colors being edited, with a frame with tabs
+    /// The Preview tab: a small screen in the colors being edited, with a frame with tabs and a box
     /// </summary>
     private sealed class PreviewPage : ITabPage
     {
@@ -228,113 +493,92 @@ internal static class SchemeEditor
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return Close();
             if (key.Key != ConsoleKey.S) return TabResult.None;
             Save();
-            return TabResult.Close;
+            return TabResult.Redraw;
         }
     }
 
-    // Pick a color of a group from the list of colors: its color (the text color, or the background of an inverted
-    // style), or with "textColor" the text of an inverted style
-    private static void Pick(Group group, bool textColor)
+    // Pick a color from the list of colors. The colors that would not be visible (on their background, or with
+    // the text on them) cannot be picked. [Default] is there for the colors that can have it
+    private static void Pick(ColorItem item)
     {
-        if (group.Tab)
+        var caption = item switch
         {
-            PickTabColor(textColor);
-            return;
-        }
+            ColorItem.Background => DialogText.BackgroundCaption,
+            ColorItem.HighlightText or ColorItem.AttentionText or ColorItem.WarningText or ColorItem.TabText =>
+                DialogText.TextColorCaption,
+            _ => DialogText.ColorCaption
+        };
 
-        var isInverted = group.Color >= 0 && group.Background >= 0;
-        if (textColor && !isInverted) return;
-        var index = isInverted && !textColor ? group.Background : group.Color >= 0 ? group.Color : group.Background;
-        if (index == 0)
+        // The colors are shown as they would look
+        void Sample(ConsoleColor color)
         {
-            // The background of the screen: [Default] is the background of the terminal. The colors are shown with
-            // the text on them
-            if (ColorPicker.Pick(DialogText.BackgroundCaption, PickerLeft, true, ConsoleColors.PreviewBackground,
-                    color => ConsoleColors.IsPreviewColorAllowed(0, color), color =>
-                    {
-                        Console.BackgroundColor = color;
-                        Console.ForegroundColor = ConsoleColors.GetPreviewColor(1);
-                    }, out var background))
+            var scheme = Preview.Clone();
+            scheme.Set(item, color);
+            switch (item)
             {
-                ConsoleColors.PreviewBackground = background;
-                _changed = true;
+                case ColorItem.Highlight or ColorItem.HighlightText:
+                    Console.BackgroundColor = scheme.Highlight;
+                    Console.ForegroundColor = scheme.HighlightText;
+                    break;
+                case ColorItem.Attention or ColorItem.AttentionText:
+                    Console.BackgroundColor = scheme.Attention;
+                    Console.ForegroundColor = scheme.AttentionText;
+                    break;
+                case ColorItem.Warning or ColorItem.WarningText:
+                    Console.BackgroundColor = scheme.Warning;
+                    Console.ForegroundColor = scheme.WarningText;
+                    break;
+                case ColorItem.Tab or ColorItem.TabText:
+                    Console.BackgroundColor = scheme.TabColor;
+                    Console.ForegroundColor = scheme.TabTextColor;
+                    break;
+                case ColorItem.Background:
+                    Console.BackgroundColor = color;
+                    Console.ForegroundColor = scheme.Text;
+                    break;
+                default:
+                    Console.BackgroundColor = scheme.BackgroundColor;
+                    Console.ForegroundColor = color;
+                    break;
             }
-
-            return;
         }
 
-        Action<ConsoleColor>? sample = null;
-        if (isInverted)
-        {
-            // The text is shown on the background it will have
-            sample = color =>
-            {
-                Console.BackgroundColor = textColor ? ConsoleColors.GetPreviewColor(group.Background) : color;
-                Console.ForegroundColor = textColor ? color : ConsoleColors.GetPreviewColor(group.Color);
-            };
-        }
-
-        if (ColorPicker.Pick(textColor ? DialogText.TextColorCaption : DialogText.ColorCaption, PickerLeft, false,
-                ConsoleColors.GetPreviewColor(index), color => ConsoleColors.IsPreviewColorAllowed(index, color),
-                sample, out var picked) && picked != null)
-        {
-            ConsoleColors.SetPreviewColor(index, picked.Value);
-            _changed = true;
-        }
-    }
-
-    // The colors of the tab shown: its background (l, [Default]: the color of the frames) or its text (T,
-    // [Default]: the background of the screen). The text cannot have the color of the background
-    private static void PickTabColor(bool textColor)
-    {
-        var (background, text) = ConsoleColors.TabColors(true);
-        var current = textColor ? ConsoleColors.PreviewTabTextColor : ConsoleColors.PreviewTabColor;
-        if (!ColorPicker.Pick(textColor ? DialogText.TextColorCaption : DialogText.ColorCaption, PickerLeft, true,
-                current, color => color != (textColor ? background : text), color =>
-                {
-                    Console.BackgroundColor = textColor ? background : color;
-                    Console.ForegroundColor = textColor ? color : text;
-                }, out var picked))
+        if (!ColorPicker.Pick(caption, PickerLeft, ColorScheme.CanBeDefault(item), Preview.Get(item),
+                color => Preview.Allowed(item, color), Sample, out var picked))
         {
             return;
         }
 
-        if (textColor) ConsoleColors.PreviewTabTextColor = picked;
-        else ConsoleColors.PreviewTabColor = picked;
+        if (picked == null && !ColorScheme.CanBeDefault(item)) return;
+        Preview.Set(item, picked);
         _changed = true;
     }
 
     // The names of the colors of a group
     private static string ColorsOf(Group group)
     {
-        if (group.Tab)
+        string Name(ColorItem item)
         {
-            // By default the colors of the dividers inverted
-            if (ConsoleColors.PreviewTabColor == null && ConsoleColors.PreviewTabTextColor == null)
+            if (Preview.Get(item) is { } color) return ColorPicker.Name(color);
+            return item switch
             {
-                return Lang.T("[Default]: the dividers inverted");
-            }
-
-            return Lang.F("{0}, background {1}",
-                ConsoleColors.PreviewTabTextColor is { } tabText ? ColorPicker.Name(tabText) : DialogText.ColorDefault,
-                ConsoleColors.PreviewTabColor is { } tabColor ? ColorPicker.Name(tabColor) : DialogText.ColorDefault);
+                ColorItem.TabFrames or ColorItem.BoxBorders => Lang.T("[Default]: the dividers"),
+                _ => DialogText.ColorDefault
+            };
         }
 
-        if (group.Color < 0)
+        if (group.Color == ColorItem.Tab && Preview.Tab == null && Preview.TabText == null)
         {
-            return ConsoleColors.PreviewBackground is { } background
-                ? ColorPicker.Name(background)
-                : DialogText.ColorDefault;
+            return Lang.T("[Default]: the tab frames inverted");
         }
 
-        var text = ColorPicker.Name(ConsoleColors.GetPreviewColor(group.Color));
-        return group.Background < 0
-            ? text
-            : Lang.F("{0}, background {1}", text, ColorPicker.Name(ConsoleColors.GetPreviewColor(group.Background)));
+        return group.Text is { } text
+            ? Lang.F("{0}, background {1}", Name(text), Name(group.Color))
+            : Name(group.Color);
     }
 
-    // A small screen in the colors being edited, on their background: the colors of the groups, and a frame with
-    // tabs (the tab and sub-tab shown in the colors of the tabs)
+    // A small screen in the colors being edited, on their background: the colors of the groups, a frame with
+    // tabs, and a box with its title in a tab
     private static void DrawPreview(TabArea area)
     {
         var left = area.Left;
@@ -383,33 +627,60 @@ internal static class SchemeEditor
         Part(ConsoleColors.ColorPreset.NormalInverted, " " + Lang.T("Key") + " ");
         Part(ConsoleColors.ColorPreset.Normal, " " + Lang.T("Text on the background"));
 
-        // A frame with tabs, as the start page and this editor
+        // A frame with tabs (in the color of the tab frames), as the start page and this page
         if (area.Height < 12) return;
         var names = new[] { Lang.F("Tab {0}", 1), Lang.F("Tab {0}", 2) };
-        var frameWidth = Math.Min(48, width - 2);
+        var frameWidth = Math.Min(44, width / 2 + 4);
         var (tops, labels, starts) = TabLayout.Tabs(names, AsciiStyles.GetTopCorner());
         var x = left + 1;
         Tools.SetCursorEx(top + 6, x);
-        Part(ConsoleColors.ColorPreset.Divider, tops);
+        Part(ConsoleColors.ColorPreset.TabFrame, tops);
         Tools.SetCursorEx(top + 7, x);
-        Part(ConsoleColors.ColorPreset.Divider, labels);
+        Part(ConsoleColors.ColorPreset.TabFrame, labels);
         Tools.SetCursorEx(top + 7, x + starts[0] - 1);
         Tab(" " + names[0] + " ");
         Tools.SetCursorEx(top + 7, x + starts[1] - 1);
         Part(ConsoleColors.ColorPreset.Normal, " " + names[1] + " ");
         Tools.SetCursorEx(top + 8, x);
-        Part(ConsoleColors.ColorPreset.Divider,
+        Part(ConsoleColors.ColorPreset.TabFrame,
             TabLayout.Edge(names, 0, frameWidth, AsciiStyles.GetTopCorner(), AsciiStyles.GetBottomCorner()));
         Tools.SetCursorEx(top + 9, x);
-        Part(ConsoleColors.ColorPreset.Divider, "|");
+        Part(ConsoleColors.ColorPreset.TabFrame, "|");
         Part(ConsoleColors.ColorPreset.Normal, " ");
         Tab(" " + Lang.F("Page {0}", 1) + " ");
         Part(ConsoleColors.ColorPreset.Normal, "  " + Lang.F("Page {0}", 2) + " ");
         Tools.SetCursorEx(top + 9, x + frameWidth - 1);
-        Part(ConsoleColors.ColorPreset.Divider, "|");
+        Part(ConsoleColors.ColorPreset.TabFrame, "|");
         Tools.SetCursorEx(top + 10, x);
-        Part(ConsoleColors.ColorPreset.Divider,
+        Part(ConsoleColors.ColorPreset.TabFrame,
             AsciiStyles.GetBottomCorner() + new string('-', frameWidth - 2) + AsciiStyles.GetBottomCorner());
+
+        // A box with its title in a tab (in the color of the box borders), to the right of it
+        var boxLeft = x + frameWidth + 2;
+        var inner = Math.Min(24, left + width - boxLeft - 3);
+        if (inner < 12) return;
+        var title = Tools.TruncateString(Lang.T("Box"), inner - 4, true);
+        var titleWidth = TextMetrics.WidthOf(title);
+        Tools.SetCursorEx(top + 6, boxLeft);
+        Part(ConsoleColors.ColorPreset.BoxBorder,
+            AsciiStyles.GetTopCorner() + new string('-', titleWidth + 2) + AsciiStyles.GetTopCorner());
+        Tools.SetCursorEx(top + 7, boxLeft);
+        Part(ConsoleColors.ColorPreset.BoxBorder, "|");
+        Tab(" " + title + " ");
+        Part(ConsoleColors.ColorPreset.BoxBorder, AsciiStyles.GetBottomCorner() +
+                                                 new string('-', Math.Max(0, inner - titleWidth - 3)) +
+                                                 AsciiStyles.GetTopCorner());
+        for (var row = 8; row <= 9; row++)
+        {
+            Tools.SetCursorEx(top + row, boxLeft);
+            Part(ConsoleColors.ColorPreset.BoxBorder, "|");
+            Part(ConsoleColors.ColorPreset.Normal, (row == 8 ? "  " + Lang.T("Text") : string.Empty).PadRight(inner));
+            Part(ConsoleColors.ColorPreset.BoxBorder, "|");
+        }
+
+        Tools.SetCursorEx(top + 10, boxLeft);
+        Part(ConsoleColors.ColorPreset.BoxBorder,
+            AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 }

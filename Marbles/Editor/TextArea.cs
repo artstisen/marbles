@@ -723,13 +723,13 @@ public class TextArea
         for (var i = 0; i < rows.Count; i++)
         {
             Tools.SetCursorEx(_top + firstRow + 1 + i, column);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
             ConsoleColors.SetColors(i == selected
                 ? ConsoleColors.ColorPreset.HighlightInverted
                 : ConsoleColors.ColorPreset.Normal);
             Console.Write(" " + rows[i] + new string(' ', inner - 1 - TextMetrics.WidthOf(rows[i])));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
         }
 
@@ -799,15 +799,15 @@ public class TextArea
         // The tab of the title, the frame and the question
         var frameRow = firstRow + 1;
         ChoiceBox.DrawTitleTab(_top + firstRow, column, inner, DialogText.Save);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
         for (var row = 1; row < frameHeight - 1; row++)
         {
             Tools.SetCursorEx(_top + frameRow + row, column);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(new string(' ', inner));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
         }
 

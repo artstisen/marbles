@@ -49,7 +49,7 @@ internal static class ColorPicker
         for (var row = 0; row < rows; row++)
         {
             Tools.SetCursorEx(BoxTop + 1 + row, left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             var number = row < first ? "  " : (row - first + 1).ToString().PadLeft(2);
@@ -92,7 +92,7 @@ internal static class ColorPicker
             Console.Write(name);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(new string(' ', BoxWidth - 8 - name.Length));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
         }
 
