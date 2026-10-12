@@ -223,16 +223,28 @@ internal static class StartMenu
         };
     }
 
+    // The settings are shown on two pages: the start page and the display, and the editor and the rest
+    private static int PageOf(Setting setting) => setting >= Setting.LineNumbers ? 1 : 0;
+
+    private const int PageCount = 2;
+
     // The settings of the start page and some basic settings. A change is saved in the settings file at once
     private static void Configure()
     {
         var selected = 0;
         // The page is drawn when something has changed. When the selection moves only the pointer is drawn
         var redraw = true;
+        var shownPage = -1;
         while (true)
         {
             var settings = Settings();
             selected = Math.Clamp(selected, 0, settings.Count - 1);
+            // The page of the selected setting, and where its settings are in the list
+            var page = PageOf(settings[selected]);
+            var first = settings.FindIndex(setting => PageOf(setting) == page);
+            var last = settings.FindLastIndex(setting => PageOf(setting) == page);
+            if (page != shownPage) redraw = true;
+            shownPage = page;
             if (redraw)
             {
                 Init.ApplyAutoSize();
@@ -243,13 +255,19 @@ internal static class StartMenu
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
                 Console.Write(DialogText.StartConfiguration + ":");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                for (var i = 0; i < settings.Count; i++)
+                for (var i = first; i <= last; i++)
                 {
                     // The basic settings follow the ones of the start page after a blank row
-                    Tools.SetCursorEx(SettingRow(settings, i), Left + 2);
+                    Tools.SetCursorEx(SettingRow(settings, i, first, last), Left + 2);
                     Console.Write(" " + SettingText(settings[i]));
                 }
 
+                // The page, above the keys at the right
+                var pageText = Lang.F("Page {0} of {1}", page + 1, PageCount) + " (Tab)";
+                Tools.SetCursorEx(Init.LineCount - 2, Math.Max(0, Init.LineWidth - 2 - TextMetrics.WidthOf(pageText)));
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                Console.Write(pageText);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Tools.SetCursorEx(Init.LineCount - 1, 0);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 Console.Write(" " + DialogText.StartConfigKeys);
@@ -257,9 +275,9 @@ internal static class StartMenu
             }
 
             Tools.HideCursor();
-            for (var i = 0; i < settings.Count; i++)
+            for (var i = first; i <= last; i++)
             {
-                Tools.SetCursorEx(SettingRow(settings, i), Left);
+                Tools.SetCursorEx(SettingRow(settings, i, first, last), Left);
                 if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
                 Console.Write(i == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -281,9 +299,17 @@ internal static class StartMenu
                 selected = (selected + settings.Count - 1) % settings.Count;
                 redraw = false;
             }
-            else if (key.KeyChar >= '1' && key.KeyChar - '1' < settings.Count)
+            else if (key.KeyChar >= '1' && key.KeyChar - '1' <= last - first)
             {
-                selected = key.KeyChar - '1';
+                // The number of a setting on the page
+                selected = first + key.KeyChar - '1';
+                redraw = false;
+            }
+            else if (key.Key == ConsoleKey.Tab)
+            {
+                // The first setting of the other page
+                var other = (page + 1) % PageCount;
+                selected = Math.Max(0, settings.FindIndex(setting => PageOf(setting) == other));
                 redraw = false;
             }
             else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
@@ -328,11 +354,12 @@ internal static class StartMenu
         }
     }
 
-    private static int SettingRow(List<Setting> settings, int index)
+    // The row of a setting on its page (the settings first to last)
+    private static int SettingRow(List<Setting> settings, int index, int first, int last)
     {
         // A blank row between the settings of the start page and the basic settings, when there is room for it
-        var gap = FirstRow + settings.Count + 1 <= Init.LineCount - 1 ? 1 : 0;
-        return FirstRow + index + (settings[index] >= Setting.Monochrome ? gap : 0);
+        var gap = FirstRow + (last - first + 1) + 1 <= Init.LineCount - 2 ? 1 : 0;
+        return FirstRow + index - first + (settings[index] >= Setting.Monochrome && PageOf(settings[index]) == 0 ? gap : 0);
     }
 
     private static void ChangeSetting(Setting setting, bool next)

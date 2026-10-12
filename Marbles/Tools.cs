@@ -1387,6 +1387,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  5", Lang.T("Exit Marbles (without asking)"), false));
             _shortcutList.Add(new Shortcut("Q Esc", Lang.T("Exit Marbles, asking first (Configuration: Back)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("j k or the number of the row: Select"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Configuration: the other page of settings"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Startup"), Lang.T("Text Editor can start in the favorites list"), false));
             _shortcutList.Add(new Shortcut("Enter Space", Lang.T("Change the selected setting"), false));
             _shortcutList.Add(new Shortcut("l h", Lang.T("Next/Previous color scheme or language"), false));

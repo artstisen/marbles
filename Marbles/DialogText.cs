@@ -323,7 +323,7 @@ internal static class DialogText
     public static string StartConfigNotes => Lang.T("Start in Note Management");
     public static string StartConfigEditor => Lang.T("Start in Text Editor (file browser)");
     public static string StartKeys => Lang.T("j/k 1-5 Select | Enter Open | ? Help | Q Exit");
-    public static string StartConfigKeys => Lang.T("j/k 1-9 Select | Enter/Space Change | h/l Previous/Next | Esc Back");
+    public static string StartConfigKeys => Lang.T("j/k Select | Enter/Space Change | h/l Previous/Next | Tab Page | Esc Back");
     public static string ConfigMonochrome => Lang.T("Black and white (no colors)");
     public static string ConfigAutoSize => Lang.T("Automatic size (follow the terminal window)");
     public static string ConfigSize => Lang.T("Size: ");
