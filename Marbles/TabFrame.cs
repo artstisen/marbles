@@ -179,7 +179,7 @@ internal sealed class TabFrame
 
         // The keys of the page
         Tools.SetCursorEx(Init.LineCount - 1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHint);
         Console.Write(" " + Tools.TruncateString(page.Keys, Init.LineWidth - 2, false));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }

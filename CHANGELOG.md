@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Color schemes**: a color of its own for the **Key hints** on the bottom line (`keyhints`; by default the text).
 - **Clipboard**: every yank goes to the system clipboard by default (`clipboardyank=all`); only with `"+` in front can still be chosen on the clipboard settings page.
 - **Color schemes**: a highlighted focused tab keeps the color of **Tab focus** as its text (unless **Tab highlight** has a text color of its own).
 - **Color schemes**: the color scheme editor is now _COLOR SCHEMES_, a frame with three tabs: **Schemes** (select and use a scheme: the built-in ones and your own), **Colors** (two pages of colors) and **Preview**. Saving the colors asks for a name and keeps them as a scheme of your own, a text file in `data/colorschemes`, which is then the scheme in use. New colors: **Tab frames** and **Box borders** (by default the dividers), and **Highlight focused tabs** on or off, with **Tab highlight** (the colors of the highlight), **Tab focus** (the name of the focused tab when it is not highlighted) and **Other tabs** (the names of the tabs not shown). The default scheme has gray box borders and no highlight: the focused tab is cyan, the others dark gray. The settings file keeps only the name of the scheme in use (`colorscheme`; the old color settings are not read). The color scheme is no longer chosen with `h`/`l` on the Configuration page or `:color` in the main menu; `:scheme Name` uses a scheme by its name.

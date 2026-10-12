@@ -25,7 +25,8 @@ internal enum ColorItem
     Tab, // The background of the tab shown (null: the color of the tab frames)
     TabText, // The text of the tab shown when it is highlighted (null: the color of TabShown)
     TabShown, // The name of the tab shown when it is not highlighted (null: the text)
-    OtherTabs // The names of the other tabs (null: the text)
+    OtherTabs, // The names of the other tabs (null: the text)
+    KeyHints // The keys on the bottom line (null: the text)
 }
 
 /// <summary>
@@ -59,6 +60,7 @@ internal sealed class ColorScheme
     internal ConsoleColor? TabText { get; set; }
     internal ConsoleColor? TabShown { get; set; }
     internal ConsoleColor? OtherTabs { get; set; }
+    internal ConsoleColor? KeyHints { get; set; }
 
     /// <summary>
     /// The tab (and sub-tab) shown is highlighted in the colors of the tabs; else only its frame tells it apart
@@ -73,6 +75,7 @@ internal sealed class ColorScheme
     internal ConsoleColor TabTextColor => TabText ?? TabShownColor;
     internal ConsoleColor TabShownColor => TabShown ?? Text;
     internal ConsoleColor OtherTabsColor => OtherTabs ?? Text;
+    internal ConsoleColor KeyHintsColor => KeyHints ?? Text;
 
     internal ColorScheme Clone() => (ColorScheme)MemberwiseClone();
 
@@ -81,7 +84,7 @@ internal sealed class ColorScheme
     /// </summary>
     internal static bool CanBeDefault(ColorItem item) =>
         item is ColorItem.Background or ColorItem.TabFrames or ColorItem.BoxBorders or ColorItem.Tab
-            or ColorItem.TabText or ColorItem.TabShown or ColorItem.OtherTabs;
+            or ColorItem.TabText or ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints;
 
     internal ConsoleColor? Get(ColorItem item)
     {
@@ -105,7 +108,8 @@ internal sealed class ColorScheme
             ColorItem.Tab => Tab,
             ColorItem.TabText => TabText,
             ColorItem.TabShown => TabShown,
-            _ => OtherTabs
+            ColorItem.OtherTabs => OtherTabs,
+            _ => KeyHints
         };
     }
 
@@ -123,6 +127,7 @@ internal sealed class ColorScheme
             ColorItem.TabText => TabTextColor,
             ColorItem.TabShown => TabShownColor,
             ColorItem.OtherTabs => OtherTabsColor,
+            ColorItem.KeyHints => KeyHintsColor,
             _ => Get(item)!.Value
         };
     }
@@ -153,7 +158,8 @@ internal sealed class ColorScheme
             case ColorItem.Tab: Tab = color; break;
             case ColorItem.TabText: TabText = color; break;
             case ColorItem.TabShown: TabShown = color; break;
-            default: OtherTabs = color; break;
+            case ColorItem.OtherTabs: OtherTabs = color; break;
+            default: KeyHints = color; break;
         }
     }
 
@@ -161,7 +167,8 @@ internal sealed class ColorScheme
     private static readonly ColorItem[] OnBackground =
     {
         ColorItem.Text, ColorItem.Logo, ColorItem.Dividers, ColorItem.Favorites, ColorItem.PreviewTitle,
-        ColorItem.EditorTitle, ColorItem.TabFrames, ColorItem.BoxBorders, ColorItem.TabShown, ColorItem.OtherTabs
+        ColorItem.EditorTitle, ColorItem.TabFrames, ColorItem.BoxBorders, ColorItem.TabShown, ColorItem.OtherTabs,
+        ColorItem.KeyHints
     };
 
     private static readonly (ColorItem Background, ColorItem Text)[] Pairs =
@@ -203,7 +210,8 @@ internal sealed class ColorScheme
         ("attention", ColorItem.Attention), ("attentiontext", ColorItem.AttentionText),
         ("warning", ColorItem.Warning), ("warningtext", ColorItem.WarningText),
         ("tabframes", ColorItem.TabFrames), ("boxborders", ColorItem.BoxBorders), ("tab", ColorItem.Tab),
-        ("tabtext", ColorItem.TabText), ("tabshown", ColorItem.TabShown), ("othertabs", ColorItem.OtherTabs)
+        ("tabtext", ColorItem.TabText), ("tabshown", ColorItem.TabShown), ("othertabs", ColorItem.OtherTabs),
+        ("keyhints", ColorItem.KeyHints)
     };
 
     private const string HighlightKey = "tabhighlight";

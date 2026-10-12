@@ -23,6 +23,7 @@ internal static class SchemeEditor
             new Group(Lang.T("Favorites"), ColorItem.Favorites, null, ConsoleColors.ColorPreset.Favorites),
             new Group(Lang.T("Preview title"), ColorItem.PreviewTitle, null, ConsoleColors.ColorPreset.PreviewTitle),
             new Group(Lang.T("Editor title"), ColorItem.EditorTitle, null, ConsoleColors.ColorPreset.EditorTitle),
+            new Group(Lang.T("Key hints"), ColorItem.KeyHints, null, ConsoleColors.ColorPreset.KeyHint),
             // The background of the whole screen (or the one of the terminal)
             new Group(Lang.T("Background"), ColorItem.Background, null, ConsoleColors.ColorPreset.Normal)
         }
@@ -565,7 +566,7 @@ internal static class SchemeEditor
             return item switch
             {
                 ColorItem.TabFrames or ColorItem.BoxBorders => Lang.T("[Default]: the dividers"),
-                ColorItem.TabShown or ColorItem.OtherTabs => Lang.T("[Default]: the text"),
+                ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints => Lang.T("[Default]: the text"),
                 _ => DialogText.ColorDefault
             };
         }
@@ -627,8 +628,9 @@ internal static class SchemeEditor
         Part(ConsoleColors.ColorPreset.Normal, " ");
         Part(ConsoleColors.ColorPreset.WarningInverted, " " + Lang.T("Warning") + " ");
         Tools.SetCursorEx(top + 4, left + 1);
-        Part(ConsoleColors.ColorPreset.NormalInverted, " " + Lang.T("Key") + " ");
-        Part(ConsoleColors.ColorPreset.Normal, " " + Lang.T("Text on the background"));
+        Part(ConsoleColors.ColorPreset.KeyHintInverted, " " + Lang.T("Key") + " ");
+        Part(ConsoleColors.ColorPreset.KeyHint, " " + Lang.T("Key hints"));
+        Part(ConsoleColors.ColorPreset.Normal, "  " + Lang.T("Text on the background"));
 
         // A frame with tabs (in the color of the tab frames), as the start page and this page
         if (area.Height < 12) return;

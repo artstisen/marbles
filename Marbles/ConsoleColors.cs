@@ -60,7 +60,9 @@ internal static class ConsoleColors
         TabFrame, // The frames with tabs
         BoxBorder, // The borders of the boxes on top of a page
         TabShown, // The name of the tab shown, when the tab is not highlighted
-        OtherTabs // The names of the tabs not shown
+        OtherTabs, // The names of the tabs not shown
+        KeyHint, // The keys on the bottom line: what they do
+        KeyHintInverted // The keys on the bottom line: the key
     }
 
     // The colors of text on the normal background: the background of the color scheme, or that of the terminal
@@ -83,6 +85,7 @@ internal static class ConsoleColors
                 Console.ForegroundColor = ConsoleColor.White;
                 break;
             case ColorPreset.NormalInverted:
+            case ColorPreset.KeyHintInverted:
             case ColorPreset.HighlightInverted:
             case ColorPreset.AttentionInverted:
             case ColorPreset.WarningInverted:
@@ -132,6 +135,10 @@ internal static class ConsoleColors
                 Console.BackgroundColor = scheme.Text;
                 Console.ForegroundColor = scheme.BackgroundColor;
                 return;
+            case ColorPreset.KeyHintInverted:
+                Console.BackgroundColor = scheme.KeyHintsColor;
+                Console.ForegroundColor = scheme.BackgroundColor;
+                return;
             case ColorPreset.HighlightInverted:
                 Console.BackgroundColor = scheme.Highlight;
                 Console.ForegroundColor = scheme.HighlightText;
@@ -158,6 +165,7 @@ internal static class ConsoleColors
             ColorPreset.BoxBorder => scheme.BoxBorderColor,
             ColorPreset.TabShown => scheme.TabShownColor,
             ColorPreset.OtherTabs => scheme.OtherTabsColor,
+            ColorPreset.KeyHint => scheme.KeyHintsColor,
             _ => scheme.Text
         };
     }

@@ -774,10 +774,11 @@ internal static class Menu
         var key = " :help ";
         var text = " " + Lang.T("Help") + " ";
         Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - 1 - TextMetrics.WidthOf(key + text)));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.NormalInverted);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHintInverted);
         Console.Write(key);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHint);
         Console.Write(text);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
     internal static void WriteNameInTopBar(bool displayDataFileName)
@@ -838,9 +839,9 @@ internal static class Menu
             var description = space < 0 ? " " : " " + hint[(space + 1)..] + " ";
             room -= TextMetrics.WidthOf(key + description);
             if (room < 0) break;
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.NormalInverted);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHintInverted);
             Console.Write(key);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHint);
             Console.Write(description);
         }
 
