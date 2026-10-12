@@ -1681,7 +1681,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, Lang.F("String Memory (limit: {0} strings)", MaxLineMemoryCount), true));
             _shortcutList.Add(new Shortcut("y d c", Lang.T("Yanked/deleted text is added to memory"), false));
             _shortcutList.Add(new Shortcut("CTRL+P CTRL+N", Lang.T("Select previous/next memory string"), false));
-            _shortcutList.Add(new Shortcut(":reg", Lang.T("Show current memory string"), false));
+            _shortcutList.Add(new Shortcut(":reg :registers", Lang.T("Show current memory string"), false));
             _shortcutList.Add(new Shortcut(":reglist", Lang.T("All the strings in a box: pick one to insert"), false));
             _shortcutList.Add(new Shortcut(":putall", Lang.T("Insert all memory strings"), false));
             _shortcutList.Add(new Shortcut(":regclear", Lang.T("Clear string memory"), false));
