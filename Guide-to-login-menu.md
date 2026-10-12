@@ -1,7 +1,7 @@
 # Guide to the start and login pages
 
 ## Select mode
-Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with two tabs at its top: **Mode**, where you select what to use Marbles for, and **Configuration**, with the settings. The settings are on two pages, shown as the sub-tabs **Page 1** and **Page 2** in a row at the top of the frame. The tab and sub-tab shown are highlighted.
+Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with two tabs at its top: **Mode**, where you select what to use Marbles for, and **Configuration**, with the settings. The settings are on two pages, shown as the sub-tabs **Page 1** and **Page 2** in a row at the top of the frame. The tab and sub-tab shown are highlighted in the color of the frame.
 
 `Tab` goes to the next tab: Mode, Configuration (Page 1), Configuration (Page 2), and round to Mode again. `Shift+Tab` goes the other way.
 

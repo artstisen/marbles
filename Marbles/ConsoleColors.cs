@@ -532,6 +532,18 @@ class ConsoleColors
     internal static bool IsBackgroundColor(ConsoleColor color) => color == CurrentBackgroundColor;
 
     /// <summary>
+    /// The colors of the frames (Divider) inverted: the frame color as the background, and the background as the
+    /// text color (the tab shown in a TabFrame)
+    /// </summary>
+    internal static void SetDividerInverted()
+    {
+        SetColors(ColorPreset.Divider);
+        var frame = Console.ForegroundColor;
+        Console.BackgroundColor = frame;
+        Console.ForegroundColor = Monochrome ? ConsoleColor.Black : CurrentBackgroundColor;
+    }
+
+    /// <summary>
     /// True to show everything in black and white, whatever the colors of the color scheme are
     /// (setting "monochrome"). The color scheme is kept, and is used again when this is turned off
     /// </summary>

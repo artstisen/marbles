@@ -61,7 +61,7 @@ internal sealed class TabItem
 
 /// <summary>
 /// A frame in the style of the boxes, with tabs on its top (and sub-tabs in a row inside it), where one page is
-/// shown at a time. Tab and Shift+Tab go through all the pages in order (the sub-tabs of a tab too), "?" shows
+/// shown at a time. The tab and sub-tab shown have the colors of the frame inverted. Tab and Shift+Tab go through all the pages in order (the sub-tabs of a tab too), "?" shows
 /// the help of the page, and the other keys go to the page. The frame goes from its top row to the row above
 /// the bottom line, where the keys of the page are shown. The layout is found by TabLayout.
 /// </summary>
@@ -186,9 +186,9 @@ internal sealed class TabFrame
         for (var i = 0; i < names.Count; i++)
         {
             Tools.SetCursorEx(_top + 1, 1 + starts[i] - 1);
-            ConsoleColors.SetColors(i == tab
-                ? ConsoleColors.ColorPreset.HighlightInverted
-                : ConsoleColors.ColorPreset.Normal);
+            // The name of the tab shown in the colors of the frame, inverted
+            if (i == tab) ConsoleColors.SetDividerInverted();
+            else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(" " + names[i] + " ");
         }
 
@@ -217,9 +217,8 @@ internal sealed class TabFrame
             for (var i = 0; i < subNames.Count; i++)
             {
                 Tools.SetCursorEx(_top + 3, 3 + subStarts[i] - 1);
-                ConsoleColors.SetColors(ReferenceEquals(pages[i], page)
-                    ? ConsoleColors.ColorPreset.HighlightInverted
-                    : ConsoleColors.ColorPreset.Normal);
+                if (ReferenceEquals(pages[i], page)) ConsoleColors.SetDividerInverted();
+                else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Console.Write(" " + subNames[i] + " ");
             }
 
