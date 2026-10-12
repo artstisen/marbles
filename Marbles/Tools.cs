@@ -1377,17 +1377,17 @@ internal static class Tools
             // Start by collecting all shortcuts
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Keyboard Functions"), true));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionStart, true));
-            _shortcutList.Add(new Shortcut("j k 1-5", Lang.T("Select"), false));
+            _shortcutList.Add(new Shortcut("j k 1-4", Lang.T("Select"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last (also in Configuration)"), false));
             _shortcutList.Add(new Shortcut("Enter", Lang.T("Open the selected"), false));
             _shortcutList.Add(new Shortcut("  1", Lang.T("Note Management: the login page"), false));
             _shortcutList.Add(new Shortcut("  2", Lang.T("Text Editor/File Management: the file browser"), false));
-            _shortcutList.Add(new Shortcut("  3", Lang.T("Configuration: startup and basic settings"), false));
-            _shortcutList.Add(new Shortcut("  4", Lang.T("Quick guide: a short introduction"), false));
-            _shortcutList.Add(new Shortcut("  5", Lang.T("Exit Marbles (without asking)"), false));
-            _shortcutList.Add(new Shortcut("Q Esc", Lang.T("Exit Marbles, asking first (Configuration: Back)"), false));
+            _shortcutList.Add(new Shortcut("  3", Lang.T("Quick guide: a short introduction"), false));
+            _shortcutList.Add(new Shortcut("  4", Lang.T("Exit Marbles (without asking)"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Next tab: Mode, Configuration (Page 1, Page 2)"), false));
+            _shortcutList.Add(new Shortcut("Shift+Tab", Lang.T("The tab before"), false));
+            _shortcutList.Add(new Shortcut("Q Esc", Lang.T("Exit Marbles, asking first (Configuration: to Mode)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("j k or the number of the row: Select"), false));
-            _shortcutList.Add(new Shortcut("Tab", Lang.T("Configuration: the other page of settings"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Startup"), Lang.T("Text Editor can start in the favorites list"), false));
             _shortcutList.Add(new Shortcut("Enter Space", Lang.T("Change the selected setting"), false));
             _shortcutList.Add(new Shortcut("l h", Lang.T("Next/Previous color scheme or language"), false));

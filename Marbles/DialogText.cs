@@ -312,6 +312,7 @@ internal static class DialogText
 
     // The page shown at startup
     public static string StartSelectMode => Lang.T("Select mode");
+    public static string StartModeTab => Lang.T("Mode");
     public static string StartNotes => Lang.T("Note Management (encrypted notes)");
     public static string StartEditor => Lang.T("Text Editor/File Management");
     public static string StartConfiguration => Lang.T("Configuration");
@@ -322,7 +323,7 @@ internal static class DialogText
     public static string StartConfigSelect => Lang.T("Show choices on startup");
     public static string StartConfigNotes => Lang.T("Start in Note Management");
     public static string StartConfigEditor => Lang.T("Start in Text Editor (file browser)");
-    public static string StartKeys => Lang.T("j/k 1-5 Select | Enter Open | ? Help | Q Exit");
+    public static string StartKeys => Lang.T("j/k 1-4 Select | Enter Open | Tab Configuration | ? Help | Q Exit");
     public static string StartConfigKeys => Lang.T("j/k Select | Enter/Space Change | h/l Previous/Next | Tab Page | Esc Back");
     public static string ConfigMonochrome => Lang.T("Black and white (no colors)");
     public static string ConfigAutoSize => Lang.T("Automatic size (follow the terminal window)");

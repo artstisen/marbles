@@ -1,13 +1,15 @@
 # Guide to the start and login pages
 
 ## Select mode
-Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts you select what to use it for:
+Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with two tabs at its top: **Mode**, where you select what to use Marbles for, and **Configuration**, with the settings. The settings are on two pages, shown as the sub-tabs **Page 1** and **Page 2** in a row at the top of the frame. The tab and sub-tab shown are highlighted.
 
+`Tab` goes to the next tab: Mode, Configuration (Page 1), Configuration (Page 2), and round to Mode again. `Shift+Tab` goes the other way.
+
+### Mode
 - `1` **Note Management (encrypted notes)**: Continue to the login page
 - `2` **Text Editor/File Management**: Open the [file browser](#file-browser) to edit plain text files and manage files. Closing the file browser returns here
-- `3` **Configuration**: Select what Marbles does when it starts, and change some basic settings
-- `4` **Quick guide**: A short introduction to Marbles: what the two parts are for, the keys for moving around, and the modes of the editor. `Esc` closes it, and `?` shows the help with all the keys
-- `5` **Exit**: Close Marbles at once
+- `3` **Quick guide**: A short introduction to Marbles: what the two parts are for, the keys for moving around, and the modes of the editor. `Esc` closes it, and `?` shows the help with all the keys
+- `4` **Exit**: Close Marbles at once
 
 Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking in a box on top of the page (`Y`/`N`, or `j`/`k` and `Enter`; `Esc` cancels).
 
@@ -19,7 +21,7 @@ Move the selection with `j`/`k` (or the arrow keys) or the number, and press `En
 
 The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to showing the choices.
 
-The settings are on two pages: the first has the start page and the display (colors, language, size), the second the editor and the rest. They are shown in a frame with a tab for each page at the top (_1_ and _2_, the one shown highlighted). `Tab` goes to the other page, and `j` `k` go on from the last setting of a page to the first of the next. The number of a row selects it on the page shown.
+The settings are on two pages: _Page 1_ has the start page and the display (colors, language, size), _Page 2_ the editor and the rest. `j` `k` (and `gg` `G`) select a setting on the page, and the number of a row selects it. `Enter` or `Space` changes it. `Esc` or `Q` goes back to the Mode tab.
 
 Below these are some basic settings, so they can be changed without logging in to a data file:
 

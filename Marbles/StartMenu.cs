@@ -1,8 +1,9 @@
 ﻿namespace Marbles;
 
 /// <summary>
-/// The page shown when Marbles starts, where the user selects what to use it for: notes (the login page),
-/// editing text files (the file browser) or the configuration of the page itself.
+/// The page shown when Marbles starts, in a frame with two tabs (TabFrame): Mode, where the user selects what to
+/// use Marbles for (notes: the login page, or editing text files: the file browser), and Configuration, with the
+/// settings of the page itself and some basic settings on two pages (sub-tabs). Tab goes from page to page.
 /// The setting "startmode" tells if the page is shown at startup, or if Marbles goes directly to one of the two.
 /// </summary>
 internal static class StartMenu
@@ -27,15 +28,8 @@ internal static class StartMenu
     // True to show the choices whatever the setting is
     private static bool _showChoices;
 
-    private const int FirstRow = 8;
-    private const int Left = 3;
-
-    // In the language in use
-    private static string[] Choices => new[]
-        {
-            DialogText.StartNotes, DialogText.StartEditor, DialogText.StartConfiguration, DialogText.QuickGuide,
-            DialogText.StartExit
-        };
+    // The row of the tabs (below the logo)
+    private const int TabRow = 6;
 
     /// <summary>
     /// The name of a start mode in the settings file
@@ -103,44 +97,16 @@ internal static class StartMenu
             if (Mode == StartMode.Editor && BrowseFiles()) return;
         }
 
-        var selected = 0;
-        while (true)
-        {
-            Init.ApplyAutoSize();
-            Tools.ClearScreen();
-            Logo.DrawLogo(true, animate, false);
-            animate = false;
-            var result = Select(DialogText.StartSelectMode, Choices, ref selected, false, DialogText.StartKeys);
-            if (result == Result.Redraw) continue;
-            if (result == Result.Close)
+        var mode = new ModePage();
+        var frame = new TabFrame(TabRow, () =>
             {
-                if (ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false))
-                {
-                    Tools.ExitApplication();
-                }
-
-                continue;
-            }
-
-            switch (selected)
-            {
-                case 0:
-                    return;
-                case 1:
-                    if (BrowseFiles()) return;
-                    break;
-                case 2:
-                    Configure();
-                    break;
-                case 3:
-                    QuickGuide.Show();
-                    break;
-                default:
-                    // Exit without asking
-                    Tools.ExitApplication();
-                    break;
-            }
-        }
+                Logo.DrawLogo(true, animate, false);
+                animate = false;
+            },
+            new TabItem(() => DialogText.StartModeTab, mode),
+            new TabItem(() => DialogText.StartConfiguration, new SettingsPage(0), new SettingsPage(1)));
+        // Returns when notes are chosen, or a data file was selected in the file browser
+        frame.Run();
     }
 
     // Open the file browser. True if a data file was selected there: the login page is shown for it
@@ -226,198 +192,206 @@ internal static class StartMenu
     // The settings are shown on two pages: the start page and the display, and the editor and the rest
     private static int PageOf(Setting setting) => setting >= Setting.LineNumbers ? 1 : 0;
 
-    private const int PageCount = 2;
-
-    // The settings are in a frame with a tab for each page on its top: the tabs (two rows), the top of the frame,
-    // a blank row, the settings, and the bottom of the frame on the row above the keys
-    private const int TabRow = FirstRow - 2;
-    private const int FrameTop = FirstRow;
-    private const int SettingsTop = FrameTop + 2;
-    private const int TabLeft = 2;
-    private const int TabWidth = 5; // ".---."
-    private const int TabGap = 1;
-    private static int FrameBottom => Init.LineCount - 2;
-
-    // The frame of the settings, with the tabs of the pages on its top (the one shown open into the frame)
-    private static void DrawSettingsFrame(int page)
+    /// <summary>
+    /// The Mode tab: what to use Marbles for (notes or text files), the quick guide, and exit
+    /// </summary>
+    private sealed class ModePage : ITabPage
     {
-        var top = AsciiStyles.GetTopCorner();
-        var bottom = AsciiStyles.GetBottomCorner();
-        var right = Init.LineWidth - 2;
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        for (var tab = 0; tab < PageCount; tab++)
-        {
-            var left = TabLeft + tab * (TabWidth + TabGap);
-            Tools.SetCursorEx(TabRow, left);
-            Console.Write(top + new string('-', TabWidth - 2) + top);
-            Tools.SetCursorEx(TabRow + 1, left);
-            Console.Write('|');
-            // The number of the page shown is highlighted
-            ConsoleColors.SetColors(tab == page
-                ? ConsoleColors.ColorPreset.HighlightInverted
-                : ConsoleColors.ColorPreset.Normal);
-            Console.Write(" " + (tab + 1) + " ");
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write('|');
-        }
+        private int _selected;
 
-        // The top of the frame: open below the tab of the page shown
-        var line = new char[right];
-        Array.Fill(line, '-');
-        line[0] = top;
-        line[right - 1] = top;
-        for (var tab = 0; tab < PageCount; tab++)
+        // In the language in use
+        private static string[] Choices => new[]
         {
-            var left = TabLeft + tab * (TabWidth + TabGap) - 1;
-            line[left] = bottom;
-            line[left + TabWidth - 1] = bottom;
-            if (tab != page) continue;
-            for (var i = left + 1; i < left + TabWidth - 1; i++) line[i] = ' ';
-        }
+            DialogText.StartNotes, DialogText.StartEditor, DialogText.QuickGuide, DialogText.StartExit
+        };
 
-        Tools.SetCursorEx(FrameTop, 1);
-        Console.Write(line);
-        for (var row = FrameTop + 1; row < FrameBottom; row++)
+        public string Title => DialogText.StartModeTab;
+        public string Keys => DialogText.StartKeys;
+        public Tools.HelpTopic Help => Tools.HelpTopic.Start;
+
+        public void Draw(TabArea area, bool full)
         {
-            Tools.SetCursorEx(row, 1);
-            Console.Write('|');
-            Tools.SetCursorEx(row, right);
-            Console.Write('|');
-        }
-
-        Tools.SetCursorEx(FrameBottom, 1);
-        Console.Write(bottom + new string('-', right - 2) + bottom);
-        // The title, after the tabs
-        Tools.SetCursorEx(TabRow + 1, TabLeft + PageCount * (TabWidth + TabGap) + 1);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Console.Write(DialogText.StartConfiguration);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-    }
-
-    // The settings of the start page and some basic settings. A change is saved in the settings file at once
-    private static void Configure()
-    {
-        var selected = 0;
-        // The page is drawn when something has changed. When the selection moves only the pointer is drawn
-        var redraw = true;
-        var shownPage = -1;
-        while (true)
-        {
-            var settings = Settings();
-            selected = Math.Clamp(selected, 0, settings.Count - 1);
-            // The page of the selected setting, and where its settings are in the list
-            var page = PageOf(settings[selected]);
-            var first = settings.FindIndex(setting => PageOf(setting) == page);
-            var last = settings.FindLastIndex(setting => PageOf(setting) == page);
-            if (page != shownPage) redraw = true;
-            shownPage = page;
-            if (redraw)
+            var choices = Choices;
+            if (full)
             {
-                Init.ApplyAutoSize();
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                Tools.ClearScreen();
-                Logo.DrawLogo(true, false, false);
-                DrawSettingsFrame(page);
-                for (var i = first; i <= last; i++)
+                for (var i = 0; i < choices.Length; i++)
                 {
-                    // The basic settings follow the ones of the start page after a blank row
-                    Tools.SetCursorEx(SettingRow(settings, i, first, last), Left + 2);
-                    Console.Write(" " + Tools.TruncateString(SettingText(settings[i]), Init.LineWidth - Left - 7, true));
+                    Tools.SetCursorEx(area.Top + i, area.Left + 3);
+                    Console.Write(Tools.TruncateString((i + 1) + " .... " + choices[i], area.Width - 4, true));
                 }
-
-                Tools.SetCursorEx(Init.LineCount - 1, 0);
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                Console.Write(" " + DialogText.StartConfigKeys);
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             }
 
-            Tools.HideCursor();
-            for (var i = first; i <= last; i++)
+            for (var i = 0; i < choices.Length; i++)
             {
-                Tools.SetCursorEx(SettingRow(settings, i, first, last), Left);
+                Tools.SetCursorEx(area.Top + i, area.Left);
+                // The pointer is highlighted as in the lists of entries
+                if (i == _selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                Console.Write(i == _selected ? "->" : "  ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            }
+        }
+
+        public TabResult HandleKey(ConsoleKeyInfo key)
+        {
+            var count = Choices.Length;
+            if (key.Key is ConsoleKey.Enter or ConsoleKey.L or ConsoleKey.RightArrow) return Open(_selected);
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q)
+            {
+                if (ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false))
+                {
+                    Tools.ExitApplication();
+                }
+
+                return TabResult.Redraw;
+            }
+
+            if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
+            {
+                _selected = (_selected + 1) % count;
+            }
+            else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+            {
+                _selected = (_selected + count - 1) % count;
+            }
+            else if (key.KeyChar >= '1' && key.KeyChar - '1' < count)
+            {
+                _selected = key.KeyChar - '1';
+            }
+            else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
+            {
+                _selected = count - 1;
+            }
+            else if (key.Key == ConsoleKey.Home || (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g'))
+            {
+                _selected = 0;
+            }
+
+            return TabResult.None;
+        }
+
+        // Open a choice: notes (the login page), the file browser, the quick guide, or exit
+        private static TabResult Open(int choice)
+        {
+            switch (choice)
+            {
+                case 0:
+                    return TabResult.Close;
+                case 1:
+                    return BrowseFiles() ? TabResult.Close : TabResult.Redraw;
+                case 2:
+                    QuickGuide.Show();
+                    return TabResult.Redraw;
+                default:
+                    // Exit without asking
+                    Tools.ExitApplication();
+                    return TabResult.Redraw;
+            }
+        }
+    }
+
+    /// <summary>
+    /// A page of the Configuration tab. A change is saved in the settings file at once
+    /// </summary>
+    private sealed class SettingsPage : ITabPage
+    {
+        private readonly int _page;
+        private Setting? _selected; // Kept by the setting, as rows come and go (the size, the color scheme)
+
+        internal SettingsPage(int page)
+        {
+            _page = page;
+        }
+
+        public string Title => Lang.F("Page {0}", _page + 1);
+        public string Keys => DialogText.StartConfigKeys;
+        public Tools.HelpTopic Help => Tools.HelpTopic.Start;
+
+        private List<Setting> PageSettings => Settings().Where(setting => PageOf(setting) == _page).ToList();
+
+        private int SelectedIndex(List<Setting> settings) =>
+            _selected is { } selected ? Math.Max(0, settings.IndexOf(selected)) : 0;
+
+        public void Draw(TabArea area, bool full)
+        {
+            var settings = PageSettings;
+            var selected = SelectedIndex(settings);
+            // A blank row between the settings of the start page and the basic settings, when there is room for it
+            var gap = settings.Count + 1 <= area.Height ? 1 : 0;
+            int Row(int i) => area.Top + i + (settings[i] >= Setting.Monochrome && _page == 0 ? gap : 0);
+            if (full)
+            {
+                for (var i = 0; i < settings.Count; i++)
+                {
+                    Tools.SetCursorEx(Row(i), area.Left + 2);
+                    Console.Write(" " + Tools.TruncateString(SettingText(settings[i]), area.Width - 4, true));
+                }
+            }
+
+            for (var i = 0; i < settings.Count; i++)
+            {
+                Tools.SetCursorEx(Row(i), area.Left);
                 if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
                 Console.Write(i == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             }
+        }
 
-            redraw = true;
-            // The page is drawn again if it could not be drawn, or the terminal window has changed size
-            if (Tools.TakeRedrawRequest()) continue;
-            var key = Console.ReadKey(true);
-            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return;
-            if (Init.AutoSize && Init.ApplyAutoSize()) continue;
+        public TabResult HandleKey(ConsoleKeyInfo key)
+        {
+            var settings = PageSettings;
+            var selected = SelectedIndex(settings);
+            var count = settings.Count;
+            var setting = settings[selected];
+            // Back to the Mode tab
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return TabResult.FirstTab;
             if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
             {
-                selected = (selected + 1) % settings.Count;
-                redraw = false;
+                _selected = settings[(selected + 1) % count];
             }
             else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
             {
-                selected = (selected + settings.Count - 1) % settings.Count;
-                redraw = false;
+                _selected = settings[(selected + count - 1) % count];
             }
-            else if (key.KeyChar >= '1' && key.KeyChar - '1' <= last - first)
+            else if (key.KeyChar >= '1' && key.KeyChar - '1' < count)
             {
-                // The number of a setting on the page
-                selected = first + key.KeyChar - '1';
-                redraw = false;
-            }
-            else if (key.Key == ConsoleKey.Tab)
-            {
-                // The first setting of the other page
-                var other = (page + 1) % PageCount;
-                selected = Math.Max(0, settings.FindIndex(setting => PageOf(setting) == other));
-                redraw = false;
+                _selected = settings[key.KeyChar - '1'];
             }
             else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
             {
-                selected = settings.Count - 1;
-                redraw = false;
+                _selected = settings[count - 1];
             }
             else if (key.Key == ConsoleKey.Home || (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g'))
             {
-                selected = 0;
-                redraw = false;
+                _selected = settings[0];
             }
-            else if (key.KeyChar == '?')
-            {
-                Tools.WriteEditorHelp(false, Tools.HelpTopic.Start);
-            }
-            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && settings[selected] == Setting.ColorScheme)
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && setting == Setting.ColorScheme)
             {
                 // Pick the color scheme in a box, or open the editor from it (l and h select the next and previous)
                 Actions.PickColorScheme();
+                return TabResult.Redraw;
             }
-            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && settings[selected] == Setting.Language)
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && setting == Setting.Language)
             {
                 // Pick the language in a box (l and h select the next and previous)
                 Actions.PickLanguage();
+                return TabResult.Redraw;
             }
             else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow)
             {
-                ChangeSetting(settings[selected], true);
+                ChangeSetting(setting, true);
+                _selected = setting;
+                return TabResult.Redraw;
             }
             else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow &&
-                     settings[selected] is Setting.ColorScheme or Setting.Language)
+                     setting is Setting.ColorScheme or Setting.Language)
             {
-                // The previous color scheme or logo
-                ChangeSetting(settings[selected], false);
+                // The previous color scheme or language
+                ChangeSetting(setting, false);
+                return TabResult.Redraw;
             }
-            else
-            {
-                // Nothing has changed
-                redraw = false;
-            }
-        }
-    }
 
-    // The row of a setting on its page (the settings first to last)
-    private static int SettingRow(List<Setting> settings, int index, int first, int last)
-    {
-        // A blank row between the settings of the start page and the basic settings, when there is room for it
-        var gap = SettingsTop + (last - first + 1) + 1 <= FrameBottom ? 1 : 0;
-        return SettingsTop + index - first +
-               (settings[index] >= Setting.Monochrome && PageOf(settings[index]) == 0 ? gap : 0);
+            return TabResult.None;
+        }
     }
 
     private static void ChangeSetting(Setting setting, bool next)
@@ -492,87 +466,5 @@ internal static class StartMenu
         }
 
         FileIo.SaveSettings();
-    }
-
-    // Show a list of choices, and let the user move the selection (j/k or a number) and accept it (Enter)
-    private enum Result
-    {
-        Accept,
-        Close, // Esc or Q
-        Redraw // Something was shown on top of the page
-    }
-
-    private static Result Select(string caption, string[] choices, ref int selected, bool showState, string keys)
-    {
-        Tools.HideCursor();
-        Tools.SetCursorEx(FirstRow - 2, 1);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Console.Write(caption + ":");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        for (var i = 0; i < choices.Length; i++)
-        {
-            Tools.SetCursorEx(FirstRow + i, Left + 3);
-            Console.Write(showState
-                ? ((int)Mode == i ? "[x] " : "[ ] ") + choices[i]
-                : (i + 1) + " .... " + choices[i]);
-        }
-
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(" " + keys);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        while (true)
-        {
-            for (var i = 0; i < choices.Length; i++)
-            {
-                Tools.SetCursorEx(FirstRow + i, Left);
-                // The pointer is highlighted as in the lists of entries
-                if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                Console.Write(i == selected ? "->" : "  ");
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            }
-
-            // The page is drawn again if it could not be drawn, or the terminal window has changed size
-            if (Tools.TakeRedrawRequest()) return Result.Redraw;
-            var key = Console.ReadKey(true);
-            if (Init.AutoSize && Init.ApplyAutoSize()) return Result.Redraw;
-            if (key.Key is ConsoleKey.Enter or ConsoleKey.L or ConsoleKey.RightArrow ||
-                (showState && key.Key == ConsoleKey.Spacebar))
-            {
-                return Result.Accept;
-            }
-
-            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q ||
-                (showState && key.Key is ConsoleKey.H or ConsoleKey.LeftArrow))
-            {
-                return Result.Close;
-            }
-
-            if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
-            {
-                selected = (selected + 1) % choices.Length;
-            }
-            else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
-            {
-                selected = (selected + choices.Length - 1) % choices.Length;
-            }
-            else if (key.KeyChar >= '1' && key.KeyChar - '1' < choices.Length)
-            {
-                selected = key.KeyChar - '1';
-            }
-            else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
-            {
-                selected = choices.Length - 1;
-            }
-            else if (key.Key == ConsoleKey.Home || (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g'))
-            {
-                selected = 0;
-            }
-            else if (key.KeyChar == '?')
-            {
-                Tools.WriteEditorHelp(false, Tools.HelpTopic.Start);
-                return Result.Redraw;
-            }
-        }
     }
 }

@@ -1,7 +1,7 @@
 # Changes
 
 ## v1.5.3
-- **Configuration page** (start page): the settings are on two pages, so they fit on the screen, shown in a frame with a tab for each page (_1_ _2_, the one shown highlighted). `Tab` goes to the other page, and `j` `k` go on across them.
+- **Start page with tabs**: the start page is a frame with the tabs _Mode_ and _Configuration_, and the settings are on two sub-tabs (_Page 1_, _Page 2_), so they fit on the screen. `Tab` and `Shift+Tab` go from page to page. _Configuration_ is no longer a choice of its own (the Quick guide is now `3`, Exit `4`). The frame is a reusable control (`TabFrame`) for other pages later.
 - **Snippets and string memory boxes**: while filtering, `Tab` (or the down arrow) selects the next match and `Shift+Tab` (or the up arrow) the one before.
 - **Editor**: _scrolloff_ keeps lines above and below the cursor when the text scrolls (as in Vim): `:scrolloff` turns it on and off (12 lines), `:scrolloff 8` / `:set so=8` sets the number (999: the cursor stays in the middle). Off by default; also on the Configuration page (settings `scrolloff`, `scrolllines`).
 - **Lists of a data file**: `:clipboard` shows the clipboard settings.
