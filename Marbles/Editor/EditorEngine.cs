@@ -43,6 +43,7 @@ internal enum EditorRequest
     PasteBinClear, // ":pbclear": empty the paste bin
     ClipboardSettings, // ":clipboard": show the clipboard settings
     WrapChanged, // Wrapping of long lines was turned on or off
+    ScrollOffChanged, // The lines kept around the cursor (ScrollOff) were changed
     CopyPath, // ":path": the path of the file being edited to the clipboard
     Snippets, // ":snip": show the snippets (SnippetText: the selected text, which can be added)
     SnippetAdd, // ":snip add": add SnippetText as a snippet
@@ -222,6 +223,39 @@ internal sealed partial class EditorEngine
     }
 
     // The commands ":wrap", ":set wrap" and ":set nowrap"
+    /// <summary>
+    /// The rows kept above and below the cursor when the view scrolls ("scrolloff", 0: none). At most half the
+    /// view is kept, so a large number keeps the cursor in the middle
+    /// </summary>
+    internal int ScrollOff { get; set; }
+
+    /// <summary>
+    /// The number of rows used when ":scrolloff" turns it on (the last one set)
+    /// </summary>
+    internal int ScrollOffLines { get; set; } = 12;
+
+    // ":scrolloff" (on/off), ":scrolloff 8" and ":set scrolloff=8" / ":set so=8" (0: off)
+    private void SetScrollOff(int? lines)
+    {
+        if (SingleLine) return;
+        if (lines is { } value)
+        {
+            value = Math.Clamp(value, 0, 999);
+            if (value > 0) ScrollOffLines = value;
+            ScrollOff = value;
+        }
+        else
+        {
+            ScrollOff = ScrollOff > 0 ? 0 : ScrollOffLines;
+        }
+
+        Message = ScrollOff > 0
+            ? Lang.F("Scrolling keeps {0} lines around the cursor", ScrollOff)
+            : Lang.T("Scrolling keeps no lines around the cursor");
+        _request = EditorRequest.ScrollOffChanged;
+        EnsureCursorVisible();
+    }
+
     private void SetWrap(bool on)
     {
         if (SingleLine) return;
@@ -868,6 +902,13 @@ internal sealed partial class EditorEngine
             return;
         }
 
+        var scrollOff = Regex.Match(command, "^(?:scrolloff +|set +(?:scrolloff|so) *= *)([0-9]+)$");
+        if (scrollOff.Success)
+        {
+            SetScrollOff(int.TryParse(scrollOff.Groups[1].Value, out var lines) ? lines : 999);
+            return;
+        }
+
         if (command.StartsWith("spell ", StringComparison.Ordinal))
         {
             TurnSpellOn(command[6..].Trim());
@@ -894,6 +935,9 @@ internal sealed partial class EditorEngine
                 break;
             case "wrap":
                 SetWrap(!Wrap);
+                break;
+            case "scrolloff":
+                SetScrollOff(null);
                 break;
             case "set wrap":
                 SetWrap(true);
@@ -1750,13 +1794,16 @@ internal sealed partial class EditorEngine
         }
 
         var row = Layout.RowOf(Cursor);
-        if (row < TopRow)
+        // Rows kept above and below the cursor (not past the start and the end of the text)
+        var margin = SingleLine ? 0 : Math.Min(ScrollOff, (Height - 1) / 2);
+        if (row < TopRow + margin)
         {
-            TopRow = row;
+            TopRow = Math.Max(0, row - margin);
         }
-        else if (row >= TopRow + Height)
+        else if (row > TopRow + Height - 1 - margin)
         {
-            TopRow = row - Height + 1;
+            var lastTop = Math.Max(0, Layout.TotalRows() - Height);
+            TopRow = Math.Max(row - Height + 1, Math.Min(row - Height + 1 + margin, lastTop));
         }
     }
 

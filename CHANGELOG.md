@@ -1,6 +1,8 @@
 # Changes
 
 ## v1.5.3
+- **Editor**: _scrolloff_ keeps lines above and below the cursor when the text scrolls (as in Vim): `:scrolloff` turns it on and off (12 lines), `:scrolloff 8` / `:set so=8` sets the number (999: the cursor stays in the middle). Off by default; also on the Configuration page (settings `scrolloff`, `scrolllines`).
+- **Lists of a data file**: `:clipboard` shows the clipboard settings.
 - **Editor**: `:dup 5` (or `:'<,'>dup 5`, `:2,4dup 5`) makes five copies of the line, the selection or the lines, as one change.
 - **File browser**: `:exit` exits Marbles (asking first). `:q` still goes back to the start page.
 - **String memory**: `:reglist` shows all the strings of the memory in a box (the newest first, with a preview), where they can be selected (`j` `k` `gg` `G`), filtered (`/`) and inserted with `Enter` (as `p`).

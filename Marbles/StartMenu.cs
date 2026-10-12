@@ -163,6 +163,7 @@ internal static class StartMenu
         Size,
         LineNumbers,
         WordWrap,
+        ScrollOff,
         Clipboard,
         Reset,
         Restart,
@@ -184,6 +185,7 @@ internal static class StartMenu
         if (!Init.AutoSize) settings.Add(Setting.Size);
         settings.Add(Setting.LineNumbers);
         settings.Add(Setting.WordWrap);
+        settings.Add(Setting.ScrollOff);
         settings.Add(Setting.Clipboard);
         settings.Add(Setting.Reset);
         settings.Add(Setting.Restart);
@@ -212,6 +214,8 @@ internal static class StartMenu
                             DialogText.ConfigSizeNote,
             Setting.LineNumbers => Check(TextArea.LineNumbers) + DialogText.ConfigLineNumbers,
             Setting.WordWrap => Check(TextArea.WordWrap) + Lang.T("Wrap long lines in the editor"),
+            Setting.ScrollOff => Check(TextArea.ScrollOff) +
+                                 Lang.F("Keep {0} lines around the cursor in the editor", TextArea.ScrollOffLines),
             Setting.Clipboard => indent + Lang.T("Clipboard and paste bin (Enter: Change)"),
             Setting.Restart => indent + DialogText.ConfigRestart,
             Setting.ViewLog => indent + DialogText.ConfigViewLog,
@@ -371,6 +375,9 @@ internal static class StartMenu
                 return;
             case Setting.LineNumbers:
                 TextArea.LineNumbers = !TextArea.LineNumbers;
+                break;
+            case Setting.ScrollOff:
+                TextArea.ScrollOff = !TextArea.ScrollOff;
                 break;
             case Setting.WordWrap:
                 TextArea.WordWrap = !TextArea.WordWrap;

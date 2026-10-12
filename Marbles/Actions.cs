@@ -565,6 +565,10 @@ internal static class Actions
             case "size":
                 DisplayOutputDimensions();
                 break;
+            case "clipboard":
+                // The clipboard settings, a page of their own
+                ClipboardPage.Show();
+                break;
             default:
                 CommandLine.ShowUnknown(command);
                 break;
@@ -1164,6 +1168,8 @@ internal static class Actions
         FileExplorer.DualPane = true;
         TextArea.LineNumbers = false;
         TextArea.WordWrap = true;
+        TextArea.ScrollOff = false;
+        TextArea.ScrollOffLines = TextArea.DefaultScrollOffLines;
         Snippets.Sort = Snippets.SortOrder.File;
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
         ConsoleColors.DefaultColorPresetIndex();

@@ -104,5 +104,6 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 - `:import` Import a text file as a new entry (selected in the file browser). It is opened in the editor
 - `C` or `:color` Set the text color of a pinned entry (in the favorites list), as `C` in the favorites of the file browser. The 16 colors are shown in a list, as they look with your color scheme: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. _Default_ removes the color. `:color 13` sets color 13 of the list directly
 - `:transfer` Add the selected entry to the transfer collection
+- `:clipboard` The clipboard settings (as in the main menu and the editor); `Esc` returns to the list
 - `/` or `S` Search, `A` List all, `T` Top 20, `F` Favorites, `M` Session history, `N` New entry
 - `Esc`, `-` or `:q` Return to the main menu

@@ -1449,6 +1449,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":revert", Lang.T("Revert the entry to before its last edit"), false));
             _shortcutList.Add(new Shortcut(":export", Lang.T("Export the text as a text file"), false));
             _shortcutList.Add(new Shortcut(":import", Lang.T("Import a text file as a new entry"), false));
+            _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings"), false));
             _shortcutList.Add(new Shortcut("Tab v", Lang.T("Favorites: Move the pinned entry (j k, then Esc)"), false));
             _shortcutList.Add(new Shortcut("C :color", Lang.T("Favorites: Pick the color of the pinned entry"), false));
             _shortcutList.Add(new Shortcut("A T F M", Lang.T("All, Top 20, Favorites, Session history"), false));
@@ -1554,7 +1555,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":pbread", Lang.T("Insert the text of the paste bin at the cursor"), false));
             _shortcutList.Add(new Shortcut(":pbclear", Lang.T("Empty the paste bin"), false));
             _shortcutList.Add(new Shortcut(":path", Lang.T("File browser, editor: copy the path of the file"), false));
-            _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings (main menu, editor)"), false));
+            _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings (menu, lists, editor)"), false));
             _shortcutList.Add(new Shortcut("j k Enter Space", Lang.T("Settings: select and change"), false));
             _shortcutList.Add(new Shortcut("h l", Lang.T("Settings: the choice of a row (every yank, add/replace)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Notes"), Lang.T("Copying out of a data file is off until allowed"), false));
@@ -1694,6 +1695,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":dup 5", Lang.T("Make 5 copies of the selection (or the line)"), false));
             _shortcutList.Add(new Shortcut(":sort :sort!", Lang.T("Sort the selected lines (or all), !: reversed"), false));
             _shortcutList.Add(new Shortcut(":wrap", Lang.T("Wrap long lines on/off (:set wrap, :set nowrap)"), false));
+            _shortcutList.Add(new Shortcut(":scrolloff", Lang.T("Keep lines around the cursor on/off (12)"), false));
+            _shortcutList.Add(new Shortcut(":scrolloff 8", Lang.T("Keep 8 lines (999: the middle, 0: off)"), false));
             _shortcutList.Add(new Shortcut(":sort i", Lang.T("Sort, upper and lower case alike"), false));
             _shortcutList.Add(new Shortcut("\"+y", Lang.T("Yank to the system clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut(":pb :pbread", Lang.T("Write to/Read from the paste bin"), false));

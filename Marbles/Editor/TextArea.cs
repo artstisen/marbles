@@ -47,6 +47,18 @@ public class TextArea
     /// </summary>
     internal static bool WordWrap { get; set; } = true;
 
+    internal const int DefaultScrollOffLines = 12;
+
+    /// <summary>
+    /// Lines are kept above and below the cursor when the view scrolls (setting "scrolloff", off unless turned on)
+    /// </summary>
+    internal static bool ScrollOff { get; set; }
+
+    /// <summary>
+    /// The number of lines kept above and below the cursor (setting "scrolllines")
+    /// </summary>
+    internal static int ScrollOffLines { get; set; } = DefaultScrollOffLines;
+
     private const int GutterGap = 2; // The blank columns between the line numbers and the text
     private const int MinNumberWidth = 2;
     private readonly int _textWidth; // The width for the text when no line numbers are shown
@@ -139,7 +151,9 @@ public class TextArea
         {
             MaxCells = width - 3,
             LineNumbers = LineNumbers && !_singleLine && !readOnly,
-            Wrap = WordWrap || _singleLine
+            Wrap = WordWrap || _singleLine,
+            ScrollOffLines = ScrollOffLines,
+            ScrollOff = ScrollOff && !_singleLine && !readOnly ? ScrollOffLines : 0
         };
         // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON) are colored, unless that is turned off
         var fileType = saveMode == SaveAsFile && !_singleLine && !readOnly
@@ -476,6 +490,11 @@ public class TextArea
                 break;
             case EditorRequest.WrapChanged:
                 WordWrap = _engine.Wrap;
+                if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
+                break;
+            case EditorRequest.ScrollOffChanged:
+                ScrollOff = _engine.ScrollOff > 0;
+                ScrollOffLines = _engine.ScrollOffLines;
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
                 break;
             case EditorRequest.Reload:

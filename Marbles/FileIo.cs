@@ -1011,6 +1011,10 @@ internal static class FileIo
         _tempSettings += "linenumbers=" + (TextArea.LineNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Long lines in the editor wrapped (on unless turned off)
         _tempSettings += "wrap=" + (TextArea.WordWrap ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // Lines kept above and below the cursor when the editor scrolls (on or off, and how many)
+        _tempSettings += "scrolloff=" + (TextArea.ScrollOff ? DialogText.BTrue : DialogText.BFalse) +
+                         Entries.NewLineChar;
+        _tempSettings += "scrolllines=" + TextArea.ScrollOffLines + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; SPELL CHECKING" + Entries.NewLineChar;
@@ -1139,6 +1143,9 @@ internal static class FileIo
         // On unless turned off
         TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) == DialogText.BTrue;
         TextArea.WordWrap = Tools.TrimToLower(Get("wrap")) != DialogText.BFalse;
+        TextArea.ScrollOff = Tools.TrimToLower(Get("scrolloff")) == DialogText.BTrue;
+        var scrollLines = GetNumber("scrolllines");
+        TextArea.ScrollOffLines = scrollLines is > 0 and <= 999 ? scrollLines.Value : TextArea.DefaultScrollOffLines;
         ConsoleColors.Monochrome = Tools.TrimToLower(Get("monochrome")) == DialogText.BTrue;
 
         // ASCII style

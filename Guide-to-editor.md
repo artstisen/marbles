@@ -193,6 +193,14 @@ Lines wider than the editor are wrapped onto the next rows (at a blank space whe
 - `zs` `ze` Scroll the view so the cursor is at the left/right side
 - The cursor stays in the view: if the view is scrolled past it, it is moved into the view
 
+## Scrolling
+Without anything set, the text scrolls when the cursor reaches the top or the bottom of the editor. With _scrolloff_ on, a number of lines (12 from the start) are kept above and below the cursor: the text scrolls when the cursor comes within 12 lines of the edge, so you see what comes next while moving through it (as `scrolloff` in Vim and Neovim). At the start and the end of the text the cursor goes on to the edge.
+
+- `:scrolloff` On or off (with the last number set)
+- `:scrolloff 8` (or `:set scrolloff=8`, `:set so=8`) Keep 8 lines, and turn it on. `0` turns it off
+- `:scrolloff 999` Keep the cursor in the middle (at most half the height of the editor is kept, so a number larger than that keeps the line of the cursor in the middle)
+- The choice is remembered (`scrolloff` and `scrolllines` in the settings file), and it can be turned on and off on the Configuration page of the start page
+
 ## Colors
 The editor can color the parts of a text by what they are, for Markdown, HTML, CSS, JavaScript, JSON and XML. The text itself is shown as it is written: it is coloring, not a preview, and nothing is checked for errors.
 

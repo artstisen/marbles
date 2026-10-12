@@ -53,7 +53,8 @@ internal static class Commands
             "bw size password color restart language clipboard" + Common,
             "q h nu" + CommonShort),
         [CommandContext.List] = new Table(
-            "quit close help browse new title delete color transfer size duplicate revert export import info" + Common,
+            "quit close help browse new title delete color transfer size duplicate revert export import info clipboard" +
+            Common,
             "q h" + CommonShort),
         [CommandContext.Files] = new Table(
             "quit close exit home data help cd new info mkdir rename copy duplicate move delete favorite favorites history panes match path find",
@@ -73,7 +74,7 @@ internal static class Commands
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
-            "calendar trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip",
+            "calendar trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip scrolloff",
             "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw cal reg sn")
     };
 
