@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- The exit question asks "Exit Marbles?".
 - **Main menu of a data file with tabs**: the four boxes are now the four tabs of a frame with tabs (_Notes_, _Data file_, _Settings_, _Marbles_). `Tab`/`Shift+Tab` and `h` go from tab to tab, `1` to `4` select one, and `j` `k` go on into the next tab.
 - **Boxes with the title in a tab**: the title of every box on top of a page (questions, messages, pickers, the snippets, the search and replace boxes, spelling suggestions, the Options menus ...) is shown in a tab above its top left corner, in the colors of the tabs, as the frames with tabs.
 - **Color scheme editor** in a frame with tabs: _Colors_ (the preset and the groups) and _Preview_ (a small screen, now also with a frame with tabs). A new group, **Tabs**, sets the colors of the tab shown (background with `l`, text with `T`); by default the dividers inverted. Settings `tabcolor` and `tabtext`.
