@@ -435,6 +435,25 @@ public class SpellTests : IDisposable
     }
 
     [Fact]
+    public void Editor_SpellCommand_TurnsCheckingOnAndOff()
+    {
+        var editor = Editor("hund hello");
+        editor.Type(":spell xx<CR>");
+        Assert.True(editor.IsSpellOn);
+        // ":spell" again: off, and on again
+        editor.Type(":spell<CR>");
+        Assert.False(editor.IsSpellOn);
+        Assert.Equal(DialogText.SpellTurnedOff, editor.Message);
+        editor.Type(":spell<CR>");
+        Assert.True(editor.IsSpellOn);
+        // With languages, and ":set spell", it stays on
+        editor.Type(":spell xx<CR>");
+        Assert.True(editor.IsSpellOn);
+        editor.Type(":set spell<CR>");
+        Assert.True(editor.IsSpellOn);
+    }
+
+    [Fact]
     public void Editor_SpellCommand_KeepsTheLanguages()
     {
         var editor = Editor("hund");

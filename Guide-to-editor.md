@@ -126,7 +126,7 @@ The same can be written as a command:
 ## Spell checking
 Spell checking is off until you ask for it. It uses the spell files of Vim and Neovim (see below).
 
-- `:spell` Check the text and mark the misspelled words. The bottom line tells how many were found
+- `:spell` Check the text and mark the misspelled words. The bottom line tells how many were found. When the words are marked already, `:spell` removes the marks (as `:nospell`). `:set spell` only turns checking on
 - `:spell da,en` As above, with Danish and English. The languages are remembered (`spelllang` in the settings file)
 - `:nospell` Remove the marks
 - `]s` `[s` (or `:spellnext` `:spellprev`) Go to the next/previous misspelled word

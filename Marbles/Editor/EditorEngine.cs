@@ -846,6 +846,10 @@ internal sealed partial class EditorEngine
         switch (command)
         {
             case "spell":
+                // On or off (":set spell" only turns it on, and ":spell da" checks with other languages)
+                if (IsSpellOn) TurnSpellOff();
+                else TurnSpellOn(string.Empty);
+                break;
             case "set spell":
                 TurnSpellOn(string.Empty);
                 break;

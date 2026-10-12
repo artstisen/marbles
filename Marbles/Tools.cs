@@ -1589,7 +1589,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("*", Lang.T("Search for the word under the cursor"), false));
             _shortcutList.Add(new Shortcut("Esc :noh", Lang.T("Remove search highlighting (Esc again closes)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Spell checking"), true));
-            _shortcutList.Add(new Shortcut(":spell", Lang.T("Mark the misspelled words"), false));
+            _shortcutList.Add(new Shortcut(":spell", Lang.T("Mark the misspelled words (again: remove the marks)"), false));
             _shortcutList.Add(new Shortcut(":spell da,en", Lang.T("As above, and set the languages"), false));
             _shortcutList.Add(new Shortcut(":nospell", Lang.T("Remove the marks"), false));
             _shortcutList.Add(new Shortcut("]s :spellnext", Lang.T("Next misspelled word"), false));
