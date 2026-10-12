@@ -36,8 +36,8 @@ internal static class SchemeEditor
                 ConsoleColors.ColorPreset.WarningInverted),
             new Group(Lang.T("Tab frames"), ColorItem.TabFrames, null, ConsoleColors.ColorPreset.TabFrame),
             new Group(Lang.T("Box borders"), ColorItem.BoxBorders, null, ConsoleColors.ColorPreset.BoxBorder),
-            new Group(Lang.T("Tabs"), ColorItem.Tab, ColorItem.TabText, ConsoleColors.ColorPreset.Normal),
-            new Group(Lang.T("Tab shown"), ColorItem.TabShown, null, ConsoleColors.ColorPreset.TabShown),
+            new Group(Lang.T("Tab highlight"), ColorItem.Tab, ColorItem.TabText, ConsoleColors.ColorPreset.Normal),
+            new Group(Lang.T("Tab focus"), ColorItem.TabShown, null, ConsoleColors.ColorPreset.TabShown),
             new Group(Lang.T("Other tabs"), ColorItem.OtherTabs, null, ConsoleColors.ColorPreset.OtherTabs)
         };
 
@@ -390,7 +390,7 @@ internal static class SchemeEditor
                 {
                     // The highlight of the tab shown, on or off
                     Tools.SetCursorEx(RowOf(area, groups.Length), area.Left + 3);
-                    Console.Write((Preview.TabHighlight ? "[x] " : "[ ] ") + Lang.T("Highlight the tab shown"));
+                    Console.Write((Preview.TabHighlight ? "[x] " : "[ ] ") + Lang.T("Highlight focused tabs"));
                 }
 
                 if (ConsoleColors.Monochrome && area.Height > Count + 3)

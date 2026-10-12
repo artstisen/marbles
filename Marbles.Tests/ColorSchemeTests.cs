@@ -31,8 +31,16 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(ConsoleColor.DarkBlue, ColorScheme.BuiltIn[1].Background);
         Assert.All(ColorScheme.BuiltIn.Where(scheme => scheme.Name != "Deep Blue"),
             scheme => Assert.Null(scheme.Background));
-        // The new colors are those of the dividers, and the tab is highlighted
-        Assert.All(ColorScheme.BuiltIn, scheme =>
+        // The default scheme: gray box borders, the focused tab cyan (not highlighted), the other tabs dark gray
+        var standard = ColorScheme.BuiltIn[0];
+        Assert.Equal(ConsoleColor.Gray, standard.BoxBorderColor);
+        Assert.Equal(ConsoleColor.DarkGray, standard.TabFrameColor);
+        Assert.Equal(ConsoleColor.DarkGray, standard.TabColor);
+        Assert.Equal(ConsoleColor.Cyan, standard.TabShownColor);
+        Assert.Equal(ConsoleColor.DarkGray, standard.OtherTabsColor);
+        Assert.False(standard.TabHighlight);
+        // In the others the new colors are those of the dividers, and the tab is highlighted
+        Assert.All(ColorScheme.BuiltIn.Skip(1), scheme =>
         {
             Assert.Equal(scheme.Dividers, scheme.TabFrameColor);
             Assert.Equal(scheme.Dividers, scheme.BoxBorderColor);
@@ -64,30 +72,31 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(ConsoleColor.White, read.Text);
         Assert.Equal(ColorScheme.BuiltIn[0].Logo, read.Logo);
         Assert.Null(read.Background);
-        Assert.True(read.TabHighlight);
+        // As the default scheme: no highlight of the focused tab
+        Assert.False(read.TabHighlight);
     }
 
     [Fact]
     public void TheDefaults_StandForOtherColors()
     {
-        var scheme = ColorScheme.Default;
-        Assert.Equal(ConsoleColor.DarkGray, scheme.TabFrameColor);
-        Assert.Equal(ConsoleColor.DarkGray, scheme.TabColor);
+        var scheme = ColorScheme.BuiltIn[2].Clone();
+        Assert.Equal(ConsoleColor.Blue, scheme.TabFrameColor);
+        Assert.Equal(ConsoleColor.Blue, scheme.TabColor);
         Assert.Equal(ConsoleColor.Black, scheme.TabTextColor);
         // The names of the tabs (the one shown without highlight, and the others) are the text
-        Assert.Equal(ConsoleColor.Gray, scheme.TabShownColor);
-        Assert.Equal(ConsoleColor.Gray, scheme.OtherTabsColor);
+        Assert.Equal(ConsoleColor.Green, scheme.TabShownColor);
+        Assert.Equal(ConsoleColor.Green, scheme.OtherTabsColor);
         scheme.Set(ColorItem.OtherTabs, ConsoleColor.DarkGray);
         Assert.Equal(ConsoleColor.DarkGray, scheme.OtherTabsColor);
         Assert.Contains("othertabs=DarkGray\n", scheme.Serialize());
         Assert.Contains("tabshown=default\n", scheme.Serialize());
         Assert.False(scheme.Allowed(ColorItem.TabShown, ConsoleColor.Black));
-        scheme.TabFrames = ConsoleColor.Blue;
-        Assert.Equal(ConsoleColor.Blue, scheme.TabColor);
-        Assert.Equal(ConsoleColor.DarkGray, scheme.BoxBorderColor);
+        scheme.TabFrames = ConsoleColor.Red;
+        Assert.Equal(ConsoleColor.Red, scheme.TabColor);
+        Assert.Equal(ConsoleColor.Blue, scheme.BoxBorderColor);
         // Only some colors can be "default"
         scheme.Set(ColorItem.Text, null);
-        Assert.Equal(ConsoleColor.Gray, scheme.Text);
+        Assert.Equal(ConsoleColor.Green, scheme.Text);
         scheme.Set(ColorItem.TabFrames, null);
         Assert.Null(scheme.TabFrames);
     }

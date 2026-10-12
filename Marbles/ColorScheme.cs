@@ -278,14 +278,29 @@ internal sealed class ColorScheme
         };
     }
 
+    // The colors of the frames and tabs of a scheme (null: the default of the color)
+    private static ColorScheme WithTabs(ColorScheme scheme, ConsoleColor? tabFrames, ConsoleColor? boxBorders,
+        ConsoleColor? tab, ConsoleColor? tabText, ConsoleColor? tabShown, ConsoleColor? otherTabs, bool highlight)
+    {
+        scheme.TabFrames = tabFrames;
+        scheme.BoxBorders = boxBorders;
+        scheme.Tab = tab;
+        scheme.TabText = tabText;
+        scheme.TabShown = tabShown;
+        scheme.OtherTabs = otherTabs;
+        scheme.TabHighlight = highlight;
+        return scheme;
+    }
+
     /// <summary>
     /// The color schemes that come with Marbles (the first is the default)
     /// </summary>
     internal static readonly IReadOnlyList<ColorScheme> BuiltIn = new[]
     {
-        Make(DefaultName, null, ConsoleColor.Gray, ConsoleColor.Cyan, ConsoleColor.DarkGray, ConsoleColor.Green,
-            ConsoleColor.Yellow, ConsoleColor.Green, ConsoleColor.Cyan, ConsoleColor.Black, ConsoleColor.Yellow,
-            ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
+        WithTabs(Make(DefaultName, null, ConsoleColor.Gray, ConsoleColor.Cyan, ConsoleColor.DarkGray,
+                ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.Green, ConsoleColor.Cyan, ConsoleColor.Black,
+                ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
+            null, ConsoleColor.Gray, ConsoleColor.DarkGray, null, ConsoleColor.Cyan, ConsoleColor.DarkGray, false),
         Make("Deep Blue", ConsoleColor.DarkBlue, ConsoleColor.Gray, ConsoleColor.Cyan, ConsoleColor.Cyan,
             ConsoleColor.Green, ConsoleColor.Magenta, ConsoleColor.White, ConsoleColor.Blue, ConsoleColor.Cyan,
             ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
