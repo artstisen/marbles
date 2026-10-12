@@ -1571,6 +1571,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("; ,", Lang.T("Repeat f/t forwards/backwards"), false));
             _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("Move one page up/down"), false));
             _shortcutList.Add(new Shortcut("CTRL+U CTRL+D", Lang.T("Move half a page up/down"), false));
+            _shortcutList.Add(new Shortcut("gm gM", Lang.T("Move half the screen width right/left"), false));
             _shortcutList.Add(new Shortcut("zt zz zb", Lang.T("Scroll cursor row to top/center/bottom"), false));
             _shortcutList.Add(new Shortcut("5j 3w ...", Lang.T("A number repeats a movement or command"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Search"), true));
@@ -1603,6 +1604,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  dw d$ dG", Lang.T("Delete word/to line end/to document end"), false));
             _shortcutList.Add(new Shortcut("  cw ciw ci\"", Lang.T("Change word/whole word/text in quotes"), false));
             _shortcutList.Add(new Shortcut("  yy dd cc", Lang.T("Yank/Delete/Change line (3dd: 3 lines)"), false));
+            _shortcutList.Add(new Shortcut("  yiw yip dip", Lang.T("Yank word/Yank paragraph/Delete paragraph"), false));
+            _shortcutList.Add(new Shortcut("  di\" diB dap", Lang.T("Delete in quotes/in { }/paragraph and blank lines"), false));
             _shortcutList.Add(new Shortcut("D C Y", Lang.T("Delete/Change to line end, Yank line"), false));
             _shortcutList.Add(new Shortcut("p P", Lang.T("Paste after/before the cursor"), false));
             _shortcutList.Add(new Shortcut("J", Lang.T("Join line with the next"), false));
@@ -1620,7 +1623,10 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("> <", Lang.T("Indent/Unindent the selected lines"), false));
             _shortcutList.Add(new Shortcut("J K", Lang.T("V-LINE: Move the selected lines down/up"), false));
             _shortcutList.Add(new Shortcut("J", Lang.T("VISUAL: Join the selected lines"), false));
-            _shortcutList.Add(new Shortcut("iw i\" i(", Lang.T("Select word/text in quotes/in brackets"), false));
+            _shortcutList.Add(new Shortcut("viw vaw", Lang.T("Select word (a: with the blank space after it)"), false));
+            _shortcutList.Add(new Shortcut("vi\" va\" vi' va'", Lang.T("Select in quotes (a: with the quotes)"), false));
+            _shortcutList.Add(new Shortcut("vib viB", Lang.T("Select in ( )/in { }, also over lines (a: with them)"), false));
+            _shortcutList.Add(new Shortcut("vip vap", Lang.T("Select paragraph (a: with the blank lines after it)"), false));
             _shortcutList.Add(new Shortcut("o", Lang.T("Move cursor to other end of selection"), false));
             _shortcutList.Add(new Shortcut("v V Q", Lang.T("Switch to text/lines/block (again: leave)"), false));
             _shortcutList.Add(new Shortcut("gv", Lang.T("Select the last selection again"), false));
@@ -1651,6 +1657,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":trim", Lang.T("Trim blank space (line start/end)"), false));
             _shortcutList.Add(new Shortcut(":ol :ul", Lang.T("Numbered/Bulleted list (selected lines)"), false));
             _shortcutList.Add(new Shortcut(":dup", Lang.T("Duplicate the selection (or the line)"), false));
+            _shortcutList.Add(new Shortcut(":sort :sort!", Lang.T("Sort the selected lines (or all), !: reversed"), false));
+            _shortcutList.Add(new Shortcut(":sort i", Lang.T("Sort, upper and lower case alike"), false));
             _shortcutList.Add(new Shortcut("\"+y", Lang.T("Yank to the system clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut(":pb :pbread", Lang.T("Write to/Read from the paste bin"), false));
             _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path of the file to the clipboard"), false));

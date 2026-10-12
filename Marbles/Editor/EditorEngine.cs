@@ -695,6 +695,10 @@ internal sealed partial class EditorEngine
             {
                 Duplicate(first, last, fromSelection);
             }
+            else if (command is "sort" or "sort!" or "sort i" or "sort! i")
+            {
+                SortLines(first, last, command.StartsWith("sort!", StringComparison.Ordinal), command.EndsWith(" i"));
+            }
             else if (command is "pb" or "pbappend")
             {
                 WriteToPasteBin(SelectedText(first, last, fromSelection), command == "pbappend");
@@ -828,6 +832,14 @@ internal sealed partial class EditorEngine
             case "dup":
             case "duplicate":
                 Duplicate(Cursor.Line, Cursor.Line, false);
+                break;
+            case "sort":
+            case "sort!":
+            case "sort i":
+            case "sort! i":
+                // Without a selection: all the lines
+                SortLines(0, Buffer.LineCount - 1, command.StartsWith("sort!", StringComparison.Ordinal),
+                    command.EndsWith(" i"));
                 break;
             case "ol":
             case "ul":
@@ -1095,6 +1107,26 @@ internal sealed partial class EditorEngine
         PasteBinText = text;
         PasteBinAppend = append ? true : null;
         _request = EditorRequest.PasteBinWrite;
+    }
+
+    /// <summary>
+    /// ":sort": sort lines (by the value of their characters; "i": not telling upper and lower case apart).
+    /// ":sort!" sorts them the other way. One step to undo
+    /// </summary>
+    private void SortLines(int first, int last, bool reverse, bool ignoreCase)
+    {
+        if (SingleLine || last <= first) return;
+        var lines = Enumerable.Range(first, last - first + 1).Select(line => Buffer[line]).ToList();
+        var comparer = ignoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var sorted = lines.Order(comparer).ToList();
+        if (reverse) sorted.Reverse();
+        if (sorted.SequenceEqual(lines)) return;
+        var from = new TextPos(first, 0);
+        var to = new TextPos(last, Buffer.LineLength(last));
+        Delete(from, to);
+        Insert(from, string.Join(TextBuffer.NewLine, sorted));
+        Cursor = from;
+        Message = Lang.F("{0} lines sorted", lines.Count);
     }
 
     private void MakeList(int first, int last, bool ordered)

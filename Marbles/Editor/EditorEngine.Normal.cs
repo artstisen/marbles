@@ -256,9 +256,34 @@ internal sealed partial class EditorEngine
                 break;
             case 'i':
             case 'a':
+                if (cmd == 'p')
+                {
+                    // A paragraph: whole lines (in Visual mode it selects them in Visual Line mode)
+                    var (first, lastLine) = ParagraphLines(prefix == 'a');
+                    if (IsVisual)
+                    {
+                        _visualAnchor = new TextPos(first, 0);
+                        Cursor = new TextPos(lastLine, 0);
+                        Mode = EditorMode.VisualLine;
+                    }
+                    else if (_operator != NoKey)
+                    {
+                        ApplyOperatorToLines(_operator, first, lastLine);
+                    }
+
+                    break;
+                }
+
                 if (TextObject(cmd, prefix == 'a', out var from, out var to))
                 {
-                    if (IsVisual)
+                    if (IsVisual && from.Col == 0 && to.Col == 0 && to.Line > from.Line)
+                    {
+                        // Whole lines (the inside of a block whose brackets are on lines of their own)
+                        _visualAnchor = from;
+                        Cursor = new TextPos(to.Line - 1, 0);
+                        Mode = EditorMode.VisualLine;
+                    }
+                    else if (IsVisual)
                     {
                         _visualAnchor = from;
                         Cursor = Left(to, 1);
@@ -289,6 +314,34 @@ internal sealed partial class EditorEngine
                     case 'v' when _operator == NoKey:
                         ReselectLast();
                         break;
+                    case 'm':
+                    case 'M':
+                    {
+                        // Half the width of the text to the right (gm) or the left (gM), on the line
+                        var half = Math.Max(1, Layout.Width / 2);
+                        var line = CurrentLine;
+                        var cell = TextMetrics.WidthOfRange(line, 0, Math.Min(Cursor.Col, line.Length));
+                        var target = Math.Max(0, cell + (cmd == 'm' ? half : -half));
+                        var col = 0;
+                        var width = 0;
+                        while (col < line.Length)
+                        {
+                            var length = TextMetrics.ElementLength(line, col);
+                            var next = width + TextMetrics.WidthOfRange(line, col, col + length);
+                            if (next > target) break;
+                            width = next;
+                            col += length;
+                        }
+
+                        // Not past the last char in Normal mode
+                        if (col >= line.Length && line.Length > 0 && Mode != EditorMode.Insert)
+                        {
+                            col = line.Length - TextMetrics.PreviousElementLength(line, line.Length);
+                        }
+
+                        RunMotion(new Motion(new TextPos(Cursor.Line, col)));
+                        return;
+                    }
                     case 'j':
                     case 'k':
                     {
@@ -624,85 +677,132 @@ internal sealed partial class EditorEngine
                 break;
             }
             default:
-            {
-                char openChar, closeChar;
-                switch (obj)
-                {
-                    case '(' or ')' or 'b':
-                        (openChar, closeChar) = ('(', ')');
-                        break;
-                    case '[' or ']':
-                        (openChar, closeChar) = ('[', ']');
-                        break;
-                    case '{' or '}' or 'B':
-                        (openChar, closeChar) = ('{', '}');
-                        break;
-                    case '<' or '>':
-                        (openChar, closeChar) = ('<', '>');
-                        break;
-                    default:
-                        return false;
-                }
-
-                // Find the bracket opening before the cursor, and the one closing it
-                start = -1;
-                end = -1;
-                var depth = 0;
-                for (var i = col; i >= 0; i--)
-                {
-                    if (line[i] == closeChar && i != col)
-                    {
-                        depth++;
-                    }
-                    else if (line[i] == openChar)
-                    {
-                        if (depth == 0)
-                        {
-                            start = i;
-                            break;
-                        }
-
-                        depth--;
-                    }
-                }
-
-                if (start < 0) return false;
-                depth = 0;
-                for (var i = start + 1; i < line.Length; i++)
-                {
-                    if (line[i] == openChar)
-                    {
-                        depth++;
-                    }
-                    else if (line[i] == closeChar)
-                    {
-                        if (depth == 0)
-                        {
-                            end = i;
-                            break;
-                        }
-
-                        depth--;
-                    }
-                }
-
-                if (end < 0) return false;
-                if (around)
-                {
-                    end++;
-                }
-                else
-                {
-                    start++;
-                }
-
-                break;
-            }
+                return BracketObject(obj, around, out from, out to);
         }
 
         from = Cursor with { Col = start };
         to = Cursor with { Col = end };
         return true;
+    }
+
+    // A text object in brackets ("ib" "i(" "iB" "i{" "i[" "i<", or with "a" the brackets too), which can go over
+    // several lines. In a block whose brackets are on lines of their own, "i" takes the lines between them
+    private bool BracketObject(char obj, bool around, out TextPos from, out TextPos to)
+    {
+        from = to = Cursor;
+        char openChar, closeChar;
+        switch (obj)
+        {
+            case '(' or ')' or 'b':
+                (openChar, closeChar) = ('(', ')');
+                break;
+            case '[' or ']':
+                (openChar, closeChar) = ('[', ']');
+                break;
+            case '{' or '}' or 'B':
+                (openChar, closeChar) = ('{', '}');
+                break;
+            case '<' or '>':
+                (openChar, closeChar) = ('<', '>');
+                break;
+            default:
+                return false;
+        }
+
+        var text = Buffer.GetText();
+        var cursor = Buffer.ToIndex(Buffer.Clamp(Cursor));
+        if (cursor >= text.Length) cursor = Math.Max(0, text.Length - 1);
+        if (text.Length == 0) return false;
+        // The bracket opening before the cursor (or under it), and the one closing it
+        var open = -1;
+        var depth = 0;
+        for (var i = cursor; i >= 0; i--)
+        {
+            if (text[i] == closeChar && i != cursor)
+            {
+                depth++;
+            }
+            else if (text[i] == openChar)
+            {
+                if (depth == 0)
+                {
+                    open = i;
+                    break;
+                }
+
+                depth--;
+            }
+        }
+
+        if (open < 0) return false;
+        var close = -1;
+        depth = 0;
+        for (var i = open + 1; i < text.Length; i++)
+        {
+            if (text[i] == openChar)
+            {
+                depth++;
+            }
+            else if (text[i] == closeChar)
+            {
+                if (depth == 0)
+                {
+                    close = i;
+                    break;
+                }
+
+                depth--;
+            }
+        }
+
+        if (close < 0) return false;
+        int first, last;
+        if (around)
+        {
+            first = open;
+            last = close + 1;
+        }
+        else
+        {
+            first = open + 1;
+            last = close;
+            // The opening bracket ends its line: the inner text starts on the next line
+            if (first < last && text[first] == TextBuffer.NewLine) first++;
+            // The closing bracket starts its line (after blank space): the inner text ends with the line before
+            var lineStart = last;
+            while (lineStart > first && text[lineStart - 1] is ' ' or '\t') lineStart--;
+            if (lineStart > first && text[lineStart - 1] == TextBuffer.NewLine) last = lineStart;
+        }
+
+        from = Buffer.FromIndex(first);
+        to = Buffer.FromIndex(last);
+        return true;
+    }
+
+    // The lines of a paragraph ("ip"): the lines around the cursor that are not blank (or that are blank, on a
+    // blank line). With "ap" the blank lines after it too (or before it, if there are none after it)
+    private (int First, int Last) ParagraphLines(bool around)
+    {
+        bool Blank(int line) => Buffer[line].Trim().Length == 0;
+        var blank = Blank(Cursor.Line);
+        var first = Cursor.Line;
+        var last = Cursor.Line;
+        while (first > 0 && Blank(first - 1) == blank) first--;
+        while (last < Buffer.LineCount - 1 && Blank(last + 1) == blank) last++;
+        if (!around) return (first, last);
+        if (last < Buffer.LineCount - 1)
+        {
+            // The lines of the other kind after it
+            var other = !blank;
+            while (last < Buffer.LineCount - 1 && Blank(last + 1) == other) last++;
+        }
+        else
+        {
+            var other = !blank;
+            while (first > 0 && Blank(first - 1) == other) first--;
+        }
+
+        return (first, last);
     }
 
     #endregion

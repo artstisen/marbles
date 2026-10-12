@@ -38,6 +38,7 @@ In Insert mode: `Tab` inserts 4 blank spaces, `CTRL+W` deletes the word before t
 - `{` `}` Previous/Next blank line
 - `f.` `t.` To/Before the next `.` on the line (`F` `T`: backwards), repeated with `;` and `,`
 - `PgUp` `PgDn` One page up/down, `CTRL+U` `CTRL+D` Half a page up/down
+- `gm` `gM` Half the width of the screen to the right/left on the line
 - `zt` `zz` `zb` Scroll the row of the cursor to the top/center/bottom
 
 A number before a movement or command repeats it: `5j` moves 5 rows down and `3w` three words forward.
@@ -48,6 +49,7 @@ A number before a movement or command repeats it: `5j` moves 5 rows down and `3w
 - `d` `c` `y` Delete/Change/Yank (copy), followed by a movement:
   - `dw` `d$` `dG` Delete a word/to the end of the line/to the end of the text
   - `cw` `ciw` `ci"` Change a word/the whole word/the text in quotes
+  - `yiw` `yip` `dip` Yank the word/yank the paragraph/delete the paragraph (see the text objects below)
   - `yy` `dd` `cc` Yank/Delete/Change the line (`3dd`: 3 lines)
 - `D` `C` `Y` Delete/Change to the end of the line, Yank the line
 - `p` `P` Paste after/before the cursor
@@ -66,7 +68,11 @@ Press `v` (text), `V` (whole lines) or `Q` (a block, see below) and select with 
 - `>` `<` Indent/Unindent the selected lines
 - `J` `K` In V-LINE: move the selected lines down/up (`3J` moves them 3 lines). The lines stay selected
 - `J` In VISUAL: join the selected lines
-- `iw` `i"` `i(` Select the word/the text in quotes/the text in brackets
+- **Text objects** (after `v`, or after `d` `c` `y` and the other operators): `i` takes the inside, `a` takes it with what surrounds it
+  - `iw` `aw` The word (`aw`: with the blank space after it), `iW` `aW` the same for words separated by blank space
+  - `i"` `a"` `i'` `a'` The text in quotes (`a`: with the quotes), on the line
+  - `ib` (or `i(`) `iB` (or `i{`), and `i[` `i<`: the text in brackets, also over several lines. For a block whose brackets are on lines of their own, `iB` takes the lines between them (`viB` selects them as lines, and `diB` leaves `{` and `}` on lines of their own); `aB` takes the brackets too
+  - `ip` `ap` The paragraph: the lines around the cursor that are not blank (`ap`: with the blank lines after it). `vip` selects them in Visual Line mode
 - `o` Move the cursor to the other end of the selection
 - `v` `V` `Q` Switch to selecting text/lines/a block. The key of the mode you are in leaves it
 - `gv` (in Normal mode) Select again what was selected last, in the same kind of selection, also after the selection was used by a command (like `:ol` or `y`). In Visual mode, `gv` changes places between the selection shown and the last one
@@ -209,6 +215,7 @@ The paste bin is not encrypted: text from a note written to it can be read by an
 - `:pw` Insert a generated strong password
 - `:trim` Trim blank space at the start and end of all lines
 - `:ol` Make the selected lines a numbered list (`1. `, `2. ` ...), and `:ul` a bulleted list (`- `). Select the lines with `V` (or `v`, `Q`) and type the command: the command line then starts with `'<,'>`, which stands for the selected lines. Without a selection the command works on the line of the cursor, and `:2,5ol` on lines 2 to 5. Lines that are a list of the other kind are changed to this kind, and when all the lines already are a list of the kind asked for, the list marks are removed again. Blank lines are left as they are, the indentation is kept, and indented lines are numbered as a list of their own (1, 2 ... again under each item). One `u` undoes it
+- `:sort` Sort the selected lines (select them and type `:sort`), or all the lines without a selection, or `:2,9sort` lines 2 to 9. `:sort!` sorts them the other way, and `:sort i` (or `:sort! i`) does not tell upper and lower case apart. The lines are sorted by the values of their characters (uppercase before lowercase, æøå after z). One `u` undoes it
 - `:dup` (or `:duplicate`) Duplicate the selection: select the text and type `:dup` (the command line starts with `'<,'>`). Text selected with `v` is copied right after itself, the lines selected with `V` are copied below the last of them, and a block selected with `Q` is copied to the right of the block (the text to the right of it stays in line). Without a selection the line of the cursor is duplicated, and `:2,5dup` copies lines 2 to 5 below line 5. The cursor goes to the start of the copy, and one `u` undoes it
 - `:%y` `:%d` Yank all/Delete all, `:2,9d` Delete line 2 to 9
 - `:clear` Clear all text
