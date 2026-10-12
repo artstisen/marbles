@@ -190,7 +190,7 @@ internal static partial class FileExplorer
                 var command = CommandLine.Read(':', false,
                     _mode == BrowseMode.Edit ? CommandContext.Files : CommandContext.FilePicker);
                 var name = command == null ? string.Empty : CommandLine.Name(command).ToLowerInvariant();
-                if (_pending != null && command != null && name is not ("cd" or "home" or "h" or "help" or "panes"))
+                if (_pending != null && command != null && name is not ("cd" or "home" or "data" or "h" or "help" or "panes"))
                 {
                     // Only going to a directory while the place to copy or move to is selected
                     _message = DialogText.FileSelectTarget;
@@ -213,6 +213,12 @@ internal static partial class FileExplorer
                 if (name is "home")
                 {
                     ChangeDirectory(DataDirectory(), null);
+                }
+                else if (name is "data")
+                {
+                    // The data directory itself (with the settings, the snippets, the favorites ...), also when
+                    // the data files are in a subfolder of it
+                    ChangeDirectory(System.IO.Path.GetFullPath(FileIo.GetDataDirectoryName()), null);
                 }
                 else if (name is "h" or "help")
                 {

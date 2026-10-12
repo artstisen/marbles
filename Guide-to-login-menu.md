@@ -93,7 +93,8 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `R` Refresh
 - `:path` Copy the full path of the selected file or directory (on `..`: the directory shown) to the system clipboard and/or the paste bin, as set in the [clipboard settings](Guide-to-editor.md#system-clipboard-and-paste-bin)
 - `:match` With two panes: the other pane shows the directory of the pane with the focus (with the same file or directory selected). The focus stays where it is
-- `:cd path` Go to a directory. `:home` Go to the Marbles data directory
+- `:cd path` Go to a directory. `:home` Go to the folder of the data files in use (the data directory, or the subfolder of it chosen for the data files)
+- `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` (the snippets of the editor), `favorites.txt` and `history.txt` (of the file browser)
 - `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again (see [the command line](Guide-to-main-menu.md))
 - `?` Help
 - `Esc`, `Q` or `:q` Close the file browser
@@ -119,7 +120,7 @@ Names (of a new file or directory, a new name for one, and the name of a favorit
 
 A new name (of a file, a directory or a data file) follows the same rules on all platforms, so files can be copied between Windows, macOS and Linux: it cannot contain `\ / : * ? " < > |` or control characters, cannot end with a dot or a space, can be at most 255 characters long, and cannot be a name Windows keeps for devices (`CON`, `PRN`, `AUX`, `NUL`, `COM1`-`COM9`, `LPT1`-`LPT9`, also with an extension, as `con.txt`). If a name cannot be used, the message tells why, or that a file or directory with that name already exists.
 
-For copy and move you select where to: after `C` or `M` the browser stays as it is, with the name of the file (or the number marked) at the top left, in the attention color (as the name of the pane with the focus). Go to the directory, in either pane, and press `S` to copy or move the file to the directory shown in the pane with the focus. `Esc` cancels. With two panes the focus goes to the other pane, so pressing `S` at once copies or moves to it, and `Tab` takes you back if the place is in the first pane. With one pane you go to the directory in that pane. While you are selecting, the other file keys and commands are not in use (`:cd` and `:home` are). Both panes are updated afterwards, and the focus stays in the pane copied or moved to, with the (last) file copied or moved selected. While a directory is being copied the name of the current file is shown, and `Esc` cancels the copy (what was copied so far is removed).
+For copy and move you select where to: after `C` or `M` the browser stays as it is, with the name of the file (or the number marked) at the top left, in the attention color (as the name of the pane with the focus). Go to the directory, in either pane, and press `S` to copy or move the file to the directory shown in the pane with the focus. `Esc` cancels. With two panes the focus goes to the other pane, so pressing `S` at once copies or moves to it, and `Tab` takes you back if the place is in the first pane. With one pane you go to the directory in that pane. While you are selecting, the other file keys and commands are not in use (`:cd`, `:home` and `:data` are). Both panes are updated afterwards, and the focus stays in the pane copied or moved to, with the (last) file copied or moved selected. While a directory is being copied the name of the current file is shown, and `Esc` cancels the copy (what was copied so far is removed).
 
 Things to know:
 

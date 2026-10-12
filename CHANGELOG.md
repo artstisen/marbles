@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **File browser**: `:data` goes to the data directory, with the settings, the snippets (`snippets.txt`), the favorites and the history (`:home` goes to the folder of the data files in use, which can be a subfolder).
 - **Snippets** in the editor: `:snip` shows the snippets (kept in `snippets.txt` in the data directory) in a box, where they can be inserted, filtered, sorted (as in the file, by title or last used), added, renamed and deleted. `$0` in a snippet places the cursor, and a tag in the title (`(html)`, `(css)` ...) shows it first for that kind of text. `:snip add` keeps the selection as a snippet (asking first in a note), and `:snip edit` opens the file and returns to the text afterwards. If there is no file, it is made when asked.
 - **Wrapping of long lines** can be turned off in the editor (`:wrap`, `:set nowrap`, or the Configuration page): each line is one row, the view scrolls sideways to follow the cursor, `<` and `>` show where a line goes on, and `zh` `zl` `zH` `zL` `zs` `ze` scroll the view. On by default (setting `wrap`).
 - **Editor**: the paragraph text object (`vip`, `yip`, `dip`, `ap`), brackets over several lines (`viB`, `diB`, `vib`: the lines between `{` and `}` on lines of their own), `:sort` (`:sort!` reversed, `:sort i` ignoring case) for the selected lines or all, and `gm`/`gM` (half the screen width right/left). The text objects (`viw`, `vi"`, `va"`, `vi'` ...) are now in the help.

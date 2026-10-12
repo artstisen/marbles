@@ -1462,7 +1462,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path to the clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut("R", Lang.T("Refresh"), false));
             _shortcutList.Add(new Shortcut(":cd path", Lang.T("Go to a directory"), false));
-            _shortcutList.Add(new Shortcut(":home", Lang.T("Go to the Marbles data directory"), false));
+            _shortcutList.Add(new Shortcut(":home", Lang.T("Go to the folder of the data files in use"), false));
+            _shortcutList.Add(new Shortcut(":data", Lang.T("Go to the data directory (settings, snippets ...)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q :q", Lang.T("Close the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Text files"), Lang.T("Opened in the editor. They are NOT encrypted"), false));
