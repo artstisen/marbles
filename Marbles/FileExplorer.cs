@@ -210,6 +210,18 @@ internal static partial class FileExplorer
                     break;
                 }
 
+                if (name == "exit" && _mode == BrowseMode.Edit)
+                {
+                    // Leave Marbles (if the user wants that)
+                    if (ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false))
+                    {
+                        Tools.ExitApplication();
+                    }
+
+                    Draw(true);
+                    continue;
+                }
+
                 if (name is "home")
                 {
                     ChangeDirectory(DataDirectory(), null);

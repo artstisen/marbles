@@ -29,6 +29,13 @@ public class DuplicateTests
     // Without a selection: the line of the cursor. With line numbers: those lines
     [InlineData("a\nb", ":dup<CR>", "a\na\nb")]
     [InlineData("a\nb\nc\nd", ":2,3duplicate<CR>", "a\nb\nc\nb\nc\nd")]
+    // A number of copies
+    [InlineData("<li></li>\n</ul>", ":dup 3<CR>", "<li></li>\n<li></li>\n<li></li>\n<li></li>\n</ul>")]
+    [InlineData("a\nb\nc", "Vj:dup 2<CR>", "a\nb\na\nb\na\nb\nc")]
+    [InlineData("a\nb\nc", ":2,3duplicate 2<CR>", "a\nb\nc\nb\nc\nb\nc")]
+    [InlineData("one two", "wviw:dup 3<CR>", "one twotwotwotwo")]
+    [InlineData("abcd\nefgh", "lQjl:dup 2<CR>", "abcbcbcd\nefgfgfgh")]
+    [InlineData("a", ":dup 0<CR>", "a\na")]
     public void Duplicate(string text, string keys, string expected)
     {
         Assert.Equal(expected, Run(text, keys).GetText());

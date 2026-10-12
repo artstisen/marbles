@@ -98,6 +98,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again (see [the command line](Guide-to-main-menu.md))
 - `?` Help
 - `Esc`, `Q` or `:q` Close the file browser
+- `:exit` Exit Marbles (asks first)
 
 A text file is opened in the [editor](Guide-to-editor.md), where `:w` saves it and `:q` returns to the browser. Files are saved as UTF-8 with the line endings they had. Files larger than 10 MB and files that are not text are not opened.
 

@@ -1490,6 +1490,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":data", Lang.T("Go to the data directory (settings, snippets ...)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q :q", Lang.T("Close the file browser"), false));
+            _shortcutList.Add(new Shortcut(":exit", Lang.T("Exit Marbles (asks first)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Text files"), Lang.T("Opened in the editor. They are NOT encrypted"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Saving"), Lang.T("As UTF-8, with the line endings of the file"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Not UTF-8"), Lang.T("Can be converted (replace file or save copy)"), false));
@@ -1690,6 +1691,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":trim", Lang.T("Trim blank space (line start/end)"), false));
             _shortcutList.Add(new Shortcut(":ol :ul", Lang.T("Numbered/Bulleted list (selected lines)"), false));
             _shortcutList.Add(new Shortcut(":dup", Lang.T("Duplicate the selection (or the line)"), false));
+            _shortcutList.Add(new Shortcut(":dup 5", Lang.T("Make 5 copies of the selection (or the line)"), false));
             _shortcutList.Add(new Shortcut(":sort :sort!", Lang.T("Sort the selected lines (or all), !: reversed"), false));
             _shortcutList.Add(new Shortcut(":wrap", Lang.T("Wrap long lines on/off (:set wrap, :set nowrap)"), false));
             _shortcutList.Add(new Shortcut(":sort i", Lang.T("Sort, upper and lower case alike"), false));

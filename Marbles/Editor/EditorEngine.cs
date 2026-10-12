@@ -789,6 +789,15 @@ internal sealed partial class EditorEngine
 
         // ":sn" is short for ":snip"
         if (command == "sn" || command.StartsWith("sn ", StringComparison.Ordinal)) command = "snip" + command[2..];
+        // ":dup 5" makes five copies
+        var copies = 1;
+        var dupCount = Regex.Match(command, "^(dup|duplicate) +([0-9]+)$");
+        if (dupCount.Success)
+        {
+            copies = int.TryParse(dupCount.Groups[2].Value, out var n) ? Math.Clamp(n, 1, MaxCopies) : MaxCopies;
+            command = "dup";
+        }
+
         if (range.HasValue)
         {
             var (first, last) = range.Value;
@@ -816,7 +825,7 @@ internal sealed partial class EditorEngine
             }
             else if (command is "dup" or "duplicate")
             {
-                Duplicate(first, last, fromSelection);
+                Duplicate(first, last, fromSelection, copies);
             }
             else if (command is "sort" or "sort!" or "sort i" or "sort! i")
             {
@@ -974,7 +983,7 @@ internal sealed partial class EditorEngine
                 break;
             case "dup":
             case "duplicate":
-                Duplicate(Cursor.Line, Cursor.Line, false);
+                Duplicate(Cursor.Line, Cursor.Line, false, copies);
                 break;
             case "sort":
             case "sort!":
@@ -1169,7 +1178,10 @@ internal sealed partial class EditorEngine
     /// char, the lines of Visual Line mode (or of a range, or the line of the cursor) below the last of them, and a
     /// block of Visual Block mode to the right of the block. The cursor goes to the start of the copy
     /// </summary>
-    private void Duplicate(int first, int last, bool fromSelection)
+    // The most copies ":dup" makes at once
+    private const int MaxCopies = 500;
+
+    private void Duplicate(int first, int last, bool fromSelection, int copies)
     {
         if (SingleLine) return;
         var mode = fromSelection ? _commandSelectionMode : EditorMode.VisualLine;
@@ -1192,7 +1204,7 @@ internal sealed partial class EditorEngine
 
                 var text = Buffer.GetText(from, to);
                 if (text.Length == 0) return;
-                Insert(to, text);
+                Insert(to, string.Concat(Enumerable.Repeat(text, copies)));
                 Cursor = to;
                 break;
             }
@@ -1211,7 +1223,7 @@ internal sealed partial class EditorEngine
                         piece += new string(' ', Math.Max(0, right - left - TextMetrics.WidthOf(piece)));
                     }
 
-                    Insert(new TextPos(line, end), piece);
+                    Insert(new TextPos(line, end), string.Concat(Enumerable.Repeat(piece, copies)));
                 }
 
                 Cursor = new TextPos(top, copyStart);
@@ -1221,7 +1233,8 @@ internal sealed partial class EditorEngine
             {
                 var lines = string.Join(TextBuffer.NewLine,
                     Enumerable.Range(first, last - first + 1).Select(line => Buffer[line]));
-                Insert(new TextPos(last, Buffer.LineLength(last)), TextBuffer.NewLine + lines);
+                Insert(new TextPos(last, Buffer.LineLength(last)),
+                    string.Concat(Enumerable.Repeat(TextBuffer.NewLine + lines, copies)));
                 Cursor = new TextPos(last + 1, FirstNonBlank(last + 1));
                 break;
             }
