@@ -240,7 +240,7 @@ Text that is yanked, and lines that are deleted, are kept in the string memory (
 What is yanked (`y`, `yy`, `Y`, `:y` ...) is kept in the string memory of Marbles. It can also be sent out of Marbles, to be used in other programs:
 
 - **The system clipboard** through the terminal (OSC 52). This works in Windows Terminal, iTerm2, kitty, WezTerm and tmux, also over SSH (the text lands on the clipboard of the computer you sit at). It does not work in the console of a Raspberry Pi or in the Terminal of macOS; there nothing happens.
-- **The paste bin**, a text file (`paste-bin.txt` in the directory Marbles is started from, unless set otherwise) that other programs can read. Use it where OSC 52 does not work.
+- **The paste bin**, a text file (`paste-bin.txt` in the data directory, with the settings and the snippets, unless set otherwise: a name or a path that is not a full path is in the data directory) that other programs can read. Use it where OSC 52 does not work.
 
 Only yanks go out, never text that is deleted. By default a yank goes out when `"+` is typed in front of it: `"+yy` (the line), `"+yw`, or select text and type `"+y` (`"*` works as `"+`). It can be set so that every yank goes out. Text from the notes of a data file, which are encrypted, is not sent out until that is allowed on the clipboard settings page.
 

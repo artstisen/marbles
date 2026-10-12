@@ -175,6 +175,10 @@ internal static partial class FileExplorer
                     case "move":
                         MoveFavoritesToFolder(selected);
                         break;
+                    case "top":
+                    case "bottom":
+                        MoveFavoritesToEnd(selected, command == "top");
+                        break;
                     case "u":
                     case "undo":
                         UndoRemoveFavorite();
@@ -330,6 +334,10 @@ internal static partial class FileExplorer
             else if (key.Key == ConsoleKey.M)
             {
                 MoveFavoritesToFolder(selected);
+            }
+            else if (key.Key is ConsoleKey.T or ConsoleKey.E)
+            {
+                MoveFavoritesToEnd(selected, key.Key == ConsoleKey.T);
             }
             else if (key.Key is ConsoleKey.P or ConsoleKey.D)
             {
@@ -500,6 +508,23 @@ internal static partial class FileExplorer
         _favoriteMessage = (items.Count == 1 ? DialogText.FavoriteMovedOne
                                : DialogText.FavoriteMovedMany.Replace("{0}", items.Count.ToString())) +
                            (folder == null ? DialogText.FavoriteNoFolder : folder.Name);
+        SaveFavoriteList();
+    }
+
+    // Move the marked favorites (or the selected favorite or folder) to the top or the end of the list (a
+    // favorite in a folder: of the folder)
+    private static void MoveFavoritesToEnd(int selected, bool top)
+    {
+        var items = MarkedOrSelected(selected);
+        if (items.Count == 0 && selected >= 0) items.Add(FileFavorites.Items[selected]);
+        if (items.Count == 0) return;
+        FileFavorites.MoveToEnd(items, top);
+        _favoriteMarks.Clear();
+        // The first of them is selected
+        FilterFavorites();
+        _favoriteIndex = Math.Max(0,
+            _favorites.FindIndex(number => ReferenceEquals(FileFavorites.Items[number], items[0])));
+        _favoriteMessage = top ? Lang.T("Moved to the top") : Lang.T("Moved to the end");
         SaveFavoriteList();
     }
 

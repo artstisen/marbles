@@ -253,6 +253,44 @@ internal static class FileFavorites
         return index;
     }
 
+    /// <summary>
+    /// Move favorites (or folders, with the favorites in them) to the top or the end: a favorite in a folder to
+    /// the top or the end of its folder, the others to the top or the end of the list. Their order is kept
+    /// </summary>
+    /// <returns>The number moved</returns>
+    internal static int MoveToEnd(ICollection<Favorite> items, bool top)
+    {
+        var moving = List.Where(items.Contains).ToList();
+        // By where they are: the folder they are in (null: the list)
+        var groups = moving.GroupBy(item => item.InFolder ? List[FolderStart(List.IndexOf(item))] : null).ToList();
+        foreach (var group in groups)
+        {
+            var blocks = new List<Favorite>();
+            foreach (var item in group)
+            {
+                var index = List.IndexOf(item);
+                var count = item.IsFolder ? FolderEnd(index) - index + 1 : 1;
+                blocks.AddRange(List.GetRange(index, count));
+                List.RemoveRange(index, count);
+            }
+
+            int at;
+            if (group.Key == null)
+            {
+                at = top ? 0 : List.Count;
+            }
+            else
+            {
+                var folder = List.IndexOf(group.Key);
+                at = top ? folder + 1 : FolderEnd(folder) + 1;
+            }
+
+            List.InsertRange(at, blocks);
+        }
+
+        return moving.Count;
+    }
+
     internal static void SetColor(int index, ConsoleColor? color)
     {
         if (index >= 0 && index < List.Count) List[index].Color = color;

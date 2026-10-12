@@ -1,6 +1,8 @@
 # Changes
 
 ## v1.5.3
+- **Paste bin** in the data directory: `paste-bin.txt` is now kept with the settings and the snippets (a paste bin file set as a full path stays where it is). A paste bin in the directory Marbles was started from is no longer used: move it to the data directory to keep its text.
+- **Favorites**: `T` (`:top`) and `E` (`:bottom`) move the marked favorites (or the selected favorite or folder) to the top or the end of the list. Favorites in a folder go to the top or the end of the folder.
 - **File browser**: `:data` goes to the data directory, with the settings, the snippets (`snippets.txt`), the favorites and the history (`:home` goes to the folder of the data files in use, which can be a subfolder).
 - **Snippets** in the editor: `:snip` shows the snippets (kept in `snippets.txt` in the data directory) in a box, where they can be inserted, filtered, sorted (as in the file, by title or last used), added, renamed and deleted. `$0` in a snippet places the cursor, and a tag in the title (`(html)`, `(css)` ...) shows it first for that kind of text. `:snip add` keeps the selection as a snippet (asking first in a note), and `:snip edit` opens the file and returns to the text afterwards. If there is no file, it is made when asked.
 - **Wrapping of long lines** can be turned off in the editor (`:wrap`, `:set nowrap`, or the Configuration page): each line is one row, the view scrolls sideways to follow the cursor, `<` and `>` show where a line goes on, and `zh` `zl` `zH` `zL` `zs` `ze` scroll the view. On by default (setting `wrap`).

@@ -1495,6 +1495,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("X :rename name", Lang.T("Rename the folder"), false));
             _shortcutList.Add(new Shortcut("Space", Lang.T("Mark/Unmark the favorite (several can be marked)"), false));
             _shortcutList.Add(new Shortcut("M :move", Lang.T("Move the marked (or selected) to a folder"), false));
+            _shortcutList.Add(new Shortcut("T :top", Lang.T("Move the marked (or selected) to the top"), false));
+            _shortcutList.Add(new Shortcut("E :bottom", Lang.T("Move the marked (or selected) to the end"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("In a folder"), Lang.T("T and E move to the top/end of the folder"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Marked"), Lang.T("D removes them all. Esc clears the marks"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Into a folder"), Lang.T("M, or move the favorite onto the folder"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Out of a folder"), Lang.T("Move it past the first or last in it"), false));

@@ -121,6 +121,18 @@ public class ClipboardTests : IDisposable
     }
 
     [Fact]
+    public void ThePasteBin_IsInTheDataDirectory_UnlessAFullPathIsGiven()
+    {
+        var data = Path.GetFullPath(FileIo.GetDataDirectoryName());
+        Assert.Equal(Path.Combine(data, "paste-bin.txt"), SystemClipboard.FullPath("paste-bin.txt"));
+        Assert.Equal(Path.Combine(data, "clips", "pb.txt"), SystemClipboard.FullPath(Path.Combine("clips", "pb.txt")));
+        var full = Path.Combine(_directory, "pb.txt");
+        Assert.Equal(full, SystemClipboard.FullPath(full));
+        SystemClipboard.PasteBinFile = "paste-bin.txt";
+        Assert.Equal(Path.Combine(data, "paste-bin.txt"), SystemClipboard.PasteBinPath);
+    }
+
+    [Fact]
     public void Osc52_IsTheTextInBase64()
     {
         Assert.Equal("\u001b]52;c;w6Z4w7g=\u0007", SystemClipboard.Osc52Sequence("æxø"));

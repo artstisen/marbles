@@ -514,6 +514,25 @@ public class FileManagementTests : IDisposable
     }
 
     [Fact]
+    public void Favorites_AreMovedToTheTopOrTheEnd_OfTheListOrTheirFolder()
+    {
+        FileFavorites.Parse("\t/x/a\n\t[F]\n \t/x/b\n \t/x/c\n \t/x/d\n\t/x/e\n\t/x/f\n\t[G]\n \t/x/g\n");
+        // In the order they have, the ones outside the folders in the list, the others in their folder
+        Assert.Equal(3, FileFavorites.MoveToEnd(Items("f", "e", "d"), true));
+        Assert.Equal("e f a [F] .d .b .c [G] .g", Show());
+        Assert.Equal(3, FileFavorites.MoveToEnd(Items("e", "a", "b"), false));
+        Assert.Equal("f [F] .d .c .b [G] .g e a", Show());
+        // A folder moves with its favorites
+        Assert.Equal(1, FileFavorites.MoveToEnd(Items("F"), false));
+        Assert.Equal("f [G] .g e a [F] .d .c .b", Show());
+        Assert.Equal(1, FileFavorites.MoveToEnd(Items("F"), true));
+        Assert.Equal("[F] .d .c .b f [G] .g e a", Show());
+        // Already there: nothing changes
+        FileFavorites.MoveToEnd(Items("g"), true);
+        Assert.Equal("[F] .d .c .b f [G] .g e a", Show());
+    }
+
+    [Fact]
     public void Folders_SeveralFavoritesAreRemoved_AndPutBack()
     {
         FileFavorites.Parse("\t/x/a\n\t[F]\n \t/x/b\n \t/x/c\n\t/x/d\n\t/x/e\n");

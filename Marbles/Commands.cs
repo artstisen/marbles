@@ -62,7 +62,7 @@ internal static class Commands
             "quit close home data help cd",
             "q h"),
         [CommandContext.Favorites] = new Table(
-            "quit close help color info remove move undo folder expand collapse rename goto",
+            "quit close help color info remove move top bottom undo folder expand collapse rename goto",
             "q h u"),
         [CommandContext.History] = new Table(
             "quit close help info goto favorite remove clear",

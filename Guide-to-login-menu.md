@@ -185,6 +185,7 @@ In the list of favorites:
 - `l` or `Enter` on a folder: Open or close it. The favorites in an open folder are shown below it, two spaces in
 - `:expand` Open all the folders, `:collapse` Close all the folders
 - **Several at once:** Mark the favorites with `Space` (it marks or unmarks the selected favorite and goes to the next; a marked favorite has a `+` in front, and the number of marked is shown at the bottom right). Then press `M` and pick where they go from the list: one of your folders, _New folder..._ (you are asked for its name, and it is placed where the first of the favorites is) or _(No folder)_. Without marks, `M` moves the selected favorite. With marks, `D` removes all the marked favorites (you are asked first), and `u` puts them back. `Esc` clears the marks
+- **To the top or the end:** `T` (or `:top`) moves the marked favorites to the top of the list, and `E` (or `:bottom`) to the end, in the order they have. Without marks it moves the selected favorite, or the selected folder with its favorites. A favorite in a folder goes to the top or the end of its folder (`M` moves it out of the folder)
 - **Into a folder:** Move a favorite (`Tab` or `V`, then `j` `k`) onto the folder. Moving down onto a folder puts it first in the folder, moving up from below puts it last. A closed folder opens
 - **Out of a folder:** Move the favorite on, past the first or the last favorite in the folder
 - A folder is moved like a favorite. It is closed first, and moves with its favorites past the favorite or folder next to it

@@ -151,7 +151,7 @@ internal static class ClipboardPage
                     Lang.T("Type the path of the file and press Enter"), DialogText.NameColon,
                     SystemClipboard.PasteBinFile);
                 if (path == null) return;
-                var directory = Path.GetDirectoryName(Path.GetFullPath(path));
+                var directory = Path.GetDirectoryName(SystemClipboard.FullPath(path));
                 if (directory != null && !Directory.Exists(directory))
                 {
                     ChoiceBox.Message(Lang.T("Paste bin file"), DialogText.DirectoryNotFound, path);

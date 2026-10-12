@@ -40,10 +40,23 @@ internal static class SystemClipboard
     internal static bool PasteBinAppend { get; set; }
 
     /// <summary>
-    /// The paste bin file (setting "pastebinfile"). A path without a directory is in the directory Marbles is
-    /// started from
+    /// The paste bin file (setting "pastebinfile"). A path that is not a full path is in the data directory,
+    /// with the settings and the snippets
     /// </summary>
     internal static string PasteBinFile { get; set; } = DefaultPasteBinFile;
+
+    /// <summary>
+    /// The full path of the paste bin file
+    /// </summary>
+    internal static string PasteBinPath => FullPath(PasteBinFile);
+
+    /// <summary>
+    /// The full path of a paste bin file: one that is not a full path is in the data directory
+    /// </summary>
+    internal static string FullPath(string file)
+    {
+        return Path.GetFullPath(Path.IsPathRooted(file) ? file : Path.Combine(FileIo.GetDataDirectoryName(), file));
+    }
 
     internal static void SetDefaults()
     {
@@ -99,7 +112,7 @@ internal static class SystemClipboard
     {
         try
         {
-            var path = Path.GetFullPath(PasteBinFile);
+            var path = PasteBinPath;
             var directory = Path.GetDirectoryName(path);
             if (directory != null && !Directory.Exists(directory)) return DialogText.DirectoryNotFound;
             // The line endings of the system, as other programs expect them
@@ -134,7 +147,7 @@ internal static class SystemClipboard
         text = string.Empty;
         try
         {
-            var path = Path.GetFullPath(PasteBinFile);
+            var path = PasteBinPath;
             if (File.Exists(path)) text = File.ReadAllText(path, Encoding.UTF8);
         }
         catch (Exception e)
@@ -154,7 +167,7 @@ internal static class SystemClipboard
     {
         try
         {
-            var path = Path.GetFullPath(PasteBinFile);
+            var path = PasteBinPath;
             if (File.Exists(path)) File.WriteAllText(path, string.Empty);
             return DialogText.Success;
         }
