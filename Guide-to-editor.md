@@ -160,7 +160,7 @@ In the box:
 - `j` `k` `gg` `G` Select a snippet. The first lines of it are shown below the list
 - `Enter` Insert the snippet after the cursor (as `p`), as one change (one `u` undoes it). The lines after the first are indented as the line of the cursor
 - `Enter` with a selection (`:snip` typed with text selected, or with lines as `:2,5snip`): a snippet with `$0` is put around the selected text, which goes in at the mark. Text selected with `v` is taken out and the snippet put in its place. Lines selected with `V` are replaced by the lines of the snippet, indented as the lines were, and the selected lines get the indent the mark has in the snippet (with `<div>`, `    $0` and `</div>`, the lines end up one step in, inside the `div`). The cursor goes to the start of the snippet, in Normal mode, and one `u` undoes it all. A snippet without `$0` is inserted after the selection, which stays as it is. A block (`Q`) is not put in a snippet
-- `/` Filter the titles: type, and `Enter` keeps the filter (`Esc` takes it away)
+- `/` Filter the titles: type, and `Enter` keeps the filter (`Esc` takes it away). While typing, `Tab` (or the down arrow) selects the next title that matches, and `Shift+Tab` (or the up arrow) the one before
 - `S` The order: as in the file, by title, or the last used first (in this session). The order is remembered (`snipsort` in the settings file)
 - `A` Add a snippet: the selected text (if `:snip` was typed with a selection), or a new one, which is then written in the file
 - `R` Rename, `D` Delete (asks first)
@@ -243,7 +243,7 @@ Text that is yanked, and lines that are deleted, are kept in the string memory (
 - `p` `P` Paste the current memory string
 - `CTRL+P` `CTRL+N` Select the previous/next memory string
 - `:reg` Show the current memory string
-- `:reglist` Show all the strings of the memory in a box, the newest first (with its number, as `CTRL+N` and `CTRL+P` show it), and the current one selected. Line breaks are shown as `|`, and a string of whole lines starts with _(lines)_; the first lines of the selected string are shown below the list. `j` `k` `gg` `G` select, `/` filters the strings (type, `Enter` keeps the filter, `Esc` takes it away), and `Enter` inserts the string as `p` does (whole lines below the line of the cursor) and makes it the current one. `Esc` or `q` closes the box
+- `:reglist` Show all the strings of the memory in a box, the newest first (with its number, as `CTRL+N` and `CTRL+P` show it), and the current one selected. Line breaks are shown as `|`, and a string of whole lines starts with _(lines)_; the first lines of the selected string are shown below the list. `j` `k` `gg` `G` select, `/` filters the strings (type, `Tab` and `Shift+Tab` select among those that match, `Enter` keeps the filter, `Esc` takes it away), and `Enter` inserts the string as `p` does (whole lines below the line of the cursor) and makes it the current one. `Esc` or `q` closes the box
 - `:putall` Insert all memory strings
 - `:regclear` Clear the string memory
 

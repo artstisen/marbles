@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Snippets and string memory boxes**: while filtering, `Tab` (or the down arrow) selects the next match and `Shift+Tab` (or the up arrow) the one before.
 - **Editor**: _scrolloff_ keeps lines above and below the cursor when the text scrolls (as in Vim): `:scrolloff` turns it on and off (12 lines), `:scrolloff 8` / `:set so=8` sets the number (999: the cursor stays in the middle). Off by default; also on the Configuration page (settings `scrolloff`, `scrolllines`).
 - **Lists of a data file**: `:clipboard` shows the clipboard settings.
 - **Editor**: `:dup 5` (or `:'<,'>dup 5`, `:2,4dup 5`) makes five copies of the line, the selection or the lines, as one change.

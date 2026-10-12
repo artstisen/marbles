@@ -39,6 +39,19 @@ public class StringMemoryListTests
         Assert.Empty(PickListBox.Filter(rows, "xyz"));
     }
 
+    [Theory]
+    // Tab: the next match, going round from the last to the first; Shift+Tab: the one before
+    [InlineData(0, 3, false, 1)]
+    [InlineData(2, 3, false, 0)]
+    [InlineData(0, 3, true, 2)]
+    [InlineData(1, 3, true, 0)]
+    [InlineData(0, 1, false, 0)]
+    [InlineData(0, 0, false, 0)]
+    public void Tab_SelectsAmongTheMatches(int selected, int count, bool back, int expected)
+    {
+        Assert.Equal(expected, PickListBox.NextMatch(selected, count, back));
+    }
+
     [Fact]
     public void PutFromMemory_InsertsAsP_AndMakesItTheCurrentString()
     {

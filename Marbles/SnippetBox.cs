@@ -113,6 +113,15 @@ internal static class SnippetBox
             Tools.HideCursor();
             if (filtering)
             {
+                if (key.Key is ConsoleKey.Tab or ConsoleKey.DownArrow or ConsoleKey.UpArrow)
+                {
+                    // Between the rows that match while typing (Shift+Tab, Up: back), going round
+                    var back = key.Key == ConsoleKey.UpArrow ||
+                               (key.Key == ConsoleKey.Tab && (key.Modifiers & ConsoleModifiers.Shift) != 0);
+                    selected = PickListBox.NextMatch(selected, view.Count, back);
+                    continue;
+                }
+
                 var before = filter;
                 if (key.Key == ConsoleKey.Enter)
                 {

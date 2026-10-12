@@ -400,7 +400,7 @@ internal static class DialogText
     public static string CaptionsSnippets => Lang.T("Snippets");
     public static string SnippetKeys =>
         Lang.T("Enter Insert | / Filter | S Sort | A Add | R Rename | D Delete | E Edit");
-    public static string SnippetFilterKeys => Lang.T("Enter OK | Esc Clear");
+    public static string SnippetFilterKeys => Lang.T("Tab Next | Enter OK | Esc Clear");
     public static string SnippetSortFile => Lang.T("Sort: as in the file");
     public static string SnippetSortTitle => Lang.T("Sort: by title");
     public static string SnippetSortUsed => Lang.T("Sort: last used first");

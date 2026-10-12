@@ -74,6 +74,15 @@ internal static class PickListBox
             Tools.HideCursor();
             if (filtering)
             {
+                if (key.Key is ConsoleKey.Tab or ConsoleKey.DownArrow or ConsoleKey.UpArrow)
+                {
+                    // Between the rows that match while typing (Shift+Tab, Up: back), going round
+                    var back = key.Key == ConsoleKey.UpArrow ||
+                               (key.Key == ConsoleKey.Tab && (key.Modifiers & ConsoleModifiers.Shift) != 0);
+                    selected = PickListBox.NextMatch(selected, view.Count, back);
+                    continue;
+                }
+
                 var before = filter;
                 if (key.Key == ConsoleKey.Enter)
                 {
@@ -133,6 +142,15 @@ internal static class PickListBox
             if (c == 'g' && Console.ReadKey(true).KeyChar == 'g') selected = 0;
             if (c == '/') filtering = true;
         }
+    }
+
+    /// <summary>
+    /// The next (or the one before) of a number of rows, going round from the last to the first
+    /// </summary>
+    internal static int NextMatch(int selected, int count, bool back)
+    {
+        if (count <= 0) return 0;
+        return (selected + (back ? count - 1 : 1)) % count;
     }
 
     /// <summary>
