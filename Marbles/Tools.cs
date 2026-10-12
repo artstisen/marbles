@@ -712,6 +712,30 @@ internal static class Tools
         return _stringMemory;
     }
 
+    /// <summary>
+    /// Make a string of the string memory the current one (the one "p" inserts)
+    /// </summary>
+    internal static void SetLineMemoryIndex(int index)
+    {
+        if (index >= 0 && index < _stringMemory.Count) _currentLineMemoryIndex = index;
+    }
+
+    /// <summary>
+    /// The number of the current string in the string memory (counted from 0)
+    /// </summary>
+    internal static int LineMemoryIndex => _currentLineMemoryIndex;
+
+    /// <summary>
+    /// A string of the string memory as one row of a list: line breaks are shown as " | " (the blank space at
+    /// the start and end of the lines is left out), and whole lines start with "(lines)"
+    /// </summary>
+    internal static string LineMemoryRow(string text)
+    {
+        var lines = text.EndsWith('\n');
+        var row = string.Join(" | ", text.TrimEnd('\n').Split('\n').Select(line => line.Trim()));
+        return lines ? Lang.F("(lines) {0}", row) : row;
+    }
+
     #endregion
 
 
@@ -1656,6 +1680,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("y d c", Lang.T("Yanked/deleted text is added to memory"), false));
             _shortcutList.Add(new Shortcut("CTRL+P CTRL+N", Lang.T("Select previous/next memory string"), false));
             _shortcutList.Add(new Shortcut(":reg", Lang.T("Show current memory string"), false));
+            _shortcutList.Add(new Shortcut(":reglist", Lang.T("All the strings in a box: pick one to insert"), false));
             _shortcutList.Add(new Shortcut(":putall", Lang.T("Insert all memory strings"), false));
             _shortcutList.Add(new Shortcut(":regclear", Lang.T("Clear string memory"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Other commands"), true));

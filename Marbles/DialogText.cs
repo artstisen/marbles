@@ -392,6 +392,10 @@ internal static class DialogText
     public static string PasteBinEmpty => Lang.T("The paste bin is empty");
     public static string NoFilePath => Lang.T("A note has no file path");
 
+    // A list to pick from (the string memory: ":reglist")
+    public static string PickListNoMatch => Lang.T("Nothing matches the filter");
+    public static string StringMemoryKeys => Lang.T("j/k Select | Enter Insert | / Filter | Esc Close");
+
     // Snippets (":snip" in the editor)
     public static string CaptionsSnippets => Lang.T("Snippets");
     public static string SnippetKeys =>

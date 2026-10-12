@@ -404,6 +404,23 @@ public class TextArea
                 if (result.Action == SnippetBox.Action.Edit) OpenSnippets(result.Line);
                 break;
             }
+            case EditorRequest.StringMemory:
+            {
+                // The newest first, the current one selected
+                Tools.HideCursor();
+                DrawStatusLine();
+                var all = Tools.GetAllLinesFromLineMemory();
+                var count = all.Count;
+                var rows = Enumerable.Range(0, count)
+                    .Select(i => ((count - i).ToString().PadLeft(2) + "  " + Tools.LineMemoryRow(all[count - 1 - i])))
+                    .ToList();
+                var picked = PickListBox.Show(DialogText.CaptionsStringMemory, rows,
+                    i => all[count - 1 - i].TrimEnd(TextBuffer.NewLine), count - 1 - Tools.LineMemoryIndex,
+                    DialogText.StringMemoryKeys);
+                RedrawAll();
+                if (picked >= 0) _engine.PutFromMemory(count - 1 - picked);
+                break;
+            }
             case EditorRequest.SnippetAdd:
             {
                 Tools.HideCursor();

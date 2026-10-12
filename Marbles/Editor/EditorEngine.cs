@@ -46,7 +46,8 @@ internal enum EditorRequest
     CopyPath, // ":path": the path of the file being edited to the clipboard
     Snippets, // ":snip": show the snippets (SnippetText: the selected text, which can be added)
     SnippetAdd, // ":snip add": add SnippetText as a snippet
-    SnippetsEdit // ":snip edit": open the file of the snippets
+    SnippetsEdit, // ":snip edit": open the file of the snippets
+    StringMemory // ":reglist": show the strings of the string memory, to pick one to insert
 }
 
 /// <summary>
@@ -1003,6 +1004,10 @@ internal sealed partial class EditorEngine
             case "reg":
             case "registers":
                 ShowRegister();
+                break;
+            case "reglist":
+                if (!Tools.HasLineMemory()) Message = Lang.T("String memory is empty");
+                else if (!SingleLine) _request = EditorRequest.StringMemory;
                 break;
             case "regclear":
                 if (Tools.HasLineMemory()) _request = EditorRequest.ClearRegisters;

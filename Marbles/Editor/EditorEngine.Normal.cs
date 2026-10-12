@@ -1371,6 +1371,25 @@ internal sealed partial class EditorEngine
         }
     }
 
+    /// <summary>
+    /// Insert a string of the string memory as "p" does (whole lines below the line of the cursor), and make
+    /// it the current string. One change
+    /// </summary>
+    internal void PutFromMemory(int index)
+    {
+        if (SingleLine) return;
+        ResetPending();
+        Mode = EditorMode.Normal;
+        Tools.SetLineMemoryIndex(index);
+        _useSmallRegister = false;
+        if (Buffer.IsStepOpen) Buffer.EndStep(Cursor);
+        _stepCursor = Cursor;
+        Put(true, 1);
+        Buffer.EndStep(Cursor);
+        ClampCursor();
+        EnsureCursorVisible();
+    }
+
     // Insert all strings in the string memory as lines below the cursor
     private void PutAllRegisters()
     {

@@ -235,6 +235,7 @@ Text that is yanked, and lines that are deleted, are kept in the string memory (
 - `p` `P` Paste the current memory string
 - `CTRL+P` `CTRL+N` Select the previous/next memory string
 - `:reg` Show the current memory string
+- `:reglist` Show all the strings of the memory in a box, the newest first (with its number, as `CTRL+N` and `CTRL+P` show it), and the current one selected. Line breaks are shown as `|`, and a string of whole lines starts with _(lines)_; the first lines of the selected string are shown below the list. `j` `k` `gg` `G` select, `/` filters the strings (type, `Enter` keeps the filter, `Esc` takes it away), and `Enter` inserts the string as `p` does (whole lines below the line of the cursor) and makes it the current one. `Esc` or `q` closes the box
 - `:putall` Insert all memory strings
 - `:regclear` Clear the string memory
 
