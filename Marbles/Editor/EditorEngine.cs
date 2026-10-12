@@ -489,7 +489,8 @@ internal sealed partial class EditorEngine
 
     /// <summary>
     /// Insert a snippet after the cursor (as "p"), as one change. The lines after the first are indented as the line of the
-    /// cursor. If the snippet has the cursor mark ("$0"), the cursor is placed there in Insert mode
+    /// cursor. If the snippet has the cursor mark ("$0"), the cursor is placed there in Insert mode. If ":snip" was
+    /// typed with a selection (or lines), a snippet with the mark is put around it instead (see WrapInSnippet)
     /// </summary>
     internal void InsertSnippet(string text)
     {
@@ -497,6 +498,14 @@ internal sealed partial class EditorEngine
         ResetPending();
         Mode = EditorMode.Normal;
         text = TextBuffer.Normalize(text).Replace("\t", new string(' ', TabWidth));
+        var selection = _snippetSelection;
+        _snippetSelection = null;
+        if (selection != null && text.Contains(Snippets.CursorMark, StringComparison.Ordinal))
+        {
+            WrapInSnippet(text, selection.Value);
+            return;
+        }
+
         var at = Buffer.Clamp(Cursor);
         if (at.Col < Buffer.LineLength(at.Line)) at = at with { Col = at.Col + TextMetrics.ElementLength(CurrentLine, at.Col) };
         var (inserted, mark) = Snippets.Prepare(text, CurrentLine[..FirstNonBlank(at.Line)]);
@@ -797,6 +806,7 @@ internal sealed partial class EditorEngine
             }
             else if (command is "snip" or "snip add" && !SingleLine)
             {
+                _snippetSelection = command == "snip" ? SelectionRange(first, last, fromSelection) : null;
                 SnippetText = SelectedText(first, last, fromSelection);
                 _request = command == "snip" ? EditorRequest.Snippets : EditorRequest.SnippetAdd;
             }
@@ -993,6 +1003,7 @@ internal sealed partial class EditorEngine
                 break;
             case "snip":
                 SnippetText = string.Empty;
+                _snippetSelection = null;
                 if (!SingleLine) _request = EditorRequest.Snippets;
                 break;
             case "snip add":
@@ -1216,6 +1227,91 @@ internal sealed partial class EditorEngine
             default:
                 return Buffer.GetText(new TextPos(first, 0), new TextPos(last, Buffer.LineLength(last)));
         }
+    }
+
+    // The text ":snip" was typed with (a selection or lines): a snippet with the cursor mark is put around it.
+    // Lines: whole lines. Otherwise from (included) to (not included)
+    private (bool Lines, TextPos From, TextPos To)? _snippetSelection;
+
+    // Where the selection (or the lines) of a command is, for a snippet to be put around it (not for a block)
+    private (bool Lines, TextPos From, TextPos To)? SelectionRange(int first, int last, bool fromSelection)
+    {
+        var mode = fromSelection ? _commandSelectionMode : EditorMode.VisualLine;
+        switch (mode)
+        {
+            case EditorMode.Visual:
+            {
+                var to = _commandSelectionTo;
+                if (to.Col < Buffer.LineLength(to.Line))
+                {
+                    to = new TextPos(to.Line, to.Col + TextMetrics.ElementLength(Buffer[to.Line], to.Col));
+                }
+                else if (to.Line + 1 < Buffer.LineCount)
+                {
+                    to = new TextPos(to.Line + 1, 0);
+                }
+
+                return (false, _commandSelectionFrom, to);
+            }
+            case EditorMode.VisualBlock:
+                return null;
+            default:
+                return (true, new TextPos(first, 0), new TextPos(last, Buffer.LineLength(last)));
+        }
+    }
+
+    /// <summary>
+    /// Put a snippet around the text ":snip" was typed with: the text is taken out, and put in again at the cursor
+    /// mark of the snippet. Selected lines are replaced by the lines of the snippet, indented as they were (lines
+    /// of the text get the indent the mark has in the snippet). One change
+    /// </summary>
+    private void WrapInSnippet(string snippet, (bool Lines, TextPos From, TextPos To) selection)
+    {
+        var mark = snippet.IndexOf(Snippets.CursorMark, StringComparison.Ordinal);
+        var from = Buffer.Clamp(selection.From);
+        var to = Buffer.Clamp(selection.To);
+        _stepCursor = Cursor;
+        string text;
+        if (selection.Lines)
+        {
+            var lines = Enumerable.Range(from.Line, to.Line - from.Line + 1).Select(line => Buffer[line]).ToList();
+            // The indent the lines have in common is the indent of the snippet
+            var common = lines.Where(line => line.Trim().Length > 0)
+                .Select(line => line.Length - line.TrimStart().Length).DefaultIfEmpty(0).Min();
+            var firstText = lines.FirstOrDefault(line => line.Trim().Length > 0) ?? string.Empty;
+            var indent = firstText[..Math.Min(common, firstText.Length)];
+            // The lines after the first of the text get the indent the mark has (if it is first on its line)
+            var lineStart = mark == 0 ? 0 : snippet.LastIndexOf(TextBuffer.NewLine, mark - 1) + 1;
+            var markIndent = snippet[lineStart..mark].Trim().Length == 0 ? snippet[lineStart..mark] : string.Empty;
+            var inner = lines.Select((line, i) =>
+            {
+                var rest = line.Trim().Length == 0 ? string.Empty : line[Math.Min(common, line.Length)..];
+                return i == 0 || rest.Length == 0 ? rest : markIndent + rest;
+            });
+            var whole = snippet[..mark] + string.Join(TextBuffer.NewLine, inner) +
+                        snippet[(mark + Snippets.CursorMark.Length)..];
+            text = string.Join(TextBuffer.NewLine,
+                whole.Split(TextBuffer.NewLine).Select(line => line.Length > 0 ? indent + line : line));
+            from = new TextPos(from.Line, 0);
+            to = new TextPos(to.Line, Buffer.LineLength(to.Line));
+            Delete(from, to);
+            Insert(from, text);
+            Cursor = new TextPos(from.Line, FirstNonBlank(from.Line));
+        }
+        else
+        {
+            var selected = Buffer.GetText(from, to);
+            // The lines after the first of the snippet are indented as the line of the selection
+            var (prepared, markAt) = Snippets.Prepare(snippet, Buffer[from.Line][..FirstNonBlank(from.Line)]);
+            text = prepared[..markAt] + selected + prepared[markAt..];
+            Delete(from, to);
+            Insert(from, text);
+            Cursor = from;
+        }
+
+        Buffer.EndStep(Cursor);
+        ClampCursor();
+        EnsureCursorVisible();
     }
 
     // ":pb" and ":pbappend": the host writes the text to the paste bin

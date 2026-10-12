@@ -152,6 +152,45 @@ public class SnippetsTests : IDisposable
         Assert.Equal(text, editor.GetText());
     }
 
+    [Theory]
+    // Selected text: the snippet is put in its place, with the text at the mark
+    [InlineData("say hello world", "wviw:snip<CR>", "<b>$0</b>", "say <b>hello</b> world", 0, 4)]
+    [InlineData("  say hello", "wwv$:snip<CR>", "<a href=\"\">\n$0\n</a>", "  say <a href=\"\">\n  hello\n  </a>", 0, 6)]
+    // Selected lines: replaced by the lines of the snippet, indented as they were. The lines of the text get the
+    // indent the mark has in the snippet
+    [InlineData("x\n  a\n    b\ny", "jVj:snip<CR>", "<div>\n    $0\n</div>", "x\n  <div>\n      a\n        b\n  </div>\ny", 1, 2)]
+    [InlineData("a\n\nb", "Vjj:snip<CR>", "<p>$0</p>", "<p>a\n\nb</p>", 0, 0)]
+    [InlineData("a\nb\nc", ":2,3snip<CR>", "[$0]", "a\n[b\nc]", 1, 0)]
+    public void ASnippetWithTheMark_IsPutAroundTheSelection(string text, string keys, string snippet,
+        string expected, int line, int col)
+    {
+        var editor = new EditorEngine(text, 40, 10, false);
+        Assert.Equal(EditorRequest.Snippets, editor.Type(keys));
+        editor.InsertSnippet(snippet);
+        Assert.Equal(expected, editor.GetText());
+        Assert.Equal(new TextPos(line, col), editor.Cursor);
+        Assert.Equal(EditorMode.Normal, editor.Mode);
+        editor.Type("u");
+        Assert.Equal(text, editor.GetText());
+    }
+
+    [Fact]
+    public void WithoutTheMark_OrWithoutASelection_TheSnippetIsInserted()
+    {
+        // No mark: inserted after the cursor (at the end of the selection), the selected text stays
+        var editor = new EditorEngine("one two", 40, 10, false);
+        editor.Type("viw:snip<CR>");
+        editor.InsertSnippet("<hr>");
+        Assert.Equal("one<hr> two", editor.GetText());
+        // ":snip" without a selection forgets the one before
+        editor = new EditorEngine("one two", 40, 10, false);
+        editor.Type("viw:snip<CR>");
+        editor.Type(":snip<CR>");
+        editor.InsertSnippet("<b>$0</b>");
+        Assert.Equal("one<b></b> two", editor.GetText());
+        Assert.Equal(EditorMode.Insert, editor.Mode);
+    }
+
     [Fact]
     public void TheCommands_AskTheHost()
     {

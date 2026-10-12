@@ -158,6 +158,7 @@ In the box:
 
 - `j` `k` `gg` `G` Select a snippet. The first lines of it are shown below the list
 - `Enter` Insert the snippet after the cursor (as `p`), as one change (one `u` undoes it). The lines after the first are indented as the line of the cursor
+- `Enter` with a selection (`:snip` typed with text selected, or with lines as `:2,5snip`): a snippet with `$0` is put around the selected text, which goes in at the mark. Text selected with `v` is taken out and the snippet put in its place. Lines selected with `V` are replaced by the lines of the snippet, indented as the lines were, and the selected lines get the indent the mark has in the snippet (with `<div>`, `    $0` and `</div>`, the lines end up one step in, inside the `div`). The cursor goes to the start of the snippet, in Normal mode, and one `u` undoes it all. A snippet without `$0` is inserted after the selection, which stays as it is. A block (`Q`) is not put in a snippet
 - `/` Filter the titles: type, and `Enter` keeps the filter (`Esc` takes it away)
 - `S` The order: as in the file, by title, or the last used first (in this session). The order is remembered (`snipsort` in the settings file)
 - `A` Add a snippet: the selected text (if `:snip` was typed with a selection), or a new one, which is then written in the file
@@ -178,7 +179,7 @@ display: flex;
 justify-content: center;
 ```
 
-- `$0` marks where the cursor goes when the snippet is inserted: the editor is then in Insert mode, ready to type there
+- `$0` marks where the cursor goes when the snippet is inserted: the editor is then in Insert mode, ready to type there. With a selection, the selected text goes there
 - A tag at the end of the title, like `(html)`, `(css)`, `(js)`, `(json)`, `(xml)` or `(md)`, shows the snippet first in the list when that kind of text is edited
 - Blank lines at the end of a snippet are not part of it. A line of a snippet that starts with `===` is written with a `\` in front of it (`\===`)
 - The text above the first title is not used (the file starts with a short explanation)
