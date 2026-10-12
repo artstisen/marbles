@@ -1436,10 +1436,20 @@ internal static class Actions
             byte result;
             if (IsPinned(Entries.CurrentEntry))
             {
-                // If already pinned just ask to unpin yes/no (this is done with the ternary operator ?:)
-                result = Menu.YesNoPrompt(DialogText.Favorites, DialogText.RemoveFavoriteYn, string.Empty, false)
-                    ? (byte) 1
-                    : (byte) 0;
+                // Pinned: remove it from the favorites, or only unpin it (it stays a favorite)
+                result = Menu.YesOptionNoPrompt(DialogText.Favorites, DialogText.RemoveFavoriteYn, string.Empty,
+                    false, ConsoleKey.U, DialogText.FavoriteChoiceUnpin);
+                if (result == 2)
+                {
+                    Entries.RemovePinnedRanking(Entries.CurrentEntry);
+                    RemoveOptionsTag(Entries.CurrentEntry, Entries.PinnedTag.ToString());
+                    // (the color is kept for when it is pinned again)
+                    Entries.UpdateEntry(Entries.CurrentEntry, false);
+                    Entries.SaveEntriesToFile();
+                    _transferCurrentEntryResult = true;
+                    FindAll(2, string.Empty, false, true);
+                    return;
+                }
             }
             else
             {

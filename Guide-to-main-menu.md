@@ -92,7 +92,7 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 - `h` `l` Previous/Next page of the list, `Home` `End` the first/last page
 - `Enter` or `Space` Open the selected entry in the [editor](Guide-to-editor.md). Closing the editor (`:q`) returns to the list, with the entry selected (to the main menu when the entry was opened from there, as with `R`)
 - `1`-`9` and `0` Open entry 1-10 directly. `:12` opens entry 12
-- `P` Add the selected entry to (or remove it from) the favorites, or pin it to the top of the favorites list
+- `P` Add the selected entry to (or remove it from) the favorites, or pin it to the top of the favorites list. On a pinned entry, `P` asks whether to remove it from the favorites, or only unpin it (`U`): it then stays a favorite, below the pinned entries
 - `Tab` Change the sorting
 - `Tab` or `V` In the favorites list: move the selected pinned entry. The entry is highlighted and follows `j` `k` up and down among the pinned entries (also to the next page) until you press `Esc` or `Enter`. The order is saved as you go
 - `:title` Change the title of the selected entry, in a box on top of the list. The list is shown again afterwards

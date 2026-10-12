@@ -1416,7 +1416,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Home End", Lang.T("The first/last page"), false));
             _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("Three entries up/down"), false));
             _shortcutList.Add(new Shortcut("Tab", Lang.T("All and Search: change the sorting"), false));
-            _shortcutList.Add(new Shortcut("P", Lang.T("Add to/Remove from the favorites (or pin)"), false));
+            _shortcutList.Add(new Shortcut("P", Lang.T("Add to/Remove from the favorites (or pin/unpin)"), false));
             _shortcutList.Add(new Shortcut(":title", Lang.T("Change the title of the selected entry"), false));
             _shortcutList.Add(new Shortcut(":delete", Lang.T("Delete the selected entry (asks first)"), false));
             _shortcutList.Add(new Shortcut(":transfer", Lang.T("Add the entry to the transfer collection"), false));

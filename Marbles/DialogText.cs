@@ -204,6 +204,7 @@ internal static class DialogText
     // The choices when an entry is made a favorite, or is a favorite already (in a box, with keys in front)
     public static string FavoriteChoicePinned => Lang.T("Yes, pinned (at the top of the favorites)");
     public static string FavoriteChoicePin => Lang.T("No, pin it (at the top of the favorites)");
+    public static string FavoriteChoiceUnpin => Lang.T("No, unpin it (keep it as a favorite)");
     // The kinds of new data files, and merge or export
     public static string NewFileStandard => Lang.T("Standard data file (default)");
     public static string NewFileCalendar => Lang.T("Calendar");

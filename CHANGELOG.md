@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Unpinning**: `P` on a pinned favorite offers to unpin it (`U`) and keep it as a favorite, besides removing it from the favorites.
 - **System clipboard and paste bin**: yanked text can also go out of Marbles: to the system clipboard through the terminal (OSC 52: Windows Terminal, iTerm2, kitty, WezTerm, tmux, also over SSH), and/or to a paste bin file (`paste-bin.txt`) for terminals without it, as the console of a Raspberry Pi. By default with `"+` in front (`"+yy`, `"+y` on a selection), or for every yank; never for deleted text. `:pb` and `:pbappend` write the selection (or the text) to the paste bin, `:pbread` inserts its text, `:pbclear` empties it. `:path` (in the file browser and the editor) copies the full path of the selected file or the file being edited. A new page, _Clipboard_ (`:clipboard` in the main menu and the editor, and on the Configuration page), has the settings, among them whether text may be sent out of the notes of a data file (off until allowed).
 - **Logo**: drawn with "M" instead of "#", and with fewer dots and dashes, which looks better in more terminals (as on the Raspberry Pi).
 - **File browser**: `:match` makes the other pane show the directory of the pane with the focus.
