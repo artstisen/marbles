@@ -39,7 +39,12 @@ internal static class ReplaceDialog
     /// </summary>
     internal const int Width = InnerWidth + 2;
 
-    internal const int Height = RowCount + 4;
+    internal const int Height = RowCount + 4; // The box, from its top line to its bottom line
+
+    /// <summary>
+    /// The rows the box covers with the tab of its title above it
+    /// </summary>
+    internal const int TotalHeight = Height + 1;
 
     private static int _top;
     private static int _left;
@@ -57,7 +62,7 @@ internal static class ReplaceDialog
     /// <returns>True to replace, false if the box was closed</returns>
     internal static bool Show(int top, int left, bool hasSelection, string find, out Scope scope)
     {
-        _top = top;
+        _top = top + 1; // The tab of the title is on the row given
         _left = left;
         _hasSelection = hasSelection;
         _scope = hasSelection ? Scope.SelectedLines : Scope.WholeText;
@@ -149,9 +154,8 @@ internal static class ReplaceDialog
 
     private static void DrawFrame()
     {
+        ChoiceBox.DrawTitleTab(_top - 1, _left, InnerWidth, DialogText.ReplaceCaption);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(_top, _left);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', InnerWidth) + AsciiStyles.GetTopCorner());
         for (var row = 1; row < Height - 1; row++)
         {
             Tools.SetCursorEx(_top + row, _left);
@@ -166,9 +170,6 @@ internal static class ReplaceDialog
         Console.Write(AsciiStyles.GetBottomCorner() + new string('-', InnerWidth) + AsciiStyles.GetBottomCorner());
         Tools.SetCursorEx(_top + Height - 2, _left + 2);
         Console.Write(DialogText.ReplaceKeys);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(_top, _left + 2);
-        Console.Write(" " + DialogText.ReplaceCaption + " ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 

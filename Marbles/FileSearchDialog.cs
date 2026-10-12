@@ -45,7 +45,8 @@ internal static class FileSearchDialog
     /// <returns>True to search, false if the box was closed</returns>
     internal static bool Show(string directory)
     {
-        _top = Math.Max(1, (Init.LineCount - Height) / 2);
+        // (the tab of the title is on the row above the box)
+        _top = Math.Max(2, (Init.LineCount - Height - 1) / 2 + 1);
         _left = Math.Max(0, (Init.LineWidth - Width) / 2);
         _message = string.Empty;
         Tools.HideCursor();
@@ -111,9 +112,8 @@ internal static class FileSearchDialog
 
     private static void DrawFrame(string directory)
     {
+        ChoiceBox.DrawTitleTab(_top - 1, _left, InnerWidth, DialogText.SearchCaption);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(_top, _left);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', InnerWidth) + AsciiStyles.GetTopCorner());
         for (var row = 1; row < Height - 1; row++)
         {
             Tools.SetCursorEx(_top + row, _left);
@@ -133,9 +133,6 @@ internal static class FileSearchDialog
         Console.Write(DialogText.SearchIn + directory);
         Tools.SetCursorEx(_top + Height - 2, _left + 2);
         Console.Write(DialogText.ReplaceKeys);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(_top, _left + 2);
-        Console.Write(" " + DialogText.SearchCaption + " ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 

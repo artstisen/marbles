@@ -168,7 +168,8 @@ internal static class PickListBox
     {
         ChoiceBox.Forget();
         var inner = Init.LineWidth - 6;
-        var height = Math.Max(8, Init.LineCount - 4);
+        // (and the tab of the title above it)
+        var height = Math.Max(8, Init.LineCount - 5);
         _previewRows = Math.Clamp(height - 13, 1, PreviewRows);
         // A blank row, the filter, a blank row, the list, a blank row, the preview and a blank row
         _listRows = height - 5 - _previewRows;

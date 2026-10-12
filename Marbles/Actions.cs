@@ -1171,7 +1171,7 @@ internal static class Actions
         FileExplorer.DualPane = true;
         TextArea.LineNumbers = false;
         TextArea.WordWrap = true;
-        TextArea.ScrollOff = false;
+        TextArea.ScrollOff = true;
         TextArea.ScrollOffLines = TextArea.DefaultScrollOffLines;
         Snippets.Sort = Snippets.SortOrder.File;
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);

@@ -226,7 +226,7 @@ internal static class ChoiceBox
         }
 
         // The box fits on the screen
-        var most = Math.Max(1, Init.LineCount - 4);
+        var most = Math.Max(1, Init.LineCount - 5);
         if (lines.Count > most) lines = lines.GetRange(0, most);
         var (top, left, _, _) = DrawFrame(caption, inner, lines.Count);
         for (var i = 0; i < lines.Count; i++)
@@ -243,27 +243,60 @@ internal static class ChoiceBox
         Console.ReadKey(true);
     }
 
-    // Draw the frame of a box with its title and a blank inside, in the middle of the screen. A box shown
-    // before it (the page not drawn again) is covered. Returns where the box is and how big it is inside
+    /// <summary>
+    /// The top of a box with its title in a tab, as the tabs of a frame with tabs (TabFrame): the tab on the row
+    /// above the top line of the box, with its left side going on as the left side of the box. The title has the
+    /// colors of the tab shown.
+    ///
+    ///   .---------.
+    ///   | Caption '-----------.
+    ///   |                     |
+    /// </summary>
+    /// <param name="tabRow">The row of the top of the tab (the top line of the box is the row below it)</param>
+    /// <param name="left">The column of the left side of the box</param>
+    /// <param name="inner">The width inside the box</param>
+    /// <param name="caption">The title</param>
+    internal static void DrawTitleTab(int tabRow, int left, int inner, string caption)
+    {
+        var top = AsciiStyles.GetTopCorner();
+        var bottom = AsciiStyles.GetBottomCorner();
+        caption = Tools.TruncateString(caption.Trim(), Math.Max(1, inner - 4), true);
+        var width = TextMetrics.WidthOf(caption);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(tabRow, left);
+        Console.Write(top + new string('-', width + 2) + top);
+        Tools.SetCursorEx(tabRow + 1, left);
+        Console.Write('|');
+        ConsoleColors.SetTabColors();
+        Console.Write(" " + caption + " ");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(bottom + new string('-', Math.Max(0, inner - width - 3)) + top);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    // Draw the frame of a box with its title (in a tab above it) and a blank inside, in the middle of the screen.
+    // A box shown before it (the page not drawn again) is covered. Returns where the box is (its top line) and how
+    // big it is inside
     internal static (int Top, int Left, int Inner, int Height) DrawFrame(string caption, int inner, int height)
     {
         var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
-        var top = Math.Max(1, (Init.LineCount - height - 2) / 2);
+        // The tab of the title takes the row above the box
+        var tabRow = Math.Max(1, (Init.LineCount - height - 3) / 2);
         if (_shown is { } shown)
         {
             var right = Math.Max(left + inner + 1, shown.Right);
-            var bottom = Math.Max(top + height + 1, shown.Bottom);
-            top = Math.Min(top, shown.Top);
+            var bottom = Math.Max(tabRow + height + 2, shown.Bottom);
+            tabRow = Math.Min(tabRow, shown.Top);
             left = Math.Min(left, shown.Left);
             inner = right - left - 1;
-            height = bottom - top - 1;
+            height = bottom - tabRow - 2;
         }
 
-        _shown = (top, left, left + inner + 1, top + height + 1);
+        var top = tabRow + 1;
+        _shown = (tabRow, left, left + inner + 1, top + height + 1);
         Tools.HideCursor();
+        DrawTitleTab(tabRow, left, inner, caption);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(top, left);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
         for (var row = 0; row < height; row++)
         {
             Tools.SetCursorEx(top + 1 + row, left);
@@ -277,9 +310,6 @@ internal static class ChoiceBox
 
         Tools.SetCursorEx(top + height + 1, left);
         Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(top, left + 2);
-        Console.Write(" " + Tools.TruncateString(caption, inner - 4, true) + " ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         return (top, left, inner, height);
     }

@@ -32,7 +32,7 @@ Below these are some basic settings, so they can be changed without logging in t
 - **Size**: Set the number of columns and rows by hand (shown when _Automatic size_ is off)
 - **Line numbers in the editor**: Show line numbers to the left of the text (off from the start)
 - **Wrap long lines in the editor**: Long lines go on to the next rows (on from the start). When off, the view scrolls sideways (see [the guide to the editor](Guide-to-editor.md#long-lines))
-- **Keep 12 lines around the cursor in the editor**: When the cursor comes within 12 lines of the top or the bottom of the editor, the text scrolls, so you see what comes next (off from the start). The number is set with `:scrolloff 8` in the editor (see [the guide to the editor](Guide-to-editor.md#scrolling))
+- **Keep 12 lines around the cursor in the editor**: When the cursor comes within 12 lines of the top or the bottom of the editor, the text scrolls, so you see what comes next (on from the start). The number is set with `:scrolloff 8` in the editor (see [the guide to the editor](Guide-to-editor.md#scrolling))
 - **Clipboard and paste bin**: `Enter` opens the clipboard settings: where yanked text goes out of Marbles (see [the guide to the editor](Guide-to-editor.md#system-clipboard-and-paste-bin))
 - **Reset all settings**: Set all settings back to their defaults (you are asked first, in a box where _No_ is selected first)
 - **Restart Marbles**: Start Marbles over: the settings are read again and the start page is shown as at startup (you are asked first, in a box)

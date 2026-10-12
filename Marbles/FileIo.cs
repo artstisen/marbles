@@ -1151,7 +1151,8 @@ internal static class FileIo
         // On unless turned off
         TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) == DialogText.BTrue;
         TextArea.WordWrap = Tools.TrimToLower(Get("wrap")) != DialogText.BFalse;
-        TextArea.ScrollOff = Tools.TrimToLower(Get("scrolloff")) == DialogText.BTrue;
+        // On unless turned off
+        TextArea.ScrollOff = Tools.TrimToLower(Get("scrolloff")) != DialogText.BFalse;
         var scrollLines = GetNumber("scrolllines");
         TextArea.ScrollOffLines = scrollLines is > 0 and <= 999 ? scrollLines.Value : TextArea.DefaultScrollOffLines;
         ConsoleColors.Monochrome = Tools.TrimToLower(Get("monochrome")) == DialogText.BTrue;

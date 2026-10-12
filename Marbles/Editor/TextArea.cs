@@ -50,9 +50,9 @@ public class TextArea
     internal const int DefaultScrollOffLines = 12;
 
     /// <summary>
-    /// Lines are kept above and below the cursor when the view scrolls (setting "scrolloff", off unless turned on)
+    /// Lines are kept above and below the cursor when the view scrolls (setting "scrolloff", on unless turned off)
     /// </summary>
-    internal static bool ScrollOff { get; set; }
+    internal static bool ScrollOff { get; set; } = true;
 
     /// <summary>
     /// The number of lines kept above and below the cursor (setting "scrolllines")
@@ -625,7 +625,7 @@ public class TextArea
         }
 
         // Write the rows that were covered again
-        for (var r = firstRow; r < firstRow + ReplaceDialog.Height && r < _height; r++)
+        for (var r = firstRow; r < firstRow + ReplaceDialog.TotalHeight && r < _height; r++)
         {
             _shownRows[r] = null;
             _shownCells[r] = Math.Max(_shownCells[r], left + ReplaceDialog.Width);
@@ -658,7 +658,7 @@ public class TextArea
         // Below the word if there is room for it, else above
         var cursor = _engine.Cursor;
         var cursorRow = _engine.Layout.RowOf(cursor) - _engine.TopRow;
-        var boxHeight = rows.Count + 2;
+        var boxHeight = rows.Count + 3; // The tab of the title, the frame and the rows
         var firstRow = cursorRow + 1;
         if (firstRow + boxHeight > _height) firstRow = cursorRow - boxHeight;
         firstRow = Math.Clamp(firstRow, 0, Math.Max(0, _height - boxHeight));
@@ -717,12 +717,9 @@ public class TextArea
     private void DrawBox(int firstRow, int left, int inner, string caption, List<string> rows, int selected)
     {
         var column = _left + left;
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(_top + firstRow, column);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(_top + firstRow, column + 2);
-        Console.Write(caption);
+        // The tab of the title on the first row, the box below it
+        ChoiceBox.DrawTitleTab(_top + firstRow, column, inner, caption);
+        firstRow++;
         for (var i = 0; i < rows.Count; i++)
         {
             Tools.SetCursorEx(_top + firstRow + 1 + i, column);
@@ -792,19 +789,20 @@ public class TextArea
         };
         int[] results = { 1, 2, 4, 0 };
         var inner = choices.Max(choice => choice.Length) + 8;
-        var boxHeight = choices.Length + 4;
+        var frameHeight = choices.Length + 4; // The box, from its top line to its bottom line
+        var boxHeight = frameHeight + 1; // And the tab of its title above it
         var firstRow = Math.Max(0, (_height - boxHeight) / 2);
         var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2 - _left);
         var column = _left + left;
         DrawStatusLine(); // Remove the command from the bottom line
 
-        // The frame and the question
+        // The tab of the title, the frame and the question
+        var frameRow = firstRow + 1;
+        ChoiceBox.DrawTitleTab(_top + firstRow, column, inner, DialogText.Save);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(_top + firstRow, column);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
-        for (var row = 1; row < boxHeight - 1; row++)
+        for (var row = 1; row < frameHeight - 1; row++)
         {
-            Tools.SetCursorEx(_top + firstRow + row, column);
+            Tools.SetCursorEx(_top + frameRow + row, column);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             Console.Write('|');
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -813,13 +811,10 @@ public class TextArea
             Console.Write('|');
         }
 
-        Tools.SetCursorEx(_top + firstRow + boxHeight - 1, column);
+        Tools.SetCursorEx(_top + frameRow + frameHeight - 1, column);
         Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(_top + firstRow, column + 2);
-        Console.Write(" " + DialogText.Save + " ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-        Tools.SetCursorEx(_top + firstRow + 1, column + 2);
+        Tools.SetCursorEx(_top + frameRow + 1, column + 2);
         Console.Write(" " + DialogText.SaveQuestion + " ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
 
@@ -829,7 +824,7 @@ public class TextArea
         {
             for (var i = 0; i < choices.Length; i++)
             {
-                Tools.SetCursorEx(_top + firstRow + 3 + i, column + 2);
+                Tools.SetCursorEx(_top + frameRow + 3 + i, column + 2);
                 if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
                 Console.Write(i == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

@@ -10,7 +10,7 @@ internal static class ColorPicker
     /// </summary>
     internal const int Count = 16;
 
-    private const int BoxTop = 2;
+    private const int BoxTop = 3; // The tab of the title is on the row above
     private const int BoxWidth = 24; // Between the borders
 
     /// <summary>
@@ -45,12 +45,7 @@ internal static class ColorPicker
         bool CanSelect(int row) => row < first || isAllowed == null || isAllowed((ConsoleColor)(row - first));
 
         Tools.HideCursor();
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(BoxTop, left);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', BoxWidth) + AsciiStyles.GetTopCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(BoxTop, left + 2);
-        Console.Write(" " + caption + " ");
+        ChoiceBox.DrawTitleTab(BoxTop - 1, left, BoxWidth, caption);
         for (var row = 0; row < rows; row++)
         {
             Tools.SetCursorEx(BoxTop + 1 + row, left);

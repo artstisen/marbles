@@ -130,7 +130,7 @@ backup=
         Assert.Equal(45, settings.Count);
         Assert.Equal("true", settings["wrap"]);
         Assert.Equal("file", settings["snipsort"]);
-        Assert.Equal("false", settings["scrolloff"]);
+        Assert.Equal("true", settings["scrolloff"]);
         Assert.Equal("12", settings["scrolllines"]);
         Assert.Equal(string.Empty, settings["tabcolor"]);
         Assert.Equal(string.Empty, settings["tabtext"]);

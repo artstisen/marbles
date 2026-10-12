@@ -531,7 +531,7 @@ internal static partial class FileExplorer
     // A list of choices in a box on top of the page. Returns the number of the one picked, or -1
     private static int PickFromList(string caption, List<string> choices, int selected)
     {
-        const int top = 2;
+        const int top = 3; // The tab of the title is on the row above
         var rows = Math.Min(choices.Count, Init.LineCount - 6);
         var inner = Math.Min(Init.LineWidth - 6,
             Math.Max(caption.Length + 4, choices.Max(choice => choice.Length) + 6));
@@ -543,12 +543,7 @@ internal static partial class FileExplorer
             // The list scrolls if there are more folders than rows
             if (selected < first) first = selected;
             if (selected >= first + rows) first = selected - rows + 1;
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Tools.SetCursorEx(top, left);
-            Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-            Tools.SetCursorEx(top, left + 2);
-            Console.Write(" " + Tools.TruncateString(caption, inner - 4, true) + " ");
+            ChoiceBox.DrawTitleTab(top - 1, left, inner, caption);
             for (var row = 0; row < rows; row++)
             {
                 var number = first + row;

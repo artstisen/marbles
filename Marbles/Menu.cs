@@ -508,10 +508,9 @@ internal static class Menu
             choices.Max(c => TextMetrics.WidthOf(c)) + 12);
         var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
         var top = MenuBoxTop + 2;
-        // The box, on top of the menu
+        // The box, on top of the menu, with the tab of its title above it
+        ChoiceBox.DrawTitleTab(top - 1, left, inner, DialogText.CaptionsOptions);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(top, left);
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', inner) + AsciiStyles.GetTopCorner());
         for (var row = 0; row < choices.Length + 2; row++)
         {
             Tools.SetCursorEx(top + 1 + row, left);
@@ -526,9 +525,6 @@ internal static class Menu
 
         Tools.SetCursorEx(top + choices.Length + 3, left);
         Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.SetCursorEx(top, left + 2);
-        Console.Write(" " + DialogText.CaptionsOptions + " ");
         // The keys of the box
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -714,15 +710,9 @@ internal static class Menu
             left = Init.LineWidth - (menuWidth + 2);
         }
 
-        Tools.CursorRight(left);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        // Write top line
-        Console.Write(AsciiStyles.GetTopCorner() + new string('-', menuWidth) + AsciiStyles.GetTopCorner());
-        // Write header label
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        Tools.CursorReturn();
-        Tools.CursorRight(left + 2);
-        Console.Write(" " + caption + " ");
+        // The title in a tab above the top line (on the row above the one given)
+        ChoiceBox.DrawTitleTab(top - 1, left, menuWidth, caption);
+        Tools.SetCursorEx(top, left);
 
 
         // Iterate and draw menu and menu items

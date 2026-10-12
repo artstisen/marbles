@@ -194,7 +194,7 @@ Lines wider than the editor are wrapped onto the next rows (at a blank space whe
 - The cursor stays in the view: if the view is scrolled past it, it is moved into the view
 
 ## Scrolling
-Without anything set, the text scrolls when the cursor reaches the top or the bottom of the editor. With _scrolloff_ on, a number of lines (12 from the start) are kept above and below the cursor: the text scrolls when the cursor comes within 12 lines of the edge, so you see what comes next while moving through it (as `scrolloff` in Vim and Neovim). At the start and the end of the text the cursor goes on to the edge.
+A number of lines (12 from the start) are kept above and below the cursor: the text scrolls when the cursor comes within 12 lines of the edge, so you see what comes next while moving through it (_scrolloff_, as in Vim and Neovim). At most half the height of the editor is kept, so on a small screen the line of the cursor stays in the middle. At the start and the end of the text the cursor goes on to the edge. With _scrolloff_ off, the text scrolls when the cursor reaches the top or the bottom of the editor.
 
 - `:scrolloff` On or off (with the last number set)
 - `:scrolloff 8` (or `:set scrolloff=8`, `:set so=8`) Keep 8 lines, and turn it on. `0` turns it off
