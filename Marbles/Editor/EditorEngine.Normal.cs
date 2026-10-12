@@ -371,6 +371,9 @@ internal sealed partial class EditorEngine
             case 'z' when cmd == 'g':
                 AddSpellWord();
                 break;
+            case 'z' when cmd is 'h' or 'l' or 'H' or 'L' or 's' or 'e':
+                ScrollSideways(cmd, TakeCount() ?? 1);
+                break;
             case 'z':
             {
                 // Scroll the view to place the cursor row at the top (t), center (z) or bottom (b)

@@ -1572,6 +1572,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("Move one page up/down"), false));
             _shortcutList.Add(new Shortcut("CTRL+U CTRL+D", Lang.T("Move half a page up/down"), false));
             _shortcutList.Add(new Shortcut("gm gM", Lang.T("Move half the screen width right/left"), false));
+            _shortcutList.Add(new Shortcut("zh zl", Lang.T("Not wrapped: scroll the view left/right"), false));
+            _shortcutList.Add(new Shortcut("zH zL", Lang.T("Not wrapped: scroll half the width left/right"), false));
+            _shortcutList.Add(new Shortcut("zs ze", Lang.T("Not wrapped: the cursor at the left/right side"), false));
             _shortcutList.Add(new Shortcut("zt zz zb", Lang.T("Scroll cursor row to top/center/bottom"), false));
             _shortcutList.Add(new Shortcut("5j 3w ...", Lang.T("A number repeats a movement or command"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Search"), true));
@@ -1658,6 +1661,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":ol :ul", Lang.T("Numbered/Bulleted list (selected lines)"), false));
             _shortcutList.Add(new Shortcut(":dup", Lang.T("Duplicate the selection (or the line)"), false));
             _shortcutList.Add(new Shortcut(":sort :sort!", Lang.T("Sort the selected lines (or all), !: reversed"), false));
+            _shortcutList.Add(new Shortcut(":wrap", Lang.T("Wrap long lines on/off (:set wrap, :set nowrap)"), false));
             _shortcutList.Add(new Shortcut(":sort i", Lang.T("Sort, upper and lower case alike"), false));
             _shortcutList.Add(new Shortcut("\"+y", Lang.T("Yank to the system clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut(":pb :pbread", Lang.T("Write to/Read from the paste bin"), false));

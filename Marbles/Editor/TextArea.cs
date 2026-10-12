@@ -42,6 +42,11 @@ public class TextArea
     /// </summary>
     internal static bool LineNumbers { get; set; }
 
+    /// <summary>
+    /// Long lines are wrapped (setting "wrap", on unless turned off)
+    /// </summary>
+    internal static bool WordWrap { get; set; } = true;
+
     private const int GutterGap = 2; // The blank columns between the line numbers and the text
     private const int MinNumberWidth = 2;
     private readonly int _textWidth; // The width for the text when no line numbers are shown
@@ -119,7 +124,8 @@ public class TextArea
         _engine = new EditorEngine(text ?? string.Empty, _textWidth, _height, _singleLine)
         {
             MaxCells = width - 3,
-            LineNumbers = LineNumbers && !_singleLine && !readOnly
+            LineNumbers = LineNumbers && !_singleLine && !readOnly,
+            Wrap = WordWrap || _singleLine
         };
         // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON) are colored, unless that is turned off
         var fileType = saveMode == SaveAsFile && !_singleLine && !readOnly
@@ -413,6 +419,10 @@ public class TextArea
             case EditorRequest.LineNumbersChanged:
                 // Remembered (but not while the settings file itself is being edited)
                 LineNumbers = _engine.LineNumbers;
+                if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
+                break;
+            case EditorRequest.WrapChanged:
+                WordWrap = _engine.Wrap;
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
                 break;
             case EditorRequest.Reload:
@@ -914,13 +924,85 @@ public class TextArea
         return cells + _gutter;
     }
 
-    // The text of a row
+    // The text of a row: a segment of a wrapped line, or the part of the line in view
     private int BuildTextRow(StringBuilder row, int line, int segment)
     {
         var layout = _engine.Layout;
         var s = _engine.Buffer[line];
-        var start = layout.SegmentStart(line, segment);
-        var end = layout.SegmentEnd(line, segment);
+        if (layout.Wrap)
+        {
+            return BuildRange(row, line, s, layout.SegmentStart(line, segment), layout.SegmentEnd(line, segment));
+        }
+
+        // Not wrapped: the cells from LeftCell, with "<" and ">" where text is hidden to the left or the right
+        var rowStart = row.Length;
+        var left = _engine.LeftCell;
+        var width = layout.Width;
+        var leftMark = left > 0 && s.Length > 0;
+        var rightMark = TextMetrics.WidthOf(s) > left + width;
+        var from = left + (leftMark ? 1 : 0);
+        var to = left + width - (rightMark ? 1 : 0);
+        var col = 0;
+        var cell = 0;
+        while (col < s.Length && cell < from)
+        {
+            var length = TextMetrics.ElementLength(s, col);
+            cell += TextMetrics.Width(s, col, length);
+            col += length;
+        }
+
+        var start = col;
+        // A wide char cut by the left side is shown as blank space
+        var padLeft = Math.Max(0, cell - from);
+        while (col < s.Length)
+        {
+            var length = TextMetrics.ElementLength(s, col);
+            var next = cell + TextMetrics.Width(s, col, length);
+            if (next > to) break;
+            cell = next;
+            col += length;
+        }
+
+        var end = col;
+        var cells = 0;
+        if (leftMark)
+        {
+            row.Append(StyleMarker).Append((char)('0' + StyleLineNumber)).Append('<');
+            cells++;
+        }
+
+        if (padLeft > 0)
+        {
+            row.Append(StyleMarker).Append((char)('0' + StyleNormal)).Append(' ', padLeft);
+            cells += padLeft;
+        }
+
+        var textStart = row.Length;
+        cells += start < end || end == s.Length ? BuildRange(row, line, s, start, end) : 0;
+        if (rightMark)
+        {
+            // A wide char that does not fit before the mark leaves a blank space
+            var gap = Math.Max(0, to - cell);
+            if (row.Length > textStart && row[textStart] != StyleMarker)
+            {
+                row.Insert(textStart, new string(new[] { StyleMarker, (char)('0' + StyleNormal) }));
+            }
+
+            if (gap > 0) row.Append(StyleMarker).Append((char)('0' + StyleNormal)).Append(' ', gap);
+            row.Append(StyleMarker).Append((char)('0' + StyleLineNumber)).Append('>');
+            cells += gap + 1;
+        }
+        else if (row.Length > textStart && row[textStart] != StyleMarker && textStart > rowStart)
+        {
+            row.Insert(textStart, new string(new[] { StyleMarker, (char)('0' + StyleNormal) }));
+        }
+
+        return cells;
+    }
+
+    // The text of a part of a line (from the char index "start" to "end"), with its colors
+    private int BuildRange(StringBuilder row, int line, string s, int start, int end)
+    {
         var cells = TextMetrics.WidthOfRange(s, start, end);
         var selection = _engine.Selection(line);
         var hasMatches = false;
@@ -1212,7 +1294,7 @@ public class TextArea
         {
             var cursor = _engine.Cursor;
             Tools.SetCursorEx(_top + _engine.Layout.RowOf(cursor) - _engine.TopRow,
-                _left + _leftMargin.Length + _gutter + _engine.Layout.CellOf(cursor));
+                _left + _leftMargin.Length + _gutter + _engine.Layout.CellOf(cursor) - _engine.LeftCell);
         }
 
         Tools.ShowCursor();

@@ -1153,6 +1153,7 @@ internal static class Actions
         SyntaxHighlighter.ColorFiles = true;
         FileExplorer.DualPane = true;
         TextArea.LineNumbers = false;
+        TextArea.WordWrap = true;
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
         ConsoleColors.DefaultColorPresetIndex();
         Logo.AnimationEnabled = true;

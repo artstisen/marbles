@@ -10,7 +10,21 @@ internal sealed class TextLayout
     private static readonly int[] SingleSegment = { 0 };
     private readonly TextBuffer _buffer;
     private readonly List<int[]?> _segments = new(); // For each line: the char index where each of its rows start
-    private readonly bool _wrap;
+    private bool _wrap;
+
+    /// <summary>
+    /// Lines wider than the width are wrapped into several rows (else each line is one row)
+    /// </summary>
+    internal bool Wrap
+    {
+        get => _wrap;
+        set
+        {
+            if (value == _wrap) return;
+            _wrap = value;
+            for (var i = 0; i < _segments.Count; i++) _segments[i] = null;
+        }
+    }
 
     /// <summary>
     /// The number of terminal cells available for text on each row

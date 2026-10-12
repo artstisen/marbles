@@ -147,6 +147,14 @@ The numbers are shown to the left of the text, with a small gap. A long line tha
 
 When text is copied from the terminal window with the mouse, the line numbers are copied too: turn them off first (`:nu`). Text yanked in the editor never has them.
 
+## Long lines
+Lines wider than the editor are wrapped onto the next rows (at a blank space when possible). With wrapping turned off, each line is one row, and the view scrolls sideways to follow the cursor. A `<` at the left side or a `>` at the right side tells that the line goes on there.
+
+- `:wrap` Wrapping on or off. `:set wrap` and `:set nowrap` (or `:nowrap`) do one of the two. The choice is remembered (`wrap` in the settings file, and _Wrap long lines in the editor_ on the Configuration page)
+- `zh` `zl` Scroll the view one column left/right (`5zl`: five columns), `zH` `zL` half the width of the editor
+- `zs` `ze` Scroll the view so the cursor is at the left/right side
+- The cursor stays in the view: if the view is scrolled past it, it is moved into the view
+
 ## Colors
 The editor can color the parts of a text by what they are, for Markdown, HTML, CSS, JavaScript, JSON and XML. The text itself is shown as it is written: it is coloring, not a preview, and nothing is checked for errors.
 

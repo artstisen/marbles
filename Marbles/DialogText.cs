@@ -340,6 +340,8 @@ internal static class DialogText
     public static string EditorReloadFilesOnly => Lang.T("Only text files can be read again");
     public static string LineNumbersOn => Lang.T("Line numbers on");
     public static string LineNumbersOff => Lang.T("Line numbers off");
+    public static string WrapOn => Lang.T("Long lines are wrapped");
+    public static string WrapOff => Lang.T("Long lines are not wrapped (zh zl: scroll)");
     public static string SyntaxOn => Lang.T("Colors on: ");
     public static string SyntaxOff => Lang.T("Colors off");
     public static string SyntaxUnknown => Lang.T("Use md, html, css, js, json or xml, not: ");

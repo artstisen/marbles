@@ -42,6 +42,7 @@ internal enum EditorRequest
     PasteBinRead, // ":pbread": insert the text of the paste bin at the cursor
     PasteBinClear, // ":pbclear": empty the paste bin
     ClipboardSettings, // ":clipboard": show the clipboard settings
+    WrapChanged, // Wrapping of long lines was turned on or off
     CopyPath // ":path": the path of the file being edited to the clipboard
 }
 
@@ -66,6 +67,28 @@ internal sealed partial class EditorEngine
     /// The row (counted from the top of the document) shown at the top of the view
     /// </summary>
     internal int TopRow { get; private set; }
+
+    /// <summary>
+    /// Long lines are wrapped into several rows (on unless turned off). Without wrapping each line is one row,
+    /// and the view scrolls sideways to follow the cursor (LeftCell)
+    /// </summary>
+    internal bool Wrap
+    {
+        get => Layout.Wrap;
+        set
+        {
+            if (SingleLine) return;
+            Layout.Wrap = value;
+            LeftCell = 0;
+            TopRow = Math.Clamp(TopRow, 0, Math.Max(0, Layout.TotalRows() - 1));
+            EnsureCursorVisible();
+        }
+    }
+
+    /// <summary>
+    /// The first cell of the lines shown, when lines are not wrapped
+    /// </summary>
+    internal int LeftCell { get; private set; }
 
     /// <summary>
     /// The number of rows in the view
@@ -187,6 +210,44 @@ internal sealed partial class EditorEngine
         TopRow = Math.Clamp(TopRow, 0, Math.Max(0, Layout.TotalRows() - 1));
         ClampCursor();
         EnsureCursorVisible();
+    }
+
+    // The commands ":wrap", ":set wrap" and ":set nowrap"
+    private void SetWrap(bool on)
+    {
+        if (SingleLine) return;
+        Wrap = on;
+        Message = on ? DialogText.WrapOn : DialogText.WrapOff;
+        // The host remembers the choice
+        _request = EditorRequest.WrapChanged;
+    }
+
+    /// <summary>
+    /// "zh" "zl" (a cell left/right), "zH" "zL" (half the width), "zs" "ze" (the cursor at the left/right side):
+    /// scroll the view sideways when lines are not wrapped. The cursor is moved if the view leaves it
+    /// </summary>
+    private void ScrollSideways(char cmd, int count)
+    {
+        if (Layout.Wrap || SingleLine) return;
+        var width = Layout.Width;
+        var cell = Layout.CellOf(Cursor);
+        LeftCell = cmd switch
+        {
+            'h' => Math.Max(0, LeftCell - count),
+            'l' => LeftCell + count,
+            'H' => Math.Max(0, LeftCell - width / 2),
+            'L' => LeftCell + width / 2,
+            's' => Math.Max(0, cell - 1),
+            'e' => Math.Max(0, cell - width + 2),
+            _ => LeftCell
+        };
+        var first = LeftCell + (LeftCell > 0 ? 1 : 0);
+        var last = LeftCell + width - 2;
+        if (cell < first || cell > last)
+        {
+            Cursor = new TextPos(Cursor.Line,
+                Layout.ColAtCell(Cursor.Line, 0, Math.Clamp(cell, first, last), Mode == EditorMode.Insert));
+        }
     }
 
     // The commands ":number", ":set number" and ":set nonumber"
@@ -749,6 +810,16 @@ internal sealed partial class EditorEngine
             case "number":
             case "nu":
                 SetLineNumbers(!LineNumbers);
+                break;
+            case "wrap":
+                SetWrap(!Wrap);
+                break;
+            case "set wrap":
+                SetWrap(true);
+                break;
+            case "nowrap":
+            case "set nowrap":
+                SetWrap(false);
                 break;
             case "set number":
             case "set nu":
@@ -1473,6 +1544,25 @@ internal sealed partial class EditorEngine
 
     private void EnsureCursorVisible()
     {
+        if (!Layout.Wrap && !SingleLine)
+        {
+            // Sideways, with a margin of one cell at each side, where the marks of hidden text are shown
+            var cell = Layout.CellOf(Cursor);
+            if (cell < LeftCell + (LeftCell > 0 ? 1 : 0))
+            {
+                // Back to the start of the lines if the cursor can be shown there
+                LeftCell = cell <= Layout.Width - 2 ? 0 : cell - 1;
+            }
+            else if (cell > LeftCell + Layout.Width - 2)
+            {
+                LeftCell = Math.Max(0, cell - Layout.Width + 2);
+            }
+        }
+        else
+        {
+            LeftCell = 0;
+        }
+
         var row = Layout.RowOf(Cursor);
         if (row < TopRow)
         {

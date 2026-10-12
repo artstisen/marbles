@@ -1007,6 +1007,8 @@ internal static class FileIo
         _tempSettings += "syntaxcolors=" + (SyntaxHighlighter.ColorFiles ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Line numbers in the editor (the editor command :number turns them on and off)
         _tempSettings += "linenumbers=" + (TextArea.LineNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // Long lines in the editor wrapped (on unless turned off)
+        _tempSettings += "wrap=" + (TextArea.WordWrap ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; SPELL CHECKING" + Entries.NewLineChar;
@@ -1133,6 +1135,7 @@ internal static class FileIo
                                        Tools.TrimToLower(Get("mdcolors")) != DialogText.BFalse;
         // On unless turned off
         TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) == DialogText.BTrue;
+        TextArea.WordWrap = Tools.TrimToLower(Get("wrap")) != DialogText.BFalse;
         ConsoleColors.Monochrome = Tools.TrimToLower(Get("monochrome")) == DialogText.BTrue;
 
         // ASCII style
