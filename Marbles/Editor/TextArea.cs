@@ -360,6 +360,20 @@ public class TextArea
                     result != DialogText.Success);
                 break;
             }
+            case EditorRequest.CopyPath:
+            {
+                // A note of a data file has no path
+                if (_saveMode != SaveAsFile)
+                {
+                    _engine.ShowMessage(DialogText.NoFilePath, true);
+                    break;
+                }
+
+                var (message, isError) = SystemClipboard.Copy(FileExplorer.CurrentFilePath, false, true);
+                _engine.ShowMessage(message, isError);
+                _shownStatus = null;
+                break;
+            }
             case EditorRequest.ClipboardSettings:
                 Tools.HideCursor();
                 ClipboardPage.Show();

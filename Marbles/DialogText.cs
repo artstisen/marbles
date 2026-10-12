@@ -387,6 +387,7 @@ internal static class DialogText
     public static string PasteBinInserted => Lang.T("Inserted from the paste bin");
     public static string PasteBinCleared => Lang.T("The paste bin is empty now");
     public static string PasteBinEmpty => Lang.T("The paste bin is empty");
+    public static string NoFilePath => Lang.T("A note has no file path");
     public static string MatchNeedsTwoPanes => Lang.T("Only with two panes (T shows them)");
     public static string PickNumberKeys => Lang.T("h/l Change | Enter OK | Esc Cancel");
     public static string TypeNameAndPressEnter => Lang.T("Type the name and press Enter");

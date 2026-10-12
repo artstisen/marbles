@@ -41,7 +41,8 @@ internal enum EditorRequest
     PasteBinWrite, // ":pb": write PasteBinText to the paste bin (PasteBinAppend: add it to the end)
     PasteBinRead, // ":pbread": insert the text of the paste bin at the cursor
     PasteBinClear, // ":pbclear": empty the paste bin
-    ClipboardSettings // ":clipboard": show the clipboard settings
+    ClipboardSettings, // ":clipboard": show the clipboard settings
+    CopyPath // ":path": the path of the file being edited to the clipboard
 }
 
 /// <summary>
@@ -867,6 +868,9 @@ internal sealed partial class EditorEngine
                 break;
             case "clipboard":
                 _request = EditorRequest.ClipboardSettings;
+                break;
+            case "path":
+                if (!SingleLine) _request = EditorRequest.CopyPath;
                 break;
             case "vsel":
                 StartVisual(EditorMode.Visual);

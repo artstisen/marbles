@@ -56,7 +56,7 @@ internal static class Commands
             "quit close help browse new title delete color transfer size duplicate revert export import info" + Common,
             "q h" + CommonShort),
         [CommandContext.Files] = new Table(
-            "quit close home help cd new info mkdir rename copy duplicate move delete favorite favorites history panes match find",
+            "quit close home help cd new info mkdir rename copy duplicate move delete favorite favorites history panes match path find",
             "q h fav favs hist"),
         [CommandContext.FilePicker] = new Table(
             "quit close home help cd",
@@ -73,7 +73,7 @@ internal static class Commands
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
-            "calendar trim clear registers regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard",
+            "calendar trim clear registers regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path",
             "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw cal reg")
     };
 

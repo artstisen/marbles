@@ -198,6 +198,7 @@ Only yanks go out, never text that is deleted. By default a yank goes out when `
 - `:pbappend` Add the selection (or the whole text) to the end of the paste bin, on lines of its own
 - `:pbread` Insert the text of the paste bin at the cursor (text written to the file by other programs comes in this way)
 - `:pbclear` Empty the paste bin
+- `:path` Copy the full path of the file being edited (opened from the file browser) to the system clipboard and/or the paste bin, as set. Also in the file browser, for the selected file or directory
 - `:clipboard` The clipboard settings (also in the main menu, and on the Configuration page of the start page): the system clipboard (OSC 52) on or off, the paste bin on or off, every yank or only with `"+`, also from the notes of a data file, the paste bin file, and whether text is added to it or replaces it. `h` `l` change the choice of a row, `Enter` or `Space` change a setting. The settings are `osc52`, `pastebin`, `clipboardyank` (`plus` or `all`), `clipboardnotes`, `pastebinappend` and `pastebinfile` in the settings file
 
 The paste bin is not encrypted: text from a note written to it can be read by anyone with access to the file. Empty it with `:pbclear` when it is not needed any more.

@@ -102,6 +102,9 @@ internal static partial class FileExplorer
                 break;
             case "find":
                 return SearchFiles();
+            case "path":
+                CopyPath();
+                break;
             default:
                 return KeyResult.NotHandled;
         }
@@ -413,6 +416,16 @@ internal static partial class FileExplorer
         LogOperation("Rename", item.Path + " -> " + name, result);
         Finish(result, result == DialogText.Success ? path : item.Path, string.Empty);
         if (result == DialogText.Success && FileFavorites.PathChanged(item.Path, path)) SaveFavorites();
+    }
+
+    // ":path": the full path of the selected file or directory (on ".." the directory shown) to the clipboard and/or
+    // the paste bin, as set in the clipboard settings
+    private static void CopyPath()
+    {
+        var path = SelectedItem()?.Path ?? ActivePane.Directory;
+        if (path.Length == 0) return;
+        var (message, _) = SystemClipboard.Copy(path, false, true);
+        _message = message;
     }
 
     // ":match": the other pane shows the directory of the pane with the focus (the focus stays)

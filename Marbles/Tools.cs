@@ -1459,6 +1459,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("F :favorites", Lang.T("Show the favorites"), false));
             _shortcutList.Add(new Shortcut("O :history", Lang.T("Show the files opened before (file history)"), false));
             _shortcutList.Add(new Shortcut("S :find", Lang.T("Search for files by name and by text"), false));
+            _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path to the clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut("R", Lang.T("Refresh"), false));
             _shortcutList.Add(new Shortcut(":cd path", Lang.T("Go to a directory"), false));
             _shortcutList.Add(new Shortcut(":home", Lang.T("Go to the Marbles data directory"), false));
@@ -1523,6 +1524,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":pbappend", Lang.T("Add the selection (or the text) to the paste bin"), false));
             _shortcutList.Add(new Shortcut(":pbread", Lang.T("Insert the text of the paste bin at the cursor"), false));
             _shortcutList.Add(new Shortcut(":pbclear", Lang.T("Empty the paste bin"), false));
+            _shortcutList.Add(new Shortcut(":path", Lang.T("File browser, editor: copy the path of the file"), false));
             _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings (main menu, editor)"), false));
             _shortcutList.Add(new Shortcut("j k Enter Space", Lang.T("Settings: select and change"), false));
             _shortcutList.Add(new Shortcut("h l", Lang.T("Settings: the choice of a row (every yank, add/replace)"), false));
@@ -1651,6 +1653,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":dup", Lang.T("Duplicate the selection (or the line)"), false));
             _shortcutList.Add(new Shortcut("\"+y", Lang.T("Yank to the system clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut(":pb :pbread", Lang.T("Write to/Read from the paste bin"), false));
+            _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path of the file to the clipboard"), false));
             _shortcutList.Add(new Shortcut(":syntax", Lang.T("Colors on/off (md html css js json xml files: on)"), false));
             _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md, css, js, json, xml)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Entries"), Lang.T("Remember their colors (shown as MD, HTML ...)"), false));

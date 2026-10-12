@@ -631,6 +631,11 @@ internal static partial class FileExplorer
     internal static string CurrentFileName => _file == null ? string.Empty : System.IO.Path.GetFileName(_file.Path);
 
     /// <summary>
+    /// The full path of the file being edited (empty if none)
+    /// </summary>
+    internal static string CurrentFilePath => _file == null ? string.Empty : System.IO.Path.GetFullPath(_file.Path);
+
+    /// <summary>
     /// The type and encoding of the file being edited, and line endings of the file being edited, for the bottom line of the editor:
     /// "HTML UTF-8 (BOM) CRLF"
     /// </summary>
