@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Snippets**: `:sn` is short for `:snip` (`:sn add`, `:sn edit`), and `CTRL+K` in Insert mode shows the snippets and inserts the one picked at the cursor, staying in Insert mode.
 - **Editor**: `:spell` turns spell checking off again when it is on (as `:nospell`). `:spell da,en` (with languages) and `:set spell` only turn it on.
 - **Paste bin** in the data directory: `paste-bin.txt` is now kept with the settings and the snippets (a paste bin file set as a full path stays where it is). A paste bin in the directory Marbles was started from is no longer used: move it to the data directory to keep its text.
 - **Favorites**: `T` (`:top`) and `E` (`:bottom`) move the marked favorites (or the selected favorite or folder) to the top or the end of the list. Favorites in a folder go to the top or the end of the folder.

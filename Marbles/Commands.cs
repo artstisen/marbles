@@ -74,7 +74,7 @@ internal static class Commands
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
             "calendar trim clear registers regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip",
-            "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw cal reg")
+            "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw cal reg sn")
     };
 
     /// <summary>

@@ -192,6 +192,41 @@ public class SnippetsTests : IDisposable
     }
 
     [Fact]
+    public void CtrlK_InInsertMode_InsertsAtTheCursor_AndStaysInInsertMode()
+    {
+        var editor = new EditorEngine("ab", 40, 10, false);
+        Assert.Equal(EditorRequest.Snippets, editor.Type("aX<C-k>"));
+        Assert.Equal(EditorMode.Insert, editor.Mode);
+        // Between "X" and "b", where the cursor is (not after the char under it)
+        editor.InsertSnippet("<i>$0</i>");
+        Assert.Equal("aX<i></i>b", editor.GetText());
+        Assert.Equal(EditorMode.Insert, editor.Mode);
+        editor.Type("Y");
+        Assert.Equal("aX<i>Y</i>b", editor.GetText());
+        // Without the mark: after the snippet
+        editor.Type("<C-k>");
+        editor.InsertSnippet("!");
+        editor.Type("Z<Esc>");
+        Assert.Equal("aX<i>Y!Z</i>b", editor.GetText());
+        // The snippet is a change of its own
+        editor.Type("u");
+        Assert.Equal("aX<i>Y!</i>b", editor.GetText());
+        editor.Type("u");
+        Assert.Equal("aX<i>Y</i>b", editor.GetText());
+    }
+
+    [Theory]
+    [InlineData(":sn<CR>", "Snippets")]
+    [InlineData(":sn add<CR>", "SnippetAdd")]
+    [InlineData(":sn edit<CR>", "SnippetsEdit")]
+    [InlineData("V:sn<CR>", "Snippets")]
+    public void Sn_IsShortForSnip(string keys, string request)
+    {
+        var editor = new EditorEngine("one", 40, 10, false);
+        Assert.Equal(Enum.Parse<EditorRequest>(request), editor.Type(keys));
+    }
+
+    [Fact]
     public void TheCommands_AskTheHost()
     {
         var editor = new EditorEngine("one\ntwo", 40, 10, false);

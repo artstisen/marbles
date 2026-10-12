@@ -490,13 +490,15 @@ internal sealed partial class EditorEngine
     /// <summary>
     /// Insert a snippet after the cursor (as "p"), as one change. The lines after the first are indented as the line of the
     /// cursor. If the snippet has the cursor mark ("$0"), the cursor is placed there in Insert mode. If ":snip" was
-    /// typed with a selection (or lines), a snippet with the mark is put around it instead (see WrapInSnippet)
+    /// typed with a selection (or lines), a snippet with the mark is put around it instead (see WrapInSnippet).
+    /// In Insert mode (CTRL+K) the snippet is inserted at the cursor, and the editor stays in Insert mode
     /// </summary>
     internal void InsertSnippet(string text)
     {
         if (SingleLine) return;
+        var insertMode = Mode == EditorMode.Insert;
         ResetPending();
-        Mode = EditorMode.Normal;
+        if (!insertMode) Mode = EditorMode.Normal;
         text = TextBuffer.Normalize(text).Replace("\t", new string(' ', TabWidth));
         var selection = _snippetSelection;
         _snippetSelection = null;
@@ -507,14 +509,21 @@ internal sealed partial class EditorEngine
         }
 
         var at = Buffer.Clamp(Cursor);
-        if (at.Col < Buffer.LineLength(at.Line)) at = at with { Col = at.Col + TextMetrics.ElementLength(CurrentLine, at.Col) };
+        if (!insertMode && at.Col < Buffer.LineLength(at.Line))
+        {
+            at = at with { Col = at.Col + TextMetrics.ElementLength(CurrentLine, at.Col) };
+        }
+
         var (inserted, mark) = Snippets.Prepare(text, CurrentLine[..FirstNonBlank(at.Line)]);
         if (inserted.Length == 0) return;
+        // The snippet is a change of its own (also after text typed in Insert mode)
+        if (Buffer.IsStepOpen) Buffer.EndStep(Cursor);
         _stepCursor = Cursor;
         var end = Insert(at, inserted);
         Cursor = mark < 0 ? end : Buffer.FromIndex(Buffer.ToIndex(at) + mark);
         Buffer.EndStep(Cursor);
-        if (mark >= 0) Mode = EditorMode.Insert;
+        _stepCursor = Cursor;
+        if (mark >= 0 || insertMode) Mode = EditorMode.Insert;
         ClampCursor();
         EnsureCursorVisible();
     }
@@ -681,6 +690,16 @@ internal sealed partial class EditorEngine
             Delete(Cursor with { Col = 0 }, Cursor);
             Cursor = Cursor with { Col = 0 };
         }
+        else if (IsControl(key, ConsoleKey.K))
+        {
+            // The snippets, inserted at the cursor (not when "." repeats what was typed)
+            if (!SingleLine && !_replaying)
+            {
+                SnippetText = string.Empty;
+                _snippetSelection = null;
+                _request = EditorRequest.Snippets;
+            }
+        }
         else if (IsControl(key, ConsoleKey.R))
         {
             // Insert the current register
@@ -767,6 +786,8 @@ internal sealed partial class EditorEngine
             return;
         }
 
+        // ":sn" is short for ":snip"
+        if (command == "sn" || command.StartsWith("sn ", StringComparison.Ordinal)) command = "snip" + command[2..];
         if (range.HasValue)
         {
             var (first, last) = range.Value;

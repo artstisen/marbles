@@ -1651,6 +1651,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("CTRL+W", Lang.T("Delete word before the cursor"), false));
             _shortcutList.Add(new Shortcut("CTRL+U", Lang.T("Delete line before the cursor"), false));
             _shortcutList.Add(new Shortcut("CTRL+R", Lang.T("Paste current memory string"), false));
+            _shortcutList.Add(new Shortcut("CTRL+K", Lang.T("Snippets: insert one at the cursor"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.F("String Memory (limit: {0} strings)", MaxLineMemoryCount), true));
             _shortcutList.Add(new Shortcut("y d c", Lang.T("Yanked/deleted text is added to memory"), false));
             _shortcutList.Add(new Shortcut("CTRL+P CTRL+N", Lang.T("Select previous/next memory string"), false));
@@ -1670,7 +1671,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("\"+y", Lang.T("Yank to the system clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut(":pb :pbread", Lang.T("Write to/Read from the paste bin"), false));
             _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path of the file to the clipboard"), false));
-            _shortcutList.Add(new Shortcut(":snip", Lang.T("Snippets: insert, filter, sort, add, rename, delete"), false));
+            _shortcutList.Add(new Shortcut(":snip :sn", Lang.T("Snippets: insert, filter, sort, add, rename, delete"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Selection"), Lang.T(":snip puts a snippet with $0 around it"), false));
             _shortcutList.Add(new Shortcut(":snip add", Lang.T("Keep the selection (or the line) as a snippet"), false));
             _shortcutList.Add(new Shortcut(":snip edit", Lang.T("Edit the file of snippets (snippets.txt)"), false));

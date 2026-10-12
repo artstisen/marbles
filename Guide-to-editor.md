@@ -27,7 +27,7 @@ Typed on the command line: press `:`, type the command and press `Enter`. `Tab` 
 - `I` / `A` Insert at the start/end of the line
 - `o` / `O` Insert on a new line below/above
 
-In Insert mode: `Tab` inserts 4 blank spaces, `CTRL+W` deletes the word before the cursor, `CTRL+U` deletes the line before the cursor, and `CTRL+R` pastes the current memory string. Text can be pasted from the clipboard with the paste function of your terminal.
+In Insert mode: `Tab` inserts 4 blank spaces, `CTRL+W` deletes the word before the cursor, `CTRL+U` deletes the line before the cursor, `CTRL+R` pastes the current memory string, and `CTRL+K` shows the snippets (see [Snippets](#snippets)). Text can be pasted from the clipboard with the paste function of your terminal.
 
 ## Moving the cursor (Normal and Visual mode)
 - `h` `j` `k` `l` Left/Down/Up/Right (as the arrow keys). `j` and `k` move by rows as shown on screen
@@ -150,9 +150,10 @@ When text is copied from the terminal window with the mouse, the line numbers ar
 ## Snippets
 Snippets are pieces of text (a tag, a block of CSS, a whole page) with a title, kept for inserting again. They are kept in `snippets.txt` in the data directory, for notes and text files alike.
 
-- `:snip` Show the snippets in a box. The first time, the box asks to make the file (with two examples)
-- `:snip add` Keep the selected text as a snippet (select it and type `:snip add`), or the line without a selection. The title is asked for. In a note of a data file it asks first, as the file of snippets is not encrypted
-- `:snip edit` Open the file of snippets in the editor. Changes to the text being edited are asked about (saved or not) first, and when the file of snippets is closed, the text is opened again where the cursor was
+- `:snip` (or `:sn`) Show the snippets in a box. The first time, the box asks to make the file (with two examples)
+- `CTRL+K` in Insert mode: the same, and the snippet is inserted at the cursor (between the characters, where you are typing). The editor stays in Insert mode, with the cursor at `$0` or after the snippet, and one `u` (after `Esc`) undoes the snippet, apart from what was typed before it
+- `:snip add` (or `:sn add`) Keep the selected text as a snippet (select it and type `:snip add`), or the line without a selection. The title is asked for. In a note of a data file it asks first, as the file of snippets is not encrypted
+- `:snip edit` (or `:sn edit`) Open the file of snippets in the editor. Changes to the text being edited are asked about (saved or not) first, and when the file of snippets is closed, the text is opened again where the cursor was
 
 In the box:
 
