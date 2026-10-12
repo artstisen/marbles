@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Color scheme editor** in a frame with tabs: _Colors_ (the preset and the groups) and _Preview_ (a small screen, now also with a frame with tabs). A new group, **Tabs**, sets the colors of the tab shown (background with `l`, text with `T`); by default the dividers inverted. Settings `tabcolor` and `tabtext`.
 - **Start page with tabs**: the start page is a frame with the tabs _Mode_ and _Configuration_, and the settings are on two sub-tabs (_Page 1_, _Page 2_), so they fit on the screen. `Tab` and `Shift+Tab` go from page to page. The tab and sub-tab shown have the colors of the frame inverted. _Configuration_ is no longer a choice of its own (the Quick guide is now `3`, Exit `4`). The frame is a reusable control (`TabFrame`) for other pages later.
 - **Snippets and string memory boxes**: while filtering, `Tab` (or the down arrow) selects the next match and `Shift+Tab` (or the up arrow) the one before.
 - **Editor**: _scrolloff_ keeps lines above and below the cursor when the text scrolls (as in Vim): `:scrolloff` turns it on and off (12 lines), `:scrolloff 8` / `:set so=8` sets the number (999: the cursor stays in the middle). Off by default; also on the Configuration page (settings `scrolloff`, `scrolllines`).

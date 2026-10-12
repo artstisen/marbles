@@ -532,15 +532,53 @@ class ConsoleColors
     internal static bool IsBackgroundColor(ConsoleColor color) => color == CurrentBackgroundColor;
 
     /// <summary>
-    /// The colors of the frames (Divider) inverted: the frame color as the background, and the background as the
-    /// text color (the tab shown in a TabFrame)
+    /// The colors of the tab shown in a TabFrame (settings "tabcolor" and "tabtext"): the background of the tab
+    /// (null: the color of the frames) and its text (null: the background of the screen). Not part of the presets
     /// </summary>
-    internal static void SetDividerInverted()
+    internal static ConsoleColor? TabColor { get; set; }
+
+    internal static ConsoleColor? TabTextColor { get; set; }
+
+    /// <summary>
+    /// A color by the number used in the settings file
+    /// </summary>
+    internal static ConsoleColor ColorFromIndex(int colorIndex) => GetColorFromIndex(colorIndex);
+
+    /// <summary>
+    /// The tab colors being edited in the color scheme editor
+    /// </summary>
+    internal static ConsoleColor? PreviewTabColor { get; set; }
+
+    internal static ConsoleColor? PreviewTabTextColor { get; set; }
+
+    /// <summary>
+    /// The background and the text of the tab shown in a TabFrame, as used (or being edited, with preview)
+    /// </summary>
+    internal static (ConsoleColor Background, ConsoleColor Text) TabColors(bool preview)
     {
-        SetColors(ColorPreset.Divider);
-        var frame = Console.ForegroundColor;
-        Console.BackgroundColor = frame;
-        Console.ForegroundColor = Monochrome ? ConsoleColor.Black : CurrentBackgroundColor;
+        var frame = preview ? PreviewDividerColor : CurrentDividerColor;
+        var background = preview ? PreviewBackgroundColor : CurrentBackgroundColor;
+        return preview
+            ? (PreviewTabColor ?? frame, PreviewTabTextColor ?? background)
+            : (TabColor ?? frame, TabTextColor ?? background);
+    }
+
+    /// <summary>
+    /// Write in the colors of the tab shown in a TabFrame (with preview: the colors being edited). By default the
+    /// colors of the frames inverted: the frame color as the background, and the background as the text
+    /// </summary>
+    internal static void SetTabColors(bool preview = false)
+    {
+        if (Monochrome && !preview)
+        {
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            return;
+        }
+
+        var (background, text) = TabColors(preview);
+        Console.BackgroundColor = background;
+        Console.ForegroundColor = text;
     }
 
     /// <summary>
@@ -863,6 +901,8 @@ class ConsoleColors
         PreviewAttentionForegroundColor = CurrentAttentionForegroundColor;
         PreviewWarningBackgroundColor = CurrentWarningBackgroundColor;
         PreviewWarningForegroundColor = CurrentWarningForegroundColor;
+        PreviewTabColor = TabColor;
+        PreviewTabTextColor = TabTextColor;
     }
 
     /// <summary>
@@ -874,6 +914,9 @@ class ConsoleColors
         var background = Background;
         SetColors(preset);
         InitializePreviewColors();
+        // The presets have the default colors of the tabs (those of the frames)
+        PreviewTabColor = null;
+        PreviewTabTextColor = null;
         for (var i = 0; i < colors.Length; i++)
         {
             SetColorFromIndex(i, GetIndexFromColor(colors[i]));
@@ -901,6 +944,8 @@ class ConsoleColors
         CurrentAttentionForegroundColor = PreviewAttentionForegroundColor;
         CurrentWarningBackgroundColor = PreviewWarningBackgroundColor;
         CurrentWarningForegroundColor = PreviewWarningForegroundColor;
+        TabColor = PreviewTabColor;
+        TabTextColor = PreviewTabTextColor;
         // Save settings
         FileIo.SaveSettings();
     }

@@ -69,18 +69,20 @@ The main menu has 2 pages, each with two boxes of keys and commands: four boxes 
 - `:q` **Exit**
 
 ### Color scheme editor
-The colors of Marbles are edited on a page of their own, opened with `:scheme` in the main menu or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It shows the colors being edited: the preset at the top, the ten groups of colors below it, each with a sample and the names of its colors, and a small screen at the bottom that shows them all on the background. Nothing is used until you save.
+The colors of Marbles are edited on a page of their own, opened with `:scheme` in the main menu or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It is a frame with two tabs, as the start page: **Colors** has the preset at the top and the eleven groups of colors below it, each with a sample and the names of its colors, and **Preview** shows them all on a small screen on the background, with a frame with tabs. `Tab` goes from one to the other. Nothing is used until you save.
 
 - `j` `k` (or `Up`/`Down`, `gg` `G`) Select the preset or a group
 - On the preset: `l` and `h` (or `Enter`) Start from the next/previous preset. The groups get the colors of the preset
 - On a group: `l` (or `Enter`, `Space`, `Right`) Pick its color from a list of the 16 colors: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. For Highlight, Attention and Warning (shown inverted) this is the background color
-- `T` Pick the text color of Highlight, Attention or Warning
+- `T` Pick the text color of Highlight, Attention, Warning or Tabs
+- **Tabs**: the colors of the tab and sub-tab shown in a frame with tabs (the start page, this editor). `[Default]` (the default) is the color of the dividers inverted: the divider color as the background, and the background as the text. `l` picks the background of the tab and `T` its text, and either can be `[Default]` again. The color presets (`:color`) and `:defaults` use `[Default]`. The settings are `tabcolor` and `tabtext` in the settings file (a color number, or empty for the default)
 - **Background**: the last group. `[Default]` (the default) shows the text on the terminal's own background, so a transparent or blurred terminal window stays that way. Pick a color to give Marbles a background of its own: the whole window is filled with it, and the terminal's background is used again when Marbles exits. The background cannot have the color of the text, the logo, dividers, favorites or titles. The color presets (`:color`) and `:defaults` use `[Default]`. The setting is `background` in the settings file (a color number, or `default`)
 - A color shown in brackets in the list cannot be picked, as the text would not be visible on its background
 - `E` Back to the colors of the preset
 - `S` Save the colors and close the editor
 - `Esc` (or `Q`) Close. If something was changed, you are asked in a box whether to save it (`Y`/`N`, or `j`/`k` and `Enter`)
 - `?` Show the help of the editor
+- On the Preview tab: `S` saves, `Esc` closes, and `Tab` goes back to the colors
 
 With _Black and white_ on, the colors can still be edited: they are used when black and white is turned off.
 

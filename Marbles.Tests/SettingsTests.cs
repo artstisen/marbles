@@ -127,11 +127,13 @@ backup=
         Assert.False(settings.ContainsKey("logo"));
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(43, settings.Count);
+        Assert.Equal(45, settings.Count);
         Assert.Equal("true", settings["wrap"]);
         Assert.Equal("file", settings["snipsort"]);
         Assert.Equal("false", settings["scrolloff"]);
         Assert.Equal("12", settings["scrolllines"]);
+        Assert.Equal(string.Empty, settings["tabcolor"]);
+        Assert.Equal(string.Empty, settings["tabtext"]);
         Assert.Equal("false", settings["startfavorites"]);
         Assert.Equal("true", settings["osc52"]);
         Assert.Equal("false", settings["pastebin"]);

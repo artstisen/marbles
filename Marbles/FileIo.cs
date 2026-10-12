@@ -984,6 +984,11 @@ internal static class FileIo
         _tempSettings += "color10=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(10))+ Entries.NewLineChar;
         _tempSettings += "color11=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(11))+ Entries.NewLineChar;
         _tempSettings += "color12=" + ConsoleColors.GetIndexFromColor(ConsoleColors.GetCurrentColorFromIndex(12))+ Entries.NewLineChar;
+        // The colors of the tab shown in a frame with tabs (empty: the frame color, and the background as text)
+        _tempSettings += "tabcolor=" + (ConsoleColors.TabColor is { } tabColor
+            ? ConsoleColors.GetIndexFromColor(tabColor).ToString() : string.Empty) + Entries.NewLineChar;
+        _tempSettings += "tabtext=" + (ConsoleColors.TabTextColor is { } tabText
+            ? ConsoleColors.GetIndexFromColor(tabText).ToString() : string.Empty) + Entries.NewLineChar;
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; FILES" + Entries.NewLineChar;
@@ -1118,6 +1123,9 @@ internal static class FileIo
             return value.Length is > 0 and < 9 && Tools.IsNumeric(value) ? Convert.ToInt32(value) : null;
         }
 
+        // A color by its number (null if there is none)
+        ConsoleColor? ColorOf(int? index) => index is >= 0 and <= 15 ? ConsoleColors.ColorFromIndex(index.Value) : null;
+
         // Dimensions
         Init.SetLineWidth((byte)Math.Clamp(GetNumber("linewidth") ?? Init.MinLineWidth, 0, byte.MaxValue));
         Init.SetLineCount((byte)Math.Clamp(GetNumber("linecount") ?? Init.MinLineCount, 0, byte.MaxValue));
@@ -1180,6 +1188,8 @@ internal static class FileIo
         }
 
         ConsoleColors.SetBackgroundFromIndex(GetNumber("background"));
+        ConsoleColors.TabColor = ColorOf(GetNumber("tabcolor"));
+        ConsoleColors.TabTextColor = ColorOf(GetNumber("tabtext"));
 
         // Sub directory
         var subFolder = Get("subdir");

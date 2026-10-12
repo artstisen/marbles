@@ -1566,7 +1566,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select the preset or a group of colors"), false));
             _shortcutList.Add(new Shortcut("h l", Lang.T("On the preset: the previous/next preset"), false));
             _shortcutList.Add(new Shortcut("l Enter Space", Lang.T("On a group: pick its color from a list"), false));
-            _shortcutList.Add(new Shortcut("T", Lang.T("Pick the text color (Highlight, Attention, Warning)"), false));
+            _shortcutList.Add(new Shortcut("T", Lang.T("Pick the text color (Highlight, Attention, Warning, Tabs)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Tabs"), Lang.T("The tab shown ([Default]: the dividers inverted)"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Colors/Preview: the colors on a small screen"), false));
             _shortcutList.Add(new Shortcut("E", Lang.T("Back to the colors of the preset"), false));
             _shortcutList.Add(new Shortcut("S", Lang.T("Save the colors and close"), false));
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Close (asks to save changes)"), false));

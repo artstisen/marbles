@@ -474,6 +474,9 @@ internal static class Actions
     {
         ConsoleColors.SetColors(ColorPresets[index]);
         ConsoleColors.SetColorPresetIndex(index);
+        // The presets have the default colors of the tabs (those of the frames)
+        ConsoleColors.TabColor = null;
+        ConsoleColors.TabTextColor = null;
     }
 
     // Commands when selecting from a list of entries. The commands work on the selected entry
@@ -1173,6 +1176,8 @@ internal static class Actions
         Snippets.Sort = Snippets.SortOrder.File;
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
         ConsoleColors.DefaultColorPresetIndex();
+        ConsoleColors.TabColor = null;
+        ConsoleColors.TabTextColor = null;
         Logo.AnimationEnabled = true;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;

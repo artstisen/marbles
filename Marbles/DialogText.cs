@@ -51,7 +51,8 @@ internal static class DialogText
     // The keys of a list of entries (All, Top 20, Favorites, Session history, Search)
     public static string ListKeys => Lang.T("Enter Open | h/l Page | gg/G First/Last | ? Help | Esc Back");
     public static string HelpSectionMainMenu => Lang.T("Main menu");
-    public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | ? Help | Esc Close");
+    public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | Tab Preview | Esc Close");
+    public static string SchemePreviewKeys => Lang.T("Tab Colors | S Save | ? Help | Esc Close");
     public static string HelpSectionColorScheme => Lang.T("Color scheme editor");
     public static string CaptionsExport => Lang.T("Export");
     public static string CaptionsImport => Lang.T("Import");
