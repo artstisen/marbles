@@ -182,8 +182,9 @@ internal static class ConsoleColors
 
     /// <summary>
     /// Write in the colors of the tab shown in a frame with tabs, and of the titles of boxes (with preview: the
-    /// colors being edited). By default the colors of the tab frames inverted. When the highlight of the tabs is
-    /// off, in the color of the tab shown on the normal background
+    /// colors being edited). Highlighted: the background of the highlight (by default the color of the tab frames)
+    /// with the text in the color of the focused tab. When the highlight is off, that color on the normal
+    /// background. In black and white the highlight is inverted
     /// </summary>
     internal static void SetTabColors(bool preview = false)
     {

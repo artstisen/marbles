@@ -27,7 +27,7 @@ internal static class SystemClipboard
     /// Every yank goes out, or (false) only the ones with "+ in front, as "+y (setting "clipboardyank":
     /// "all" or "plus")
     /// </summary>
-    internal static bool EveryYank { get; set; }
+    internal static bool EveryYank { get; set; } = true;
 
     /// <summary>
     /// Text may be sent out of the notes of a data file too, which are kept encrypted (setting "clipboardnotes")
@@ -62,7 +62,7 @@ internal static class SystemClipboard
     {
         Osc52 = true;
         PasteBin = false;
-        EveryYank = false;
+        EveryYank = true;
         FromNotes = false;
         PasteBinAppend = false;
         PasteBinFile = DefaultPasteBinFile;

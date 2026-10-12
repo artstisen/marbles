@@ -572,7 +572,7 @@ internal static class SchemeEditor
 
         if (group.Color == ColorItem.Tab && Preview.Tab == null && Preview.TabText == null)
         {
-            return Lang.T("[Default]: the tab frames inverted");
+            return Lang.T("[Default]: Tab focus on the tab frames");
         }
 
         return group.Text is { } text

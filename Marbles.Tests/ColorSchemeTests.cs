@@ -82,7 +82,8 @@ public class ColorSchemeTests : IDisposable
         var scheme = ColorScheme.BuiltIn[2].Clone();
         Assert.Equal(ConsoleColor.Blue, scheme.TabFrameColor);
         Assert.Equal(ConsoleColor.Blue, scheme.TabColor);
-        Assert.Equal(ConsoleColor.Black, scheme.TabTextColor);
+        // The text of the highlighted tab is the color of the focused tab
+        Assert.Equal(ConsoleColor.Green, scheme.TabTextColor);
         // The names of the tabs (the one shown without highlight, and the others) are the text
         Assert.Equal(ConsoleColor.Green, scheme.TabShownColor);
         Assert.Equal(ConsoleColor.Green, scheme.OtherTabsColor);
@@ -113,8 +114,12 @@ public class ColorSchemeTests : IDisposable
         Assert.False(scheme.Allowed(ColorItem.BoxBorders, ConsoleColor.Black));
         // The text and background of a highlight differ
         Assert.False(scheme.Allowed(ColorItem.HighlightText, ConsoleColor.Cyan));
-        Assert.False(scheme.Allowed(ColorItem.Tab, ConsoleColor.Black));
+        // (the text of the highlighted tab is the color of the focused tab: cyan)
+        Assert.False(scheme.Allowed(ColorItem.Tab, ConsoleColor.Cyan));
         Assert.True(scheme.Allowed(ColorItem.Tab, ConsoleColor.Yellow));
+        Assert.False(scheme.Allowed(ColorItem.TabShown, ConsoleColor.DarkGray));
+        scheme.TabText = ConsoleColor.White;
+        Assert.True(scheme.Allowed(ColorItem.TabShown, ConsoleColor.DarkGray));
     }
 
     [Fact]

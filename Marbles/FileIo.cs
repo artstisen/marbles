@@ -1112,7 +1112,8 @@ internal static class FileIo
         // The clipboard (OSC 52 on unless turned off, the rest off unless turned on)
         SystemClipboard.Osc52 = Tools.TrimToLower(Get("osc52")) != DialogText.BFalse;
         SystemClipboard.PasteBin = Tools.TrimToLower(Get("pastebin")) == DialogText.BTrue;
-        SystemClipboard.EveryYank = Tools.TrimToLower(Get("clipboardyank")) == "all";
+        // Every yank unless only the ones with "+ in front are asked for
+        SystemClipboard.EveryYank = Tools.TrimToLower(Get("clipboardyank")) != "plus";
         SystemClipboard.FromNotes = Tools.TrimToLower(Get("clipboardnotes")) == DialogText.BTrue;
         SystemClipboard.PasteBinAppend = Tools.TrimToLower(Get("pastebinappend")) == DialogText.BTrue;
         var pasteBinFile = Get("pastebinfile").Trim();

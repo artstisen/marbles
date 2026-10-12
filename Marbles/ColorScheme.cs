@@ -23,7 +23,7 @@ internal enum ColorItem
     TabFrames, // The frames with tabs (null: the color of the dividers)
     BoxBorders, // The borders of the boxes on top of a page (null: the color of the dividers)
     Tab, // The background of the tab shown (null: the color of the tab frames)
-    TabText, // The text of the tab shown (null: the background)
+    TabText, // The text of the tab shown when it is highlighted (null: the color of TabShown)
     TabShown, // The name of the tab shown when it is not highlighted (null: the text)
     OtherTabs // The names of the other tabs (null: the text)
 }
@@ -70,7 +70,7 @@ internal sealed class ColorScheme
     internal ConsoleColor TabFrameColor => TabFrames ?? Dividers;
     internal ConsoleColor BoxBorderColor => BoxBorders ?? Dividers;
     internal ConsoleColor TabColor => Tab ?? TabFrameColor;
-    internal ConsoleColor TabTextColor => TabText ?? BackgroundColor;
+    internal ConsoleColor TabTextColor => TabText ?? TabShownColor;
     internal ConsoleColor TabShownColor => TabShown ?? Text;
     internal ConsoleColor OtherTabsColor => OtherTabs ?? Text;
 
@@ -177,12 +177,16 @@ internal sealed class ColorScheme
     internal bool Allowed(ColorItem item, ConsoleColor color)
     {
         if (item == ColorItem.Background) return OnBackground.All(text => Shown(text) != color);
+        if (item == ColorItem.TabShown && TabText == null && color == TabColor) return false;
         if (OnBackground.Contains(item)) return color != BackgroundColor;
         foreach (var (background, text) in Pairs)
         {
             if (item == background) return color != Shown(text);
             if (item == text) return color != Shown(background);
         }
+
+        // The text of the focused tab is also the text of the highlight, when that has no text color of its own
+        if (item == ColorItem.TabShown && TabText == null && color == TabColor) return false;
 
         return true;
     }

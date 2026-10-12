@@ -138,7 +138,7 @@ backup=
         Assert.Equal("false", settings["startfavorites"]);
         Assert.Equal("true", settings["osc52"]);
         Assert.Equal("false", settings["pastebin"]);
-        Assert.Equal("plus", settings["clipboardyank"]);
+        Assert.Equal("all", settings["clipboardyank"]);
         Assert.Equal("false", settings["clipboardnotes"]);
         Assert.Equal("false", settings["pastebinappend"]);
         Assert.Equal("paste-bin.txt", settings["pastebinfile"]);
