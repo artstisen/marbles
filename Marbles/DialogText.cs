@@ -54,6 +54,7 @@ internal static class DialogText
     public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | Tab Next | Esc Close");
     public static string SchemePreviewKeys => Lang.T("Tab Schemes | S Save | ? Help | Esc Close");
     public static string HelpSectionColorScheme => Lang.T("Color schemes");
+    public static string HelpSectionLogos => Lang.T("Logos");
     public static string CaptionsExport => Lang.T("Export");
     public static string CaptionsImport => Lang.T("Import");
     public static string CaptionsBackup => Lang.T("Backup");
@@ -198,6 +199,17 @@ internal static class DialogText
     public static string ChoiceCancel => Lang.T("Cancel");
     // The boxes for picking a color scheme and a language
     public static string SchemeSaveCaption => Lang.T("Save the color scheme");
+    public static string CaptionsLogos => Lang.T("Logos");
+    public static string LogoSaveCaption => Lang.T("Save the logo");
+    public static string LogoSavePrompt => Lang.T("Type a name for the logo and press Enter");
+    public static string LogoNameInvalid => Lang.T("Not a name a logo can have");
+    public static string LogoNameBuiltIn => Lang.T("The built-in logo has that name");
+    public static string LogoNotFound => Lang.T("There is no logo with that name");
+    public static string LogoDiscardQuestion => Lang.T("Use or edit another logo? The changes are not saved.");
+    public static string LogoBuiltInDelete => Lang.T("The built-in logo cannot be deleted");
+    public static string LogoListKeys => Lang.T("j/k Select | Enter Use | E Edit | D Delete | Tab Editor | Esc Close");
+    public static string LogoEditorKeys => Lang.T("hjkl Move | i/R Draw | x Clear | r Char | u Undo | S Save | Esc Close");
+    public static string LogoReplaceKeys => Lang.T("Backspace Clear | Enter Next row | Esc NORMAL");
     public static string SchemeSavePrompt => Lang.T("Type a name for the color scheme and press Enter");
     public static string SchemeNameInvalid => Lang.T("Not a name a color scheme can have");
     public static string SchemeNameBuiltIn => Lang.T("A built-in color scheme has that name");

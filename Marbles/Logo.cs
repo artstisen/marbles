@@ -6,14 +6,14 @@
 /// </summary>
 internal static class Logo
 {
-    private static readonly string[] Lines =
-    {
-        @" ",
-        @" M_     _M """"""""""MM_ """"""""""MM_ """"""""""MM_ MMM      """"""""""MMM """"""""""MMM",
-        @" MMM_ _MMM MMM _M%M MMM _MM"" MMM _MM"" M%M  ___ MMM_ """""" M%M ___ ",
-        @" M%M "" M%M M%M"" M%M M%M"" M%M M%M"" M%M M%M  M%M M%M  ___  """""" M%M",
-        @" MMM   MMM MMM  MMM MMM  MMM MMM__MM"" ""MM__MMM ""MM__MMM MMM__MM"""
-    };
+    /// <summary>
+    /// The logo in use (setting "logo": its name). The built-in logo is "Marbles"
+    /// </summary>
+    internal static LogoArt Current { get; set; } = LogoArt.BuiltIn;
+
+    // The lines drawn: a blank first line (the version number is written on it) and the rows of the logo, from
+    // the column after the margin
+    private static string[] Lines => new[] { " " }.Concat(Current.AllRows.Select(row => " " + row)).ToArray();
 
     private const int LogoMargin = 1; // The column the logo starts in
     private const int VersionMargin = 2; // The column of the version number
@@ -61,10 +61,11 @@ internal static class Logo
         }
 
         // Write the lines (after a sweep this makes sure the logo is complete)
-        for (var i = 0; i < Lines.Length; i++)
+        var lines = Lines;
+        for (var i = 0; i < lines.Length; i++)
         {
             Tools.SetCursorEx(i, LogoMargin);
-            Console.Write(Lines[i]);
+            Console.Write(lines[i]);
         }
 
         if (showVersionNumber)
@@ -83,16 +84,17 @@ internal static class Logo
     {
         try
         {
-            var width = Lines.Max(line => line.Length);
+            var lines = Lines;
+            var width = lines.Max(line => line.Length);
             for (var column = 0; column < width; column++)
             {
                 if (Console.KeyAvailable) return;
                 var drawn = false;
-                for (var i = 0; i < Lines.Length; i++)
+                for (var i = 0; i < lines.Length; i++)
                 {
-                    if (column >= Lines[i].Length || Lines[i][column] == ' ') continue;
+                    if (column >= lines[i].Length || lines[i][column] == ' ') continue;
                     Tools.SetCursorEx(i, LogoMargin + column);
-                    Console.Write(Lines[i][column]);
+                    Console.Write(lines[i][column]);
                     drawn = true;
                 }
 

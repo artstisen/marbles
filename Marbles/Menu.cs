@@ -29,7 +29,7 @@ internal static class Menu
         {
             "undelete" => 0,
             "import" or "transfer" or "backup" or "password" => 1,
-            "scheme" or "bw" or "language" or "number" or "size" or "clipboard" => 2,
+            "scheme" or "logo" or "bw" or "language" or "number" or "size" or "clipboard" => 2,
             _ => 3
         };
     }
@@ -290,6 +290,7 @@ internal static class Menu
             {
                 new(":scheme", "[" + ColorSchemes.DisplayName(ConsoleColors.Current.Name) + "] " +
                                DialogText.CaptionsColorScheme, ":scheme"),
+                new(":logo", "[" + Logo.Current.Name + "] " + DialogText.CaptionsLogos, ":logo"),
                 new(":bw", Check(ConsoleColors.Monochrome) + " " + Lang.T("Black and white"), ":bw"),
                 new(":language", "[" + Lang.Current + "] " + Lang.T("Language"), ":language"),
                 new(":number", Check(TextArea.LineNumbers) + " " + Lang.T("Line numbers"), ":number"),

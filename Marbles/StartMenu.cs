@@ -127,6 +127,7 @@ internal static class StartMenu
         ColorScheme,
         AutoSize,
         Size,
+        Logo,
         LineNumbers,
         WordWrap,
         ScrollOff,
@@ -146,6 +147,7 @@ internal static class StartMenu
         if (Mode == StartMode.Editor) settings.Add(Setting.StartFavorites);
         settings.Add(Setting.Monochrome);
         if (!ConsoleColors.Monochrome) settings.Add(Setting.ColorScheme);
+        settings.Add(Setting.Logo);
         settings.Add(Setting.Language);
         settings.Add(Setting.AutoSize);
         if (!Init.AutoSize) settings.Add(Setting.Size);
@@ -174,6 +176,7 @@ internal static class StartMenu
             Setting.Language => indent + DialogText.ConfigLanguage + Lang.CurrentName,
             Setting.ColorScheme => indent + Lang.F("Color scheme: {0} (Enter: Select/Edit)",
                 ColorSchemes.DisplayName(ConsoleColors.Current.Name)),
+            Setting.Logo => indent + Lang.F("Logo: {0} (Enter: Select/Edit)", Marbles.Logo.Current.Name),
             Setting.AutoSize => Check(Init.AutoSize) + DialogText.ConfigAutoSize,
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
@@ -368,6 +371,13 @@ internal static class StartMenu
             {
                 // The color schemes: select and edit them
                 SchemeEditor.Show();
+                return TabResult.Redraw;
+            }
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow &&
+                     setting == Setting.Logo)
+            {
+                // The logos: select and edit them
+                LogoEditor.Show();
                 return TabResult.Redraw;
             }
             else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && setting == Setting.Language)

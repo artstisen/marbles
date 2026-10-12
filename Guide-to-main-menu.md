@@ -50,6 +50,7 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 ### Page 2: Settings and Marbles
 **Settings**
 - `:scheme` **Color schemes**: Select a color scheme, edit the colors and save them as a scheme of your own, on [a page of their own](#color-schemes). The item shows the scheme in use. `:scheme Name` uses the scheme with the name at once
+- `:logo` **Logos**: Select the logo of the start and login pages, or draw one of your own, on [a page of their own](#logos). The item shows the logo in use. `:logo Name` uses the logo with the name at once
 - `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the terminal's own background is used
 - `:language` **Language**: Pick the language in a box on top of the menu, or select one by its code: `:language en` (English), `da` (Danish), `de` (German), `nb` (Norwegian), `sv` (Swedish), `es` (Spanish), `fr` (French). The language is saved as `language` in the settings file, and can also be changed on the Configuration page
 - `:number` **Line numbers**: Show or hide line numbers in the editor (the same as `:number` in the editor itself).
@@ -98,6 +99,26 @@ The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEM
 **Schemes of your own** are kept as text files in the directory `colorschemes` in the data directory (the name of the scheme and `.txt`), with a line for each color (`text=Gray`, `tabframes=default`, `tabhighlight=true`). They can be copied to another computer, or edited by hand: the colors are Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow and White, and `default` for the colors that can have it. If the scheme in use is missing when Marbles starts, the default scheme is used. `:defaults` goes back to the default scheme.
 
 With _Black and white_ on, the colors can still be edited: they are used when black and white is turned off.
+
+### Logos
+The logo of the start and login pages can be one of your own. The logos are chosen and drawn on a page of their own, _LOGOS_, opened with `:logo` in the main menu (or its item on the Settings tab) or from the Configuration page of the start page (select _Logo_ and press `Enter`). It is a frame with two tabs: **Logos** and **Editor**. `Tab` goes from one to the other.
+
+**Logos** shows the selected logo at the top and the logos below it: the built-in logo, _Marbles_, and the ones you have saved yourself. The one in use is marked `[x]`.
+
+- `j` `k` (or `Up`/`Down`, `gg` `G`) Select a logo: it is shown above the list
+- `Enter` (or `Space`, `l`) Use the selected logo: it is used at once, and its name is saved (`logo` in the settings file)
+- `E` Edit the selected logo (on the Editor tab)
+- `D` Delete a logo of your own (you are asked first). The built-in logo cannot be deleted
+- `:logo Name` in the main menu uses a logo by its name at once
+
+**Editor** shows the logo on a grid of 4 rows of 63 characters, the size of the Marbles logo, in a box with a ruler above it (a dot for each column, `:` for every 5th, and the tens as digits). The cursor cannot leave the grid. The editor has the modes of the [text editor](Guide-to-editor.md), shown below the grid with the row and column of the cursor:
+
+- **NORMAL**: `h` `j` `k` `l` (or the arrow keys) move, `0` `$` go to the start/end of the row, `gg` `G` to the first/last row. `x` clears the character under the cursor, `r` and a character replaces it, `dd` clears the row, and `u` undoes (the last 100 changes)
+- `i` or `R` go to **REPLACE** mode, `a` after the cursor: what you type is drawn over the grid and the cursor moves on. `Backspace` clears the character before the cursor, `Enter` goes to the start of the next row, the arrow keys move, and `Esc` goes back to NORMAL
+- `S` Save the logo as one of your own: type a name for it and press `Enter` (a logo of your own is suggested by its name; _Marbles_ cannot be used, and another logo of yours with the name is replaced if you want that). The logo is then the one in use
+- `Esc` (or `Q`) in NORMAL mode closes the page. If something was changed and not saved, you are asked in a box whether to save it (`Y`, `N`, or `Esc` to stay)
+
+Only the printable ASCII characters can be typed (letters, digits and signs such as `_ - " % # /`), so the logo looks the same in every terminal. **Logos of your own** are kept as text files in the directory `logos` in the data directory (the name of the logo and `.txt`), with the 4 rows of the logo. They can be copied to another computer or edited by hand; a file can have other characters that take one column (as the block characters `█ ▀ ▄`), but not all terminal fonts have them (the console of a Raspberry Pi does not), so ASCII is the safe choice. Rows longer than 63 characters are cut, and shorter ones filled with blank space. If the logo in use is missing when Marbles starts, _Marbles_ is used. `:defaults` goes back to _Marbles_. The logo is drawn in the color of _Logo and labels_ of the color scheme.
 
 ## Lists of entries
 Search results, Top 20, Favorites, Session history and List all are shown as lists. The kind of list (_ALL_, _TOP 20_, _FAVORITES_, _SESSION HISTORY_, _SEARCH_) is shown at the top left, the most used keys at the bottom, and `?` shows all the keys of the lists.

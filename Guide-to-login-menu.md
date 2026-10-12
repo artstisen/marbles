@@ -27,6 +27,7 @@ Below these are some basic settings, so they can be changed without logging in t
 
 - **Black and white (no colors)**: Show everything in black and white. Your color scheme is kept and is used again when this is turned off
 - **Color scheme**: The color scheme in use. `Enter` opens the [color schemes](Guide-to-main-menu.md#color-schemes), where a scheme is selected, and the colors are edited and saved as a scheme of your own (not shown when _Black and white_ is on)
+- **Logo**: The logo in use. `Enter` opens the [logos](Guide-to-main-menu.md#logos), where a logo is selected, or drawn and saved as one of your own (4 rows of 63 characters)
 - **Language**: The language of the menus, help and messages: English, Dansk (Danish), Deutsch (German), Norsk bokmål (Norwegian), Svenska (Swedish), Español (Spanish) or Français (French). `l` and `h` select the next and the previous, and `Enter` shows the languages in a box to pick from. Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
 - **Automatic size**: Follow the size of the terminal window. Turned off, the default size (80 x 23) is used until you set another
 - **Size**: Set the number of columns and rows by hand (shown when _Automatic size_ is off)

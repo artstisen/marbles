@@ -8,7 +8,8 @@ internal enum TabResult
     None, // Only the pointer (or what the page draws by itself) has changed
     Redraw, // Draw the whole frame and page again (something was shown on top, or a setting changed)
     Close, // The frame is done: TabFrame.Run returns
-    FirstTab // Go to the first page (as Esc in a page of settings)
+    FirstTab, // Go to the first page (as Esc in a page of settings)
+    NextPage // Go to the next page (as Tab)
 }
 
 /// <summary>
@@ -42,6 +43,16 @@ internal interface ITabPage
     void Draw(TabArea area, bool full);
 
     TabResult HandleKey(ConsoleKeyInfo key);
+
+    /// <summary>
+    /// True while the page takes all keys, Tab and "?" too (while text is typed in it)
+    /// </summary>
+    bool CapturesKeys => false;
+
+    /// <summary>
+    /// Where the cursor is shown while a key is waited for (null: it is hidden)
+    /// </summary>
+    (int Row, int Column)? Cursor => null;
 }
 
 /// <summary>
@@ -124,8 +135,18 @@ internal sealed class TabFrame
                 continue;
             }
 
-            Tools.SetCursorEx(Init.LineCount - 1, 0);
+            if (page.Cursor is { } cursor)
+            {
+                Tools.SetCursorEx(cursor.Row, cursor.Column);
+                Tools.ShowCursor();
+            }
+            else
+            {
+                Tools.SetCursorEx(Init.LineCount - 1, 0);
+            }
+
             var key = Console.ReadKey(true);
+            Tools.HideCursor();
             // The terminal window has changed size
             if (Init.AutoSize && Init.ApplyAutoSize())
             {
@@ -133,14 +154,14 @@ internal sealed class TabFrame
                 continue;
             }
 
-            if (key.Key == ConsoleKey.Tab)
+            if (key.Key == ConsoleKey.Tab && !page.CapturesKeys)
             {
                 Selected = TabLayout.Next(Selected, _pages.Count, (key.Modifiers & ConsoleModifiers.Shift) != 0);
                 full = true;
                 continue;
             }
 
-            if (key.KeyChar == '?')
+            if (key.KeyChar == '?' && !page.CapturesKeys)
             {
                 Tools.WriteEditorHelp(false, page.Help);
                 full = true;
@@ -156,6 +177,10 @@ internal sealed class TabFrame
                     break;
                 case TabResult.FirstTab:
                     Selected = 0;
+                    full = true;
+                    break;
+                case TabResult.NextPage:
+                    Selected = TabLayout.Next(Selected, _pages.Count, false);
                     full = true;
                     break;
             }

@@ -122,11 +122,11 @@ backup=
         Assert.DoesNotContain("KEY MAPPING", saved);
         var settings = FileIo.ParseSettings(saved);
         Assert.Equal("100", settings["linewidth"]);
-        // The logo presets are gone: their settings are not written any more
-        Assert.False(settings.ContainsKey("logo"));
+        // The logo presets are gone: the logo in use is a setting by its name
+        Assert.Equal("Marbles", settings["logo"]);
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(30, settings.Count);
+        Assert.Equal(31, settings.Count);
         Assert.Equal("true", settings["wrap"]);
         Assert.Equal("file", settings["snipsort"]);
         Assert.Equal("true", settings["scrolloff"]);

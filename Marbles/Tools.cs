@@ -1361,6 +1361,7 @@ internal static class Tools
         History, // The files opened from the file browser
         Search, // The files found by a search in the file browser
         ColorScheme, // The color scheme editor
+        Logos, // The logos and the logo editor
         Clipboard, // The clipboard settings
         Editor
     }
@@ -1429,6 +1430,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":logout", Lang.T("Logout"), false));
             _shortcutList.Add(new Shortcut(":guide", Lang.T("Quick guide (a short introduction)"), false));
             _shortcutList.Add(new Shortcut(":scheme", Lang.T("The color schemes: select and edit them"), false));
+            _shortcutList.Add(new Shortcut(":logo", Lang.T("The logos: select and edit them"), false));
             _shortcutList.Add(new Shortcut(":language", Lang.T("Pick the language from a list"), false));
             _shortcutList.Add(new Shortcut(":language da", Lang.T("Use Danish at once"), false));
             _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings"), false));
@@ -1577,6 +1579,19 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Close (asks to save changes)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Open"), Lang.T(":scheme, or Configuration: Color scheme"), false));
             _shortcutList.Add(new Shortcut(":scheme Name", Lang.T("Use the color scheme with the name"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogos, true));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Logos, Editor"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Logos"), Lang.T("Enter: use, E: edit, D: delete one of your own"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Editor"), Lang.T("4 rows of 63 characters, with a ruler above"), false));
+            _shortcutList.Add(new Shortcut("h j k l", Lang.T("Move (0 $: start/end of the row, gg G: first/last row)"), false));
+            _shortcutList.Add(new Shortcut("i R", Lang.T("REPLACE mode: what is typed is drawn (Esc: NORMAL)"), false));
+            _shortcutList.Add(new Shortcut("a", Lang.T("REPLACE mode after the cursor"), false));
+            _shortcutList.Add(new Shortcut("x r", Lang.T("Clear the character/Replace it with the next key"), false));
+            _shortcutList.Add(new Shortcut("dd u", Lang.T("Clear the row/Undo"), false));
+            _shortcutList.Add(new Shortcut("S", Lang.T("Save as a logo of your own (asks for a name)"), false));
+            _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Close (asks to save changes)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Open"), Lang.T(":logo, or Configuration: Logo"), false));
+            _shortcutList.Add(new Shortcut(":logo Name", Lang.T("Use the logo with the name"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionEditor, true));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Modes"), true));
             _shortcutList.Add(new Shortcut("Esc", Lang.T("Normal mode (navigate and give commands)"), false));
@@ -1744,6 +1759,7 @@ internal static class Tools
             HelpTopic.Search => DialogText.HelpSectionSearch,
             HelpTopic.Clipboard => DialogText.HelpSectionClipboard,
             HelpTopic.ColorScheme => DialogText.HelpSectionColorScheme,
+            HelpTopic.Logos => DialogText.HelpSectionLogos,
             HelpTopic.Editor => DialogText.HelpSectionEditor,
             _ => string.Empty
         };

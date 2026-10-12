@@ -240,7 +240,7 @@ internal static class Actions
         if (RunCommonCommand(command)) return;
         // Only some commands have something after them (":new Title", ":scheme Name")
         if (CommandLine.Argument(command).Length > 0 && command != "size auto" &&
-            CommandLine.Name(command) is not ("new" or "language" or "scheme"))
+            CommandLine.Name(command) is not ("new" or "language" or "scheme" or "logo"))
         {
             CommandLine.ShowUnknown(command);
             Menu.DrawTopMenu(false, true, false);
@@ -319,6 +319,24 @@ internal static class Actions
                 else
                 {
                     SchemeEditor.Show();
+                }
+
+                Menu.DrawTopMenu(false, true, false);
+                break;
+            case "logo":
+                // The logos, a page of their own: select and edit them. With a name: use that logo
+                ChangeMenuFocus(Menu.PageOfCommand(CommandLine.Name(command)));
+                if (CommandLine.Argument(command).Length > 0)
+                {
+                    if (!LogoEditor.UseByName(CommandLine.Argument(command)))
+                    {
+                        Menu.StatusMessage(DialogText.LogoNotFound, true, false, true, DialogText.CaptionsLogos,
+                            string.Empty, false);
+                    }
+                }
+                else
+                {
+                    LogoEditor.Show();
                 }
 
                 Menu.DrawTopMenu(false, true, false);
@@ -1094,6 +1112,7 @@ internal static class Actions
         TextArea.ScrollOffLines = TextArea.DefaultScrollOffLines;
         Snippets.Sort = Snippets.SortOrder.File;
         ConsoleColors.Use(ColorScheme.Default);
+        Logo.Current = LogoArt.BuiltIn;
         Logo.AnimationEnabled = true;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;
