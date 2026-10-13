@@ -156,6 +156,12 @@ internal sealed class ColorScheme
     /// </summary>
     internal ConsoleColor SyntaxColor(int number) => _syntax[number] ?? SyntaxDefault(number);
 
+    /// <summary>
+    /// The logo that is used together with the scheme: when the scheme is selected, the logo with this name is
+    /// used too (empty: the logo stays as it is). "uselogo" in a scheme file
+    /// </summary>
+    internal string UseLogo { get; set; } = string.Empty;
+
     internal ColorScheme Clone()
     {
         var copy = (ColorScheme)MemberwiseClone();
@@ -340,6 +346,7 @@ internal sealed class ColorScheme
     };
 
     private const string HighlightKey = "tabhighlight";
+    private const string UseLogoKey = "uselogo";
     private const string DefaultValue = "default";
 
     /// <summary>
@@ -357,6 +364,8 @@ internal sealed class ColorScheme
         }
 
         text.Append(HighlightKey).Append('=').Append(TabHighlight ? "true" : "false").Append('\n');
+        // The logo used with the scheme, when it has one
+        if (UseLogo.Length > 0) text.Append(UseLogoKey).Append('=').Append(UseLogo).Append('\n');
         return text.ToString();
     }
 
@@ -370,6 +379,7 @@ internal sealed class ColorScheme
         // The selector has colors of its own: without them in the text, the ones of the highlight of the text
         scheme.Selector = null;
         scheme.SelectorText = null;
+        scheme.UseLogo = string.Empty;
         foreach (var rawLine in text.Split('\n'))
         {
             var line = rawLine.Trim();
@@ -381,6 +391,12 @@ internal sealed class ColorScheme
             if (key == HighlightKey)
             {
                 scheme.TabHighlight = !value.Equals("false", StringComparison.OrdinalIgnoreCase);
+                continue;
+            }
+
+            if (key == UseLogoKey)
+            {
+                scheme.UseLogo = value;
                 continue;
             }
 
@@ -437,6 +453,26 @@ internal sealed class ColorScheme
         return scheme;
     }
 
+    // "Tasty Bytes": magenta dividers, highlighted tabs in dark blue with a yellow corner, and the logo
+    // "Reflections", which is used when the scheme is selected
+    private static ColorScheme TastyBytes()
+    {
+        var scheme = WithTabs(Make("Tasty Bytes", null, ConsoleColor.Gray, ConsoleColor.Cyan, ConsoleColor.Magenta,
+                ConsoleColor.Green, ConsoleColor.Magenta, ConsoleColor.Green, ConsoleColor.DarkBlue, ConsoleColor.Cyan,
+                ConsoleColor.Yellow, ConsoleColor.Red, ConsoleColor.Red, ConsoleColor.White),
+            null, ConsoleColor.Cyan, ConsoleColor.DarkBlue, ConsoleColor.White, null, ConsoleColor.Cyan, true);
+        scheme.TabCorner = ConsoleColor.Yellow;
+        scheme.KeyHints = ConsoleColor.Green;
+        scheme.Unsaved = ConsoleColor.DarkMagenta;
+        scheme.UnsavedText = ConsoleColor.White;
+        scheme.LineNumbers = ConsoleColor.DarkMagenta;
+        scheme.CurrentLineNumber = ConsoleColor.Cyan;
+        scheme.Selector = ConsoleColor.Blue;
+        scheme.SelectorText = ConsoleColor.White;
+        scheme.UseLogo = "Reflections";
+        return scheme;
+    }
+
     /// <summary>
     /// The color schemes that come with Marbles (the first is the default)
     /// </summary>
@@ -452,9 +488,7 @@ internal sealed class ColorScheme
         Make("Marbles Quest", null, ConsoleColor.Green, ConsoleColor.Cyan, ConsoleColor.Blue, ConsoleColor.Magenta,
             ConsoleColor.Magenta, ConsoleColor.Green, ConsoleColor.DarkBlue, ConsoleColor.Cyan, ConsoleColor.Yellow,
             ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
-        Make("Night Writer", null, ConsoleColor.Cyan, ConsoleColor.DarkGreen, ConsoleColor.Magenta,
-            ConsoleColor.Magenta, ConsoleColor.Magenta, ConsoleColor.Green, ConsoleColor.DarkMagenta,
-            ConsoleColor.Cyan, ConsoleColor.Magenta, ConsoleColor.White, ConsoleColor.Red, ConsoleColor.White),
+        TastyBytes(),
         Make("Yellow Monochrome", null, ConsoleColor.Yellow, ConsoleColor.DarkYellow, ConsoleColor.DarkYellow,
             ConsoleColor.Yellow, ConsoleColor.Yellow, ConsoleColor.Yellow, ConsoleColor.DarkYellow,
             ConsoleColor.Yellow, ConsoleColor.Yellow, ConsoleColor.DarkYellow, ConsoleColor.Yellow,

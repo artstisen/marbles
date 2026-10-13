@@ -25,7 +25,7 @@ public class ColorSchemeTests : IDisposable
     {
         Assert.Equal(new[]
         {
-            "Default", "Deep Blue", "Marbles Quest", "Night Writer", "Yellow Monochrome", "Green Monochrome",
+            "Default", "Deep Blue", "Marbles Quest", "Tasty Bytes", "Yellow Monochrome", "Green Monochrome",
             "Ice Warp", "Water Sport"
         }, ColorScheme.BuiltIn.Select(scheme => scheme.Name));
         Assert.Equal(ConsoleColor.DarkBlue, ColorScheme.BuiltIn[1].Background);
@@ -39,8 +39,9 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(ConsoleColor.Cyan, standard.TabShownColor);
         Assert.Equal(ConsoleColor.DarkGray, standard.OtherTabsColor);
         Assert.False(standard.TabHighlight);
-        // In the others the new colors are those of the dividers, and the tab is highlighted
-        Assert.All(ColorScheme.BuiltIn.Skip(1), scheme =>
+        // In the others (but Tasty Bytes, with colors of its own) the new colors are those of the dividers, and
+        // the tab is highlighted
+        Assert.All(ColorScheme.BuiltIn.Skip(1).Where(scheme => scheme.Name != "Tasty Bytes"), scheme =>
         {
             Assert.Equal(scheme.Dividers, scheme.TabFrameColor);
             Assert.Equal(scheme.Dividers, scheme.BoxBorderColor);
@@ -132,9 +133,38 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
+    public void TastyBytes_HasItsColors_AndIsUsedWithTheLogoReflections()
+    {
+        var scheme = ColorSchemes.Load("tasty bytes")!;
+        Assert.Equal("Tasty Bytes", scheme.Name);
+        Assert.Equal("Reflections", scheme.UseLogo);
+        Assert.NotNull(Logos.Load(scheme.UseLogo));
+        var expected = "background=default\ntext=Gray\nlogo=Cyan\ndividers=Magenta\nfavorites=Green\naccent=Magenta\n" +
+                       "editortitle=Green\nhighlight=DarkBlue\nhighlighttext=Cyan\nattention=Yellow\n" +
+                       "attentiontext=Red\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=Yellow\n" +
+                       "boxborders=Cyan\ntab=DarkBlue\ntabtext=White\ntabshown=default\nothertabs=Cyan\n" +
+                       "keyhints=Green\nunsaved=DarkMagenta\nunsavedtext=White\nlinenumbers=DarkMagenta\n" +
+                       "currentline=Cyan\nselector=Blue\nselectortext=White\n" +
+                       string.Concat(Enumerable.Range(1, 12).Select(n => "syntax" + n + "=default\n")) +
+                       "tabhighlight=true\nuselogo=Reflections\n";
+        // Without the comment lines at the top
+        var text = string.Join("\n", scheme.Serialize().Split('\n').Where(line => !line.StartsWith(';')));
+        Assert.Equal(expected, text);
+
+        // The logo of a scheme is kept in a scheme of your own made from it, and the other schemes have none
+        var read = ColorScheme.Parse(scheme.Serialize(), "Mine");
+        Assert.Equal("Reflections", read.UseLogo);
+        Assert.Equal("Reflections", read.Clone().UseLogo);
+        Assert.All(ColorScheme.BuiltIn.Where(builtIn => builtIn.Name != "Tasty Bytes"),
+            builtIn => Assert.Equal(string.Empty, builtIn.UseLogo));
+        Assert.DoesNotContain("uselogo", ColorScheme.Default.Serialize());
+        Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.Default.Serialize(), "X").UseLogo);
+    }
+
+    [Fact]
     public void TheSelector_KeepsItsColors_WhenTheHighlightIsChanged()
     {
-        foreach (var builtIn in ColorScheme.BuiltIn)
+        foreach (var builtIn in ColorScheme.BuiltIn.Where(scheme => scheme.Name != "Tasty Bytes"))
         {
             // From the start the colors of the highlight, as colors of its own
             Assert.Equal(builtIn.Highlight, builtIn.Selector);

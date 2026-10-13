@@ -115,8 +115,16 @@ internal static class SchemeEditor
     {
         var scheme = ColorSchemes.Load(name);
         if (scheme == null) return false;
+        UseLogoOf(scheme);
         Use(scheme);
         return true;
+    }
+
+    // A scheme was selected: the logo that goes with it (if it has one, and the logo is there) is used too
+    private static void UseLogoOf(ColorScheme scheme)
+    {
+        if (scheme.UseLogo.Length == 0) return;
+        if (Logos.Load(scheme.UseLogo) is { } logo) Logo.Current = logo;
     }
 
     // Use a scheme: it is shown at once, and its name is saved in the settings
@@ -372,6 +380,7 @@ internal static class SchemeEditor
 
             var scheme = ColorSchemes.Load(name);
             if (scheme == null) return TabResult.Redraw;
+            UseLogoOf(scheme);
             Use(scheme);
             ConsoleColors.Preview = scheme.Clone();
             _changed = false;
