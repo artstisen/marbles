@@ -52,7 +52,7 @@ internal static class ConsoleColors
         HeaderColor,
         Divider,
         Favorites,
-        PreviewTitle,
+        Accent,
         EditorTitle,
         HighlightInverted,
         AttentionInverted,
@@ -63,7 +63,10 @@ internal static class ConsoleColors
         OtherTabs, // The names of the tabs not shown
         KeyHint, // The keys on the bottom line: what they do
         KeyHintInverted, // The keys on the bottom line: the key
-        UnsavedInverted // The label "Unsaved" (a text has changes that are not saved)
+        UnsavedInverted, // The label "Unsaved" (a text has changes that are not saved)
+        LineNumber, // The line numbers of the editor
+        CurrentLineNumber, // The number of the line the cursor is on
+        SelectorInverted // The selection arrow "->" of lists, menus and settings
     }
 
     // The colors of text on the normal background: the background of the color scheme, or that of the terminal
@@ -80,7 +83,7 @@ internal static class ConsoleColors
         {
             case ColorPreset.HeaderColor:
             case ColorPreset.Favorites:
-            case ColorPreset.PreviewTitle:
+            case ColorPreset.Accent:
             case ColorPreset.EditorTitle:
                 Console.ResetColor();
                 Console.ForegroundColor = ConsoleColor.White;
@@ -88,6 +91,7 @@ internal static class ConsoleColors
             case ColorPreset.NormalInverted:
             case ColorPreset.KeyHintInverted:
             case ColorPreset.UnsavedInverted:
+            case ColorPreset.SelectorInverted:
             case ColorPreset.HighlightInverted:
             case ColorPreset.AttentionInverted:
             case ColorPreset.WarningInverted:
@@ -145,6 +149,10 @@ internal static class ConsoleColors
                 Console.BackgroundColor = scheme.UnsavedColor;
                 Console.ForegroundColor = scheme.UnsavedTextColor;
                 return;
+            case ColorPreset.SelectorInverted:
+                Console.BackgroundColor = scheme.SelectorColor;
+                Console.ForegroundColor = scheme.SelectorTextColor;
+                return;
             case ColorPreset.HighlightInverted:
                 Console.BackgroundColor = scheme.Highlight;
                 Console.ForegroundColor = scheme.HighlightText;
@@ -165,13 +173,15 @@ internal static class ConsoleColors
             ColorPreset.HeaderColor => scheme.Logo,
             ColorPreset.Divider => scheme.Dividers,
             ColorPreset.Favorites => scheme.Favorites,
-            ColorPreset.PreviewTitle => scheme.PreviewTitle,
+            ColorPreset.Accent => scheme.Accent,
             ColorPreset.EditorTitle => scheme.EditorTitle,
             ColorPreset.TabFrame => scheme.TabFrameColor,
             ColorPreset.BoxBorder => scheme.BoxBorderColor,
             ColorPreset.TabShown => scheme.TabShownColor,
             ColorPreset.OtherTabs => scheme.OtherTabsColor,
             ColorPreset.KeyHint => scheme.KeyHintsColor,
+            ColorPreset.LineNumber => scheme.LineNumbersColor,
+            ColorPreset.CurrentLineNumber => scheme.CurrentLineNumberColor,
             _ => scheme.Text
         };
     }
@@ -192,6 +202,22 @@ internal static class ConsoleColors
         {
             Console.ForegroundColor = color;
         }
+    }
+
+    /// <summary>
+    /// Write colored text of the editor in its color (Syntax 1 to 12 of the color scheme, counted from 0). With
+    /// preview: the colors being edited
+    /// </summary>
+    internal static void SetSyntaxColor(int number, bool preview = false)
+    {
+        if (preview)
+        {
+            SetStyle(Preview, ColorPreset.Normal);
+            Console.ForegroundColor = Preview.SyntaxColor(number);
+            return;
+        }
+
+        SetTextColor(Current.SyntaxColor(number));
     }
 
     /// <summary>

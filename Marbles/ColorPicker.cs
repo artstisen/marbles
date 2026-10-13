@@ -105,7 +105,7 @@ internal static class ColorPicker
             for (var row = 0; row < rows; row++)
             {
                 Tools.SetCursorEx(BoxTop + 1 + row, left + 2);
-                if (row == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                if (row == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
                 Console.Write(row == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             }

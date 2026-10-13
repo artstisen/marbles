@@ -67,7 +67,7 @@ internal static class ChoiceBox
             {
                 Tools.SetCursorEx(top + 1 + choiceTop + i, left + 1);
                 ConsoleColors.SetColors(i == selected
-                    ? ConsoleColors.ColorPreset.HighlightInverted
+                    ? ConsoleColors.ColorPreset.SelectorInverted
                     : ConsoleColors.ColorPreset.Normal);
                 Console.Write(i == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

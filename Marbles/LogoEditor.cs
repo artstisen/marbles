@@ -202,7 +202,7 @@ internal static class LogoEditor
             }
 
             Tools.SetCursorEx(RowOf(area, _selected), area.Left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
             Console.Write("->");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             _shown = _selected;
@@ -349,7 +349,7 @@ internal static class LogoEditor
             }
 
             Tools.SetCursorEx(area.Top + ListTop + _selected - _scroll, area.Left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
             Console.Write("->");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             _shown = _selected;

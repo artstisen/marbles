@@ -89,7 +89,7 @@ public static class IsoDateTime
             Console.Write(new string(' ', 3) + "<- " + GetMonthsCount(_count) + " ->");
             Tools.CursorTopLeft();
             Tools.CursorDown(selectionIndex);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
             Console.Write("->");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             // Take input and act on Up/Down, Left/right, Esc and Enter

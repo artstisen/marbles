@@ -1071,7 +1071,7 @@ internal static partial class FileExplorer
         if (row < 0 || row >= PageSize || index >= pane.Items.Count) return;
         Tools.SetCursorEx(ListTop + row, PaneArea(number).Left);
         ConsoleColors.SetColors(!selected ? ConsoleColors.ColorPreset.Normal :
-            HasFocus(number) ? ConsoleColors.ColorPreset.HighlightInverted : ConsoleColors.ColorPreset.Divider);
+            HasFocus(number) ? ConsoleColors.ColorPreset.SelectorInverted : ConsoleColors.ColorPreset.Divider);
         Console.Write(selected ? "->" : "  ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }

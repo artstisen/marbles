@@ -550,7 +550,7 @@ internal static partial class FileExplorer
                 Tools.SetCursorEx(top + 1 + row, left);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
                 Console.Write("| ");
-                if (number == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                if (number == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
                 Console.Write(number == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Console.Write(" " + Tools.TruncateString(choices[number], inner - 5, true).PadRight(inner - 4));
@@ -800,7 +800,7 @@ internal static partial class FileExplorer
         if (row < 0 || row >= FavoritePageSize || index >= _favorites.Count) return;
         Tools.SetCursorEx(ListTop + row, 0);
         ConsoleColors.SetColors(selected
-            ? ConsoleColors.ColorPreset.HighlightInverted
+            ? ConsoleColors.ColorPreset.SelectorInverted
             : ConsoleColors.ColorPreset.Normal);
         Console.Write(selected ? "->" : "  ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

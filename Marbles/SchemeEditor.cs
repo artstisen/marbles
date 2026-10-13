@@ -10,39 +10,72 @@
 internal static class SchemeEditor
 {
     // A group of colors: its name, its color (for the inverted ones the background) and the text on it, and the
-    // style its sample is shown in
-    private sealed record Group(string Name, ColorItem Color, ColorItem? Text, ConsoleColors.ColorPreset Style);
+    // style its sample is shown in. For a color of colored text (Syntax 1 to 12): its number (from 0), and what
+    // it is used for, which is the text of its sample
+    private sealed record Group(string Name, ColorItem Color, ColorItem? Text, ConsoleColors.ColorPreset Style,
+        int Syntax = -1, string Sample = "");
 
-    // The groups on the two pages of the Colors tab
-    private static Group[] GroupsOf(int page) => page == 0
-        ? new[]
+    private const int ColorPages = 3;
+
+    // The groups on the pages of the Colors tab: the text and the editor, the highlights and tabs, and the
+    // colors of colored text
+    private static Group[] GroupsOf(int page)
+    {
+        switch (page)
         {
-            new Group(Lang.T("Text"), ColorItem.Text, null, ConsoleColors.ColorPreset.Normal),
-            new Group(Lang.T("Logo and labels"), ColorItem.Logo, null, ConsoleColors.ColorPreset.HeaderColor),
-            new Group(Lang.T("Dividers"), ColorItem.Dividers, null, ConsoleColors.ColorPreset.Divider),
-            new Group(Lang.T("Favorites"), ColorItem.Favorites, null, ConsoleColors.ColorPreset.Favorites),
-            new Group(Lang.T("Preview title"), ColorItem.PreviewTitle, null, ConsoleColors.ColorPreset.PreviewTitle),
-            new Group(Lang.T("Editor title"), ColorItem.EditorTitle, null, ConsoleColors.ColorPreset.EditorTitle),
-            new Group(Lang.T("Key hints"), ColorItem.KeyHints, null, ConsoleColors.ColorPreset.KeyHint),
-            new Group(Lang.T("Unsaved label"), ColorItem.Unsaved, ColorItem.UnsavedText,
-                ConsoleColors.ColorPreset.UnsavedInverted),
-            // The background of the whole screen (or the one of the terminal)
-            new Group(Lang.T("Background"), ColorItem.Background, null, ConsoleColors.ColorPreset.Normal)
+            case 0:
+                return new[]
+                {
+                    new Group(Lang.T("Text"), ColorItem.Text, null, ConsoleColors.ColorPreset.Normal),
+                    new Group(Lang.T("Logo and labels"), ColorItem.Logo, null, ConsoleColors.ColorPreset.HeaderColor),
+                    new Group(Lang.T("Dividers"), ColorItem.Dividers, null, ConsoleColors.ColorPreset.Divider),
+                    new Group(Lang.T("Favorites"), ColorItem.Favorites, null, ConsoleColors.ColorPreset.Favorites),
+                    new Group(Lang.T("Accent"), ColorItem.Accent, null, ConsoleColors.ColorPreset.Accent),
+                    new Group(Lang.T("Editor title"), ColorItem.EditorTitle, null,
+                        ConsoleColors.ColorPreset.EditorTitle),
+                    new Group(Lang.T("Line numbers"), ColorItem.LineNumbers, null,
+                        ConsoleColors.ColorPreset.LineNumber),
+                    new Group(Lang.T("Current line number"), ColorItem.CurrentLineNumber, null,
+                        ConsoleColors.ColorPreset.CurrentLineNumber),
+                    new Group(Lang.T("Key hints"), ColorItem.KeyHints, null, ConsoleColors.ColorPreset.KeyHint),
+                    new Group(Lang.T("Unsaved label"), ColorItem.Unsaved, ColorItem.UnsavedText,
+                        ConsoleColors.ColorPreset.UnsavedInverted),
+                    // The background of the whole screen (or the one of the terminal)
+                    new Group(Lang.T("Background"), ColorItem.Background, null, ConsoleColors.ColorPreset.Normal)
+                };
+            case 1:
+                return new[]
+                {
+                    new Group(Lang.T("Highlight"), ColorItem.Highlight, ColorItem.HighlightText,
+                        ConsoleColors.ColorPreset.HighlightInverted),
+                    new Group(Lang.T("Attention"), ColorItem.Attention, ColorItem.AttentionText,
+                        ConsoleColors.ColorPreset.AttentionInverted),
+                    new Group(Lang.T("Warning"), ColorItem.Warning, ColorItem.WarningText,
+                        ConsoleColors.ColorPreset.WarningInverted),
+                    new Group(Lang.T("Selector"), ColorItem.Selector, ColorItem.SelectorText,
+                        ConsoleColors.ColorPreset.SelectorInverted),
+                    new Group(Lang.T("Tab frames"), ColorItem.TabFrames, null, ConsoleColors.ColorPreset.TabFrame),
+                    new Group(Lang.T("Box borders"), ColorItem.BoxBorders, null, ConsoleColors.ColorPreset.BoxBorder),
+                    new Group(Lang.T("Tab highlight"), ColorItem.Tab, ColorItem.TabText,
+                        ConsoleColors.ColorPreset.Normal),
+                    new Group(Lang.T("Tab focus"), ColorItem.TabShown, null, ConsoleColors.ColorPreset.TabShown),
+                    new Group(Lang.T("Other tabs"), ColorItem.OtherTabs, null, ConsoleColors.ColorPreset.OtherTabs)
+                };
+            default:
+            {
+                // The colors of colored text in the editor, shared by all the kinds of text that are colored
+                var uses = new[]
+                {
+                    Lang.T("Keywords, tags, bold"), Lang.T("Names, italic"), Lang.T("Text in quotes, code"),
+                    Lang.T("Numbers"), Lang.T("Links"), Lang.T("Comments, quotes")
+                };
+                return Enumerable.Range(0, ColorScheme.SyntaxCount).Select(number => new Group(
+                    Lang.F("Syntax {0}", number + 1), ColorItem.Syntax1 + number, null,
+                    ConsoleColors.ColorPreset.Normal, number,
+                    number < uses.Length ? uses[number] : Lang.F("Heading {0}", number - uses.Length + 1))).ToArray();
+            }
         }
-        : new[]
-        {
-            new Group(Lang.T("Highlight"), ColorItem.Highlight, ColorItem.HighlightText,
-                ConsoleColors.ColorPreset.HighlightInverted),
-            new Group(Lang.T("Attention"), ColorItem.Attention, ColorItem.AttentionText,
-                ConsoleColors.ColorPreset.AttentionInverted),
-            new Group(Lang.T("Warning"), ColorItem.Warning, ColorItem.WarningText,
-                ConsoleColors.ColorPreset.WarningInverted),
-            new Group(Lang.T("Tab frames"), ColorItem.TabFrames, null, ConsoleColors.ColorPreset.TabFrame),
-            new Group(Lang.T("Box borders"), ColorItem.BoxBorders, null, ConsoleColors.ColorPreset.BoxBorder),
-            new Group(Lang.T("Tab highlight"), ColorItem.Tab, ColorItem.TabText, ConsoleColors.ColorPreset.Normal),
-            new Group(Lang.T("Tab focus"), ColorItem.TabShown, null, ConsoleColors.ColorPreset.TabShown),
-            new Group(Lang.T("Other tabs"), ColorItem.OtherTabs, null, ConsoleColors.ColorPreset.OtherTabs)
-        };
+    }
 
     private const int TabRow = 2; // Below the top bar
     private const int PickerLeft = 52;
@@ -66,7 +99,7 @@ internal static class SchemeEditor
                 Menu.WriteNameInTopBar(false);
             },
             new TabItem(() => Lang.T("Schemes"), new SchemesPage()),
-            new TabItem(() => Lang.T("Colors"), new ColorsPage(0), new ColorsPage(1)),
+            new TabItem(() => Lang.T("Colors"), new ColorsPage(0), new ColorsPage(1), new ColorsPage(2)),
             new TabItem(() => Lang.T("Preview"), new PreviewPage()));
         frame.Run();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -232,7 +265,7 @@ internal static class SchemeEditor
             }
 
             Tools.SetCursorEx(area.Top + _selected - _scroll, area.Left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
             Console.Write("->");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             _shown = _selected;
@@ -373,17 +406,30 @@ internal static class SchemeEditor
 
                 // The groups: name, sample and colors
                 var groups = Groups;
-                var nameWidth = GroupsOf(0).Concat(GroupsOf(1)).Max(g => TextMetrics.WidthOf(g.Name)) + 2;
+                var nameWidth = Enumerable.Range(0, ColorPages).SelectMany(GroupsOf)
+                    .Max(g => TextMetrics.WidthOf(g.Name)) + 2;
                 var sample = " " + Lang.T("Sample") + " ";
+                // The colors of colored text show what they are used for, in a column as wide as the longest
+                var sampleWidth = groups.Max(g => TextMetrics.WidthOf(g.Sample));
                 for (var i = 0; i < groups.Length; i++)
                 {
                     var group = groups[i];
                     Tools.SetCursorEx(RowOf(area, i), area.Left + 3);
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                     Console.Write(group.Name + new string(' ', nameWidth - TextMetrics.WidthOf(group.Name)));
-                    if (group.Color == ColorItem.Tab) ConsoleColors.SetTabColors(true);
-                    else ConsoleColors.SetColorsFromPreview(group.Style);
-                    Console.Write(sample);
+                    if (group.Syntax >= 0)
+                    {
+                        ConsoleColors.SetSyntaxColor(group.Syntax, true);
+                        Console.Write(" " + group.Sample +
+                                      new string(' ', sampleWidth - TextMetrics.WidthOf(group.Sample)) + " ");
+                    }
+                    else
+                    {
+                        if (group.Color == ColorItem.Tab) ConsoleColors.SetTabColors(true);
+                        else ConsoleColors.SetColorsFromPreview(group.Style);
+                        Console.Write(sample);
+                    }
+
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                     var room = area.Left + area.Width - Console.CursorLeft;
                     Console.Write(Tools.TruncateString("  " + ColorsOf(group), Math.Max(0, room), true));
@@ -416,7 +462,7 @@ internal static class SchemeEditor
             }
 
             Tools.SetCursorEx(RowOf(area, _selected), area.Left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
             Console.Write("->");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             _shown = _selected;
@@ -510,7 +556,7 @@ internal static class SchemeEditor
         {
             ColorItem.Background => DialogText.BackgroundCaption,
             ColorItem.HighlightText or ColorItem.AttentionText or ColorItem.WarningText or ColorItem.TabText
-                or ColorItem.UnsavedText =>
+                or ColorItem.UnsavedText or ColorItem.SelectorText =>
                 DialogText.TextColorCaption,
             _ => DialogText.ColorCaption
         };
@@ -542,6 +588,10 @@ internal static class SchemeEditor
                     Console.BackgroundColor = scheme.UnsavedColor;
                     Console.ForegroundColor = scheme.UnsavedTextColor;
                     break;
+                case ColorItem.Selector or ColorItem.SelectorText:
+                    Console.BackgroundColor = scheme.SelectorColor;
+                    Console.ForegroundColor = scheme.SelectorTextColor;
+                    break;
                 case ColorItem.Background:
                     Console.BackgroundColor = color;
                     Console.ForegroundColor = scheme.Text;
@@ -572,10 +622,19 @@ internal static class SchemeEditor
             if (Preview.Get(item) is { } color) return ColorPicker.Name(color);
             return item switch
             {
-                ColorItem.TabFrames or ColorItem.BoxBorders => Lang.T("[Default]: the dividers"),
-                ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints => Lang.T("[Default]: the text"),
+                ColorItem.TabFrames or ColorItem.BoxBorders or ColorItem.LineNumbers =>
+                    Lang.T("[Default]: the dividers"),
+                ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints or ColorItem.CurrentLineNumber =>
+                    Lang.T("[Default]: the text"),
+                >= ColorItem.Syntax1 and <= ColorItem.Syntax12 =>
+                    Lang.F("[Default]: {0}", ColorPicker.Name(Preview.Shown(item))),
                 _ => DialogText.ColorDefault
             };
+        }
+
+        if (group.Color == ColorItem.Selector && Preview.Selector == null && Preview.SelectorText == null)
+        {
+            return Lang.T("[Default]: the highlight");
         }
 
         if (group.Color == ColorItem.Unsaved && Preview.Unsaved == null && Preview.UnsavedText == null)
@@ -628,11 +687,11 @@ internal static class SchemeEditor
         Part(ConsoleColors.ColorPreset.Normal, "  ");
         Part(ConsoleColors.ColorPreset.EditorTitle, Lang.T("Editor title"));
         Tools.SetCursorEx(top + 2, left + 1);
-        Part(ConsoleColors.ColorPreset.HighlightInverted, "->");
+        Part(ConsoleColors.ColorPreset.SelectorInverted, "->");
         Part(ConsoleColors.ColorPreset.Normal, " " + Lang.T("Text") + "  ");
         Part(ConsoleColors.ColorPreset.Favorites, Lang.T("Favorites"));
         Part(ConsoleColors.ColorPreset.Normal, "  ");
-        Part(ConsoleColors.ColorPreset.PreviewTitle, Lang.T("Preview title"));
+        Part(ConsoleColors.ColorPreset.Accent, Lang.T("Accent"));
         Tools.SetCursorEx(top + 3, left + 1);
         Part(ConsoleColors.ColorPreset.HighlightInverted, " " + Lang.T("Highlight") + " ");
         Part(ConsoleColors.ColorPreset.Normal, " ");
@@ -644,6 +703,32 @@ internal static class SchemeEditor
         Part(ConsoleColors.ColorPreset.KeyHint, " " + Lang.T("Key hints"));
         Part(ConsoleColors.ColorPreset.Normal, "  " + Lang.T("Text on the background") + "  ");
         Part(ConsoleColors.ColorPreset.UnsavedInverted, DialogText.SavIndicator);
+
+        // Two lines of the editor: the line numbers (the second is the line of the cursor) and colored text
+        if (area.Height >= 14)
+        {
+            void Syntax(int number, string text)
+            {
+                ConsoleColors.SetSyntaxColor(number, true);
+                Console.Write(text);
+                ConsoleColors.SetColorsFromPreview(ConsoleColors.ColorPreset.Normal);
+            }
+
+            Tools.SetCursorEx(top + 12, left + 1);
+            Part(ConsoleColors.ColorPreset.LineNumber, " 7  ");
+            Syntax(6, "# " + Lang.F("Heading {0}", 1));
+            Tools.SetCursorEx(top + 13, left + 1);
+            Part(ConsoleColors.ColorPreset.CurrentLineNumber, " 8  ");
+            Syntax(0, "<a "); // English: a line of HTML
+            Syntax(1, "href");
+            Syntax(5, "=");
+            Syntax(2, "\"index.html\"");
+            Syntax(0, ">");
+            Syntax(4, "[link]"); // English
+            Syntax(0, "</a> ");
+            Syntax(3, "&copy; 2026 "); // English
+            Syntax(5, "<!-- note -->"); // English
+        }
 
         // A frame with tabs (in the color of the tab frames), as the start page and this page
         if (area.Height < 12) return;

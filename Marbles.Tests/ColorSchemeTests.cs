@@ -107,6 +107,78 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
+    public void TheColorsOfColoredText_HaveTheColorsTheyHadBefore_UntilTheyAreSet()
+    {
+        var scheme = ColorScheme.BuiltIn[2].Clone();
+        // 1 keywords: the logo, 2 names: the accent, 3 strings: the favorites, 4 numbers, 5 links: the editor
+        // title, 6 comments: the dividers, 7 to 12 the headings
+        Assert.Equal(scheme.Logo, scheme.SyntaxColor(0));
+        Assert.Equal(scheme.Accent, scheme.SyntaxColor(1));
+        Assert.Equal(scheme.Favorites, scheme.SyntaxColor(2));
+        Assert.Equal(ConsoleColor.Magenta, scheme.SyntaxColor(3));
+        Assert.Equal(scheme.EditorTitle, scheme.SyntaxColor(4));
+        Assert.Equal(scheme.Dividers, scheme.SyntaxColor(5));
+        Assert.Equal(ConsoleColor.Red, scheme.SyntaxColor(6));
+        Assert.Equal(ConsoleColor.Blue, scheme.SyntaxColor(11));
+        scheme.Set(ColorItem.Syntax2, ConsoleColor.White);
+        Assert.Equal(ConsoleColor.White, scheme.SyntaxColor(1));
+        Assert.Contains("syntax2=White\n", scheme.Serialize());
+        Assert.Contains("syntax12=default\n", scheme.Serialize());
+        Assert.Equal(ConsoleColor.White, ColorScheme.Parse(scheme.Serialize(), "X").SyntaxColor(1));
+        // A copy has colors of its own
+        var copy = scheme.Clone();
+        copy.Set(ColorItem.Syntax2, ConsoleColor.Red);
+        Assert.Equal(ConsoleColor.White, scheme.SyntaxColor(1));
+    }
+
+    [Fact]
+    public void LineNumbersAndTheSelector_HaveColorsOfTheirOwn()
+    {
+        var scheme = ColorScheme.BuiltIn[2].Clone();
+        Assert.Equal(scheme.Dividers, scheme.LineNumbersColor);
+        Assert.Equal(scheme.Text, scheme.CurrentLineNumberColor);
+        Assert.Equal(scheme.Highlight, scheme.SelectorColor);
+        Assert.Equal(scheme.HighlightText, scheme.SelectorTextColor);
+        scheme.Set(ColorItem.Selector, ConsoleColor.Yellow);
+        scheme.Set(ColorItem.LineNumbers, ConsoleColor.Gray);
+        Assert.Equal(ConsoleColor.Yellow, scheme.SelectorColor);
+        Assert.False(scheme.Allowed(ColorItem.SelectorText, ConsoleColor.Yellow));
+        var read = ColorScheme.Parse(scheme.Serialize(), "X");
+        Assert.Equal(ConsoleColor.Yellow, read.Selector);
+        Assert.Equal(ConsoleColor.Gray, read.LineNumbers);
+        Assert.Null(read.CurrentLineNumber);
+    }
+
+    [Fact]
+    public void TheAccent_IsAlsoReadByTheNameItHadBefore()
+    {
+        Assert.Equal(ConsoleColor.Red, ColorScheme.Parse("previewtitle=Red\n", "X").Accent);
+        Assert.Equal(ConsoleColor.Blue, ColorScheme.Parse("accent=Blue\n", "X").Accent);
+        Assert.Contains("accent=", ColorScheme.Default.Serialize());
+        Assert.DoesNotContain("previewtitle", ColorScheme.Default.Serialize());
+    }
+
+    [Theory]
+    // The kinds of colored text share the colors Syntax 1 to 12 (counted from 0)
+    [InlineData("Keyword", 0)]
+    [InlineData("Bold", 0)]
+    [InlineData("Name", 1)]
+    [InlineData("Italic", 1)]
+    [InlineData("String", 2)]
+    [InlineData("CodeBlock", 2)]
+    [InlineData("Number", 3)]
+    [InlineData("Link", 4)]
+    [InlineData("Comment", 5)]
+    [InlineData("Quote", 5)]
+    [InlineData("LinkUrl", 5)]
+    [InlineData("Heading1", 6)]
+    [InlineData("Heading6", 11)]
+    public void ColoredText_UsesTheSharedColors(string style, int expected)
+    {
+        Assert.Equal(expected, TextArea.SyntaxColorOf(Enum.Parse<SyntaxStyle>(style)));
+    }
+
+    [Fact]
     public void TextCannotHaveTheColorOfItsBackground()
     {
         var scheme = ColorScheme.Default;

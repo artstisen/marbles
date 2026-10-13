@@ -69,7 +69,7 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 - `:q` **Exit**
 
 ### Color schemes
-The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEMES_, opened with `:scheme` in the main menu (or its item on the Settings tab) or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It is a frame with three tabs, as the start page: **Schemes**, **Colors** (with the sub-tabs _Page 1_ and _Page 2_) and **Preview**. `Tab` goes from tab to tab, and `Shift+Tab` the other way.
+The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEMES_, opened with `:scheme` in the main menu (or its item on the Settings tab) or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It is a frame with three tabs, as the start page: **Schemes**, **Colors** (with the sub-tabs _Page 1_, _Page 2_ and _Page 3_) and **Preview**. `Tab` goes from tab to tab, and `Shift+Tab` the other way.
 
 **Schemes** lists the color schemes: the eight built-in ones, and below them the ones you have saved yourself. The one in use is marked `[x]`.
 
@@ -78,10 +78,14 @@ The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEM
 - `D` Delete a scheme of your own (you are asked first). The built-in schemes cannot be deleted
 - `:scheme Name` in the main menu uses a scheme by its name at once
 
-**Colors** shows the colors of the scheme being edited, each group with a sample and the names of its colors. _Page 1_ has Text, Logo and labels, Dividers, Favorites, Preview title, Editor title, Key hints, Unsaved label and Background; _Page 2_ has Highlight, Attention, Warning, Tab frames, Box borders, Tab highlight, Tab focus and Other tabs, and _Highlight focused tabs_.
+**Colors** shows the colors of the scheme being edited, each group with a sample and the names of its colors. _Page 1_ has Text, Logo and labels, Dividers, Favorites, Accent, Editor title, Line numbers, Current line number, Key hints, Unsaved label and Background; _Page 2_ has Highlight, Attention, Warning, Selector, Tab frames, Box borders, Tab highlight, Tab focus and Other tabs, and _Highlight focused tabs_; _Page 3_ has the colors of colored text in the editor, Syntax 1 to 12.
 
 - `j` `k` Select a group
 - `l` (or `Enter`, `Space`, `Right`) Pick its color from a list of the 16 colors: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. For Highlight, Attention, Warning and Tabs (shown inverted) this is the background color, and `T` picks the text color
+- **Accent**: the keys in the Quick guide (it was called _Preview title_; a scheme file with `previewtitle` is still read). It is also the color Syntax 2 has from the start
+- **Line numbers** and **Current line number**: the line numbers of the editor, and the number of the line the cursor is on. `[Default]` is the color of the dividers, and of the text
+- **Selector**: the arrow `->` that shows the selection in lists, menus, settings and boxes. `l` picks its background and `T` the arrow itself; `[Default]` is the colors of Highlight
+- **Syntax 1** to **Syntax 12** (Page 3): the colors of colored text in the editor (`:syntax`). They are shared by all the kinds of text that are colored (Markdown, HTML, CSS, JavaScript, JSON, XML), and each is shown with what it is used for: 1 keywords, tags and selectors (and bold and list marks in Markdown), 2 names of attributes and properties (italic), 3 text in quotes and values (code), 4 numbers, 5 links, 6 comments (quotes, web addresses and rules), and 7 to 12 the headings 1 to 6 of Markdown. `[Default]` is the color each had before it could be set, shown after it: the colors of the logo, the accent, the favorites, the editor title and the dividers for 1, 2, 3, 5 and 6, and fixed colors for the numbers and the headings
 - **Unsaved label**: the label _Unsaved_ shown at the top right of the editor when the text has changes that are not saved. `l` picks its background and `T` its text; `[Default]` is the text inverted
 - **Key hints**: the keys on the bottom line of the pages (the key shown inverted, and what it does). `[Default]` is the color of the text
 - **Tab frames**: the frames with tabs (the start page, the main menu, this page). **Box borders**: the borders and title tabs of the boxes shown on top of a page. `[Default]` (the default) is the color of the dividers
@@ -92,7 +96,7 @@ The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEM
 - `E` Back to the colors of the scheme in use
 - `S` Save the colors as a scheme of your own: type a name for it and press `Enter` (a scheme of your own is suggested by its name; a built-in name cannot be used, and another scheme of yours with the name is replaced if you want that). The scheme is then the one in use. Nothing you change is used until you save
 
-**Preview** shows the colors being edited on a small screen on their background, with a frame with tabs and a box.
+**Preview** shows the colors being edited on a small screen on their background, with a frame with tabs, a box, and two lines of the editor with line numbers and colored text.
 
 - `Esc` (or `Q`) Close. If something was changed and not saved, you are asked in a box whether to save it (`Y`, `N`, or `Esc` to stay)
 - `?` Show the help of the page

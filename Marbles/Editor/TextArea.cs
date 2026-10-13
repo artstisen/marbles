@@ -825,7 +825,7 @@ public class TextArea
             for (var i = 0; i < choices.Length; i++)
             {
                 Tools.SetCursorEx(_top + frameRow + 3 + i, column + 2);
-                if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
                 Console.Write(i == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Console.Write(" " + choices[i]);
@@ -1207,62 +1207,44 @@ public class TextArea
                 StyleSelection => ConsoleColors.ColorPreset.HighlightInverted,
                 StyleSearchMatch => ConsoleColors.ColorPreset.AttentionInverted,
                 StyleMisspelled => ConsoleColors.ColorPreset.WarningInverted,
-                StyleLineNumber => ConsoleColors.ColorPreset.Divider,
+                StyleLineNumber => ConsoleColors.ColorPreset.LineNumber,
+                StyleCurrentLineNumber => ConsoleColors.ColorPreset.CurrentLineNumber,
                 _ => ConsoleColors.ColorPreset.Normal
             });
             return;
         }
 
-        // Markdown: the headings have colors of their own, and the rest use the colors of the color scheme
-        switch ((SyntaxStyle)(style - StyleMarkdown))
+        ConsoleColors.SetSyntaxColor(SyntaxColorOf((SyntaxStyle)(style - StyleMarkdown)));
+    }
+
+    /// <summary>
+    /// The color of the color scheme (Syntax 1 to 12, counted from 0) a kind of colored text is shown in: the
+    /// colors are shared by Markdown, HTML, CSS, JavaScript, JSON and XML
+    /// </summary>
+    internal static int SyntaxColorOf(SyntaxStyle style)
+    {
+        return style switch
         {
-            case SyntaxStyle.Heading1:
-                ConsoleColors.SetTextColor(ConsoleColor.Red);
-                break;
-            case SyntaxStyle.Heading2:
-                ConsoleColors.SetTextColor(ConsoleColor.Magenta);
-                break;
-            case SyntaxStyle.Heading3:
-                ConsoleColors.SetTextColor(ConsoleColor.Yellow);
-                break;
-            case SyntaxStyle.Heading4:
-                ConsoleColors.SetTextColor(ConsoleColor.Cyan);
-                break;
-            case SyntaxStyle.Heading5:
-                ConsoleColors.SetTextColor(ConsoleColor.Green);
-                break;
-            case SyntaxStyle.Heading6:
-                ConsoleColors.SetTextColor(ConsoleColor.Blue);
-                break;
-            case SyntaxStyle.Bold:
-            case SyntaxStyle.ListMarker:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-                break;
-            case SyntaxStyle.Italic:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.PreviewTitle);
-                break;
-            case SyntaxStyle.Code:
-            case SyntaxStyle.CodeBlock:
-            case SyntaxStyle.String:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Favorites);
-                break;
-            case SyntaxStyle.Keyword:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-                break;
-            case SyntaxStyle.Name:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.PreviewTitle);
-                break;
-            case SyntaxStyle.Number:
-                ConsoleColors.SetTextColor(ConsoleColor.Magenta);
-                break;
-            case SyntaxStyle.Link:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
-                break;
-            default:
-                // Quotes, web addresses, rules and comments
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                break;
-        }
+            // 1: the words of a language, tags and selectors; bold and list marks
+            SyntaxStyle.Keyword or SyntaxStyle.Bold or SyntaxStyle.ListMarker => 0,
+            // 2: the names of attributes and properties; italic
+            SyntaxStyle.Name or SyntaxStyle.Italic => 1,
+            // 3: text in quotes and values; code
+            SyntaxStyle.String or SyntaxStyle.Code or SyntaxStyle.CodeBlock => 2,
+            // 4: numbers
+            SyntaxStyle.Number => 3,
+            // 5: links
+            SyntaxStyle.Link => 4,
+            // 7 to 12: the headings of Markdown
+            SyntaxStyle.Heading1 => 6,
+            SyntaxStyle.Heading2 => 7,
+            SyntaxStyle.Heading3 => 8,
+            SyntaxStyle.Heading4 => 9,
+            SyntaxStyle.Heading5 => 10,
+            SyntaxStyle.Heading6 => 11,
+            // 6: comments, quotes, web addresses and rules
+            _ => 5
+        };
     }
 
     private void WriteRow(int r, string content, int cells)

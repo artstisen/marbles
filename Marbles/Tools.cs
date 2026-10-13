@@ -1566,7 +1566,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  OSC 52", Lang.T("Windows Terminal, iTerm2, kitty, WezTerm, tmux, SSH"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Paste bin"), Lang.T("For terminals without OSC 52 (Raspberry Pi)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionColorScheme, true));
-            _shortcutList.Add(new Shortcut("Tab", Lang.T("Schemes, Colors (Page 1, Page 2), Preview"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Schemes, Colors (Page 1 to 3), Preview"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select a scheme or a group of colors"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Schemes"), Lang.T("Enter: use the scheme, D: delete one of your own"), false));
             _shortcutList.Add(new Shortcut("l Enter Space", Lang.T("On a group: pick its color from a list"), false));
@@ -1574,6 +1574,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tab highlight"), Lang.T("Focused tab ([Default]: Tab focus on the tab frames)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tab focus"), Lang.T("Its name, when the tab is not highlighted"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Other tabs"), Lang.T("The names of the tabs not shown"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Selector"), Lang.T("The arrow -> of lists, menus and settings"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.F("Page {0}", 3), Lang.T("Syntax 1-12: the colors of colored text"), false));
             _shortcutList.Add(new Shortcut("E", Lang.T("Back to the colors of the scheme in use"), false));
             _shortcutList.Add(new Shortcut("S", Lang.T("Save as a scheme of your own (asks for a name)"), false));
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Close (asks to save changes)"), false));

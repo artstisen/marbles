@@ -160,7 +160,7 @@ internal static class FileSearchDialog
     private static void DrawRow(int row, bool selected)
     {
         Tools.SetCursorEx(_top + 2 + row, _left + 2);
-        if (selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+        if (selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
         Console.Write(selected ? "->" : "  ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         var text = row switch

@@ -71,7 +71,7 @@ internal static class ClipboardPage
             }
 
             Tools.SetCursorEx(FirstRow + selected, Left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
             Console.Write("->");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             shown = selected;

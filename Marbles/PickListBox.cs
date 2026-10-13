@@ -226,7 +226,7 @@ internal static class PickListBox
             Tools.SetCursorEx(_listTop + row, _left + 2);
             var isSelected = scroll + row == selected;
             ConsoleColors.SetColors(isSelected
-                ? ConsoleColors.ColorPreset.HighlightInverted
+                ? ConsoleColors.ColorPreset.SelectorInverted
                 : ConsoleColors.ColorPreset.Normal);
             Console.Write(isSelected ? "->" : "  ");
         }

@@ -165,7 +165,7 @@ internal static class QuickGuide
                 Console.Write(" " + line.Text);
                 break;
             case Kind.Item:
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.PreviewTitle);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Accent);
                 Console.Write("   " + line.Key.PadRight(KeyWidth));
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Console.Write(" " + line.Text);

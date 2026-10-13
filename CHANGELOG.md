@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Color schemes**: a third page of colors, **Syntax 1** to **Syntax 12**: the colors of colored text in the editor, shared by Markdown, HTML, CSS, JavaScript, JSON and XML (each shown with what it is used for). New colors: **Line numbers** and **Current line number** of the editor, and **Selector** (the arrow `->` of lists, menus and settings, with a background and a text color). _Preview title_ is now **Accent**. All of them default to the colors they had.
 - **Logos**: a **Colors** tab: each row of a logo can have a color of its own (or all rows one color), with the logo shown above. The colors are saved in the logo file (`colors=`).
 - **Color schemes**: the label **Unsaved** of the editor has colors of its own (`unsaved`, `unsavedtext`; by default the text inverted).
 - **Logos**: the logo of the start and login pages can be one of your own. _LOGOS_ (`:logo` in the main menu, or _Logo_ on the Configuration page) is a frame with two tabs: **Logos** (select and use a logo, with a preview) and **Editor** (a grid of 4 rows of 63 characters with a ruler, edited in NORMAL and REPLACE mode, with undo). Saving asks for a name and keeps the logo as a text file in `data/logos`, which is then the logo in use (setting `logo`). `:logo Name` uses a logo by its name.

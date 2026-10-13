@@ -379,7 +379,7 @@ internal static partial class FileExplorer
         if (row < 0 || row >= HistoryPageSize || index >= _historyShown.Count) return;
         Tools.SetCursorEx(ListTop + row, 0);
         ConsoleColors.SetColors(selected
-            ? ConsoleColors.ColorPreset.HighlightInverted
+            ? ConsoleColors.ColorPreset.SelectorInverted
             : ConsoleColors.ColorPreset.Normal);
         Console.Write(selected ? "->" : "  ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

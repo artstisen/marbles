@@ -361,7 +361,7 @@ internal static class Menu
     {
         if (_menuItems.Length == 0) return;
         Tools.SetCursorEx(_menuArea.Top + _menuRow, _menuArea.Left);
-        ConsoleColors.SetColors(show ? ConsoleColors.ColorPreset.HighlightInverted : ConsoleColors.ColorPreset.Normal);
+        ConsoleColors.SetColors(show ? ConsoleColors.ColorPreset.SelectorInverted : ConsoleColors.ColorPreset.Normal);
         Console.Write(show ? "->" : "  ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.SetCursorEx(Init.LineCount - 1, 0);
@@ -460,7 +460,7 @@ internal static class Menu
             {
                 Tools.SetCursorEx(top + 2 + i, left + 1);
                 ConsoleColors.SetColors(i == selected
-                    ? ConsoleColors.ColorPreset.HighlightInverted
+                    ? ConsoleColors.ColorPreset.SelectorInverted
                     : ConsoleColors.ColorPreset.Normal);
                 Console.Write(i == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -680,7 +680,7 @@ internal static class Menu
         else
         {
             Tools.CursorReturn();
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
             Console.Write("->");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Tools.CursorReturn();

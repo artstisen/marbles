@@ -12,7 +12,7 @@ internal enum ColorItem
     Logo, // The logo and labels
     Dividers,
     Favorites,
-    PreviewTitle,
+    Accent, // The keys of the quick guide (and from the start the names in colored text: Syntax 2)
     EditorTitle,
     Highlight, // The background of the highlight (inverted)
     HighlightText,
@@ -28,7 +28,28 @@ internal enum ColorItem
     OtherTabs, // The names of the other tabs (null: the text)
     KeyHints, // The keys on the bottom line (null: the text)
     Unsaved, // The background of the label "Unsaved" (null: the text)
-    UnsavedText // The text of the label "Unsaved" (null: the background)
+    UnsavedText, // The text of the label "Unsaved" (null: the background)
+    LineNumbers, // The line numbers of the editor (null: the dividers)
+    CurrentLineNumber, // The number of the line the cursor is on (null: the text)
+    Selector, // The background of the selection arrow "->" (null: the highlight)
+    SelectorText, // The arrow itself (null: the text of the highlight)
+
+    // The colors of colored text in the editor (null: the color each has from the start, see SyntaxDefault).
+    // 1 keywords, tags and selectors (bold and list marks in Markdown), 2 names of attributes and properties
+    // (italic), 3 text in quotes and values (code), 4 numbers, 5 links, 6 comments (quotes, web addresses, rules),
+    // 7-12 the headings 1 to 6 of Markdown
+    Syntax1,
+    Syntax2,
+    Syntax3,
+    Syntax4,
+    Syntax5,
+    Syntax6,
+    Syntax7,
+    Syntax8,
+    Syntax9,
+    Syntax10,
+    Syntax11,
+    Syntax12
 }
 
 /// <summary>
@@ -48,7 +69,7 @@ internal sealed class ColorScheme
     internal ConsoleColor Logo { get; set; } = ConsoleColor.Cyan;
     internal ConsoleColor Dividers { get; set; } = ConsoleColor.DarkGray;
     internal ConsoleColor Favorites { get; set; } = ConsoleColor.Green;
-    internal ConsoleColor PreviewTitle { get; set; } = ConsoleColor.Yellow;
+    internal ConsoleColor Accent { get; set; } = ConsoleColor.Yellow;
     internal ConsoleColor EditorTitle { get; set; } = ConsoleColor.Green;
     internal ConsoleColor Highlight { get; set; } = ConsoleColor.Cyan;
     internal ConsoleColor HighlightText { get; set; } = ConsoleColor.Black;
@@ -65,6 +86,15 @@ internal sealed class ColorScheme
     internal ConsoleColor? KeyHints { get; set; }
     internal ConsoleColor? Unsaved { get; set; }
     internal ConsoleColor? UnsavedText { get; set; }
+    internal ConsoleColor? LineNumbers { get; set; }
+    internal ConsoleColor? CurrentLineNumber { get; set; }
+    internal ConsoleColor? Selector { get; set; }
+    internal ConsoleColor? SelectorText { get; set; }
+
+    internal const int SyntaxCount = 12;
+
+    // The colors of colored text (Syntax 1 to 12), null for the ones that have their color from the start
+    private ConsoleColor?[] _syntax = new ConsoleColor?[SyntaxCount];
 
     /// <summary>
     /// The tab (and sub-tab) shown is highlighted in the colors of the tabs; else only its frame tells it apart
@@ -82,8 +112,53 @@ internal sealed class ColorScheme
     internal ConsoleColor KeyHintsColor => KeyHints ?? Text;
     internal ConsoleColor UnsavedColor => Unsaved ?? Text;
     internal ConsoleColor UnsavedTextColor => UnsavedText ?? BackgroundColor;
+    internal ConsoleColor LineNumbersColor => LineNumbers ?? Dividers;
+    internal ConsoleColor CurrentLineNumberColor => CurrentLineNumber ?? Text;
+    internal ConsoleColor SelectorColor => Selector ?? Highlight;
+    internal ConsoleColor SelectorTextColor => SelectorText ?? HighlightText;
 
-    internal ColorScheme Clone() => (ColorScheme)MemberwiseClone();
+    // True for the colors of colored text (Syntax 1 to 12), with the number of the color (from 0)
+    private static bool IsSyntax(ColorItem item, out int number)
+    {
+        number = item - ColorItem.Syntax1;
+        return number is >= 0 and < SyntaxCount;
+    }
+
+    /// <summary>
+    /// The color a kind of colored text has when the scheme does not set it: those of the scheme it had before
+    /// there were colors for it (the logo, the accent, the favorites, the editor title, the dividers), and fixed
+    /// colors for numbers and the headings of Markdown
+    /// </summary>
+    internal ConsoleColor SyntaxDefault(int number)
+    {
+        return number switch
+        {
+            0 => Logo,
+            1 => Accent,
+            2 => Favorites,
+            3 => ConsoleColor.Magenta,
+            4 => EditorTitle,
+            5 => Dividers,
+            6 => ConsoleColor.Red,
+            7 => ConsoleColor.Magenta,
+            8 => ConsoleColor.Yellow,
+            9 => ConsoleColor.Cyan,
+            10 => ConsoleColor.Green,
+            _ => ConsoleColor.Blue
+        };
+    }
+
+    /// <summary>
+    /// The color of a kind of colored text (Syntax 1 to 12, counted from 0)
+    /// </summary>
+    internal ConsoleColor SyntaxColor(int number) => _syntax[number] ?? SyntaxDefault(number);
+
+    internal ColorScheme Clone()
+    {
+        var copy = (ColorScheme)MemberwiseClone();
+        copy._syntax = (ConsoleColor?[])_syntax.Clone();
+        return copy;
+    }
 
     /// <summary>
     /// True if the color can be "default" (it then has the color of another item)
@@ -91,10 +166,12 @@ internal sealed class ColorScheme
     internal static bool CanBeDefault(ColorItem item) =>
         item is ColorItem.Background or ColorItem.TabFrames or ColorItem.BoxBorders or ColorItem.Tab
             or ColorItem.TabText or ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints
-            or ColorItem.Unsaved or ColorItem.UnsavedText;
+            or ColorItem.Unsaved or ColorItem.UnsavedText or ColorItem.LineNumbers or ColorItem.CurrentLineNumber
+            or ColorItem.Selector or ColorItem.SelectorText || IsSyntax(item, out _);
 
     internal ConsoleColor? Get(ColorItem item)
     {
+        if (IsSyntax(item, out var syntax)) return _syntax[syntax];
         return item switch
         {
             ColorItem.Background => Background,
@@ -102,7 +179,7 @@ internal sealed class ColorScheme
             ColorItem.Logo => Logo,
             ColorItem.Dividers => Dividers,
             ColorItem.Favorites => Favorites,
-            ColorItem.PreviewTitle => PreviewTitle,
+            ColorItem.Accent => Accent,
             ColorItem.EditorTitle => EditorTitle,
             ColorItem.Highlight => Highlight,
             ColorItem.HighlightText => HighlightText,
@@ -118,7 +195,11 @@ internal sealed class ColorScheme
             ColorItem.OtherTabs => OtherTabs,
             ColorItem.KeyHints => KeyHints,
             ColorItem.Unsaved => Unsaved,
-            _ => UnsavedText
+            ColorItem.UnsavedText => UnsavedText,
+            ColorItem.LineNumbers => LineNumbers,
+            ColorItem.CurrentLineNumber => CurrentLineNumber,
+            ColorItem.Selector => Selector,
+            _ => SelectorText
         };
     }
 
@@ -127,6 +208,7 @@ internal sealed class ColorScheme
     /// </summary>
     internal ConsoleColor Shown(ColorItem item)
     {
+        if (IsSyntax(item, out var syntax)) return SyntaxColor(syntax);
         return item switch
         {
             ColorItem.Background => BackgroundColor,
@@ -139,6 +221,10 @@ internal sealed class ColorScheme
             ColorItem.KeyHints => KeyHintsColor,
             ColorItem.Unsaved => UnsavedColor,
             ColorItem.UnsavedText => UnsavedTextColor,
+            ColorItem.LineNumbers => LineNumbersColor,
+            ColorItem.CurrentLineNumber => CurrentLineNumberColor,
+            ColorItem.Selector => SelectorColor,
+            ColorItem.SelectorText => SelectorTextColor,
             _ => Get(item)!.Value
         };
     }
@@ -149,6 +235,12 @@ internal sealed class ColorScheme
     internal void Set(ColorItem item, ConsoleColor? color)
     {
         if (color == null && !CanBeDefault(item)) return;
+        if (IsSyntax(item, out var syntax))
+        {
+            _syntax[syntax] = color;
+            return;
+        }
+
         switch (item)
         {
             case ColorItem.Background: Background = color; break;
@@ -156,7 +248,7 @@ internal sealed class ColorScheme
             case ColorItem.Logo: Logo = color!.Value; break;
             case ColorItem.Dividers: Dividers = color!.Value; break;
             case ColorItem.Favorites: Favorites = color!.Value; break;
-            case ColorItem.PreviewTitle: PreviewTitle = color!.Value; break;
+            case ColorItem.Accent: Accent = color!.Value; break;
             case ColorItem.EditorTitle: EditorTitle = color!.Value; break;
             case ColorItem.Highlight: Highlight = color!.Value; break;
             case ColorItem.HighlightText: HighlightText = color!.Value; break;
@@ -172,23 +264,27 @@ internal sealed class ColorScheme
             case ColorItem.OtherTabs: OtherTabs = color; break;
             case ColorItem.KeyHints: KeyHints = color; break;
             case ColorItem.Unsaved: Unsaved = color; break;
-            default: UnsavedText = color; break;
+            case ColorItem.UnsavedText: UnsavedText = color; break;
+            case ColorItem.LineNumbers: LineNumbers = color; break;
+            case ColorItem.CurrentLineNumber: CurrentLineNumber = color; break;
+            case ColorItem.Selector: Selector = color; break;
+            default: SelectorText = color; break;
         }
     }
 
     // The text colors shown on the background, and the pairs of a background and the text on it
     private static readonly ColorItem[] OnBackground =
     {
-        ColorItem.Text, ColorItem.Logo, ColorItem.Dividers, ColorItem.Favorites, ColorItem.PreviewTitle,
+        ColorItem.Text, ColorItem.Logo, ColorItem.Dividers, ColorItem.Favorites, ColorItem.Accent,
         ColorItem.EditorTitle, ColorItem.TabFrames, ColorItem.BoxBorders, ColorItem.TabShown, ColorItem.OtherTabs,
-        ColorItem.KeyHints
+        ColorItem.KeyHints, ColorItem.LineNumbers, ColorItem.CurrentLineNumber
     };
 
     private static readonly (ColorItem Background, ColorItem Text)[] Pairs =
     {
         (ColorItem.Highlight, ColorItem.HighlightText), (ColorItem.Attention, ColorItem.AttentionText),
         (ColorItem.Warning, ColorItem.WarningText), (ColorItem.Tab, ColorItem.TabText),
-        (ColorItem.Unsaved, ColorItem.UnsavedText)
+        (ColorItem.Unsaved, ColorItem.UnsavedText), (ColorItem.Selector, ColorItem.SelectorText)
     };
 
     /// <summary>
@@ -199,7 +295,7 @@ internal sealed class ColorScheme
     {
         if (item == ColorItem.Background) return OnBackground.All(text => Shown(text) != color);
         if (item == ColorItem.TabShown && TabText == null && color == TabColor) return false;
-        if (OnBackground.Contains(item)) return color != BackgroundColor;
+        if (OnBackground.Contains(item) || IsSyntax(item, out _)) return color != BackgroundColor;
         foreach (var (background, text) in Pairs)
         {
             if (item == background) return color != Shown(text);
@@ -219,13 +315,19 @@ internal sealed class ColorScheme
     {
         ("background", ColorItem.Background), ("text", ColorItem.Text), ("logo", ColorItem.Logo),
         ("dividers", ColorItem.Dividers), ("favorites", ColorItem.Favorites),
-        ("previewtitle", ColorItem.PreviewTitle), ("editortitle", ColorItem.EditorTitle),
+        ("accent", ColorItem.Accent), ("editortitle", ColorItem.EditorTitle),
         ("highlight", ColorItem.Highlight), ("highlighttext", ColorItem.HighlightText),
         ("attention", ColorItem.Attention), ("attentiontext", ColorItem.AttentionText),
         ("warning", ColorItem.Warning), ("warningtext", ColorItem.WarningText),
         ("tabframes", ColorItem.TabFrames), ("boxborders", ColorItem.BoxBorders), ("tab", ColorItem.Tab),
         ("tabtext", ColorItem.TabText), ("tabshown", ColorItem.TabShown), ("othertabs", ColorItem.OtherTabs),
-        ("keyhints", ColorItem.KeyHints), ("unsaved", ColorItem.Unsaved), ("unsavedtext", ColorItem.UnsavedText)
+        ("keyhints", ColorItem.KeyHints), ("unsaved", ColorItem.Unsaved), ("unsavedtext", ColorItem.UnsavedText),
+        ("linenumbers", ColorItem.LineNumbers), ("currentline", ColorItem.CurrentLineNumber),
+        ("selector", ColorItem.Selector), ("selectortext", ColorItem.SelectorText),
+        ("syntax1", ColorItem.Syntax1), ("syntax2", ColorItem.Syntax2), ("syntax3", ColorItem.Syntax3),
+        ("syntax4", ColorItem.Syntax4), ("syntax5", ColorItem.Syntax5), ("syntax6", ColorItem.Syntax6),
+        ("syntax7", ColorItem.Syntax7), ("syntax8", ColorItem.Syntax8), ("syntax9", ColorItem.Syntax9),
+        ("syntax10", ColorItem.Syntax10), ("syntax11", ColorItem.Syntax11), ("syntax12", ColorItem.Syntax12)
     };
 
     private const string HighlightKey = "tabhighlight";
@@ -270,6 +372,7 @@ internal sealed class ColorScheme
                 continue;
             }
 
+            if (key == "previewtitle") key = "accent"; // The name it had before
             var found = Array.FindIndex(Keys, k => k.Key == key);
             if (found < 0) continue;
             var item = Keys[found].Item;
@@ -298,7 +401,7 @@ internal sealed class ColorScheme
         return new ColorScheme
         {
             Name = name, Background = background, Text = text, Logo = logo, Dividers = dividers,
-            Favorites = favorites, PreviewTitle = previewTitle, EditorTitle = editorTitle, Highlight = highlight,
+            Favorites = favorites, Accent = previewTitle, EditorTitle = editorTitle, Highlight = highlight,
             HighlightText = highlightText, Attention = attention, AttentionText = attentionText, Warning = warning,
             WarningText = warningText
         };

@@ -227,7 +227,7 @@ internal static class StartMenu
             {
                 Tools.SetCursorEx(area.Top + i, area.Left);
                 // The pointer is highlighted as in the lists of entries
-                if (i == _selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                if (i == _selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
                 Console.Write(i == _selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             }
@@ -332,7 +332,7 @@ internal static class StartMenu
             for (var i = 0; i < settings.Count; i++)
             {
                 Tools.SetCursorEx(Row(i), area.Left);
-                if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
                 Console.Write(i == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             }
