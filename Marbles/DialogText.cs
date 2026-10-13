@@ -208,7 +208,7 @@ internal static class DialogText
     public static string LogoRenameCaption => Lang.T("Rename the logo");
     public static string LogoBuiltInRename => Lang.T("A built-in logo cannot be renamed");
     public static string LogoNotFound => Lang.T("There is no logo with that name");
-    public static string LogoDiscardQuestion => Lang.T("Use or edit another logo? The changes are not saved.");
+    public static string LogoDiscardQuestion => Lang.T("Use or edit another logo?");
     public static string LogoBuiltInDelete => Lang.T("A built-in logo cannot be deleted");
     public static string LogoListKeys => Lang.T("j/k Select | Enter Use | E Edit | R Rename | D Delete | Esc Close");
     public static string LogoEditorKeys => Lang.T("hjkl Move | i/R Draw | x Clear | r Char | u Undo | S Save | Esc Close");
@@ -223,7 +223,8 @@ internal static class DialogText
     public static string SchemeRenameCaption => Lang.T("Rename the color scheme");
     public static string SchemeBuiltInRename => Lang.T("The built-in color schemes cannot be renamed");
     public static string SchemeNotFound => Lang.T("There is no color scheme with that name");
-    public static string SchemeDiscardQuestion => Lang.T("Use another scheme? The changes are not saved.");
+    public static string SchemeDiscardQuestion => Lang.T("Use another scheme?");
+    public static string ChangesNotSaved => Lang.T("The changes are not saved.");
     public static string SchemeBuiltInDelete => Lang.T("The built-in color schemes cannot be deleted");
     public static string SchemeDeleteNote => Lang.T("Its file is deleted.");
     public static string SchemeListKeys => Lang.T("j/k Select | Enter Use | R Rename | D Delete | Tab Colors | Esc Close");
@@ -299,7 +300,7 @@ internal static class DialogText
     public static string NoEntrySelected => Lang.T("No entry selected");
     public static string PasswordLength => Lang.T("Password must be between 8 and 128 characters long");
     public static string PasswordMismatch => Lang.T("The two passwords do not match");
-    public static string InvalidPasswordDot => Lang.T("Invalid password."); // Must have period.
+    public static string InvalidPassword => Lang.T("Invalid password");
     public static string CapsLockNotice => Lang.T("Make sure Caps Lock is not enabled.");
     public static string PasswordCreated => Lang.T("Password created");
     public static string InvalidFileName => Lang.T("Invalid file name");
@@ -330,7 +331,7 @@ internal static class DialogText
     public static string InvalidBackupPath => Lang.T("Invalid backup path");
 
     // Un-styled status messages
-    public static string LoadComplete => Lang.T("Load complete.");
+    public static string LoadComplete => Lang.T("Load complete");
     public static string Loading => Lang.T("Loading...");
     public static string Reading => Lang.T("Reading...");
 
@@ -356,7 +357,7 @@ internal static class DialogText
     public static string ConfigAutoSize => Lang.T("Automatic size (follow the terminal window)");
     public static string ConfigSize => Lang.T("Size: ");
     public static string ConfigSizeNote => Lang.T(" (Enter: Change)");
-    public static string ConfigLineNumbers => Lang.T("Line numbers in the editor");
+    public static string ConfigLineNumbers => Lang.T("Line numbers");
     public static string DataFileNotOpened => Lang.T("Data files are not opened: Marbles is set to Text Editor only");
     public static string ConfigReset => Lang.T("Reset all settings");
     public static string ConfigRestart => Lang.T("Restart Marbles");
@@ -607,23 +608,23 @@ internal static class DialogText
     public static string LegacyFileNotConverted => Lang.T("Unable to convert the data file to the current file format:");
 
     // Error messages
-    public static string ErrorDuplicatingEntry => Lang.T("Error: Unable to duplicate entry.");
-    public static string FileNotFound => Lang.T("File not found.");
-    public static string NoFiles => Lang.T("No files in directory.");
+    public static string ErrorDuplicatingEntry => Lang.T("Error: Unable to duplicate entry");
+    public static string FileNotFound => Lang.T("File not found");
+    public static string NoFiles => Lang.T("No files in directory");
     public const string EmptyDirectory = "(0)";
     public static string NoDataFiles => Lang.T("[No data files]");
-    public static string ErrorReadingFile => Lang.T("Error reading file.");
-    public static string ErrorDataDamaged => Lang.T("The content of the data file is damaged and cannot be read.");
+    public static string ErrorReadingFile => Lang.T("Error reading file");
+    public static string ErrorDataDamaged => Lang.T("The content of the data file is damaged and cannot be read");
     public static string ErrorSortingList => Lang.T("Error sorting list...");
-    public static string StatusUnableToSave => Lang.T("Error: Unable to save changes.");
-    public static string ErrorUnableToCompleteRequest => Lang.T("Error: Unable to complete request.");
+    public static string StatusUnableToSave => Lang.T("Error: Unable to save changes");
+    public static string ErrorUnableToCompleteRequest => Lang.T("Error: Unable to complete request");
     public static string ErrorMovingFile => Lang.T("Unable to move file. Action aborted.");
-    public static string ErrorFileAlreadyExist => Lang.T("A file with the same name already exists in the target location.");
+    public static string ErrorFileAlreadyExist => Lang.T("A file with the same name already exists in the target location");
     public static string SelectTargetDirectory => Lang.T("Please select a valid target directory...");
     public static string StatusUnableToSaveBackup => Lang.T("Error: Unable to save backup (path invalid). Backup disabled.");
     public static string ErrorBufferSize => Lang.T("Attention: Unable to use specified output dimensions. Reverting to default.");
     public static string ErrorClientSize => Lang.T("Current terminal dimensions are unsupported.");
-    public static string ErrorUnsupportedAction => Lang.T("Action unsupported.");
+    public static string ErrorUnsupportedAction => Lang.T("Action unsupported");
 
 
     // Technical (internal identifiers) DO NOT CHANGE

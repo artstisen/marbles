@@ -753,7 +753,8 @@ internal static class LogoEditor
             if (_changed)
             {
                 ChoiceBox.Forget();
-                if (!ChoiceBox.Confirm(DialogText.CaptionsLogos, DialogText.LogoDiscardQuestion, string.Empty, true))
+                if (!ChoiceBox.Confirm(DialogText.CaptionsLogos, DialogText.LogoDiscardQuestion,
+                        DialogText.ChangesNotSaved, true))
                 {
                     return TabResult.Redraw;
                 }

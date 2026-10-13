@@ -278,7 +278,7 @@ internal static class FileIo
                 _loadStatus.Success = false;
                 if (_loadStatus.ProcessString == DialogText.InvalidData)
                 {
-                    _loadStatus.StatusMessage = DialogText.InvalidPasswordDot + " " + DialogText.CapsLockNotice;
+                    _loadStatus.StatusMessage = DialogText.InvalidPassword + ". " + DialogText.CapsLockNotice;
                 }
                 else
                 {

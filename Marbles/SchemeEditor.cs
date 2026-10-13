@@ -363,8 +363,8 @@ internal static class SchemeEditor
             if (_changed)
             {
                 ChoiceBox.Forget();
-                if (!ChoiceBox.Confirm(DialogText.CaptionsColorScheme, DialogText.SchemeDiscardQuestion, string.Empty,
-                        true))
+                if (!ChoiceBox.Confirm(DialogText.CaptionsColorScheme, DialogText.SchemeDiscardQuestion,
+                        DialogText.ChangesNotSaved, true))
                 {
                     return TabResult.Redraw;
                 }

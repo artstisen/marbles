@@ -268,7 +268,7 @@ public class FileIoTests : IDisposable
         Login("wrongpassword");
         var load = FileIo.LoadEntries();
         Assert.False(load.Success);
-        Assert.Contains(DialogText.InvalidPasswordDot, load.StatusMessage);
+        Assert.Contains(DialogText.InvalidPassword, load.StatusMessage);
         Assert.Equal(0, Entries.GetEntriesCount());
     }
 

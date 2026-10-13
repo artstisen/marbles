@@ -264,9 +264,9 @@ internal static class StartMenu
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
             Setting.LineNumbers => Check(TextArea.LineNumbers) + DialogText.ConfigLineNumbers,
-            Setting.WordWrap => Check(TextArea.WordWrap) + Lang.T("Wrap long lines in the editor"),
+            Setting.WordWrap => Check(TextArea.WordWrap) + Lang.T("Wrap long lines"),
             Setting.ScrollOff => Check(TextArea.ScrollOff) +
-                                 Lang.F("Keep {0} lines around the cursor in the editor", TextArea.ScrollOffLines),
+                                 Lang.F("Keep {0} lines around the cursor", TextArea.ScrollOffLines),
             Setting.Clipboard => indent + Lang.T("Clipboard and paste bin (Enter: Change)"),
             Setting.SyntaxColors => Check(SyntaxHighlighter.ColorFiles) + Lang.T("Syntax highlighting"),
             Setting.Spell => indent + SpellText(),

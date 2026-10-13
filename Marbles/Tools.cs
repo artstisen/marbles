@@ -1007,9 +1007,9 @@ internal static class Tools
             {
                 Init.Log("Login FAILED: "  + FileIo.GetFolderAndFileNameWithSizeForDisplay(), false);
                 // What went wrong, in a box on top of the login page
-                if (_load.StatusMessage.Contains(DialogText.InvalidPasswordDot))
+                if (_load.StatusMessage.Contains(DialogText.InvalidPassword))
                 {
-                    ChoiceBox.Message(DialogText.CaptionsLogin, DialogText.InvalidPasswordDot,
+                    ChoiceBox.Message(DialogText.CaptionsLogin, DialogText.InvalidPassword,
                         DialogText.CapsLockNotice);
                 }
                 else
@@ -1219,7 +1219,7 @@ internal static class Tools
             }
             else
             {
-                ChoiceBox.Message(DialogText.CaptionsPassword, DialogText.InvalidPasswordDot,
+                ChoiceBox.Message(DialogText.CaptionsPassword, DialogText.InvalidPassword,
                     DialogText.CapsLockNotice);
                 ResetPasswordRoutine();
             }
