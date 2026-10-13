@@ -31,9 +31,14 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(ConsoleColor.DarkBlue, ColorScheme.BuiltIn[1].Background);
         Assert.All(ColorScheme.BuiltIn.Where(scheme => scheme.Name != "Deep Blue"),
             scheme => Assert.Null(scheme.Background));
-        // The default scheme: gray box borders, the focused tab cyan (not highlighted), the other tabs dark gray
+        // The default scheme: white box borders, the focused tab cyan (not highlighted) with a gray corner, the
+        // other tabs dark gray, and the logo of Marbles
         var standard = ColorScheme.BuiltIn[0];
-        Assert.Equal(ConsoleColor.Gray, standard.BoxBorderColor);
+        Assert.Equal(ConsoleColor.White, standard.BoxBorderColor);
+        Assert.Equal(ConsoleColor.Gray, standard.TabCornerColor);
+        Assert.Equal(ConsoleColor.White, standard.CurrentLineNumberColor);
+        Assert.Equal("Marbles", standard.UseLogo);
+        Assert.NotNull(Logos.Load(standard.UseLogo));
         Assert.Equal(ConsoleColor.DarkGray, standard.TabFrameColor);
         Assert.Equal(ConsoleColor.DarkGray, standard.TabColor);
         Assert.Equal(ConsoleColor.Cyan, standard.TabShownColor);
@@ -133,6 +138,33 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
+    public void TheDefaultScheme_HasItsColors()
+    {
+        var expected = "background=default\ntext=Gray\nlogo=Cyan\ndividers=DarkGray\nfavorites=Green\naccent=Yellow\n" +
+                       "editortitle=Green\nhighlight=Cyan\nhighlighttext=Black\nattention=Yellow\n" +
+                       "attentiontext=Black\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=Gray\n" +
+                       "boxborders=White\ntab=DarkGray\ntabtext=default\ntabshown=Cyan\nothertabs=DarkGray\n" +
+                       "keyhints=default\nunsaved=default\nunsavedtext=default\nlinenumbers=default\n" +
+                       "currentline=White\nselector=Cyan\nselectortext=Black\n" +
+                       "syntax1=default\nsyntax2=default\nsyntax3=default\nsyntax4=default\nsyntax5=default\n" +
+                       "syntax6=default\nsyntax7=Yellow\nsyntax8=Cyan\nsyntax9=Green\nsyntax10=Magenta\n" +
+                       "syntax11=Red\nsyntax12=default\ntabhighlight=false\nuselogo=Marbles\n";
+        // Without the comment lines at the top
+        var text = string.Join("\n", ColorScheme.Default.Serialize().Split('\n').Where(line => !line.StartsWith(';')));
+        Assert.Equal(expected, text);
+        Assert.Equal(text, string.Join("\n", ColorScheme.Parse(ColorScheme.Default.Serialize(), "Default")
+            .Serialize().Split('\n').Where(line => !line.StartsWith(';'))));
+
+        // A scheme file with only some of the colors: the others that can be "default" are that
+        var some = ColorScheme.Parse("text=White\ntabframes=Blue\n", "Mine");
+        Assert.Null(some.TabCorner);
+        Assert.Null(some.CurrentLineNumber);
+        Assert.Null(some.BoxBorders);
+        Assert.Null(some.Get(ColorItem.Syntax7));
+        Assert.Equal(ConsoleColor.Cyan, some.Logo); // As the default scheme
+    }
+
+    [Fact]
     public void TastyBytes_HasItsColors_AndIsUsedWithTheLogoReflections()
     {
         var scheme = ColorSchemes.Load("tasty bytes")!;
@@ -155,10 +187,12 @@ public class ColorSchemeTests : IDisposable
         var read = ColorScheme.Parse(scheme.Serialize(), "Mine");
         Assert.Equal("Reflections", read.UseLogo);
         Assert.Equal("Reflections", read.Clone().UseLogo);
-        Assert.All(ColorScheme.BuiltIn.Where(builtIn => builtIn.Name != "Tasty Bytes"),
+        Assert.All(ColorScheme.BuiltIn.Skip(1).Where(builtIn => builtIn.Name != "Tasty Bytes"),
             builtIn => Assert.Equal(string.Empty, builtIn.UseLogo));
-        Assert.DoesNotContain("uselogo", ColorScheme.Default.Serialize());
-        Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.Default.Serialize(), "X").UseLogo);
+        Assert.DoesNotContain("uselogo", ColorScheme.BuiltIn[1].Serialize());
+        Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.BuiltIn[1].Serialize(), "X").UseLogo);
+        // A scheme file without it has no logo (not the one of the default scheme)
+        Assert.Equal(string.Empty, ColorScheme.Parse("text=White\n", "X").UseLogo);
     }
 
     [Fact]
@@ -263,7 +297,7 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void TheCornerOfTheTabShown_HasTheColorOfTheTabFrames_UntilItIsSet()
     {
-        var scheme = ColorScheme.Default;
+        var scheme = ColorScheme.BuiltIn[2].Clone();
         Assert.Null(scheme.TabCorner);
         Assert.Equal(scheme.TabFrameColor, scheme.TabCornerColor);
         Assert.Contains("tabcorner=default\n", scheme.Serialize());

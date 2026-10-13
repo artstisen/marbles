@@ -380,6 +380,13 @@ internal sealed class ColorScheme
         scheme.Selector = null;
         scheme.SelectorText = null;
         scheme.UseLogo = string.Empty;
+        // The colors that can be "default" are that when they are not in the text (not the ones the default
+        // scheme has picked for them)
+        foreach (var (_, item) in Keys)
+        {
+            if (CanBeDefault(item)) scheme.Set(item, null);
+        }
+
         foreach (var rawLine in text.Split('\n'))
         {
             var line = rawLine.Trim();
@@ -453,6 +460,27 @@ internal sealed class ColorScheme
         return scheme;
     }
 
+    // The default scheme: white box borders, the focused tab cyan (not highlighted) with a gray corner, the other
+    // tabs dark gray, headings in colors of their own, and the logo "Marbles", which is used when the scheme is
+    // selected
+    private static ColorScheme DefaultScheme()
+    {
+        var scheme = WithTabs(Make(DefaultName, null, ConsoleColor.Gray, ConsoleColor.Cyan, ConsoleColor.DarkGray,
+                ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.Green, ConsoleColor.Cyan, ConsoleColor.Black,
+                ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
+            null, ConsoleColor.White, ConsoleColor.DarkGray, null, ConsoleColor.Cyan, ConsoleColor.DarkGray, false);
+        scheme.TabCorner = ConsoleColor.Gray;
+        scheme.CurrentLineNumber = ConsoleColor.White;
+        // Heading 1 to 5 (Syntax 7 to 11)
+        scheme.Set(ColorItem.Syntax7, ConsoleColor.Yellow);
+        scheme.Set(ColorItem.Syntax8, ConsoleColor.Cyan);
+        scheme.Set(ColorItem.Syntax9, ConsoleColor.Green);
+        scheme.Set(ColorItem.Syntax10, ConsoleColor.Magenta);
+        scheme.Set(ColorItem.Syntax11, ConsoleColor.Red);
+        scheme.UseLogo = LogoArt.BuiltInName;
+        return scheme;
+    }
+
     // "Tasty Bytes": magenta dividers, highlighted tabs in dark blue with a yellow corner, and the logo
     // "Reflections", which is used when the scheme is selected
     private static ColorScheme TastyBytes()
@@ -478,10 +506,7 @@ internal sealed class ColorScheme
     /// </summary>
     internal static readonly IReadOnlyList<ColorScheme> BuiltIn = new[]
     {
-        WithTabs(Make(DefaultName, null, ConsoleColor.Gray, ConsoleColor.Cyan, ConsoleColor.DarkGray,
-                ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.Green, ConsoleColor.Cyan, ConsoleColor.Black,
-                ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
-            null, ConsoleColor.Gray, ConsoleColor.DarkGray, null, ConsoleColor.Cyan, ConsoleColor.DarkGray, false),
+        DefaultScheme(),
         Make("Deep Blue", ConsoleColor.DarkBlue, ConsoleColor.Gray, ConsoleColor.Cyan, ConsoleColor.Cyan,
             ConsoleColor.Green, ConsoleColor.Magenta, ConsoleColor.White, ConsoleColor.Blue, ConsoleColor.Cyan,
             ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),

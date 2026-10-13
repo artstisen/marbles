@@ -176,8 +176,8 @@ public class LogoTests : IDisposable
         var islands = Logos.Load("Islands")!;
         Assert.Equal("Islands", islands.Name);
         Assert.True(islands.HasCellColors);
-        // Every character that can be seen has a color, but the four stars in the sky, which have the color of
-        // the logo. The water is blue and the sun yellow
+        // Every character that can be seen has a color: the stars in the sky are cyan, the water blue and the
+        // sun yellow
         var stars = new[] { (0, 1), (0, 20), (0, 40), (1, 13) };
         for (var row = 0; row < LogoArt.Rows; row++)
         {
@@ -185,11 +185,12 @@ public class LogoTests : IDisposable
             {
                 Assert.True(LogoArt.Typeable(islands[row, column]));
                 if (islands[row, column] == ' ') continue;
-                Assert.Equal(!stars.Contains((row, column)), islands.CellColor(row, column) != null);
+                Assert.NotNull(islands.CellColor(row, column));
             }
         }
 
         Assert.All(stars, star => Assert.Equal('.', islands[star.Item1, star.Item2]));
+        Assert.All(stars, star => Assert.Equal(ConsoleColor.Cyan, islands.CellColor(star.Item1, star.Item2)));
         Assert.Equal('~', islands[3, 1]);
         Assert.Equal(ConsoleColor.Blue, islands.CellColor(3, 1));
         Assert.Equal('0', islands[1, 30]);
