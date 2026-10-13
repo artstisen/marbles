@@ -35,6 +35,11 @@ Below these are some basic settings, so they can be changed without logging in t
 - **Wrap long lines in the editor**: Long lines go on to the next rows (on from the start). When off, the view scrolls sideways (see [the guide to the editor](Guide-to-editor.md#long-lines))
 - **Keep 12 lines around the cursor in the editor**: When the cursor comes within 12 lines of the top or the bottom of the editor, the text scrolls, so you see what comes next (on from the start). The number is set with `:scrolloff 8` in the editor (see [the guide to the editor](Guide-to-editor.md#scrolling))
 - **Clipboard and paste bin**: `Enter` opens the clipboard settings: where yanked text goes out of Marbles (see [the guide to the editor](Guide-to-editor.md#system-clipboard-and-paste-bin))
+- **Text Editor only** and **Note Management only**: Use this Marbles for one of the two modes only. They are for running two copies of Marbles in separate directories, one as a text editor and one for notes. Only one of them can be set (setting one clears the other, and setting it again turns it off)
+  - _Text Editor only_: _Note Management_ is not shown in the Mode tab, and the file browser does not open data files (`.mbls`): it says so on its bottom line
+  - _Note Management only_: _Text Editor/File Management_ is not shown in the Mode tab
+  - The choices of the Mode tab are numbered as they are shown (`1` to `3`), and starting in the mode that is not used cannot be chosen on _Page 1_ (if it was chosen, the choices are shown at startup)
+  - Saved as `onlymode` (`none`, `editor` or `notes`) in the settings file. _Reset all settings_ and `:defaults` turn both off
 - **Reset all settings**: Set all settings back to their defaults (you are asked first, in a box where _No_ is selected first)
 - **Restart Marbles**: Start Marbles over: the settings are read again and the start page is shown as at startup (you are asked first, in a box)
 - **View log**: Show the [log](#the-log)

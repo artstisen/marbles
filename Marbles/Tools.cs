@@ -1390,6 +1390,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Q Esc", Lang.T("Exit Marbles, asking first (Configuration: to Mode)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("j k or the number of the row: Select"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Startup"), Lang.T("Text Editor can start in the favorites list"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Text Editor only"), Lang.T("No Note Management, data files are not opened"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Note Management only: no Text Editor in Mode"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("One at a time (Page 2), to run one Marbles of each"), false));
             _shortcutList.Add(new Shortcut("Enter Space", Lang.T("Change the selected setting"), false));
             _shortcutList.Add(new Shortcut("l h", Lang.T("Next/Previous color scheme or language"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Color scheme"), Lang.T("Enter: pick from a list (or edit the colors)"), false));

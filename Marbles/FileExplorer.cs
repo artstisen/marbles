@@ -565,6 +565,13 @@ internal static partial class FileExplorer
 
         if (item.Name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase))
         {
+            if (StartMenu.Only == StartMenu.OnlyMode.Editor)
+            {
+                // Text Editor only: data files are not opened
+                _message = DialogText.DataFileNotOpened;
+                return false;
+            }
+
             DataFileSelected = SelectDataFile(item);
             return DataFileSelected;
         }

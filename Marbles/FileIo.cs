@@ -944,6 +944,9 @@ internal static class FileIo
         // Starting in the Text Editor: open the favorites list first
         _tempSettings += "startfavorites=" + (StartMenu.StartInFavorites ? DialogText.BTrue : DialogText.BFalse) +
                          Entries.NewLineChar;
+        // Use Marbles for one mode only: none (both), editor (no Note Management, data files are not opened) or
+        // notes (no Text Editor on the start page)
+        _tempSettings += "onlymode=" + StartMenu.SettingName(StartMenu.Only) + Entries.NewLineChar;
         // The clipboard: yanks to the system clipboard (OSC 52) and/or the paste bin, every yank ("all") or only
         // with "+ in front ("plus"), also from the notes of a data file, and the paste bin file
         _tempSettings += "osc52=" + (SystemClipboard.Osc52 ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
@@ -1111,6 +1114,7 @@ internal static class FileIo
         Init.AutoSize = Tools.TrimToLower(Get("autosize")) == DialogText.BTrue;
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
         StartMenu.StartInFavorites = Tools.TrimToLower(Get("startfavorites")) == DialogText.BTrue;
+        StartMenu.Only = StartMenu.ParseOnly(Get("onlymode"));
         // The clipboard (OSC 52 on unless turned off, the rest off unless turned on)
         SystemClipboard.Osc52 = Tools.TrimToLower(Get("osc52")) != DialogText.BFalse;
         SystemClipboard.PasteBin = Tools.TrimToLower(Get("pastebin")) == DialogText.BTrue;

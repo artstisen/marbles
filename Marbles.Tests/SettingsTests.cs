@@ -87,6 +87,61 @@ backup=
     }
 
     [Theory]
+    [InlineData("onlymode=editor", "Editor")]
+    [InlineData("onlymode= Notes ", "Notes")]
+    [InlineData("onlymode=none", "None")]
+    [InlineData("onlymode=other", "None")]
+    [InlineData("", "None")]
+    public void OnlyMode_IsLoadedAndSaved_AndResetWithTheSettings(string setting, string expected)
+    {
+        File.WriteAllText(SettingsFile, LegacySettings + "\n" + setting + "\n");
+        File.WriteAllText(Path.Combine(_workDirectory, "data", "notes.mbls"), "x");
+        try
+        {
+            Assert.True(FileIo.LoadSettings());
+            Assert.Equal(expected, StartMenu.Only.ToString());
+            FileIo.SaveSettings();
+            Assert.Equal(expected.ToLowerInvariant(), FileIo.ParseSettings(File.ReadAllText(SettingsFile))["onlymode"]);
+            // Resetting all settings uses both modes again
+            Actions.ApplyDefaultSettings();
+            Assert.Equal(StartMenu.OnlyMode.None, StartMenu.Only);
+            Assert.Equal("none", FileIo.ParseSettings(File.ReadAllText(SettingsFile))["onlymode"]);
+        }
+        finally
+        {
+            StartMenu.Only = StartMenu.OnlyMode.None;
+        }
+    }
+
+    [Fact]
+    public void WithOneModeOnly_MarblesDoesNotStartInTheOther()
+    {
+        try
+        {
+            StartMenu.Mode = StartMenu.StartMode.Notes;
+            StartMenu.Only = StartMenu.OnlyMode.Editor; // As read from a settings file
+            Assert.Equal(StartMenu.StartMode.Select, StartMenu.EffectiveMode);
+            StartMenu.Only = StartMenu.OnlyMode.Notes;
+            Assert.Equal(StartMenu.StartMode.Notes, StartMenu.EffectiveMode);
+
+            // Set on the Configuration page: the start mode goes back to showing the choices
+            StartMenu.Mode = StartMenu.StartMode.Editor;
+            StartMenu.SetOnly(StartMenu.OnlyMode.Notes);
+            Assert.Equal(StartMenu.StartMode.Select, StartMenu.Mode);
+            StartMenu.Mode = StartMenu.StartMode.Editor;
+            StartMenu.SetOnly(StartMenu.OnlyMode.Editor);
+            Assert.Equal(StartMenu.StartMode.Editor, StartMenu.Mode);
+            StartMenu.SetOnly(StartMenu.OnlyMode.None);
+            Assert.Equal(StartMenu.StartMode.Editor, StartMenu.Mode);
+        }
+        finally
+        {
+            StartMenu.Mode = StartMenu.StartMode.Select;
+            StartMenu.Only = StartMenu.OnlyMode.None;
+        }
+    }
+
+    [Theory]
     [InlineData("startmode=notes", "Notes")]
     [InlineData("startmode= Editor ", "Editor")]
     [InlineData("startmode=select", "Select")]
@@ -126,7 +181,8 @@ backup=
         Assert.Equal("Marbles", settings["logo"]);
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(31, settings.Count);
+        Assert.Equal(32, settings.Count);
+        Assert.Equal("none", settings["onlymode"]);
         Assert.Equal("true", settings["wrap"]);
         Assert.Equal("file", settings["snipsort"]);
         Assert.Equal("true", settings["scrolloff"]);

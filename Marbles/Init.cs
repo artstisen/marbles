@@ -248,6 +248,7 @@ internal static class Init
         AutoSize = false;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;
+        StartMenu.Only = StartMenu.OnlyMode.None;
         ConsoleColors.Monochrome = false;
         SyntaxHighlighter.ColorFiles = true;
         FileExplorer.DualPane = true;

@@ -1116,6 +1116,7 @@ internal static class Actions
         Logo.AnimationEnabled = true;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;
+        StartMenu.Only = StartMenu.OnlyMode.None;
         SystemClipboard.SetDefaults();
         Init.AutoSize = false;
         Init.SetDefaultOutputDimensions();

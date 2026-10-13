@@ -5,6 +5,8 @@
 /// use Marbles for (notes: the login page, or editing text files: the file browser), and Configuration, with the
 /// settings of the page itself and some basic settings on two pages (sub-tabs). Tab goes from page to page.
 /// The setting "startmode" tells if the page is shown at startup, or if Marbles goes directly to one of the two.
+/// The setting "onlymode" makes Marbles a text editor only or a note application only (for running one of each):
+/// the other mode is not shown in the Mode tab, and as a text editor Marbles does not open data files.
 /// </summary>
 internal static class StartMenu
 {
@@ -19,6 +21,55 @@ internal static class StartMenu
     /// What happens when Marbles starts (setting "startmode")
     /// </summary>
     internal static StartMode Mode { get; set; } = StartMode.Select;
+
+    internal enum OnlyMode
+    {
+        None, // Both modes
+        Editor, // Text Editor only: no Note Management, and data files are not opened
+        Notes // Note Management only: no Text Editor in the Mode tab
+    }
+
+    /// <summary>
+    /// Use Marbles for one of the modes only (setting "onlymode")
+    /// </summary>
+    internal static OnlyMode Only { get; set; } = OnlyMode.None;
+
+    /// <summary>
+    /// What happens when Marbles starts: the start mode, unless it is the mode that is not used
+    /// </summary>
+    internal static StartMode EffectiveMode =>
+        (Mode == StartMode.Notes && Only == OnlyMode.Editor) || (Mode == StartMode.Editor && Only == OnlyMode.Notes)
+            ? StartMode.Select
+            : Mode;
+
+    /// <summary>
+    /// Use one mode only, or both again. A start mode that is no longer used goes back to showing the choices
+    /// </summary>
+    internal static void SetOnly(OnlyMode only)
+    {
+        Only = only;
+        Mode = EffectiveMode;
+    }
+
+    internal static string SettingName(OnlyMode only)
+    {
+        return only switch
+        {
+            OnlyMode.Editor => "editor",
+            OnlyMode.Notes => "notes",
+            _ => "none"
+        };
+    }
+
+    internal static OnlyMode ParseOnly(string value)
+    {
+        return value.Trim().ToLowerInvariant() switch
+        {
+            "editor" => OnlyMode.Editor,
+            "notes" => OnlyMode.Notes,
+            _ => OnlyMode.None
+        };
+    }
 
     /// <summary>
     /// True when the page is to be shown (or passed, depending on the setting) before the login page
@@ -87,14 +138,14 @@ internal static class StartMenu
         var animate = Logo.TakeAnimation();
         if (!_showChoices)
         {
-            if (Mode == StartMode.Notes)
+            if (EffectiveMode == StartMode.Notes)
             {
                 // The login page sweeps the logo
                 if (animate) Logo.AnimateNext();
                 return;
             }
 
-            if (Mode == StartMode.Editor && BrowseFiles()) return;
+            if (EffectiveMode == StartMode.Editor && BrowseFiles()) return;
         }
 
         var mode = new ModePage();
@@ -132,6 +183,8 @@ internal static class StartMenu
         WordWrap,
         ScrollOff,
         Clipboard,
+        EditorOnly,
+        NotesOnly,
         Reset,
         Restart,
         ViewLog
@@ -140,11 +193,11 @@ internal static class StartMenu
     // The settings shown: some are only shown when they can be used
     private static List<Setting> Settings()
     {
-        var settings = new List<Setting>
-        {
-            Setting.StartSelect, Setting.StartNotes, Setting.StartEditor
-        };
-        if (Mode == StartMode.Editor) settings.Add(Setting.StartFavorites);
+        // Starting in a mode that is not used cannot be chosen
+        var settings = new List<Setting> { Setting.StartSelect };
+        if (Only != OnlyMode.Editor) settings.Add(Setting.StartNotes);
+        if (Only != OnlyMode.Notes) settings.Add(Setting.StartEditor);
+        if (EffectiveMode == StartMode.Editor) settings.Add(Setting.StartFavorites);
         settings.Add(Setting.Monochrome);
         if (!ConsoleColors.Monochrome) settings.Add(Setting.ColorScheme);
         settings.Add(Setting.Logo);
@@ -155,6 +208,8 @@ internal static class StartMenu
         settings.Add(Setting.WordWrap);
         settings.Add(Setting.ScrollOff);
         settings.Add(Setting.Clipboard);
+        settings.Add(Setting.EditorOnly);
+        settings.Add(Setting.NotesOnly);
         settings.Add(Setting.Reset);
         settings.Add(Setting.Restart);
         settings.Add(Setting.ViewLog);
@@ -185,6 +240,8 @@ internal static class StartMenu
             Setting.ScrollOff => Check(TextArea.ScrollOff) +
                                  Lang.F("Keep {0} lines around the cursor in the editor", TextArea.ScrollOffLines),
             Setting.Clipboard => indent + Lang.T("Clipboard and paste bin (Enter: Change)"),
+            Setting.EditorOnly => Check(Only == OnlyMode.Editor) + Lang.T("Text Editor only"),
+            Setting.NotesOnly => Check(Only == OnlyMode.Notes) + Lang.T("Note Management only"),
             Setting.Restart => indent + DialogText.ConfigRestart,
             Setting.ViewLog => indent + DialogText.ConfigViewLog,
             _ => indent + DialogText.ConfigReset
@@ -201,11 +258,33 @@ internal static class StartMenu
     {
         private int _selected;
 
-        // In the language in use
-        private static string[] Choices => new[]
+        private enum Choice
         {
-            DialogText.StartNotes, DialogText.StartEditor, DialogText.QuickGuide, DialogText.StartExit
-        };
+            Notes,
+            Editor,
+            QuickGuide,
+            Exit
+        }
+
+        // The choices shown: a mode that is not used (Text Editor only, Note Management only) is left out
+        private static List<Choice> ChoicesShown()
+        {
+            var choices = new List<Choice>();
+            if (Only != OnlyMode.Editor) choices.Add(Choice.Notes);
+            if (Only != OnlyMode.Notes) choices.Add(Choice.Editor);
+            choices.Add(Choice.QuickGuide);
+            choices.Add(Choice.Exit);
+            return choices;
+        }
+
+        // In the language in use
+        private static string[] Choices => ChoicesShown().Select(choice => choice switch
+        {
+            Choice.Notes => DialogText.StartNotes,
+            Choice.Editor => DialogText.StartEditor,
+            Choice.QuickGuide => DialogText.QuickGuide,
+            _ => DialogText.StartExit
+        }).ToArray();
 
         public string Title => DialogText.StartModeTab;
         public string Keys => DialogText.StartKeys;
@@ -214,6 +293,7 @@ internal static class StartMenu
         public void Draw(TabArea area, bool full)
         {
             var choices = Choices;
+            _selected = Math.Min(_selected, choices.Length - 1);
             if (full)
             {
                 for (var i = 0; i < choices.Length; i++)
@@ -235,8 +315,10 @@ internal static class StartMenu
 
         public TabResult HandleKey(ConsoleKeyInfo key)
         {
-            var count = Choices.Length;
-            if (key.Key is ConsoleKey.Enter or ConsoleKey.L or ConsoleKey.RightArrow) return Open(_selected);
+            var shown = ChoicesShown();
+            var count = shown.Count;
+            _selected = Math.Min(_selected, count - 1);
+            if (key.Key is ConsoleKey.Enter or ConsoleKey.L or ConsoleKey.RightArrow) return Open(shown[_selected]);
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q)
             {
                 if (ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false))
@@ -272,15 +354,15 @@ internal static class StartMenu
         }
 
         // Open a choice: notes (the login page), the file browser, the quick guide, or exit
-        private static TabResult Open(int choice)
+        private static TabResult Open(Choice choice)
         {
             switch (choice)
             {
-                case 0:
+                case Choice.Notes:
                     return TabResult.Close;
-                case 1:
+                case Choice.Editor:
                     return BrowseFiles() ? TabResult.Close : TabResult.Redraw;
-                case 2:
+                case Choice.QuickGuide:
                     QuickGuide.Show();
                     return TabResult.Redraw;
                 default:
@@ -443,6 +525,13 @@ internal static class StartMenu
                 break;
             case Setting.WordWrap:
                 TextArea.WordWrap = !TextArea.WordWrap;
+                break;
+            case Setting.EditorOnly:
+                // Only one of the two can be set
+                SetOnly(Only == OnlyMode.Editor ? OnlyMode.None : OnlyMode.Editor);
+                break;
+            case Setting.NotesOnly:
+                SetOnly(Only == OnlyMode.Notes ? OnlyMode.None : OnlyMode.Notes);
                 break;
             case Setting.ViewLog:
                 EventLog.Show();
