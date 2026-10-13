@@ -243,6 +243,17 @@ internal sealed class TabFrame
             Console.Write(" " + fitted[i] + " ");
         }
 
+        // The corner of the tab shown (its left side, corner and top) in its color
+        if (tab >= 0 && tab < fitted.Count)
+        {
+            var (index, length) = TabLayout.Corner(fitted, starts, tab);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabCorner);
+            Tools.SetCursorEx(top, 1 + index);
+            Console.Write(tops.Substring(index, length));
+            Tools.SetCursorEx(top + 1, 1 + index);
+            Console.Write('|');
+        }
+
         // The frame
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabFrame);
         Tools.SetCursorEx(top + 2, 1);

@@ -55,6 +55,7 @@ internal static class SchemeEditor
                     new Group(Lang.T("Selector"), ColorItem.Selector, ColorItem.SelectorText,
                         ConsoleColors.ColorPreset.SelectorInverted),
                     new Group(Lang.T("Tab frames"), ColorItem.TabFrames, null, ConsoleColors.ColorPreset.TabFrame),
+                    new Group(Lang.T("Tab corner"), ColorItem.TabCorner, null, ConsoleColors.ColorPreset.TabCorner),
                     new Group(Lang.T("Box borders"), ColorItem.BoxBorders, null, ConsoleColors.ColorPreset.BoxBorder),
                     new Group(Lang.T("Tab highlight"), ColorItem.Tab, ColorItem.TabText,
                         ConsoleColors.ColorPreset.Normal),
@@ -669,6 +670,7 @@ internal static class SchemeEditor
             {
                 ColorItem.TabFrames or ColorItem.BoxBorders or ColorItem.LineNumbers =>
                     Lang.T("[Default]: the dividers"),
+                ColorItem.TabCorner => Lang.T("[Default]: the tab frames"),
                 ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints or ColorItem.CurrentLineNumber =>
                     Lang.T("[Default]: the text"),
                 >= ColorItem.Syntax1 and <= ColorItem.Syntax12 =>
@@ -789,6 +791,12 @@ internal static class SchemeEditor
         Tab(" " + names[0] + " ");
         Tools.SetCursorEx(top + 7, x + starts[1] - 1);
         Part(ConsoleColors.ColorPreset.OtherTabs, " " + names[1] + " ");
+        // The corner of the tab shown
+        var (cornerIndex, cornerLength) = TabLayout.Corner(names, starts, 0);
+        Tools.SetCursorEx(top + 6, x + cornerIndex);
+        Part(ConsoleColors.ColorPreset.TabCorner, tops.Substring(cornerIndex, cornerLength));
+        Tools.SetCursorEx(top + 7, x + cornerIndex);
+        Part(ConsoleColors.ColorPreset.TabCorner, "|");
         Tools.SetCursorEx(top + 8, x);
         Part(ConsoleColors.ColorPreset.TabFrame,
             TabLayout.Edge(names, 0, frameWidth, AsciiStyles.GetTopCorner(), AsciiStyles.GetBottomCorner()));

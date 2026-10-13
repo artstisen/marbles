@@ -59,4 +59,18 @@ public class TabLayoutTests
     {
         Assert.Equal(expected, TabLayout.Next(page, count, back));
     }
+
+    [Fact]
+    public void TheCornerOfATab_IsItsLeftSideCornerAndTop_WithoutTheCornerAtItsRightEnd()
+    {
+        var names = new[] { "One", "Three" };
+        var (tops, labels, starts) = TabLayout.Tabs(names, '.');
+        var (index, length) = TabLayout.Corner(names, starts, 0);
+        Assert.Equal(".-----", tops.Substring(index, length));
+        Assert.Equal('|', labels[index]);
+        Assert.Equal('.', tops[index + length]); // The corner at the right end
+        (index, length) = TabLayout.Corner(names, starts, 1);
+        Assert.Equal(".-------", tops.Substring(index, length));
+        Assert.Equal("| Three ", labels.Substring(index, length));
+    }
 }

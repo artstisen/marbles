@@ -21,6 +21,7 @@ internal enum ColorItem
     Warning,
     WarningText,
     TabFrames, // The frames with tabs (null: the color of the dividers)
+    TabCorner, // The left side, corner and top of the tab shown in a frame with tabs (null: the tab frames)
     BoxBorders, // The borders of the boxes on top of a page (null: the color of the dividers)
     Tab, // The background of the tab shown (null: the color of the tab frames)
     TabText, // The text of the tab shown when it is highlighted (null: the color of TabShown)
@@ -78,6 +79,7 @@ internal sealed class ColorScheme
     internal ConsoleColor Warning { get; set; } = ConsoleColor.Red;
     internal ConsoleColor WarningText { get; set; } = ConsoleColor.White;
     internal ConsoleColor? TabFrames { get; set; }
+    internal ConsoleColor? TabCorner { get; set; }
     internal ConsoleColor? BoxBorders { get; set; }
     internal ConsoleColor? Tab { get; set; }
     internal ConsoleColor? TabText { get; set; }
@@ -104,6 +106,7 @@ internal sealed class ColorScheme
     // The colors as used (the ones that can be "default" have the color they stand for)
     internal ConsoleColor BackgroundColor => Background ?? ConsoleColor.Black;
     internal ConsoleColor TabFrameColor => TabFrames ?? Dividers;
+    internal ConsoleColor TabCornerColor => TabCorner ?? TabFrameColor;
     internal ConsoleColor BoxBorderColor => BoxBorders ?? Dividers;
     internal ConsoleColor TabColor => Tab ?? TabFrameColor;
     internal ConsoleColor TabTextColor => TabText ?? TabShownColor;
@@ -164,7 +167,8 @@ internal sealed class ColorScheme
     /// True if the color can be "default" (it then has the color of another item)
     /// </summary>
     internal static bool CanBeDefault(ColorItem item) =>
-        item is ColorItem.Background or ColorItem.TabFrames or ColorItem.BoxBorders or ColorItem.Tab
+        item is ColorItem.Background or ColorItem.TabFrames or ColorItem.TabCorner or ColorItem.BoxBorders
+            or ColorItem.Tab
             or ColorItem.TabText or ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints
             or ColorItem.Unsaved or ColorItem.UnsavedText or ColorItem.LineNumbers or ColorItem.CurrentLineNumber
             or ColorItem.Selector or ColorItem.SelectorText || IsSyntax(item, out _);
@@ -188,6 +192,7 @@ internal sealed class ColorScheme
             ColorItem.Warning => Warning,
             ColorItem.WarningText => WarningText,
             ColorItem.TabFrames => TabFrames,
+            ColorItem.TabCorner => TabCorner,
             ColorItem.BoxBorders => BoxBorders,
             ColorItem.Tab => Tab,
             ColorItem.TabText => TabText,
@@ -213,6 +218,7 @@ internal sealed class ColorScheme
         {
             ColorItem.Background => BackgroundColor,
             ColorItem.TabFrames => TabFrameColor,
+            ColorItem.TabCorner => TabCornerColor,
             ColorItem.BoxBorders => BoxBorderColor,
             ColorItem.Tab => TabColor,
             ColorItem.TabText => TabTextColor,
@@ -257,6 +263,7 @@ internal sealed class ColorScheme
             case ColorItem.Warning: Warning = color!.Value; break;
             case ColorItem.WarningText: WarningText = color!.Value; break;
             case ColorItem.TabFrames: TabFrames = color; break;
+            case ColorItem.TabCorner: TabCorner = color; break;
             case ColorItem.BoxBorders: BoxBorders = color; break;
             case ColorItem.Tab: Tab = color; break;
             case ColorItem.TabText: TabText = color; break;
@@ -276,7 +283,8 @@ internal sealed class ColorScheme
     private static readonly ColorItem[] OnBackground =
     {
         ColorItem.Text, ColorItem.Logo, ColorItem.Dividers, ColorItem.Favorites, ColorItem.Accent,
-        ColorItem.EditorTitle, ColorItem.TabFrames, ColorItem.BoxBorders, ColorItem.TabShown, ColorItem.OtherTabs,
+        ColorItem.EditorTitle, ColorItem.TabFrames, ColorItem.TabCorner, ColorItem.BoxBorders, ColorItem.TabShown,
+        ColorItem.OtherTabs,
         ColorItem.KeyHints, ColorItem.LineNumbers, ColorItem.CurrentLineNumber
     };
 
@@ -319,7 +327,8 @@ internal sealed class ColorScheme
         ("highlight", ColorItem.Highlight), ("highlighttext", ColorItem.HighlightText),
         ("attention", ColorItem.Attention), ("attentiontext", ColorItem.AttentionText),
         ("warning", ColorItem.Warning), ("warningtext", ColorItem.WarningText),
-        ("tabframes", ColorItem.TabFrames), ("boxborders", ColorItem.BoxBorders), ("tab", ColorItem.Tab),
+        ("tabframes", ColorItem.TabFrames), ("tabcorner", ColorItem.TabCorner),
+        ("boxborders", ColorItem.BoxBorders), ("tab", ColorItem.Tab),
         ("tabtext", ColorItem.TabText), ("tabshown", ColorItem.TabShown), ("othertabs", ColorItem.OtherTabs),
         ("keyhints", ColorItem.KeyHints), ("unsaved", ColorItem.Unsaved), ("unsavedtext", ColorItem.UnsavedText),
         ("linenumbers", ColorItem.LineNumbers), ("currentline", ColorItem.CurrentLineNumber),

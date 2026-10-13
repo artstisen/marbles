@@ -199,6 +199,26 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
+    public void TheCornerOfTheTabShown_HasTheColorOfTheTabFrames_UntilItIsSet()
+    {
+        var scheme = ColorScheme.Default;
+        Assert.Null(scheme.TabCorner);
+        Assert.Equal(scheme.TabFrameColor, scheme.TabCornerColor);
+        Assert.Contains("tabcorner=default\n", scheme.Serialize());
+        scheme.TabFrames = ConsoleColor.DarkGray;
+        Assert.Equal(ConsoleColor.DarkGray, scheme.TabCornerColor);
+        scheme.Set(ColorItem.TabCorner, ConsoleColor.White);
+        Assert.Equal(ConsoleColor.White, scheme.TabCornerColor);
+        Assert.Equal(ConsoleColor.DarkGray, scheme.TabFrameColor);
+        var read = ColorScheme.Parse(scheme.Serialize(), "Mine");
+        Assert.Equal(ConsoleColor.White, read.TabCorner);
+        Assert.Equal(ConsoleColor.White, read.Clone().TabCornerColor);
+        // A scheme file without it: the color of the tab frames
+        Assert.Null(ColorScheme.Parse("tabframes=Blue\n", "Old").TabCorner);
+        Assert.Equal(ConsoleColor.Blue, ColorScheme.Parse("tabframes=Blue\n", "Old").TabCornerColor);
+    }
+
+    [Fact]
     public void ASchemeOfYourOwn_CanBeRenamed()
     {
         var first = ColorScheme.Default;

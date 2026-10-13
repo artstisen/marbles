@@ -58,6 +58,7 @@ internal static class ConsoleColors
         AttentionInverted,
         WarningInverted,
         TabFrame, // The frames with tabs
+        TabCorner, // The left side, corner and top of the tab shown
         BoxBorder, // The borders of the boxes on top of a page
         TabShown, // The name of the tab shown, when the tab is not highlighted
         OtherTabs, // The names of the tabs not shown
@@ -176,6 +177,7 @@ internal static class ConsoleColors
             ColorPreset.Accent => scheme.Accent,
             ColorPreset.EditorTitle => scheme.EditorTitle,
             ColorPreset.TabFrame => scheme.TabFrameColor,
+            ColorPreset.TabCorner => scheme.TabCornerColor,
             ColorPreset.BoxBorder => scheme.BoxBorderColor,
             ColorPreset.TabShown => scheme.TabShownColor,
             ColorPreset.OtherTabs => scheme.OtherTabsColor,

@@ -69,6 +69,15 @@ internal static class TabLayout
     }
 
     /// <summary>
+    /// The corner of a tab: where its left side is in the lines of the tabs (Tabs), and how long its corner and
+    /// top are without the corner at its right end. It can have a color of its own in the tab shown
+    /// </summary>
+    internal static (int Index, int Length) Corner(IReadOnlyList<string> names, IReadOnlyList<int> nameStarts, int tab)
+    {
+        return (nameStarts[tab] - 2, TabWidth(names[tab]) - 1);
+    }
+
+    /// <summary>
     /// The top line of the frame: a corner at each end, closed below the tabs that are not shown, and open
     /// below the one that is
     /// </summary>

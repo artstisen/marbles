@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Color schemes**: **Tab corner** (Page 2), a color for the left side, corner and top of the tab shown in a frame with tabs (`tabcorner` in a scheme file; from the start it has the color of the tab frames).
 - **Logos** (Colors, Cells): `e` paints with the color of the cell under the cursor, as an alternative to picking it with `c`.
 - **Configuration**: the settings are on four pages with names, **General**, **Layout**, **Editor** and **System**, instead of Page 1 and Page 2. New there: **Syntax highlighting** (on/off), **Spell checker** (the languages of `:spell`: `h` `l` select one, `Enter` turns several on or off in a list), **Snippet editor** (the file of snippets in the editor) and **Info** (the version, and where the program and the data are).
 - **Select mode page**: a third tab, **Help**, with _Help_ (all the keys, as `:help`) and _About_. Configuration (Page 2) has **Edit settings.ini**, below _Reset all settings_.
