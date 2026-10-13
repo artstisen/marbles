@@ -6,6 +6,8 @@ namespace Marbles;
 /// A logo of the start and login pages: 4 rows of 63 characters, each row in a color of its own or in the color
 /// of the logo (of the color scheme). The built-in logo is "Marbles"; the ones made by the user are kept as files
 /// (Logos): the 4 rows, and a line "colors=" with the color of each row ("default" for the color of the logo).
+/// A cell can have a color of its own, which is used instead of the color of its row: these are 4 lines "cells="
+/// after the others, with a character for each cell (the number of the color as a hex digit, "." for none).
 /// It does not touch the console, so it can be tested.
 /// </summary>
 internal sealed class LogoArt
@@ -18,14 +20,20 @@ internal sealed class LogoArt
 
     private readonly char[][] _cells;
     private readonly ConsoleColor?[] _colors = new ConsoleColor?[Rows];
+    private readonly ConsoleColor?[][] _cellColors;
     private const string ColorsKey = "colors=";
+    private const string CellsKey = "cells=";
+    private const char NoCellColor = '.';
+    private const string HexDigits = "0123456789ABCDEF";
 
     internal LogoArt(string name, IReadOnlyList<string> rows)
     {
         Name = name;
         _cells = new char[Rows][];
+        _cellColors = new ConsoleColor?[Rows][];
         for (var row = 0; row < Rows; row++)
         {
+            _cellColors[row] = new ConsoleColor?[Width];
             _cells[row] = new char[Width];
             Array.Fill(_cells[row], ' ');
             if (row >= rows.Count) continue;
@@ -68,40 +76,113 @@ internal sealed class LogoArt
 
     internal void SetRowColor(int row, ConsoleColor? color) => _colors[row] = color;
 
+    /// <summary>
+    /// The color a cell has of its own (null: the color of its row)
+    /// </summary>
+    internal ConsoleColor? CellColor(int row, int column) => _cellColors[row][column];
+
+    internal void SetCellColor(int row, int column, ConsoleColor? color) => _cellColors[row][column] = color;
+
+    /// <summary>
+    /// The color a cell is drawn in: its own, or else the one of its row (null: the color of the logo)
+    /// </summary>
+    internal ConsoleColor? ColorAt(int row, int column) => _cellColors[row][column] ?? _colors[row];
+
+    internal bool HasCellColors => _cellColors.Any(row => row.Any(color => color != null));
+
+    /// <summary>
+    /// Take the colors of their own from all the cells: they have the colors of their rows again
+    /// </summary>
+    internal void ClearCellColors()
+    {
+        foreach (var row in _cellColors) Array.Fill(row, null);
+    }
+
+    /// <summary>
+    /// A row as the parts that are drawn in one color, from left to right. Blank space has no color to see, so
+    /// it goes with the part before it
+    /// </summary>
+    internal IReadOnlyList<(int Column, string Text, ConsoleColor? Color)> Runs(int row)
+    {
+        var runs = new List<(int Column, string Text, ConsoleColor? Color)>();
+        var start = 0;
+        var seen = false; // The part has a character that can be seen
+        ConsoleColor? current = null;
+        for (var column = 0; column < Width; column++)
+        {
+            if (_cells[row][column] == ' ') continue;
+            var color = ColorAt(row, column);
+            if (seen && color != current)
+            {
+                runs.Add((start, new string(_cells[row], start, column - start), current));
+                start = column;
+            }
+
+            current = color;
+            seen = true;
+        }
+
+        runs.Add((start, new string(_cells[row], start, Width - start), current));
+        return runs;
+    }
+
     internal LogoArt Clone()
     {
         var copy = new LogoArt(Name, AllRows);
         Array.Copy(_colors, copy._colors, Rows);
+        for (var row = 0; row < Rows; row++) Array.Copy(_cellColors[row], copy._cellColors[row], Width);
         return copy;
     }
 
     /// <summary>
-    /// The logo as text: its rows (without blank space at their ends), and the colors of the rows when one has a
-    /// color of its own
+    /// The logo as text: its rows (without blank space at their ends), the colors of the rows when one has a
+    /// color of its own, and the colors of the cells when one has
     /// </summary>
     internal string Serialize()
     {
         var text = string.Join("\n", AllRows.Select(row => row.TrimEnd())) + "\n";
-        if (_colors.All(color => color == null)) return text;
-        return text + ColorsKey + string.Join(",", _colors.Select(color => color?.ToString() ?? "default")) + "\n";
+        if (_colors.Any(color => color != null))
+        {
+            text += ColorsKey + string.Join(",", _colors.Select(color => color?.ToString() ?? "default")) + "\n";
+        }
+
+        if (!HasCellColors) return text;
+        foreach (var row in _cellColors)
+        {
+            var cells = new string(row.Select(color => color is { } own ? HexDigits[(int)own] : NoCellColor).ToArray());
+            text += CellsKey + cells.TrimEnd(NoCellColor) + "\n";
+        }
+
+        return text;
     }
 
     /// <summary>
     /// A logo from its text: the first 4 lines, each cut or filled with blank space to 63 characters, and the
-    /// colors of the rows from a line "colors=" after them
+    /// colors of the rows from a line "colors=" after them, and the colors of the cells from the lines "cells="
     /// </summary>
     internal static LogoArt Parse(string text, string name)
     {
         var lines = TextBuffer.Normalize(text).Split('\n');
         var logo = new LogoArt(name, lines.Take(Rows).ToList());
         var colors = lines.Skip(Rows).FirstOrDefault(line => line.StartsWith(ColorsKey, StringComparison.OrdinalIgnoreCase));
-        if (colors == null) return logo;
-        var names = colors[ColorsKey.Length..].Split(',');
+        var names = colors == null ? Array.Empty<string>() : colors[ColorsKey.Length..].Split(',');
         for (var row = 0; row < Rows && row < names.Length; row++)
         {
             if (Enum.TryParse<ConsoleColor>(names[row].Trim(), true, out var color) && Enum.IsDefined(color))
             {
                 logo._colors[row] = color;
+            }
+        }
+
+        // The colors of the cells: a line for each row, in the order of the rows
+        var cells = lines.Skip(Rows).Where(line => line.StartsWith(CellsKey, StringComparison.OrdinalIgnoreCase))
+            .Select(line => line[CellsKey.Length..]).Take(Rows).ToList();
+        for (var row = 0; row < cells.Count; row++)
+        {
+            for (var column = 0; column < Width && column < cells[row].Length; column++)
+            {
+                var digit = HexDigits.IndexOf(char.ToUpperInvariant(cells[row][column]));
+                if (digit >= 0) logo._cellColors[row][column] = (ConsoleColor)digit;
             }
         }
 

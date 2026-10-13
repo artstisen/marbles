@@ -4,9 +4,10 @@
 /// The logos: a page of their own, opened from the Configuration page and with ":logo" in the main menu. It is a
 /// frame with three tabs (TabFrame): Logos, where a logo is selected and used (the built-in one and the ones saved
 /// by the user), Editor, where a logo is drawn on a grid of 4 rows of 63 characters, with the modes of the text
-/// editor: NORMAL (move, clear, replace one character) and REPLACE (typing draws), and Colors, where each row gets
-/// a color of its own (or the color of the logo). A logo is saved as one of the user's own (a file in the
-/// directory "logos"), which is then the logo in use.
+/// editor: NORMAL (move, clear, replace one character) and REPLACE (typing draws), and Colors, with the sub-tabs
+/// Rows, where each row gets a color of its own (or the color of the logo), and Cells, where cells are painted in
+/// colors of their own on the grid. A logo is saved as one of the user's own (a file in the directory "logos"),
+/// which is then the logo in use.
 /// </summary>
 internal static class LogoEditor
 {
@@ -35,7 +36,7 @@ internal static class LogoEditor
             },
             new TabItem(() => Lang.T("Logos"), new ListPage()),
             new TabItem(() => Lang.T("Editor"), new EditorPage()),
-            new TabItem(() => Lang.T("Colors"), new ColorsPage()));
+            new TabItem(() => Lang.T("Colors"), new ColorsPage(), new CellsPage()));
         frame.Run();
         Tools.HideCursor();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -122,30 +123,311 @@ internal static class LogoEditor
         }
     }
 
-    // Draw a logo from a row and column: each row in its color (or the color of the logo)
+    // Draw a logo from a row and column: each cell in its color, the one of its row, or the color of the logo
     private static void DrawLogo(LogoArt logo, int top, int left)
     {
         for (var row = 0; row < LogoArt.Rows; row++)
         {
-            if (logo.RowColor(row) is { } color) ConsoleColors.SetTextColor(color);
-            else ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
             Tools.SetCursorEx(top + row, left);
-            Console.Write(logo.Row(row));
+            foreach (var run in logo.Runs(row))
+            {
+                Logo.SetLogoColor(run.Color);
+                Console.Write(run.Text);
+            }
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
+    // The name of the logo being edited, on the first line of a page with the grid
+    private static void DrawName(TabArea area)
+    {
+        Tools.SetCursorEx(area.Top, area.Left + 1);
+        Console.Write(Tools.TruncateString(Lang.F("Logo: {0}", _editing.Name) +
+                                           (_changed ? "  " + Lang.T("(changed, S: save)") : string.Empty),
+            area.Width - 2, true));
+    }
+
+    // The ruler and the frame of the grid, around the logo drawn from a row and column
+    private static void DrawGridFrame(int gridTop, int gridLeft)
+    {
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(gridTop - 2, gridLeft);
+        Console.Write(EditorPage.Ruler());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+        Tools.SetCursorEx(gridTop - 1, gridLeft - 1);
+        Console.Write(AsciiStyles.GetTopCorner() + new string('-', LogoArt.Width) + AsciiStyles.GetTopCorner());
+        for (var row = 0; row < LogoArt.Rows; row++)
+        {
+            Tools.SetCursorEx(gridTop + row, gridLeft - 1);
+            Console.Write('|');
+            Tools.SetCursorEx(gridTop + row, gridLeft + LogoArt.Width);
+            Console.Write('|');
+        }
+
+        Tools.SetCursorEx(gridTop + LogoArt.Rows, gridLeft - 1);
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', LogoArt.Width) +
+                      AsciiStyles.GetBottomCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    // Keep a copy of the logo before a change, to undo it
+    private static void Remember()
+    {
+        Undo.Push(_editing.Clone());
+        if (Undo.Count <= MaxUndo) return;
+        var kept = Undo.Take(MaxUndo).Reverse().ToList();
+        Undo.Clear();
+        foreach (var logo in kept) Undo.Push(logo);
+    }
+
+    // Take back the last change (the name of the logo stays)
+    private static bool UndoLast()
+    {
+        if (Undo.Count == 0) return false;
+        var name = _editing.Name;
+        _editing = Undo.Pop();
+        _editing.Name = name;
+        _changed = true;
+        return true;
+    }
+
     /// <summary>
-    /// The Colors tab: the logo at the top, and the color of each row below it, and a row to give them all one
-    /// color (or the color of the logo again)
+    /// The Cells page of the Colors tab: the logo on the grid of the editor, where cells are painted in a color
+    /// of their own (c picks the color to paint with, Space paints, x gives a cell the color of its row again).
+    /// "v" selects a rectangle to paint or clear in one go
+    /// </summary>
+    private sealed class CellsPage : ITabPage
+    {
+        private int _row;
+        private int _column;
+        private bool _visual; // A rectangle is being selected, from the anchor to the cursor
+        private int _anchorRow;
+        private int _anchorColumn;
+        private char _pending; // The first key of "gg"
+        private ConsoleColor? _paint; // The color to paint with (null: not picked yet)
+        private int _gridTop;
+        private int _gridLeft;
+
+        public string Title => Lang.T("Cells");
+        public string Keys => _visual ? DialogText.LogoCellVisualKeys : DialogText.LogoCellKeys;
+        public Tools.HelpTopic Help => Tools.HelpTopic.Logos;
+
+        /// <summary>
+        /// The cursor is shown in the grid
+        /// </summary>
+        public (int Row, int Column)? Cursor => (_gridTop + _row, _gridLeft + _column);
+
+        // The cells a key works on: the selected rectangle, or the cell of the cursor
+        private (int Top, int Left, int Bottom, int Right) Selection => _visual
+            ? (Math.Min(_row, _anchorRow), Math.Min(_column, _anchorColumn), Math.Max(_row, _anchorRow),
+                Math.Max(_column, _anchorColumn))
+            : (_row, _column, _row, _column);
+
+        public void Draw(TabArea area, bool full)
+        {
+            _gridLeft = area.Left + 2;
+            _gridTop = area.Top + 4;
+            if (full)
+            {
+                DrawName(area);
+                DrawGridFrame(_gridTop, _gridLeft);
+            }
+
+            DrawLogo(_editing, _gridTop, _gridLeft);
+            if (_visual)
+            {
+                // The selected cells
+                var (top, left, bottom, right) = Selection;
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                for (var row = top; row <= bottom; row++)
+                {
+                    Tools.SetCursorEx(_gridTop + row, _gridLeft + left);
+                    Console.Write(_editing.Row(row).Substring(left, right - left + 1));
+                }
+
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            }
+
+            // The mode and where the cursor is (the names of the modes are as in the text editor)
+            Tools.SetCursorEx(_gridTop + LogoArt.Rows + 2, area.Left + 1);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
+            var mode = _visual ? "-- VISUAL --" : "-- NORMAL --"; // English
+            Console.Write(mode);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            var position = "  " + Lang.F("Row {0}, column {1}", _row + 1, _column + 1);
+            Console.Write(position.PadRight(Math.Max(0, area.Width - 1 - mode.Length)));
+
+            // The color to paint with, and the color of the cell of the cursor
+            if (_paint is { } paint) ColorLine(area, 3, Lang.T("Paint color:"), paint, ColorPicker.Name(paint));
+            else ColorLine(area, 3, Lang.T("Paint color:"), null, Lang.T("none (c: pick a color)"));
+            if (_editing.CellColor(_row, _column) is { } cell)
+            {
+                ColorLine(area, 4, Lang.T("Color of the cell:"), cell, ColorPicker.Name(cell));
+            }
+            else
+            {
+                ColorLine(area, 4, Lang.T("Color of the cell:"), null, Lang.T("[Default]: the row color"));
+            }
+        }
+
+        // A line below the grid: a label, and the name of a color in the color (or a note, in the color of the
+        // dividers)
+        private void ColorLine(TabArea area, int line, string label, ConsoleColor? color, string name)
+        {
+            Tools.SetCursorEx(_gridTop + LogoArt.Rows + line, area.Left + 1);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(label + " ");
+            if (color is { } own) ConsoleColors.SetTextColor(own);
+            else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            var room = Math.Max(0, area.Left + area.Width - 1 - Console.CursorLeft);
+            name = Tools.TruncateString(name, room, true);
+            Console.Write(name);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(new string(' ', Math.Max(0, room - TextMetrics.WidthOf(name))));
+        }
+
+        private void Move(int rows, int columns)
+        {
+            _row = Math.Clamp(_row + rows, 0, LogoArt.Rows - 1);
+            _column = Math.Clamp(_column + columns, 0, LogoArt.Width - 1);
+        }
+
+        // Pick the color to paint with from the list of colors. The colors of the background cannot be picked
+        private bool PickPaint()
+        {
+            if (!ColorPicker.Pick(DialogText.ColorCaption, PickerLeft, false, _paint,
+                    color => !ConsoleColors.IsBackgroundColor(color), color =>
+                    {
+                        Console.BackgroundColor = ConsoleColors.Current.BackgroundColor;
+                        Console.ForegroundColor = color;
+                    }, out var picked) || picked == null)
+            {
+                return false;
+            }
+
+            _paint = picked;
+            return true;
+        }
+
+        // Give the selected cells (or the cell of the cursor) a color of their own, or with null the color of
+        // their rows again. A selection ends with it
+        private TabResult Apply(ConsoleColor? color)
+        {
+            var (top, left, bottom, right) = Selection;
+            Remember();
+            for (var row = top; row <= bottom; row++)
+            {
+                for (var column = left; column <= right; column++) _editing.SetCellColor(row, column, color);
+            }
+
+            _changed = true;
+            if (!_visual) return TabResult.None;
+            _visual = false;
+            return TabResult.Redraw;
+        }
+
+        public TabResult HandleKey(ConsoleKeyInfo key)
+        {
+            var pending = _pending;
+            _pending = '\0';
+            if (pending == 'g')
+            {
+                if (key.KeyChar == 'g') _row = 0;
+                return TabResult.None;
+            }
+
+            if (key.Key == ConsoleKey.Spacebar)
+            {
+                // Paint: the color is asked for the first time
+                var asked = _paint == null;
+                if (asked && !PickPaint()) return TabResult.Redraw;
+                var single = !_visual;
+                var result = Apply(_paint);
+                if (single) Move(0, 1);
+                return asked ? TabResult.Redraw : result;
+            }
+
+            switch (Keyboard.ToNavigationKey(key).Key)
+            {
+                case ConsoleKey.LeftArrow:
+                    Move(0, -1);
+                    return TabResult.None;
+                case ConsoleKey.RightArrow:
+                    Move(0, 1);
+                    return TabResult.None;
+                case ConsoleKey.UpArrow:
+                    Move(-1, 0);
+                    return TabResult.None;
+                case ConsoleKey.DownArrow:
+                    Move(1, 0);
+                    return TabResult.None;
+            }
+
+            switch (key.KeyChar)
+            {
+                case '0':
+                    _column = 0;
+                    return TabResult.None;
+                case '$':
+                    // The last character of the row (that is not blank space)
+                    _column = Math.Max(0, _editing.Row(_row).TrimEnd().Length - 1);
+                    return TabResult.None;
+                case 'G':
+                    _row = LogoArt.Rows - 1;
+                    return TabResult.None;
+                case 'g':
+                    _pending = key.KeyChar;
+                    return TabResult.None;
+                case 'c':
+                    PickPaint();
+                    return TabResult.Redraw;
+                case 'x':
+                    return Apply(null);
+                case 'X':
+                    // All the cells have the colors of their rows again
+                    if (!_editing.HasCellColors) return TabResult.None;
+                    Remember();
+                    _editing.ClearCellColors();
+                    _changed = true;
+                    _visual = false;
+                    return TabResult.Redraw;
+                case 'v':
+                    _visual = !_visual;
+                    _anchorRow = _row;
+                    _anchorColumn = _column;
+                    return TabResult.Redraw;
+                case 'u':
+                    _visual = false;
+                    UndoLast();
+                    return TabResult.Redraw;
+                case 'S':
+                case 's':
+                    Save();
+                    return TabResult.Redraw;
+            }
+
+            if (key.Key == ConsoleKey.Escape && _visual)
+            {
+                _visual = false;
+                return TabResult.Redraw;
+            }
+
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return Close();
+            return TabResult.None;
+        }
+    }
+
+    /// <summary>
+    /// The Rows page of the Colors tab: the logo at the top, and the color of each row below it, and a row to
+    /// give them all one color (or the color of the logo again)
     /// </summary>
     private sealed class ColorsPage : ITabPage
     {
         private int _selected;
         private int _shown = -1;
 
-        public string Title => Lang.T("Colors");
+        public string Title => Lang.T("Rows");
         public string Keys => DialogText.LogoColorKeys;
         public Tools.HelpTopic Help => Tools.HelpTopic.Logos;
 
@@ -259,6 +541,7 @@ internal static class LogoEditor
                 return;
             }
 
+            Remember();
             for (var i = 0; i < LogoArt.Rows; i++)
             {
                 if (all || i == row) _editing.SetRowColor(i, picked);
@@ -495,31 +778,9 @@ internal static class LogoEditor
             _gridTop = area.Top + 4;
             if (full)
             {
-                // The logo being edited
-                Tools.SetCursorEx(area.Top, area.Left + 1);
-                Console.Write(Tools.TruncateString(Lang.F("Logo: {0}", _editing.Name) +
-                                                   (_changed ? "  " + Lang.T("(changed, S: save)") : string.Empty),
-                    area.Width - 2, true));
-
-                // The ruler and the frame of the grid
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                Tools.SetCursorEx(_gridTop - 2, _gridLeft);
-                Console.Write(Ruler());
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-                Tools.SetCursorEx(_gridTop - 1, _gridLeft - 1);
-                Console.Write(AsciiStyles.GetTopCorner() + new string('-', LogoArt.Width) + AsciiStyles.GetTopCorner());
-                for (var row = 0; row < LogoArt.Rows; row++)
-                {
-                    Tools.SetCursorEx(_gridTop + row, _gridLeft - 1);
-                    Console.Write('|');
-                    Tools.SetCursorEx(_gridTop + row, _gridLeft + LogoArt.Width);
-                    Console.Write('|');
-                }
-
-                Tools.SetCursorEx(_gridTop + LogoArt.Rows, _gridLeft - 1);
-                Console.Write(AsciiStyles.GetBottomCorner() + new string('-', LogoArt.Width) +
-                              AsciiStyles.GetBottomCorner());
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                // The logo being edited, and the ruler and the frame of the grid
+                DrawName(area);
+                DrawGridFrame(_gridTop, _gridLeft);
             }
 
             DrawLogo(_editing, _gridTop, _gridLeft);
@@ -538,16 +799,6 @@ internal static class LogoEditor
         /// The cursor is shown in the grid
         /// </summary>
         public (int Row, int Column)? Cursor => (_gridTop + _row, _gridLeft + _column);
-
-        // Keep a copy of the logo before a change, to undo it
-        private static void Remember()
-        {
-            Undo.Push(_editing.Clone());
-            if (Undo.Count <= MaxUndo) return;
-            var kept = Undo.Take(MaxUndo).Reverse().ToList();
-            Undo.Clear();
-            foreach (var logo in kept) Undo.Push(logo);
-        }
 
         private void Set(char c)
         {
@@ -689,12 +940,7 @@ internal static class LogoEditor
                     _replace = true;
                     return TabResult.Redraw;
                 case 'u':
-                    if (Undo.Count == 0) return TabResult.None;
-                    var name = _editing.Name;
-                    _editing = Undo.Pop();
-                    _editing.Name = name;
-                    _changed = true;
-                    return TabResult.Redraw;
+                    return UndoLast() ? TabResult.Redraw : TabResult.None;
                 case 'S':
                 case 's':
                     Save();

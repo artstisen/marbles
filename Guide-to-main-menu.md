@@ -123,7 +123,19 @@ The logo of the start and login pages can be one of your own. The logos are chos
 - `S` Save the logo as one of your own: type a name for it and press `Enter` (a logo of your own is suggested by its name; _Marbles_ cannot be used, and another logo of yours with the name is replaced if you want that). The logo is then the one in use
 - `Esc` (or `Q`) in NORMAL mode closes the page. If something was changed and not saved, you are asked in a box whether to save it (`Y`, `N`, or `Esc` to stay)
 
-**Colors** shows the logo at the top and the color of each of its rows below it. `j` `k` select a row and `l` (or `Enter`, `Space`) picks its color from the list of colors; `[Default]` is the color of _Logo and labels_ of the color scheme. **All rows** gives all four rows the color picked, or with `[Default]` sets them all back to the color of the logo. The colors are saved with the logo (`S`), as a line `colors=` after its rows in the file (`colors=Cyan,Cyan,Blue,default`). In black and white the logo is white.
+**Colors** has the sub-tabs _Rows_ and _Cells_. **Rows** shows the logo at the top and the color of each of its rows below it. `j` `k` select a row and `l` (or `Enter`, `Space`) picks its color from the list of colors; `[Default]` is the color of _Logo and labels_ of the color scheme. **All rows** gives all four rows the color picked, or with `[Default]` sets them all back to the color of the logo. The colors are saved with the logo (`S`), as a line `colors=` after its rows in the file (`colors=Cyan,Cyan,Blue,default`). In black and white the logo is white.
+
+**Cells** shows the logo on the grid of the Editor tab, where each cell can be painted in a color of its own. A cell with a color of its own is drawn in it; the others have the color of their row. Below the grid are the color you paint with and the color of the cell under the cursor.
+
+- `h` `j` `k` `l` (or the arrow keys) move, `0` `$` go to the start/end of the row, `gg` `G` to the first/last row
+- `c` Pick the color to paint with from the list of colors
+- `Space` Paint the cell under the cursor and move to the next one (the first time, the color is asked for)
+- `x` Clear the color of the cell: it has the color of its row again
+- `v` Select a rectangle (**VISUAL**): move to the opposite corner, then `Space` paints all its cells and `x` clears them. `Esc` (or `v`) gives up the selection
+- `X` Clear the colors of all the cells
+- `u` Undo, `S` Save, `Esc` (or `Q`) Close
+
+A new color for a row (or for all rows) does not change the cells that have a color of their own, and neither does drawing another character in a cell on the Editor tab: the color belongs to the place, not to the character. Blank space has no color to see, so paint the characters. The colors of the cells are saved with the logo as four lines `cells=` after the others, one for each row, with a character for each cell: the number of the color as a hex digit (`0` Black, `1` DarkBlue, `2` DarkGreen, `3` DarkCyan, `4` DarkRed, `5` DarkMagenta, `6` DarkYellow, `7` Gray, `8` DarkGray, `9` Blue, `A` Green, `B` Cyan, `C` Red, `D` Magenta, `E` Yellow, `F` White) and `.` for a cell without a color of its own (`cells=CCC...EE`).
 
 Only the printable ASCII characters can be typed (letters, digits and signs such as `_ - " % # /`), so the logo looks the same in every terminal. **Logos of your own** are kept as text files in the directory `logos` in the data directory (the name of the logo and `.txt`), with the 4 rows of the logo. They can be copied to another computer or edited by hand; a file can have other characters that take one column (as the block characters `█ ▀ ▄`), but not all terminal fonts have them (the console of a Raspberry Pi does not), so ASCII is the safe choice. Rows longer than 63 characters are cut, and shorter ones filled with blank space. If the logo in use is missing when Marbles starts, _Marbles_ is used. `:defaults` goes back to _Marbles_. Rows without a color of their own are drawn in the color of _Logo and labels_ of the color scheme.
 

@@ -44,6 +44,79 @@ public class LogoTests : IDisposable
     }
 
     [Fact]
+    public void TheCells_CanHaveColorsOfTheirOwn_InsteadOfTheColorOfTheirRow()
+    {
+        var logo = new LogoArt("Mine", new[] { "abc", "b", "c", "d" });
+        Assert.False(logo.HasCellColors);
+        Assert.DoesNotContain("cells=", logo.Serialize());
+        logo.SetRowColor(0, ConsoleColor.Cyan);
+        logo.SetCellColor(0, 1, ConsoleColor.Red);
+        logo.SetCellColor(3, 62, ConsoleColor.Black);
+        Assert.True(logo.HasCellColors);
+        Assert.Equal(ConsoleColor.Red, logo.ColorAt(0, 1));
+        Assert.Equal(ConsoleColor.Cyan, logo.ColorAt(0, 0)); // The color of the row
+        Assert.Null(logo.ColorAt(1, 0)); // The color of the logo
+        Assert.Null(logo.CellColor(0, 0));
+
+        // A line for each row after the colors of the rows: a hex digit for a color, "." for none
+        Assert.EndsWith("d\ncolors=Cyan,default,default,default\ncells=.C\ncells=\ncells=\ncells=" +
+                        new string('.', 62) + "0\n", logo.Serialize());
+        var read = LogoArt.Parse(logo.Serialize(), "Mine");
+        Assert.Equal(ConsoleColor.Red, read.CellColor(0, 1));
+        Assert.Equal(ConsoleColor.Black, read.CellColor(3, 62));
+        Assert.Null(read.CellColor(1, 0));
+        Assert.Equal(ConsoleColor.Cyan, read.RowColor(0));
+        Assert.Equal(logo.Serialize(), read.Serialize());
+        Assert.Equal(ConsoleColor.Red, read.Clone().CellColor(0, 1));
+
+        // A new color for the row leaves the cells with a color of their own
+        read.SetRowColor(0, ConsoleColor.Green);
+        Assert.Equal(ConsoleColor.Red, read.ColorAt(0, 1));
+        Assert.Equal(ConsoleColor.Green, read.ColorAt(0, 2));
+        // ... and so does a new character
+        read[0, 1] = ' ';
+        Assert.Equal(ConsoleColor.Red, read.CellColor(0, 1));
+
+        read.ClearCellColors();
+        Assert.False(read.HasCellColors);
+        Assert.Equal(ConsoleColor.Green, read.ColorAt(0, 1));
+        Assert.DoesNotContain("cells=", read.Serialize());
+    }
+
+    [Fact]
+    public void TheColorsOfTheCells_AreReadWithoutTheColorsOfTheRows_AndWithSmallLetters()
+    {
+        var logo = LogoArt.Parse("a\nb\nc\nd\ncells=e?\ncells=.b\n", "Mine");
+        Assert.Equal(ConsoleColor.Yellow, logo.CellColor(0, 0));
+        Assert.Null(logo.CellColor(0, 1)); // Not a color
+        Assert.Equal(ConsoleColor.Cyan, logo.CellColor(1, 1));
+        Assert.Null(logo.RowColor(0));
+        // A row cannot be read as the colors of the cells
+        Assert.False(LogoArt.Parse("cells=EEE\n", "X").HasCellColors);
+    }
+
+    [Fact]
+    public void ARow_IsDrawnAsItsPartsOfOneColor()
+    {
+        var logo = new LogoArt("Mine", new[] { "  ab cd", "", "x", "" });
+        // One color: one part, the whole row
+        var whole = Assert.Single(logo.Runs(0));
+        Assert.Equal((0, "  ab cd".PadRight(63), (ConsoleColor?)null), whole);
+        Assert.Equal(63, Assert.Single(logo.Runs(1)).Text.Length);
+
+        logo.SetRowColor(0, ConsoleColor.Cyan);
+        logo.SetCellColor(0, 3, ConsoleColor.Red); // "b"
+        logo.SetCellColor(0, 4, ConsoleColor.Blue); // Blank space: its color cannot be seen
+        var runs = logo.Runs(0);
+        Assert.Equal(3, runs.Count);
+        Assert.Equal((0, "  a", (ConsoleColor?)ConsoleColor.Cyan), runs[0]);
+        Assert.Equal((3, "b ", (ConsoleColor?)ConsoleColor.Red), runs[1]);
+        Assert.Equal((5, "cd".PadRight(58), (ConsoleColor?)ConsoleColor.Cyan), runs[2]);
+        // The parts are the row
+        Assert.Equal(logo.Row(0), string.Concat(runs.Select(run => run.Text)));
+    }
+
+    [Fact]
     public void TheRows_CanHaveColorsOfTheirOwn()
     {
         var logo = new LogoArt("Mine", new[] { "a", "b", "c", "d" });

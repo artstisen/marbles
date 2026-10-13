@@ -11,10 +11,6 @@ internal static class Logo
     /// </summary>
     internal static LogoArt Current { get; set; } = LogoArt.BuiltIn;
 
-    // The lines drawn: a blank first line (the version number is written on it) and the rows of the logo, from
-    // the column after the margin
-    private static string[] Lines => new[] { " " }.Concat(Current.AllRows.Select(row => " " + row)).ToArray();
-
     private const int LogoMargin = 1; // The column the logo starts in
     private const int VersionMargin = 2; // The column of the version number
     private const int AnimationColumnDelay = 3; // Milliseconds between the columns of the sweep
@@ -60,13 +56,21 @@ internal static class Logo
             SweepLogo();
         }
 
-        // Write the lines (after a sweep this makes sure the logo is complete)
-        var lines = Lines;
-        for (var i = 0; i < lines.Length; i++)
+        // Write the lines (after a sweep this makes sure the logo is complete): a blank first line (the version
+        // number is written on it) and the rows of the logo from the column after the margin, each as its parts
+        // of one color
+        Tools.SetCursorEx(0, LogoMargin);
+        Console.Write(' ');
+        var logo = Current;
+        for (var row = 0; row < LogoArt.Rows; row++)
         {
-            SetRowColor(i);
-            Tools.SetCursorEx(i, LogoMargin);
-            Console.Write(lines[i]);
+            Tools.SetCursorEx(row + 1, LogoMargin);
+            Console.Write(' ');
+            foreach (var run in logo.Runs(row))
+            {
+                SetLogoColor(run.Color);
+                Console.Write(run.Text);
+            }
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
@@ -82,10 +86,12 @@ internal static class Logo
         if (showDataFile) Menu.WriteDataFileName();
     }
 
-    // The color of a line: a row of the logo with a color of its own, or the color of the logo
-    private static void SetRowColor(int line)
+    /// <summary>
+    /// The color of a part of a logo: the one of its cells or its row, or the color of the logo
+    /// </summary>
+    internal static void SetLogoColor(ConsoleColor? color)
     {
-        if (line > 0 && Current.RowColor(line - 1) is { } color) ConsoleColors.SetTextColor(color);
+        if (color is { } own) ConsoleColors.SetTextColor(own);
         else ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
     }
 
@@ -94,18 +100,17 @@ internal static class Logo
     {
         try
         {
-            var lines = Lines;
-            var width = lines.Max(line => line.Length);
-            for (var column = 0; column < width; column++)
+            var logo = Current;
+            for (var column = 0; column < LogoArt.Width; column++)
             {
                 if (Console.KeyAvailable) return;
                 var drawn = false;
-                for (var i = 0; i < lines.Length; i++)
+                for (var row = 0; row < LogoArt.Rows; row++)
                 {
-                    if (column >= lines[i].Length || lines[i][column] == ' ') continue;
-                    SetRowColor(i);
-                    Tools.SetCursorEx(i, LogoMargin + column);
-                    Console.Write(lines[i][column]);
+                    if (logo[row, column] == ' ') continue;
+                    SetLogoColor(logo.ColorAt(row, column));
+                    Tools.SetCursorEx(row + 1, LogoMargin + 1 + column);
+                    Console.Write(logo[row, column]);
                     drawn = true;
                 }
 
