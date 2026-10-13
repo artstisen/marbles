@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Configuration** (Layout): **Logo animation**, the speed of the sweep of the logo: Slow, Fast (the default), Very fast or Off. Setting `logoanim` (`slow`, `fast`, `veryfast`, `off`).
 - **Frames with tabs**: `Tab` and `Shift+Tab` go from tab to tab only, and `h` `l` (or `Left`/`Right`) go through the sub-tabs of the tab shown (Configuration, the Colors of the color schemes and of the logos). The keys are shown at the right ends of the rows of the tabs and the sub-tabs, and a tab opens with the sub-tab it showed last. `l` no longer picks on these pages (`Enter` does), and the languages are picked with `Enter`. On the grid of _Cells_, where `h` `l` move, the sub-tabs are `H` `L`.
 - **Color schemes**: **Tab corner** (Page 2), a color for the left side, corner and top of the tab shown in a frame with tabs (`tabcorner` in a scheme file; from the start it has the color of the tab frames).
 - **Logos** (Colors, Cells): `e` paints with the color of the cell under the cursor, as an alternative to picking it with `c`.

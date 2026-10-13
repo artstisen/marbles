@@ -13,12 +13,67 @@ internal static class Logo
 
     private const int LogoMargin = 1; // The column the logo starts in
     private const int VersionMargin = 2; // The column of the version number
-    private const int AnimationColumnDelay = 3; // Milliseconds between the columns of the sweep
+
+    internal enum AnimationSpeed
+    {
+        Slow,
+        Fast,
+        VeryFast,
+        Off
+    }
 
     /// <summary>
-    /// Draw the logo with a sweep from left to right when arriving at the login page (setting "logoanim")
+    /// How fast the logo is drawn with a sweep from left to right when arriving at the login page, or that it
+    /// is not (setting "logoanim": slow, fast, veryfast or off)
     /// </summary>
-    internal static bool AnimationEnabled { get; set; } = true;
+    internal static AnimationSpeed Animation { get; set; } = AnimationSpeed.Fast;
+
+    internal static bool AnimationEnabled => Animation != AnimationSpeed.Off;
+
+    /// <summary>
+    /// How long the sweep of the whole logo takes, in milliseconds. The sweep follows the clock, as a short wait
+    /// is not equally short everywhere (on Windows it is at least about 15 milliseconds)
+    /// </summary>
+    internal static int AnimationDuration(AnimationSpeed speed)
+    {
+        return speed switch
+        {
+            AnimationSpeed.Slow => 2000,
+            AnimationSpeed.VeryFast => 300,
+            AnimationSpeed.Off => 0,
+            _ => 800
+        };
+    }
+
+    /// <summary>
+    /// When a column of the logo is done (from 0), in milliseconds from the start of a sweep of a duration
+    /// </summary>
+    internal static long ColumnTime(int column, int duration) => (long)duration * (column + 1) / LogoArt.Width;
+
+    /// <summary>
+    /// The name of a speed in the settings file
+    /// </summary>
+    internal static string SettingName(AnimationSpeed speed)
+    {
+        return speed switch
+        {
+            AnimationSpeed.Slow => "slow",
+            AnimationSpeed.VeryFast => "veryfast",
+            AnimationSpeed.Off => "off",
+            _ => "fast"
+        };
+    }
+
+    internal static AnimationSpeed ParseAnimation(string value)
+    {
+        return value.Trim().ToLowerInvariant() switch
+        {
+            "slow" => AnimationSpeed.Slow,
+            "veryfast" => AnimationSpeed.VeryFast,
+            "off" or "false" => AnimationSpeed.Off,
+            _ => AnimationSpeed.Fast
+        };
+    }
 
     private static bool _animateNext;
 
@@ -101,20 +156,25 @@ internal static class Logo
         try
         {
             var logo = Current;
+            var duration = AnimationDuration(Animation);
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             for (var column = 0; column < LogoArt.Width; column++)
             {
                 if (Console.KeyAvailable) return;
-                var drawn = false;
                 for (var row = 0; row < LogoArt.Rows; row++)
                 {
                     if (logo[row, column] == ' ') continue;
                     SetLogoColor(logo.ColorAt(row, column));
                     Tools.SetCursorEx(row + 1, LogoMargin + 1 + column);
                     Console.Write(logo[row, column]);
-                    drawn = true;
                 }
 
-                if (drawn) Thread.Sleep(AnimationColumnDelay);
+                // Wait until it is time for the next column
+                while (watch.ElapsedMilliseconds < ColumnTime(column, duration))
+                {
+                    if (Console.KeyAvailable) return;
+                    Thread.Sleep(1);
+                }
             }
         }
         catch

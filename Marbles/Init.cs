@@ -244,7 +244,7 @@ internal static class Init
         Log(DialogText.InitSetDefaults, true);
         Entries.ResetRecallId();
         AsciiStyles.ResetAsciiStyle();
-        Logo.AnimationEnabled = true;
+        Logo.Animation = Logo.AnimationSpeed.Fast;
         AutoSize = false;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;

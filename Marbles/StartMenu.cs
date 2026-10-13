@@ -190,6 +190,7 @@ internal static class StartMenu
         AutoSize,
         Size,
         Logo,
+        LogoAnimation,
         LineNumbers,
         WordWrap,
         ScrollOff,
@@ -224,6 +225,7 @@ internal static class StartMenu
         settings.Add(Setting.Monochrome);
         if (!ConsoleColors.Monochrome) settings.Add(Setting.ColorScheme);
         settings.Add(Setting.Logo);
+        settings.Add(Setting.LogoAnimation);
         // Editor
         settings.Add(Setting.LineNumbers);
         settings.Add(Setting.WordWrap);
@@ -257,6 +259,7 @@ internal static class StartMenu
             Setting.ColorScheme => indent + Lang.F("Color scheme: {0} (Enter: Select/Edit)",
                 ColorSchemes.DisplayName(ConsoleColors.Current.Name)),
             Setting.Logo => indent + Lang.F("Logo: {0} (Enter: Select/Edit)", Marbles.Logo.Current.Name),
+            Setting.LogoAnimation => indent + Lang.F("Logo animation: {0}", AnimationName(Marbles.Logo.Animation)),
             Setting.AutoSize => Check(Init.AutoSize) + DialogText.ConfigAutoSize,
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
@@ -295,7 +298,8 @@ internal static class StartMenu
         {
             Setting.StartSelect or Setting.StartNotes or Setting.StartEditor or Setting.StartFavorites
                 or Setting.EditorOnly or Setting.NotesOnly or Setting.Language => 0,
-            Setting.AutoSize or Setting.Size or Setting.Monochrome or Setting.ColorScheme or Setting.Logo => 1,
+            Setting.AutoSize or Setting.Size or Setting.Monochrome or Setting.ColorScheme or Setting.Logo
+                or Setting.LogoAnimation => 1,
             Setting.LineNumbers or Setting.WordWrap or Setting.ScrollOff or Setting.Clipboard
                 or Setting.SyntaxColors or Setting.Spell or Setting.Snippets => 2,
             _ => 3
@@ -344,6 +348,37 @@ internal static class StartMenu
             SpellChecker.Languages = SpellChecker.ToggleLanguage(available, SpellChecker.Languages, available[picked]);
             FileIo.SaveSettings();
         }
+    }
+
+    // The speeds of the sweep of the logo, as they are listed
+    private static readonly Logo.AnimationSpeed[] AnimationSpeeds =
+    {
+        Marbles.Logo.AnimationSpeed.Slow, Marbles.Logo.AnimationSpeed.Fast, Marbles.Logo.AnimationSpeed.VeryFast,
+        Marbles.Logo.AnimationSpeed.Off
+    };
+
+    // In the language in use
+    private static string AnimationName(Logo.AnimationSpeed speed)
+    {
+        return speed switch
+        {
+            Marbles.Logo.AnimationSpeed.Slow => Lang.T("Slow"),
+            Marbles.Logo.AnimationSpeed.VeryFast => Lang.T("Very fast"),
+            Marbles.Logo.AnimationSpeed.Off => Lang.T("Off"),
+            _ => Lang.T("Fast")
+        };
+    }
+
+    // Pick how fast the logo is swept in (or that it is not) from a list in a box
+    private static void PickLogoAnimation()
+    {
+        ChoiceBox.Forget();
+        var picked = ChoiceBox.Pick(Lang.T("Logo animation"), Lang.T("How fast the logo is swept in on the login page"),
+            string.Empty, AnimationSpeeds.Select(AnimationName).ToArray(), new[] { "1", "2", "3", "4" },
+            Math.Max(0, Array.IndexOf(AnimationSpeeds, Marbles.Logo.Animation)), false);
+        if (picked < 0) return;
+        Marbles.Logo.Animation = AnimationSpeeds[picked];
+        FileIo.SaveSettings();
     }
 
     // Where Marbles is: its version, and the directories of the program and of the data
@@ -729,6 +764,10 @@ internal static class StartMenu
                 return;
             case Setting.Info:
                 ShowInfo();
+                return;
+            case Setting.LogoAnimation:
+                // Saves the settings itself
+                PickLogoAnimation();
                 return;
             case Setting.EditorOnly:
                 // Only one of the two can be set

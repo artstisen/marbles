@@ -38,6 +38,7 @@ The settings are on four pages, so they can be changed in one place without logg
 - **Black and white (no colors)**: Show everything in black and white. Your color scheme is kept and is used again when this is turned off
 - **Color scheme**: The color scheme in use. `Enter` opens the [color schemes](Guide-to-main-menu.md#color-schemes), where a scheme is selected, and the colors are edited and saved as a scheme of your own (not shown when _Black and white_ is on)
 - **Logo**: The logo in use. `Enter` opens the [logos](Guide-to-main-menu.md#logos), where a logo is selected, or drawn and saved as one of your own (4 rows of 63 characters)
+- **Logo animation**: How fast the logo is swept in from the left when you arrive at the login page: _Slow_, _Fast_ (the default), _Very fast_ or _Off_. `Enter` shows them in a box to pick from. Saved as `logoanim` (`slow`, `fast`, `veryfast` or `off`) in the settings file
 
 **Editor**
 
@@ -256,7 +257,7 @@ The log is kept in memory only: nothing is written to disk, and it is empty when
 As the log can be read without a password, commands given in the menus and in the editor are logged by name only (`:new ...`, `:s ...`): titles, search texts and other text typed after a command are not in the log. Something typed on a command line that is not a command is logged as "(not a command)". File names and paths in the file browser are logged in full.
 
 ## Logo animation
-The logo is drawn with a sweep when arriving at the login page. Any key ends the sweep. To turn it off, set `logoanim=false` in the settings file (_Edit settings.ini_ on the Configuration tab).
+The logo is drawn with a sweep when arriving at the login page. Any key ends the sweep. Its speed is set with _Logo animation_ on the Layout page of the Configuration tab, where it can also be turned off.
 
 ## Directories
 Marbles creates the directory "data" in the directory it is started from, and keeps the data files and the settings file there.

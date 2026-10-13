@@ -64,7 +64,7 @@ backup=
     public void Dispose()
     {
         Init.SetDefaultOutputDimensions();
-        Logo.AnimationEnabled = true;
+        Logo.Animation = Logo.AnimationSpeed.Fast;
         AsciiStyles.ResetAsciiStyle();
         FileIo.SetDefaultFileName();
         Directory.SetCurrentDirectory(_originalDirectory);
@@ -111,6 +111,46 @@ backup=
         {
             StartMenu.Only = StartMenu.OnlyMode.None;
         }
+    }
+
+    [Theory]
+    [InlineData("logoanim=slow", "Slow", "slow")]
+    [InlineData("logoanim= VeryFast ", "VeryFast", "veryfast")]
+    [InlineData("logoanim=off", "Off", "off")]
+    [InlineData("logoanim=false", "Off", "off")] // As it was written before
+    [InlineData("logoanim=true", "Fast", "fast")]
+    [InlineData("", "Fast", "fast")]
+    public void TheSpeedOfTheLogoAnimation_IsLoadedAndSaved_AndResetWithTheSettings(string setting, string expected,
+        string saved)
+    {
+        File.WriteAllText(SettingsFile, LegacySettings + "\n" + setting + "\n");
+        File.WriteAllText(Path.Combine(_workDirectory, "data", "notes.mbls"), "x");
+        try
+        {
+            Assert.True(FileIo.LoadSettings());
+            Assert.Equal(expected, Logo.Animation.ToString());
+            Assert.Equal(expected != "Off", Logo.AnimationEnabled);
+            FileIo.SaveSettings();
+            Assert.Equal(saved, FileIo.ParseSettings(File.ReadAllText(SettingsFile))["logoanim"]);
+            Actions.ApplyDefaultSettings();
+            Assert.Equal(Logo.AnimationSpeed.Fast, Logo.Animation);
+        }
+        finally
+        {
+            Logo.Animation = Logo.AnimationSpeed.Fast;
+        }
+    }
+
+    [Fact]
+    public void TheLogoAnimation_TakesLongerTheSlowerItIs()
+    {
+        Assert.True(Logo.AnimationDuration(Logo.AnimationSpeed.Slow) > Logo.AnimationDuration(Logo.AnimationSpeed.Fast));
+        Assert.True(Logo.AnimationDuration(Logo.AnimationSpeed.Fast) > Logo.AnimationDuration(Logo.AnimationSpeed.VeryFast));
+        Assert.True(Logo.AnimationDuration(Logo.AnimationSpeed.VeryFast) > 0);
+        // The columns are done evenly over the time, the last one at the end
+        Assert.Equal(800, Logo.ColumnTime(LogoArt.Width - 1, 800));
+        Assert.Equal(12, Logo.ColumnTime(0, 800));
+        Assert.True(Logo.ColumnTime(31, 800) is > 390 and < 420);
     }
 
     [Fact]
@@ -183,6 +223,7 @@ backup=
         Assert.Equal("notes.mbls", settings["file"]);
         Assert.Equal(32, settings.Count);
         Assert.Equal("none", settings["onlymode"]);
+        Assert.Equal("fast", settings["logoanim"]);
         Assert.Equal("true", settings["wrap"]);
         Assert.Equal("file", settings["snipsort"]);
         Assert.Equal("true", settings["scrolloff"]);

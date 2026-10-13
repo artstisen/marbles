@@ -966,7 +966,7 @@ internal static class FileIo
         // ASCII style
         _tempSettings += "asciistyle=" + AsciiStyles.GetAsciiStyle() + Entries.NewLineChar;
         // Logo animation on the login page
-        _tempSettings += "logoanim=" + (Logo.AnimationEnabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        _tempSettings += "logoanim=" + Logo.SettingName(Logo.Animation) + Entries.NewLineChar;
         // The logo: the built-in one (Marbles), or the name of one in the directory "logos"
         _tempSettings += "logo=" + Logo.Current.Name + Entries.NewLineChar;
         // The color scheme: a built-in one, or the name of one in the directory "colorschemes"
@@ -1151,7 +1151,7 @@ internal static class FileIo
         }
 
         // Logo animation (on unless turned off)
-        Logo.AnimationEnabled = Tools.TrimToLower(Get("logoanim")) != DialogText.BFalse;
+        Logo.Animation = Logo.ParseAnimation(Get("logoanim"));
         // The logo by its name (the built-in one if there is none with the name)
         Logo.Current = Logos.Load(Get("logo")) ?? LogoArt.BuiltIn;
 

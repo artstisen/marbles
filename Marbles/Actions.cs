@@ -1118,7 +1118,7 @@ internal static class Actions
         Snippets.Sort = Snippets.SortOrder.File;
         ConsoleColors.Use(ColorScheme.Default);
         Logo.Current = LogoArt.BuiltIn;
-        Logo.AnimationEnabled = true;
+        Logo.Animation = Logo.AnimationSpeed.Fast;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;
         StartMenu.Only = StartMenu.OnlyMode.None;
