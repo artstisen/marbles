@@ -165,6 +165,24 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
+    public void DeepBlue_HasItsColors()
+    {
+        var expected = "background=DarkBlue\ntext=Gray\nlogo=Cyan\ndividers=Cyan\nfavorites=Green\naccent=Magenta\n" +
+                       "editortitle=White\nhighlight=Blue\nhighlighttext=Cyan\nattention=Yellow\n" +
+                       "attentiontext=Black\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=White\n" +
+                       "boxborders=default\ntab=Blue\ntabtext=default\ntabshown=White\nothertabs=Gray\n" +
+                       "keyhints=Gray\nunsaved=default\nunsavedtext=default\nlinenumbers=Gray\n" +
+                       "currentline=White\nselector=Blue\nselectortext=White\n" +
+                       "syntax1=default\nsyntax2=Yellow\nsyntax3=default\nsyntax4=default\nsyntax5=default\n" +
+                       "syntax6=Gray\nsyntax7=Yellow\nsyntax8=Green\nsyntax9=Cyan\nsyntax10=Magenta\n" +
+                       "syntax11=Red\nsyntax12=default\ntabhighlight=true\n";
+        // Without the comment lines at the top
+        var text = string.Join("\n", ColorSchemes.Load("Deep Blue")!.Serialize().Split('\n')
+            .Where(line => !line.StartsWith(';')));
+        Assert.Equal(expected, text);
+    }
+
+    [Fact]
     public void TastyBytes_HasItsColors_AndIsUsedWithTheLogoReflections()
     {
         var scheme = ColorSchemes.Load("tasty bytes")!;
@@ -198,7 +216,7 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void TheSelector_KeepsItsColors_WhenTheHighlightIsChanged()
     {
-        foreach (var builtIn in ColorScheme.BuiltIn.Where(scheme => scheme.Name != "Tasty Bytes"))
+        foreach (var builtIn in ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Tasty Bytes" or "Deep Blue")))
         {
             // From the start the colors of the highlight, as colors of its own
             Assert.Equal(builtIn.Highlight, builtIn.Selector);

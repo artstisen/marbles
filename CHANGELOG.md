@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Color schemes**: _Deep Blue_ has the focused tab white on blue with a white corner, gray key hints and line numbers, a white selector arrow on blue, and colors of its own for names, comments and the headings 1 to 5.
 - **Color schemes**: the _Default_ scheme has white box borders, a gray tab corner, a white current line number and new colors for the headings 1 to 5, and is used with the logo _Marbles_ (selecting it selects that logo). The stars of the logo _Islands_ are cyan.
 - **Logos**: the built-in logo _Islands_ is drawn again, with a sun with rays, coconuts, and stars in the sky.
 - **Color schemes**: the built-in scheme _Night Writer_ is replaced by **Tasty Bytes**, which is used with the logo _Reflections_: selecting the scheme selects the logo too (`uselogo=` in a scheme file).

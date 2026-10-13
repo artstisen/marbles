@@ -481,6 +481,31 @@ internal sealed class ColorScheme
         return scheme;
     }
 
+    // "Deep Blue": a dark blue background with cyan frames, the focused tab white on blue with a white corner,
+    // and headings in colors of their own
+    private static ColorScheme DeepBlue()
+    {
+        var scheme = WithTabs(Make("Deep Blue", ConsoleColor.DarkBlue, ConsoleColor.Gray, ConsoleColor.Cyan,
+                ConsoleColor.Cyan, ConsoleColor.Green, ConsoleColor.Magenta, ConsoleColor.White, ConsoleColor.Blue,
+                ConsoleColor.Cyan, ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
+            null, null, ConsoleColor.Blue, null, ConsoleColor.White, ConsoleColor.Gray, true);
+        scheme.TabCorner = ConsoleColor.White;
+        scheme.KeyHints = ConsoleColor.Gray;
+        scheme.LineNumbers = ConsoleColor.Gray;
+        scheme.CurrentLineNumber = ConsoleColor.White;
+        scheme.Selector = ConsoleColor.Blue;
+        scheme.SelectorText = ConsoleColor.White;
+        // Names (Syntax 2), comments (Syntax 6) and heading 1 to 5 (Syntax 7 to 11)
+        scheme.Set(ColorItem.Syntax2, ConsoleColor.Yellow);
+        scheme.Set(ColorItem.Syntax6, ConsoleColor.Gray);
+        scheme.Set(ColorItem.Syntax7, ConsoleColor.Yellow);
+        scheme.Set(ColorItem.Syntax8, ConsoleColor.Green);
+        scheme.Set(ColorItem.Syntax9, ConsoleColor.Cyan);
+        scheme.Set(ColorItem.Syntax10, ConsoleColor.Magenta);
+        scheme.Set(ColorItem.Syntax11, ConsoleColor.Red);
+        return scheme;
+    }
+
     // "Tasty Bytes": magenta dividers, highlighted tabs in dark blue with a yellow corner, and the logo
     // "Reflections", which is used when the scheme is selected
     private static ColorScheme TastyBytes()
@@ -507,9 +532,7 @@ internal sealed class ColorScheme
     internal static readonly IReadOnlyList<ColorScheme> BuiltIn = new[]
     {
         DefaultScheme(),
-        Make("Deep Blue", ConsoleColor.DarkBlue, ConsoleColor.Gray, ConsoleColor.Cyan, ConsoleColor.Cyan,
-            ConsoleColor.Green, ConsoleColor.Magenta, ConsoleColor.White, ConsoleColor.Blue, ConsoleColor.Cyan,
-            ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
+        DeepBlue(),
         Make("Marbles Quest", null, ConsoleColor.Green, ConsoleColor.Cyan, ConsoleColor.Blue, ConsoleColor.Magenta,
             ConsoleColor.Magenta, ConsoleColor.Green, ConsoleColor.DarkBlue, ConsoleColor.Cyan, ConsoleColor.Yellow,
             ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
