@@ -42,6 +42,7 @@ internal enum EditorRequest
     PasteBinRead, // ":pbread": insert the text of the paste bin at the cursor
     PasteBinClear, // ":pbclear": empty the paste bin
     ClipboardSettings, // ":clipboard": show the clipboard settings
+    DocumentInfo, // ":info": show the size, the dates and the path of the text being edited
     WrapChanged, // Wrapping of long lines was turned on or off
     ScrollOffChanged, // The lines kept around the cursor (ScrollOff) were changed
     CopyPath, // ":path": the path of the file being edited to the clipboard
@@ -1080,6 +1081,9 @@ internal sealed partial class EditorEngine
                 break;
             case "clipboard":
                 _request = EditorRequest.ClipboardSettings;
+                break;
+            case "info":
+                if (!SingleLine) _request = EditorRequest.DocumentInfo;
                 break;
             case "path":
                 if (!SingleLine) _request = EditorRequest.CopyPath;

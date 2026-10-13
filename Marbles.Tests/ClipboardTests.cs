@@ -85,6 +85,8 @@ public class ClipboardTests : IDisposable
         Assert.Equal(EditorRequest.PasteBinRead, editor.Type(":pbread<CR>"));
         Assert.Equal(EditorRequest.PasteBinClear, editor.Type(":pbclear<CR>"));
         Assert.Equal(EditorRequest.ClipboardSettings, editor.Type(":clipboard<CR>"));
+        // ":info": the size, the dates and the path of the text, in a box
+        Assert.Equal(EditorRequest.DocumentInfo, editor.Type(":info<CR>"));
     }
 
     [Fact]

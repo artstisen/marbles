@@ -473,6 +473,7 @@ internal static class DialogText
 
     // Information about a file in the file browser
     public static string InfoCaptionFile => Lang.T("File info");
+    public static string InfoCaptionDocument => Lang.T("Document info");
     public static string InfoCaptionDirectory => Lang.T("Directory info");
     public static string InfoName => Lang.T("Name:");
     public static string InfoType => Lang.T("Type:");

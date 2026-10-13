@@ -1691,6 +1691,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":sort i", Lang.T("Sort, upper and lower case alike"), false));
             _shortcutList.Add(new Shortcut("\"+y", Lang.T("Yank to the system clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut(":pb :pbread", Lang.T("Write to/Read from the paste bin"), false));
+            _shortcutList.Add(new Shortcut(":info", Lang.T("Info: characters, words, lines, dates and path"), false));
             _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path of the file to the clipboard"), false));
             _shortcutList.Add(new Shortcut(":snip :sn", Lang.T("Snippets: insert, filter, sort, add, rename, delete"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Selection"), Lang.T(":snip puts a snippet with $0 around it"), false));

@@ -447,6 +447,11 @@ public class TextArea
             case EditorRequest.SnippetsEdit:
                 OpenSnippets(0);
                 break;
+            case EditorRequest.DocumentInfo:
+                Tools.HideCursor();
+                ShowDocumentInfo();
+                RedrawAll();
+                break;
             case EditorRequest.ClipboardSettings:
                 Tools.HideCursor();
                 ClipboardPage.Show();
@@ -574,6 +579,51 @@ public class TextArea
         _snippetsLine = line;
         Canceled = _engine.IsModified;
         _exit = true;
+    }
+
+    // ":info": the text being edited in a box: its name (a file) or title (an entry), how many characters, words
+    // and lines it has as it is now (with the changes that are not saved), and for a file its dates and path
+    private void ShowDocumentInfo()
+    {
+        var text = GetText();
+        var rows = new List<(string Label, string Value)>();
+        var path = _saveMode == SaveAsFile ? FileExplorer.CurrentFilePath
+            : _saveMode == SaveAsSettings ? System.IO.Path.GetFullPath(System.IO.Path.Combine(
+                FileIo.GetDataDirectoryName(), FileIo.SettingsFileName))
+            : string.Empty;
+        var entry = _saveMode == SaveAsEntry && Entries.CurrentEntryExists() ? Entries.CurrentEntry : null;
+        if (path.Length > 0) rows.Add((DialogText.InfoName, System.IO.Path.GetFileName(path)));
+        else if (entry != null) rows.Add((DialogText.TitleColon, entry.Title));
+        rows.Add((Lang.T("Characters:"), Tools.CharacterCount(text).ToString()));
+        rows.Add((Lang.T("Words:"), Tools.WordCount(text).ToString()));
+        rows.Add((Lang.T("Lines:"), Tools.LineCount(text).ToString()));
+        if (path.Length > 0)
+        {
+            try
+            {
+                // A file that is not saved yet has no dates
+                var info = new FileInfo(path);
+                if (info.Exists)
+                {
+                    rows.Add((DialogText.InfoCreated, info.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")));
+                    rows.Add((DialogText.InfoChanged, info.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss")));
+                }
+            }
+            catch
+            {
+                // The dates cannot be read: the rest is shown
+            }
+
+            rows.Add((DialogText.InfoPath, path));
+        }
+        else if (entry != null)
+        {
+            rows.Add((DialogText.InfoCreated, entry.DateCreated));
+            rows.Add((DialogText.InfoChanged, entry.DateChanged));
+        }
+
+        ChoiceBox.Forget();
+        ChoiceBox.ShowRows(DialogText.InfoCaptionDocument, rows);
     }
 
     // Read the file from disk again. Changes that are not saved are only given up if that is asked for
