@@ -482,7 +482,7 @@ internal sealed class ColorScheme
     }
 
     // "Deep Blue": a dark blue background with cyan frames, the focused tab white on blue with a white corner,
-    // and headings in colors of their own
+    // headings in colors of their own, and the logo "Marbles", which is used when the scheme is selected
     private static ColorScheme DeepBlue()
     {
         var scheme = WithTabs(Make("Deep Blue", ConsoleColor.DarkBlue, ConsoleColor.Gray, ConsoleColor.Cyan,
@@ -503,6 +503,7 @@ internal sealed class ColorScheme
         scheme.Set(ColorItem.Syntax9, ConsoleColor.Cyan);
         scheme.Set(ColorItem.Syntax10, ConsoleColor.Magenta);
         scheme.Set(ColorItem.Syntax11, ConsoleColor.Red);
+        scheme.UseLogo = LogoArt.BuiltInName;
         return scheme;
     }
 
@@ -680,6 +681,22 @@ internal static class ColorSchemes
         {
             return e.Message;
         }
+    }
+
+    /// <summary>
+    /// Make a copy of a scheme (a built-in one, or one made by the user) as a scheme of the user's own with
+    /// another name. Another scheme with the name is not replaced
+    /// </summary>
+    /// <returns>DialogText.Success or an error message</returns>
+    internal static string Duplicate(string name, string newName)
+    {
+        if (IsBuiltIn(newName)) return DialogText.SchemeNameBuiltIn;
+        if (!IsValidName(newName)) return DialogText.SchemeNameInvalid;
+        if (Exists(newName)) return DialogText.SchemeNameTaken;
+        var copy = Load(name);
+        if (copy == null) return DialogText.SchemeNameInvalid;
+        copy.Name = newName.Trim();
+        return Save(copy);
     }
 
     /// <summary>

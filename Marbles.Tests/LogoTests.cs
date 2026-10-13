@@ -207,6 +207,29 @@ public class LogoTests : IDisposable
     }
 
     [Fact]
+    public void ALogo_CanBeDuplicated_AsOneOfYourOwn()
+    {
+        // A built-in one, with its colors
+        Assert.Equal(DialogText.Success, Logos.Duplicate("islands", " My islands "));
+        Assert.Equal(new[] { "My islands" }, Logos.CustomNames());
+        var copy = Logos.Load("My islands")!;
+        Assert.Equal("My islands", copy.Name);
+        Assert.Equal(Logos.Load("Islands")!.AllRows, copy.AllRows);
+        Assert.Equal(ConsoleColor.Blue, copy.CellColor(3, 1));
+        Assert.Equal(DialogText.Success, Logos.Duplicate("Reflections", "Mirror"));
+        Assert.Equal(ConsoleColor.Cyan, Logos.Load("Mirror")!.RowColor(1));
+        // One of your own
+        Assert.Equal(DialogText.Success, Logos.Duplicate("Mirror", "Mirror 2"));
+        Assert.Equal(new[] { "Mirror", "Mirror 2", "My islands" }, Logos.CustomNames());
+        // Not with a name that is taken or cannot be used, and not of a logo that is not there
+        Assert.Equal(DialogText.LogoNameTaken, Logos.Duplicate("Mirror", "my islands"));
+        Assert.Equal(DialogText.LogoNameBuiltIn, Logos.Duplicate("Mirror", "Marbles"));
+        Assert.Equal(DialogText.LogoNameInvalid, Logos.Duplicate("Mirror", "a/b"));
+        Assert.Equal(DialogText.LogoNameInvalid, Logos.Duplicate("Missing", "Third"));
+        Assert.Equal(3, Logos.CustomNames().Count);
+    }
+
+    [Fact]
     public void ALogoOfYourOwn_CanBeRenamed()
     {
         Assert.Equal(DialogText.Success, Logos.Save(new LogoArt("First", new[] { "One" })));

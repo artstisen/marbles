@@ -365,6 +365,22 @@ internal static class Logos
     }
 
     /// <summary>
+    /// Make a copy of a logo (a built-in one, or one made by the user) as a logo of the user's own with another
+    /// name. Another logo with the name is not replaced
+    /// </summary>
+    /// <returns>DialogText.Success or an error message</returns>
+    internal static string Duplicate(string name, string newName)
+    {
+        if (IsBuiltIn(newName)) return DialogText.LogoNameBuiltIn;
+        if (!IsValidName(newName)) return DialogText.LogoNameInvalid;
+        if (Exists(newName)) return DialogText.LogoNameTaken;
+        var copy = Load(name);
+        if (copy == null) return DialogText.LogoNameInvalid;
+        copy.Name = newName.Trim();
+        return Save(copy);
+    }
+
+    /// <summary>
     /// Delete a logo made by the user
     /// </summary>
     /// <returns>DialogText.Success or an error message</returns>

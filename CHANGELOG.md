@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Logos and color schemes**: `Y` in the lists duplicates the selected one (a built-in one too) as one of your own, with a name you type. _Deep Blue_ is used with the logo _Marbles_, as _Default_.
 - **Color schemes**: _Deep Blue_ has the focused tab white on blue with a white corner, gray key hints and line numbers, a white selector arrow on blue, and colors of its own for names, comments and the headings 1 to 5.
 - **Color schemes**: the _Default_ scheme has white box borders, a gray tab corner, a white current line number and new colors for the headings 1 to 5, and is used with the logo _Marbles_ (selecting it selects that logo). The stars of the logo _Islands_ are cyan.
 - **Logos**: the built-in logo _Islands_ is drawn again, with a sun with rays, coconuts, and stars in the sky.

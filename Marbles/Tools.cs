@@ -1527,7 +1527,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Tab", Lang.T("Next tab: Schemes, Colors, Preview"), false));
             _shortcutList.Add(new Shortcut("l h", Lang.T("Colors: the next/previous page (Page 1 to 3)"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select a scheme or a group of colors"), false));
-            _shortcutList.Add(new Shortcut("  " + Lang.T("Schemes"), Lang.T("Enter: use, R: rename, D: delete (your own)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Schemes"), Lang.T("Enter use, Y duplicate, R rename, D delete"), false));
             _shortcutList.Add(new Shortcut("Enter Space", Lang.T("On a group: pick its color from a list"), false));
             _shortcutList.Add(new Shortcut("T", Lang.T("Pick the text color (Highlight, Attention ... Tabs)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tab highlight"), Lang.T("Focused tab ([Default]: Tab focus on the tab frames)"), false));
@@ -1543,7 +1543,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":scheme Name", Lang.T("Use the color scheme with the name"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogos, true));
             _shortcutList.Add(new Shortcut("Tab", Lang.T("Logos, Editor, Colors"), false));
-            _shortcutList.Add(new Shortcut("  " + Lang.T("Logos"), Lang.T("Enter: use, E: edit, R: rename, D: delete (your own)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Logos"), Lang.T("Enter use, E edit, Y duplicate, R rename, D delete"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Editor"), Lang.T("4 rows of 63 characters, with a ruler above"), false));
             _shortcutList.Add(new Shortcut("h j k l", Lang.T("Move (0 $: start/end of the row, gg G: first/last row)"), false));
             _shortcutList.Add(new Shortcut("i R", Lang.T("REPLACE mode: what is typed is drawn (Esc: NORMAL)"), false));

@@ -72,10 +72,11 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 ### Color schemes
 The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEMES_, opened with `:scheme` in the main menu (or its item on the Settings tab) or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It is a frame with three tabs, as the start page: **Schemes**, **Colors** (with the sub-tabs _Page 1_, _Page 2_ and _Page 3_) and **Preview**. `Tab` goes from tab to tab, and `Shift+Tab` the other way. `h` and `l` (or `Left`/`Right`) go through the pages of Colors.
 
-**Schemes** lists the color schemes: the eight built-in ones (Default, Deep Blue, Marbles Quest, Tasty Bytes, Yellow Monochrome, Green Monochrome, Ice Warp and Water Sport), and below them the ones you have saved yourself. The one in use is marked `[x]`. A scheme can have a logo that goes with it: _Default_ has the logo _Marbles_ and _Tasty Bytes_ the logo _Reflections_, which is used too when the scheme is selected (in a scheme file this is the line `uselogo=Reflections`, with the name of a logo; the logo can be changed afterwards as usual).
+**Schemes** lists the color schemes: the eight built-in ones (Default, Deep Blue, Marbles Quest, Tasty Bytes, Yellow Monochrome, Green Monochrome, Ice Warp and Water Sport), and below them the ones you have saved yourself. The one in use is marked `[x]`. A scheme can have a logo that goes with it: _Default_ and _Deep Blue_ have the logo _Marbles_, and _Tasty Bytes_ the logo _Reflections_, which is used too when the scheme is selected (in a scheme file this is the line `uselogo=Reflections`, with the name of a logo; the logo can be changed afterwards as usual).
 
 - `j` `k` (or `Up`/`Down`, `gg` `G`) Select a scheme
 - `Enter` (or `Space`, `l`) Use the selected scheme: it is used at once, and its name is saved (`colorscheme` in the settings file). Its colors are then the ones edited on the Colors tab
+- `Y` Duplicate the selected scheme (a built-in one too) as a scheme of your own: type a name for the copy and press `Enter` (the name with ` 2` is suggested). The copy is selected in the list, and the scheme in use stays as it is. A name that is taken, or that of a built-in scheme, cannot be used
 - `R` Rename a scheme of your own: type the new name and press `Enter`. Its file is renamed, and if it is the scheme in use, the setting follows. The name of a built-in scheme or of another scheme of yours cannot be used, and the built-in schemes cannot be renamed
 - `D` Delete a scheme of your own (you are asked first). The built-in schemes cannot be deleted
 - `:scheme Name` in the main menu uses a scheme by its name at once
@@ -115,6 +116,7 @@ The logo of the start and login pages can be one of your own. The logos are chos
 - `j` `k` (or `Up`/`Down`, `gg` `G`) Select a logo: it is shown above the list
 - `Enter` (or `Space`, `l`) Use the selected logo: it is used at once, and its name is saved (`logo` in the settings file)
 - `E` Edit the selected logo (on the Editor tab)
+- `Y` Duplicate the selected logo (a built-in one too) as a logo of your own: type a name for the copy and press `Enter` (the name with ` 2` is suggested). The copy is selected in the list, and the logo in use stays as it is. A name that is taken, or that of a built-in logo, cannot be used
 - `R` Rename a logo of your own: type the new name and press `Enter`. Its file is renamed, and if it is the logo in use, the setting follows. The name of a built-in logo or of another logo of yours cannot be used, and the built-in logos cannot be renamed
 - `D` Delete a logo of your own (you are asked first). The built-in logos cannot be deleted
 - `:logo Name` in the main menu uses a logo by its name at once

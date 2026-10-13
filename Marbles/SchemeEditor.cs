@@ -311,6 +311,10 @@ internal static class SchemeEditor
             {
                 return UseSelected(names[_selected]);
             }
+            else if (key.Key == ConsoleKey.Y)
+            {
+                return Duplicate(names[_selected]);
+            }
             else if (key.Key == ConsoleKey.R)
             {
                 return Rename(names[_selected]);
@@ -321,6 +325,34 @@ internal static class SchemeEditor
             }
 
             return TabResult.None;
+        }
+
+        // Make a copy of a scheme (also of a built-in one) as a scheme of the user's own: its name is asked for,
+        // and the copy is selected in the list
+        private TabResult Duplicate(string name)
+        {
+            // A name that is likely to be free is suggested
+            var suggested = name + " 2";
+            while (true)
+            {
+                ChoiceBox.Forget();
+                var typed = ChoiceBox.AskText(DialogText.SchemeDuplicateCaption, DialogText.SchemeSavePrompt,
+                    DialogText.NameColon, suggested);
+                if (typed == null) return TabResult.Redraw;
+                suggested = typed;
+                var status = ColorSchemes.Duplicate(name, typed);
+                if (status != DialogText.Success)
+                {
+                    ChoiceBox.Forget();
+                    ChoiceBox.Message(DialogText.SchemeDuplicateCaption, status, string.Empty);
+                    continue;
+                }
+
+                var copy = typed.Trim();
+                _selected = Math.Max(0, Names.FindIndex(scheme =>
+                    scheme.Equals(copy, StringComparison.OrdinalIgnoreCase)));
+                return TabResult.Redraw;
+            }
         }
 
         // Give a scheme of the user's own another name (the built-in ones cannot be renamed). The scheme in use

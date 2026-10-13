@@ -206,11 +206,12 @@ internal static class DialogText
     public static string LogoNameBuiltIn => Lang.T("A built-in logo has that name");
     public static string LogoNameTaken => Lang.T("Another logo has that name");
     public static string LogoRenameCaption => Lang.T("Rename the logo");
+    public static string LogoDuplicateCaption => Lang.T("Duplicate the logo");
     public static string LogoBuiltInRename => Lang.T("A built-in logo cannot be renamed");
     public static string LogoNotFound => Lang.T("There is no logo with that name");
     public static string LogoDiscardQuestion => Lang.T("Use or edit another logo?");
     public static string LogoBuiltInDelete => Lang.T("A built-in logo cannot be deleted");
-    public static string LogoListKeys => Lang.T("j/k Select | Enter Use | E Edit | R Rename | D Delete | Esc Close");
+    public static string LogoListKeys => Lang.T("j/k Select | Enter Use | E Edit | Y Duplicate | R Rename | D Delete");
     public static string LogoEditorKeys => Lang.T("hjkl Move | i/R Draw | x Clear | r Char | u Undo | S Save | Esc Close");
     public static string LogoColorKeys => Lang.T("j/k Select | Enter Pick | S Save | h/l Page | ? Help | Esc Close");
     public static string LogoCellKeys => Lang.T("hjkl Move | c Color | Space Paint | x Clear | v Select | u Undo | Esc Close");
@@ -221,13 +222,14 @@ internal static class DialogText
     public static string SchemeNameBuiltIn => Lang.T("A built-in color scheme has that name");
     public static string SchemeNameTaken => Lang.T("Another color scheme has that name");
     public static string SchemeRenameCaption => Lang.T("Rename the color scheme");
+    public static string SchemeDuplicateCaption => Lang.T("Duplicate the color scheme");
     public static string SchemeBuiltInRename => Lang.T("The built-in color schemes cannot be renamed");
     public static string SchemeNotFound => Lang.T("There is no color scheme with that name");
     public static string SchemeDiscardQuestion => Lang.T("Use another scheme?");
     public static string ChangesNotSaved => Lang.T("The changes are not saved.");
     public static string SchemeBuiltInDelete => Lang.T("The built-in color schemes cannot be deleted");
     public static string SchemeDeleteNote => Lang.T("Its file is deleted.");
-    public static string SchemeListKeys => Lang.T("j/k Select | Enter Use | R Rename | D Delete | Tab Colors | Esc Close");
+    public static string SchemeListKeys => Lang.T("j/k Select | Enter Use | Y Duplicate | R Rename | D Delete | Tab Colors");
     public static string PickLanguageCaption => Lang.T("Language");
     public static string PickLanguageQuestion => Lang.T("Select the language");
     // The choices when an entry is made a favorite, or is a favorite already (in a box, with keys in front)

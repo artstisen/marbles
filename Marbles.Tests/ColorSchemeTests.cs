@@ -175,7 +175,7 @@ public class ColorSchemeTests : IDisposable
                        "currentline=White\nselector=Blue\nselectortext=White\n" +
                        "syntax1=default\nsyntax2=Yellow\nsyntax3=default\nsyntax4=default\nsyntax5=default\n" +
                        "syntax6=Gray\nsyntax7=Yellow\nsyntax8=Green\nsyntax9=Cyan\nsyntax10=Magenta\n" +
-                       "syntax11=Red\nsyntax12=default\ntabhighlight=true\n";
+                       "syntax11=Red\nsyntax12=default\ntabhighlight=true\nuselogo=Marbles\n";
         // Without the comment lines at the top
         var text = string.Join("\n", ColorSchemes.Load("Deep Blue")!.Serialize().Split('\n')
             .Where(line => !line.StartsWith(';')));
@@ -205,10 +205,10 @@ public class ColorSchemeTests : IDisposable
         var read = ColorScheme.Parse(scheme.Serialize(), "Mine");
         Assert.Equal("Reflections", read.UseLogo);
         Assert.Equal("Reflections", read.Clone().UseLogo);
-        Assert.All(ColorScheme.BuiltIn.Skip(1).Where(builtIn => builtIn.Name != "Tasty Bytes"),
+        Assert.All(ColorScheme.BuiltIn.Skip(2).Where(builtIn => builtIn.Name != "Tasty Bytes"),
             builtIn => Assert.Equal(string.Empty, builtIn.UseLogo));
-        Assert.DoesNotContain("uselogo", ColorScheme.BuiltIn[1].Serialize());
-        Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.BuiltIn[1].Serialize(), "X").UseLogo);
+        Assert.DoesNotContain("uselogo", ColorScheme.BuiltIn[2].Serialize());
+        Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.BuiltIn[2].Serialize(), "X").UseLogo);
         // A scheme file without it has no logo (not the one of the default scheme)
         Assert.Equal(string.Empty, ColorScheme.Parse("text=White\n", "X").UseLogo);
     }
@@ -330,6 +330,30 @@ public class ColorSchemeTests : IDisposable
         // A scheme file without it: the color of the tab frames
         Assert.Null(ColorScheme.Parse("tabframes=Blue\n", "Old").TabCorner);
         Assert.Equal(ConsoleColor.Blue, ColorScheme.Parse("tabframes=Blue\n", "Old").TabCornerColor);
+    }
+
+    [Fact]
+    public void AScheme_CanBeDuplicated_AsOneOfYourOwn()
+    {
+        // A built-in one, with its colors and its logo
+        Assert.Equal(DialogText.Success, ColorSchemes.Duplicate("deep blue", " My blue "));
+        Assert.Equal(new[] { "My blue" }, ColorSchemes.CustomNames());
+        var copy = ColorSchemes.Load("My blue")!;
+        Assert.Equal("My blue", copy.Name);
+        Assert.Equal(ConsoleColor.DarkBlue, copy.Background);
+        Assert.Equal("Marbles", copy.UseLogo);
+        // One of your own
+        copy.Text = ConsoleColor.White;
+        Assert.Equal(DialogText.Success, ColorSchemes.Save(copy));
+        Assert.Equal(DialogText.Success, ColorSchemes.Duplicate("My blue", "Another"));
+        Assert.Equal(ConsoleColor.White, ColorSchemes.Load("Another")!.Text);
+        Assert.Equal(new[] { "Another", "My blue" }, ColorSchemes.CustomNames());
+        // Not with a name that is taken or cannot be used, and not of a scheme that is not there
+        Assert.Equal(DialogText.SchemeNameTaken, ColorSchemes.Duplicate("My blue", "another"));
+        Assert.Equal(DialogText.SchemeNameBuiltIn, ColorSchemes.Duplicate("My blue", "Default"));
+        Assert.Equal(DialogText.SchemeNameInvalid, ColorSchemes.Duplicate("My blue", "a/b"));
+        Assert.Equal(DialogText.SchemeNameInvalid, ColorSchemes.Duplicate("Missing", "Third"));
+        Assert.Equal(2, ColorSchemes.CustomNames().Count);
     }
 
     [Fact]
