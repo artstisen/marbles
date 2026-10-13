@@ -154,7 +154,7 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 - `P` Add the selected entry to (or remove it from) the favorites, or pin it to the top of the favorites list. On a pinned entry, `P` asks whether to remove it from the favorites, or only unpin it (`U`): it then stays a favorite, below the pinned entries
 - `Tab` Change the sorting
 - `Tab` or `V` In the favorites list: move the selected pinned entry. The entry is highlighted and follows `j` `k` up and down among the pinned entries (also to the next page) until you press `Esc` or `Enter`. The order is saved as you go
-- `:title` Change the title of the selected entry, in a box on top of the list. The list is shown again afterwards
+- `T` or `:title` Change the title of the selected entry, in a box on top of the list. The list is shown again afterwards
 - `:delete` Delete the selected entry. You are asked once; a deleted entry can be brought back with `:undelete` in the main menu
 - `I` or `:info` Info about the selected entry: when it was created and last changed, the number of words, characters and lines, and its syntax colors (set with `:syntax` in the editor), in a box on top of the list. Any key closes it
 - `:duplicate` Make a copy of the selected entry (named "(copy)"), which is selected in the list
@@ -164,5 +164,5 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 - `C` or `:color` Set the text color of a pinned entry (in the favorites list), as `C` in the favorites of the file browser. The 16 colors are shown in a list, as they look with your color scheme: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. _Default_ removes the color. `:color 13` sets color 13 of the list directly
 - `:transfer` Add the selected entry to the transfer collection
 - `:clipboard` The clipboard settings (as in the main menu and the editor); `Esc` returns to the list
-- `/` or `S` Search, `A` List all, `T` Top 20, `F` Favorites, `M` Session history, `N` New entry
+- `/` or `S` Search, `A` List all, `F` Favorites, `M` Session history, `N` New entry (Top 20 is opened from the main menu)
 - `Esc`, `-` or `:q` Return to the main menu

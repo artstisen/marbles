@@ -1403,7 +1403,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("Three entries up/down"), false));
             _shortcutList.Add(new Shortcut("Tab", Lang.T("All and Search: change the sorting"), false));
             _shortcutList.Add(new Shortcut("P", Lang.T("Add to/Remove from the favorites (or pin/unpin)"), false));
-            _shortcutList.Add(new Shortcut(":title", Lang.T("Change the title of the selected entry"), false));
+            _shortcutList.Add(new Shortcut("T :title", Lang.T("Change the title of the selected entry"), false));
             _shortcutList.Add(new Shortcut(":delete", Lang.T("Delete the selected entry (asks first)"), false));
             _shortcutList.Add(new Shortcut(":transfer", Lang.T("Add the entry to the transfer collection"), false));
             _shortcutList.Add(new Shortcut("I :info", Lang.T("Info: dates, words, characters, lines and syntax"), false));
@@ -1414,7 +1414,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings"), false));
             _shortcutList.Add(new Shortcut("Tab v", Lang.T("Favorites: Move the pinned entry (j k, then Esc)"), false));
             _shortcutList.Add(new Shortcut("C :color", Lang.T("Favorites: Pick the color of the pinned entry"), false));
-            _shortcutList.Add(new Shortcut("A T F M", Lang.T("All, Top 20, Favorites, Session history"), false));
+            _shortcutList.Add(new Shortcut("A F M", Lang.T("All, Favorites, Session history"), false));
             _shortcutList.Add(new Shortcut("S /", Lang.T("Search"), false));
             _shortcutList.Add(new Shortcut("N :new", Lang.T("New entry"), false));
             _shortcutList.Add(new Shortcut("D", Lang.T("Display timestamp"), false));

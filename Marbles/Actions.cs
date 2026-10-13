@@ -2497,10 +2497,13 @@ internal static class Actions
             }
             // Else do nothing as the other lists do not have the option to toggle sort
         }
-        // Top 20
+        // Title
         else if (_c.Key == ConsoleKey.T)
         {
-            FindAll(1, string.Empty, false, false);
+            // Change the title of the selected entry (as ":title"), and show the list again
+            SelectResultFromIndex(pageNumber, _resultIndex, 1);
+            if (_isSelectingResult) ExitNumericSelect(pageNumber, _resultIndex);
+            return;
         }
         // Favorites
         else if (_c.Key == ConsoleKey.F)
