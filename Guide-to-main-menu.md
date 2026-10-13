@@ -75,6 +75,7 @@ The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEM
 
 - `j` `k` (or `Up`/`Down`, `gg` `G`) Select a scheme
 - `Enter` (or `Space`, `l`) Use the selected scheme: it is used at once, and its name is saved (`colorscheme` in the settings file). Its colors are then the ones edited on the Colors tab
+- `R` Rename a scheme of your own: type the new name and press `Enter`. Its file is renamed, and if it is the scheme in use, the setting follows. The name of a built-in scheme or of another scheme of yours cannot be used, and the built-in schemes cannot be renamed
 - `D` Delete a scheme of your own (you are asked first). The built-in schemes cannot be deleted
 - `:scheme Name` in the main menu uses a scheme by its name at once
 
@@ -108,12 +109,13 @@ With _Black and white_ on, the colors can still be edited: they are used when bl
 ### Logos
 The logo of the start and login pages can be one of your own. The logos are chosen and drawn on a page of their own, _LOGOS_, opened with `:logo` in the main menu (or its item on the Settings tab) or from the Configuration page of the start page (select _Logo_ and press `Enter`). It is a frame with three tabs: **Logos**, **Editor** and **Colors**. `Tab` goes from one to the next.
 
-**Logos** shows the selected logo at the top and the logos below it: the built-in logo, _Marbles_, and the ones you have saved yourself. The one in use is marked `[x]`.
+**Logos** shows the selected logo at the top and the logos below it: the three built-in logos, and the ones you have saved yourself. The built-in logos are _Marbles_ (the one used from the start), _Reflections_ (the Marbles logo with a color for each row, from blue to dark green) and _Islands_ (two islands with palms and the sun over the water, with a color for each cell). They are also there to work on: `E` edits one, and `S` saves it as a logo of your own with another name. The one in use is marked `[x]`.
 
 - `j` `k` (or `Up`/`Down`, `gg` `G`) Select a logo: it is shown above the list
 - `Enter` (or `Space`, `l`) Use the selected logo: it is used at once, and its name is saved (`logo` in the settings file)
 - `E` Edit the selected logo (on the Editor tab)
-- `D` Delete a logo of your own (you are asked first). The built-in logo cannot be deleted
+- `R` Rename a logo of your own: type the new name and press `Enter`. Its file is renamed, and if it is the logo in use, the setting follows. The name of a built-in logo or of another logo of yours cannot be used, and the built-in logos cannot be renamed
+- `D` Delete a logo of your own (you are asked first). The built-in logos cannot be deleted
 - `:logo Name` in the main menu uses a logo by its name at once
 
 **Editor** shows the logo on a grid of 4 rows of 63 characters, the size of the Marbles logo, in a box with a ruler above it (a dot for each column, `:` for every 5th, and the tens as digits). The cursor cannot leave the grid. The editor has the modes of the [text editor](Guide-to-editor.md), shown below the grid with the row and column of the cursor:

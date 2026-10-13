@@ -1,6 +1,8 @@
 # Changes
 
 ## v1.5.3
+- **Logos**: two more built-in logos, **Reflections** (the Marbles logo with a color for each row) and **Islands** (islands with palms, drawn with a color for each cell). They can be used as they are, or edited and saved as logos of your own.
+- **Logos and color schemes**: `R` in the lists renames one of your own (the setting follows when it is the one in use).
 - **Logos**: a color for each cell. The Colors tab has the sub-tabs **Rows** (as before) and **Cells**, where cells are painted on the grid: `c` picks the color, `Space` paints, `x` clears a cell, `v` selects a rectangle to paint or clear, `X` clears all, `u` undoes. A cell without a color of its own has the color of its row. Saved in the logo file (`cells=`).
 - **Color schemes**: a third page of colors, **Syntax 1** to **Syntax 12**: the colors of colored text in the editor, shared by Markdown, HTML, CSS, JavaScript, JSON and XML (each shown with what it is used for). New colors: **Line numbers** and **Current line number** of the editor, and **Selector** (the arrow `->` of lists, menus and settings, with a background and a text color). _Preview title_ is now **Accent**. All of them default to the colors they had.
 - **Logos**: a **Colors** tab: each row of a logo can have a color of its own (or all rows one color), with the logo shown above. The colors are saved in the logo file (`colors=`).

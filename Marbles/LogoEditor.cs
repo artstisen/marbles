@@ -603,7 +603,7 @@ internal static class LogoEditor
                     Tools.SetCursorEx(area.Top + ListTop + row, area.Left + 3);
                     var inUse = names[i].Equals(Logo.Current.Name, StringComparison.OrdinalIgnoreCase);
                     Console.Write((inUse ? "[x] " : "[ ] ") + names[i]);
-                    if (i == 0)
+                    if (i < LogoArt.BuiltInNames.Count)
                     {
                         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                         Console.Write("  " + Lang.T("(built-in)"));
@@ -673,12 +673,57 @@ internal static class LogoEditor
             {
                 return UseSelected(names[_selected], true);
             }
+            else if (key.Key == ConsoleKey.R)
+            {
+                return Rename(names[_selected]);
+            }
             else if (key.Key == ConsoleKey.D)
             {
                 return Delete(names[_selected]);
             }
 
             return TabResult.None;
+        }
+
+        // Give a logo of the user's own another name (a built-in one cannot be renamed). The logo in use and
+        // the one being edited follow their name
+        private TabResult Rename(string name)
+        {
+            ChoiceBox.Forget();
+            if (Logos.IsBuiltIn(name))
+            {
+                ChoiceBox.Message(DialogText.CaptionsLogos, DialogText.LogoBuiltInRename, string.Empty);
+                return TabResult.Redraw;
+            }
+
+            var suggested = name;
+            while (true)
+            {
+                ChoiceBox.Forget();
+                var typed = ChoiceBox.AskText(DialogText.LogoRenameCaption, DialogText.LogoSavePrompt,
+                    DialogText.NameColon, suggested);
+                if (typed == null) return TabResult.Redraw;
+                suggested = typed;
+                var status = Logos.Rename(name, typed);
+                if (status != DialogText.Success)
+                {
+                    ChoiceBox.Forget();
+                    ChoiceBox.Message(DialogText.LogoRenameCaption, status, string.Empty);
+                    continue;
+                }
+
+                var renamed = typed.Trim();
+                if (name.Equals(_editing.Name, StringComparison.OrdinalIgnoreCase)) _editing.Name = renamed;
+                if (name.Equals(Logo.Current.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    Logo.Current.Name = renamed;
+                    FileIo.SaveSettings();
+                }
+
+                _selected = Math.Max(0, Logos.AllNames().FindIndex(logo =>
+                    logo.Equals(renamed, StringComparison.OrdinalIgnoreCase)));
+                return TabResult.Redraw;
+            }
         }
 
         // Use the selected logo (Enter), or edit it (E). Changes that are not saved are given up if the user
@@ -703,7 +748,7 @@ internal static class LogoEditor
             return edit ? TabResult.NextPage : TabResult.Redraw;
         }
 
-        // Delete a logo of the user's own (the built-in one cannot be deleted)
+        // Delete a logo of the user's own (a built-in one cannot be deleted)
         private TabResult Delete(string name)
         {
             ChoiceBox.Forget();

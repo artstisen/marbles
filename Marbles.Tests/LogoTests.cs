@@ -150,20 +150,77 @@ public class LogoTests : IDisposable
     [Fact]
     public void LogosOfYourOwn_AreFiles()
     {
-        Assert.Equal(new[] { "Marbles" }, Logos.AllNames());
+        Assert.Equal(new[] { "Marbles", "Reflections", "Islands" }, Logos.AllNames());
         var mine = new LogoArt("My logo", new[] { "Hello" });
         Assert.Equal(DialogText.Success, Logos.Save(mine));
         Assert.True(File.Exists(Path.Combine(_directory, "My logo.txt")));
-        Assert.Equal(new[] { "Marbles", "My logo" }, Logos.AllNames());
+        Assert.Equal(new[] { "Marbles", "Reflections", "Islands", "My logo" }, Logos.AllNames());
         Assert.Equal("Hello".PadRight(63), Logos.Load("my logo")!.Row(0));
         Assert.Equal(DialogText.Success, Logos.Delete("My logo"));
         Assert.Null(Logos.Load("My logo"));
         Assert.Equal("Marbles", Logos.Load("marbles")!.Name);
     }
 
+    [Fact]
+    public void TheBuiltInLogos_AreMarbles_ReflectionsWithRowColors_AndIslandsWithCellColors()
+    {
+        var reflections = Logos.Load("reflections")!;
+        Assert.Equal("Reflections", reflections.Name);
+        Assert.Equal(LogoArt.BuiltIn.AllRows, reflections.AllRows);
+        Assert.Equal(new ConsoleColor?[] { ConsoleColor.Blue, ConsoleColor.Cyan, ConsoleColor.Green, ConsoleColor.DarkGreen },
+            Enumerable.Range(0, LogoArt.Rows).Select(reflections.RowColor));
+        Assert.False(reflections.HasCellColors);
+        // The logo of Marbles has no colors of its own
+        Assert.Null(LogoArt.BuiltIn.RowColor(0));
+
+        var islands = Logos.Load("Islands")!;
+        Assert.Equal("Islands", islands.Name);
+        Assert.True(islands.HasCellColors);
+        // Every character that can be seen has a color, and the water is blue
+        for (var row = 0; row < LogoArt.Rows; row++)
+        {
+            for (var column = 0; column < LogoArt.Width; column++)
+            {
+                Assert.Equal(islands[row, column] != ' ', islands.CellColor(row, column) != null);
+                Assert.True(LogoArt.Typeable(islands[row, column]));
+            }
+        }
+
+        Assert.Equal('~', islands[3, 1]);
+        Assert.Equal(ConsoleColor.Blue, islands.CellColor(3, 1));
+        Assert.Equal('O', islands[1, 30]);
+        Assert.Equal(ConsoleColor.Yellow, islands.CellColor(1, 30));
+
+        // They cannot be saved over, renamed or deleted
+        Assert.True(Logos.IsBuiltIn("ISLANDS"));
+        Assert.NotEqual(DialogText.Success, Logos.Save(islands));
+        Assert.NotEqual(DialogText.Success, Logos.Delete("Reflections"));
+        Assert.NotEqual(DialogText.Success, Logos.Rename("Islands", "Mine"));
+    }
+
+    [Fact]
+    public void ALogoOfYourOwn_CanBeRenamed()
+    {
+        Assert.Equal(DialogText.Success, Logos.Save(new LogoArt("First", new[] { "One" })));
+        Assert.Equal(DialogText.Success, Logos.Save(new LogoArt("Second", new[] { "Two" })));
+        Assert.Equal(DialogText.Success, Logos.Rename("first", " Third "));
+        Assert.Equal(new[] { "Second", "Third" }, Logos.CustomNames());
+        Assert.Equal("One".PadRight(63), Logos.Load("Third")!.Row(0));
+        // Not to the name of another logo, a built-in name or a name that cannot be used
+        Assert.Equal(DialogText.LogoNameTaken, Logos.Rename("Third", "second"));
+        Assert.Equal(DialogText.LogoNameBuiltIn, Logos.Rename("Third", "Islands"));
+        Assert.Equal(DialogText.LogoNameInvalid, Logos.Rename("Third", "a/b"));
+        Assert.Equal(DialogText.LogoNameInvalid, Logos.Rename("Missing", "Fourth"));
+        Assert.Equal("Two".PadRight(63), Logos.Load("Second")!.Row(0));
+        // Other capital letters are a new name too
+        Assert.Equal(DialogText.Success, Logos.Rename("Third", "THIRD"));
+        Assert.Equal(new[] { "Second", "THIRD" }, Logos.CustomNames());
+    }
+
     [Theory]
     [InlineData("Mine", true)]
     [InlineData("Marbles", false)]
+    [InlineData("Islands", false)]
     [InlineData(" ", false)]
     [InlineData("a/b", false)]
     public void TheNameOfALogoOfYourOwn(string name, bool valid)

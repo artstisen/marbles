@@ -302,12 +302,57 @@ internal static class SchemeEditor
             {
                 return UseSelected(names[_selected]);
             }
+            else if (key.Key == ConsoleKey.R)
+            {
+                return Rename(names[_selected]);
+            }
             else if (key.Key == ConsoleKey.D)
             {
                 return Delete(names[_selected]);
             }
 
             return TabResult.None;
+        }
+
+        // Give a scheme of the user's own another name (the built-in ones cannot be renamed). The scheme in use
+        // and the one being edited follow their name
+        private TabResult Rename(string name)
+        {
+            ChoiceBox.Forget();
+            if (ColorSchemes.IsBuiltIn(name))
+            {
+                ChoiceBox.Message(DialogText.CaptionsColorScheme, DialogText.SchemeBuiltInRename, string.Empty);
+                return TabResult.Redraw;
+            }
+
+            var suggested = name;
+            while (true)
+            {
+                ChoiceBox.Forget();
+                var typed = ChoiceBox.AskText(DialogText.SchemeRenameCaption, DialogText.SchemeSavePrompt,
+                    DialogText.NameColon, suggested);
+                if (typed == null) return TabResult.Redraw;
+                suggested = typed;
+                var status = ColorSchemes.Rename(name, typed);
+                if (status != DialogText.Success)
+                {
+                    ChoiceBox.Forget();
+                    ChoiceBox.Message(DialogText.SchemeRenameCaption, status, string.Empty);
+                    continue;
+                }
+
+                var renamed = typed.Trim();
+                if (name.Equals(Preview.Name, StringComparison.OrdinalIgnoreCase)) Preview.Name = renamed;
+                if (name.Equals(ConsoleColors.Current.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    ConsoleColors.Current.Name = renamed;
+                    FileIo.SaveSettings();
+                }
+
+                _selected = Math.Max(0, Names.FindIndex(scheme =>
+                    scheme.Equals(renamed, StringComparison.OrdinalIgnoreCase)));
+                return TabResult.Redraw;
+            }
         }
 
         // Use the selected scheme (its colors are then the ones edited). Changes that are not saved are given up

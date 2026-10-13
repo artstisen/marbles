@@ -4,7 +4,8 @@ namespace Marbles;
 
 /// <summary>
 /// A logo of the start and login pages: 4 rows of 63 characters, each row in a color of its own or in the color
-/// of the logo (of the color scheme). The built-in logo is "Marbles"; the ones made by the user are kept as files
+/// of the logo (of the color scheme). The built-in logos are "Marbles" (the one used from the start),
+/// "Reflections" and "Islands"; the ones made by the user are kept as files
 /// (Logos): the 4 rows, and a line "colors=" with the color of each row ("default" for the color of the logo).
 /// A cell can have a color of its own, which is used instead of the color of its row: these are 4 lines "cells="
 /// after the others, with a character for each cell (the number of the color as a hex digit, "." for none).
@@ -15,6 +16,13 @@ internal sealed class LogoArt
     internal const int Rows = 4;
     internal const int Width = 63;
     internal const string BuiltInName = "Marbles";
+    private const string ReflectionsName = "Reflections";
+    private const string IslandsName = "Islands";
+
+    /// <summary>
+    /// The names of the built-in logos, in the order they are listed
+    /// </summary>
+    internal static readonly IReadOnlyList<string> BuiltInNames = new[] { BuiltInName, ReflectionsName, IslandsName };
 
     internal string Name { get; set; } = BuiltInName;
 
@@ -199,10 +207,48 @@ internal sealed class LogoArt
         @"M%M "" M%M M%M"" M%M M%M"" M%M M%M"" M%M M%M  M%M M%M  ___  """""" M%M",
         @"MMM   MMM MMM  MMM MMM  MMM MMM__MM"" ""MM__MMM ""MM__MMM MMM__MM"""
     });
+
+    /// <summary>
+    /// A built-in logo by its name (a copy), or null if there is none with the name
+    /// </summary>
+    internal static LogoArt? Preset(string name)
+    {
+        name = name.Trim();
+        if (name.Equals(BuiltInName, StringComparison.OrdinalIgnoreCase)) return BuiltIn;
+        if (name.Equals(ReflectionsName, StringComparison.OrdinalIgnoreCase)) return Reflections;
+        return name.Equals(IslandsName, StringComparison.OrdinalIgnoreCase) ? Islands : null;
+    }
+
+    // The logo of Marbles with a color for each row, from the sky to the grass
+    private static LogoArt Reflections
+    {
+        get
+        {
+            var logo = BuiltIn;
+            logo.Name = ReflectionsName;
+            logo.SetRowColor(0, ConsoleColor.Blue);
+            logo.SetRowColor(1, ConsoleColor.Cyan);
+            logo.SetRowColor(2, ConsoleColor.Green);
+            logo.SetRowColor(3, ConsoleColor.DarkGreen);
+            return logo;
+        }
+    }
+
+    // Two islands with palms, one of sand and one of grass, and the sun over the water between them: a logo with
+    // a color for each cell
+    private static LogoArt Islands => Parse(string.Join("\n",
+        @"   ,-\|/-,                  \ | /              ,-\|/-, ,-\|/-,",
+        @"   '  |  '      __         -- O --      __     '  |  ' '  |  '",
+        @"    __|_____.--'  '-.       / | \   _.-'  '-._____|_______|_",
+        @"~~~/..:......:.......\~~~~~~~~~~~~~/,,,;,,,,,;,,,,,,,;,,,,,\~~~",
+        "cells=...AAAAAAA..................6.6.6..............AAAAAAA.AAAAAAA",
+        "cells=...A..6..A......EE.........66.E.66......AA.....A..6..A.A..6..A",
+        "cells=....EE6EEEEEEEEE..EEE.......6.6.6...AAAA..AAAAAAAA6AAAAAAA6A",
+        "cells=B99EEE6EEEEEE6EEEEEEEE99B99B9EEE9B9AAAA2AAAAA2AAAAAAA2AAAAAAB99"), IslandsName);
 }
 
 /// <summary>
-/// The logos: the built-in one, and the ones made by the user, kept as files in the directory "logos" in the data
+/// The logos: the built-in ones, and the ones made by the user, kept as files in the directory "logos" in the data
 /// directory (the name of the logo and ".txt")
 /// </summary>
 internal static class Logos
@@ -219,10 +265,10 @@ internal static class Logos
         DirectoryOverride ?? Path.Combine(FileIo.GetDataDirectoryName(), DirectoryName);
 
     internal static bool IsBuiltIn(string name) =>
-        name.Trim().Equals(LogoArt.BuiltInName, StringComparison.OrdinalIgnoreCase);
+        LogoArt.BuiltInNames.Any(builtIn => builtIn.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
-    /// A name a logo can be saved with: not empty, not the name of the built-in logo, and usable as a file name
+    /// A name a logo can be saved with: not empty, not the name of a built-in logo, and usable as a file name
     /// </summary>
     internal static bool IsValidName(string name)
     {
@@ -253,16 +299,16 @@ internal static class Logos
     }
 
     /// <summary>
-    /// All the logos by name: the built-in one, then the ones made by the user
+    /// All the logos by name: the built-in ones, then the ones made by the user
     /// </summary>
-    internal static List<string> AllNames() => new[] { LogoArt.BuiltInName }.Concat(CustomNames()).ToList();
+    internal static List<string> AllNames() => LogoArt.BuiltInNames.Concat(CustomNames()).ToList();
 
     /// <summary>
     /// A logo by its name (a copy), or null if there is none with the name
     /// </summary>
     internal static LogoArt? Load(string name)
     {
-        if (IsBuiltIn(name)) return LogoArt.BuiltIn;
+        if (LogoArt.Preset(name) is { } builtIn) return builtIn;
         if (!IsValidName(name)) return null;
         try
         {
@@ -288,6 +334,28 @@ internal static class Logos
         {
             System.IO.Directory.CreateDirectory(Directory);
             FileIo.WriteAllBytesSafe(PathOf(logo.Name), new UTF8Encoding(false).GetBytes(logo.Serialize()));
+            return DialogText.Success;
+        }
+        catch (Exception e)
+        {
+            return e.Message;
+        }
+    }
+
+    /// <summary>
+    /// Give a logo made by the user another name (its file is renamed). Another logo with the name is not replaced
+    /// </summary>
+    /// <returns>DialogText.Success or an error message</returns>
+    internal static string Rename(string name, string newName)
+    {
+        if (IsBuiltIn(newName)) return DialogText.LogoNameBuiltIn;
+        if (!IsValidName(name) || !IsValidName(newName)) return DialogText.LogoNameInvalid;
+        try
+        {
+            if (!File.Exists(PathOf(name))) return DialogText.LogoNameInvalid;
+            var sameLogo = name.Trim().Equals(newName.Trim(), StringComparison.OrdinalIgnoreCase);
+            if (!sameLogo && File.Exists(PathOf(newName))) return DialogText.LogoNameTaken;
+            if (name.Trim() != newName.Trim()) File.Move(PathOf(name), PathOf(newName));
             return DialogText.Success;
         }
         catch (Exception e)

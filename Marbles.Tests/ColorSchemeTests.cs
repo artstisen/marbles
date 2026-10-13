@@ -199,6 +199,28 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
+    public void ASchemeOfYourOwn_CanBeRenamed()
+    {
+        var first = ColorScheme.Default;
+        first.Name = "First";
+        first.Logo = ConsoleColor.Red;
+        var second = ColorScheme.Default;
+        second.Name = "Second";
+        Assert.Equal(DialogText.Success, ColorSchemes.Save(first));
+        Assert.Equal(DialogText.Success, ColorSchemes.Save(second));
+        Assert.Equal(DialogText.Success, ColorSchemes.Rename("first", " Third "));
+        Assert.Equal(new[] { "Second", "Third" }, ColorSchemes.CustomNames());
+        Assert.Equal(ConsoleColor.Red, ColorSchemes.Load("Third")!.Logo);
+        Assert.Equal("Third", ColorSchemes.Load("Third")!.Name);
+        // Not to the name of another scheme, a built-in name or a name that cannot be used
+        Assert.Equal(DialogText.SchemeNameTaken, ColorSchemes.Rename("Third", "second"));
+        Assert.Equal(DialogText.SchemeNameBuiltIn, ColorSchemes.Rename("Third", ColorScheme.BuiltIn[1].Name));
+        Assert.Equal(DialogText.SchemeNameInvalid, ColorSchemes.Rename("Third", "a/b"));
+        Assert.Equal(DialogText.SchemeNameInvalid, ColorSchemes.Rename("Missing", "Fourth"));
+        Assert.NotEqual(DialogText.Success, ColorSchemes.Rename(ColorScheme.BuiltIn[1].Name, "Mine"));
+    }
+
+    [Fact]
     public void SchemesOfYourOwn_AreFiles()
     {
         Assert.Empty(ColorSchemes.CustomNames());

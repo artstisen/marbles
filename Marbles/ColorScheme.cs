@@ -562,6 +562,29 @@ internal static class ColorSchemes
     }
 
     /// <summary>
+    /// Give a scheme made by the user another name (its file is renamed). Another scheme with the name is not
+    /// replaced
+    /// </summary>
+    /// <returns>DialogText.Success or an error message</returns>
+    internal static string Rename(string name, string newName)
+    {
+        if (IsBuiltIn(newName)) return DialogText.SchemeNameBuiltIn;
+        if (!IsValidName(name) || !IsValidName(newName)) return DialogText.SchemeNameInvalid;
+        try
+        {
+            if (!File.Exists(PathOf(name))) return DialogText.SchemeNameInvalid;
+            var sameScheme = name.Trim().Equals(newName.Trim(), StringComparison.OrdinalIgnoreCase);
+            if (!sameScheme && File.Exists(PathOf(newName))) return DialogText.SchemeNameTaken;
+            if (name.Trim() != newName.Trim()) File.Move(PathOf(name), PathOf(newName));
+            return DialogText.Success;
+        }
+        catch (Exception e)
+        {
+            return e.Message;
+        }
+    }
+
+    /// <summary>
     /// Delete a scheme made by the user
     /// </summary>
     /// <returns>DialogText.Success or an error message</returns>
