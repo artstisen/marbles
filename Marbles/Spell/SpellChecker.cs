@@ -37,6 +37,63 @@ internal sealed class SpellChecker
     internal const string DefaultLanguages = "en";
 
     /// <summary>
+    /// The languages there is a spell file for in the directory of the spell files (in alphabetical order)
+    /// </summary>
+    internal static List<string> AvailableLanguages()
+    {
+        try
+        {
+            if (!Directory.Exists(DirectoryName)) return new List<string>();
+            return Directory.GetFiles(DirectoryName, "*" + FileNameEnd)
+                .Select(file => Path.GetFileName(file)[..^FileNameEnd.Length].ToLowerInvariant())
+                // Not the files of added words ("en.utf-8.add.spl")
+                .Where(name => name.Length > 0 && !name.Contains('.') && Tools.IsValidFileName(name))
+                .Distinct().OrderBy(name => name, StringComparer.Ordinal).ToList();
+        }
+        catch
+        {
+            return new List<string>();
+        }
+    }
+
+    /// <summary>
+    /// The language after (or before) the one in use, of the ones there is a spell file for, going round. With
+    /// several languages in use, or one without a spell file, it is the first (or the last)
+    /// </summary>
+    internal static string NextLanguage(IReadOnlyList<string> available, string languages, bool next)
+    {
+        if (available.Count == 0) return languages;
+        var index = -1;
+        for (var i = 0; i < available.Count; i++)
+        {
+            if (available[i].Equals(languages.Trim(), StringComparison.OrdinalIgnoreCase)) index = i;
+        }
+
+        if (index < 0) return next ? available[0] : available[^1];
+        return available[(index + (next ? 1 : available.Count - 1)) % available.Count];
+    }
+
+    /// <summary>
+    /// The languages in use with one of them turned on or off, in the order of the ones there is a spell file
+    /// for. The last language in use cannot be turned off
+    /// </summary>
+    internal static string ToggleLanguage(IReadOnlyList<string> available, string languages, string language)
+    {
+        var used = languages.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(name => name.ToLowerInvariant()).Where(available.Contains).ToList();
+        if (used.Contains(language))
+        {
+            if (used.Count > 1) used.Remove(language);
+        }
+        else
+        {
+            used.Add(language);
+        }
+
+        return string.Join(",", available.Where(used.Contains));
+    }
+
+    /// <summary>
     /// Turn spell checking on
     /// </summary>
     /// <param name="languages">The languages to use, or empty to use the setting</param>

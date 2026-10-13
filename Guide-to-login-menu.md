@@ -1,9 +1,9 @@
 # Guide to the start and login pages
 
 ## Select mode
-Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with three tabs at its top: **Mode**, where you select what to use Marbles for, **Configuration**, with the settings, and **Help**, with the help and the about page. The settings are on two pages, shown as the sub-tabs **Page 1** and **Page 2** in a row at the top of the frame. The tab and sub-tab shown are highlighted in the color of the frame.
+Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with three tabs at its top: **Mode**, where you select what to use Marbles for, **Configuration**, with the settings, and **Help**, with the help and the about page. The settings are on four pages, shown as the sub-tabs **General**, **Layout**, **Editor** and **System** in a row at the top of the frame. The tab and sub-tab shown are highlighted in the color of the frame.
 
-`Tab` goes to the next tab: Mode, Configuration (Page 1), Configuration (Page 2), Help, and round to Mode again. `Shift+Tab` goes the other way.
+`Tab` goes to the next tab: Mode, the four pages of Configuration (General, Layout, Editor, System), Help, and round to Mode again. `Shift+Tab` goes the other way.
 
 ### Mode
 - `1` **Note Management (encrypted notes)**: Continue to the login page
@@ -14,38 +14,47 @@ Marbles can be used for encrypted notes and as an editor for ordinary text files
 Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking in a box on top of the page (`Y`/`N`, or `j`/`k` and `Enter`; `Esc` cancels).
 
 ### Configuration
+The settings are on four pages, so they can be changed in one place without logging in to a data file. `j` `k` (and `gg` `G`) select a setting on the page, and the number of a row selects it. `Enter` or `Space` changes it. `Esc` or `Q` goes back to the Mode tab. Changes are saved at once.
+
+**General**
+
 - **Show choices on startup** (the default)
 - **Start in Note Management**: Go directly to the login page
 - **Start in Text Editor (file browser)**: Go directly to the file browser
   - **Open the favorites list first** (shown when starting in the Text Editor): Start in the [favorites](#favorites) of the file browser. Closing the list shows the file browser. Saved as `startfavorites` in the settings file
+  - The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to showing the choices
+- **Text Editor only** and **Note Management only**: Use this Marbles for one of the two modes only. They are for running two copies of Marbles in separate directories, one as a text editor and one for notes. Only one of them can be set (setting one clears the other, and setting it again turns it off)
+  - _Text Editor only_: _Note Management_ is not shown in the Mode tab, and the file browser does not open data files (`.mbls`): it says so on its bottom line
+  - _Note Management only_: _Text Editor/File Management_ is not shown in the Mode tab
+  - The choices of the Mode tab are numbered as they are shown (`1` to `3`), and starting in the mode that is not used cannot be chosen (if it was chosen, the choices are shown at startup)
+  - Saved as `onlymode` (`none`, `editor` or `notes`) in the settings file. _Reset all settings_ and `:defaults` turn both off
+- **Language**: The language of the menus, help and messages: English, Dansk (Danish), Deutsch (German), Norsk bokmål (Norwegian), Svenska (Swedish), Español (Spanish) or Français (French). `l` and `h` select the next and the previous, and `Enter` shows the languages in a box to pick from. Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
 
-The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to showing the choices.
+**Layout**
 
-The settings are on two pages: _Page 1_ has the start page and the display (colors, language, size), _Page 2_ the editor and the rest. `j` `k` (and `gg` `G`) select a setting on the page, and the number of a row selects it. `Enter` or `Space` changes it. `Esc` or `Q` goes back to the Mode tab.
-
-Below these are some basic settings, so they can be changed without logging in to a data file:
-
+- **Automatic size**: Follow the size of the terminal window. Turned off, the default size (80 x 23) is used until you set another
+- **Size**: Set the number of columns and rows by hand (shown when _Automatic size_ is off)
 - **Black and white (no colors)**: Show everything in black and white. Your color scheme is kept and is used again when this is turned off
 - **Color scheme**: The color scheme in use. `Enter` opens the [color schemes](Guide-to-main-menu.md#color-schemes), where a scheme is selected, and the colors are edited and saved as a scheme of your own (not shown when _Black and white_ is on)
 - **Logo**: The logo in use. `Enter` opens the [logos](Guide-to-main-menu.md#logos), where a logo is selected, or drawn and saved as one of your own (4 rows of 63 characters)
-- **Language**: The language of the menus, help and messages: English, Dansk (Danish), Deutsch (German), Norsk bokmål (Norwegian), Svenska (Swedish), Español (Spanish) or Français (French). `l` and `h` select the next and the previous, and `Enter` shows the languages in a box to pick from. Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
-- **Automatic size**: Follow the size of the terminal window. Turned off, the default size (80 x 23) is used until you set another
-- **Size**: Set the number of columns and rows by hand (shown when _Automatic size_ is off)
+
+**Editor**
+
 - **Line numbers in the editor**: Show line numbers to the left of the text (off from the start)
 - **Wrap long lines in the editor**: Long lines go on to the next rows (on from the start). When off, the view scrolls sideways (see [the guide to the editor](Guide-to-editor.md#long-lines))
 - **Keep 12 lines around the cursor in the editor**: When the cursor comes within 12 lines of the top or the bottom of the editor, the text scrolls, so you see what comes next (on from the start). The number is set with `:scrolloff 8` in the editor (see [the guide to the editor](Guide-to-editor.md#scrolling))
 - **Clipboard and paste bin**: `Enter` opens the clipboard settings: where yanked text goes out of Marbles (see [the guide to the editor](Guide-to-editor.md#system-clipboard-and-paste-bin))
-- **Text Editor only** and **Note Management only**: Use this Marbles for one of the two modes only. They are for running two copies of Marbles in separate directories, one as a text editor and one for notes. Only one of them can be set (setting one clears the other, and setting it again turns it off)
-  - _Text Editor only_: _Note Management_ is not shown in the Mode tab, and the file browser does not open data files (`.mbls`): it says so on its bottom line
-  - _Note Management only_: _Text Editor/File Management_ is not shown in the Mode tab
-  - The choices of the Mode tab are numbered as they are shown (`1` to `3`), and starting in the mode that is not used cannot be chosen on _Page 1_ (if it was chosen, the choices are shown at startup)
-  - Saved as `onlymode` (`none`, `editor` or `notes`) in the settings file. _Reset all settings_ and `:defaults` turn both off
+- **Syntax highlighting**: Color the text of the kinds of files the editor knows (Markdown, HTML, CSS, JavaScript, JSON, XML), on from the start. It is the setting `syntaxcolors`, which `:syntax off` and `:syntax on` in the editor also change
+- **Spell checker**: The languages used when spell checking is turned on in the editor with `:spell` (it is not turned on here). `l` and `h` select the next and the previous of the languages there is a spell file for, and `Enter` shows them in a box, where `Enter` turns a language on or off (several can be on, and the last one stays on) and `Esc` closes. Saved as `spelllang` (`en` or `da,en`). The spell files are in the directory `spell`; without any, the row says so
+- **Snippet editor**: Open the file of [snippets](Guide-to-editor.md#snippets), `snippets.txt`, in the editor. If there is no file yet, you are asked whether to make one, with two examples. Closing the editor returns to this page
+
+**System**
+
 - **Reset all settings**: Set all settings back to their defaults (you are asked first, in a box where _No_ is selected first)
 - **Edit settings.ini**: Open the settings file in the editor (it can also be edited from the file system). When the file is saved, Marbles starts over and reads the settings again; closing it without saving returns to the page
 - **Restart Marbles**: Start Marbles over: the settings are read again and the start page is shown as at startup (you are asked first, in a box)
+- **Info**: Show the version of Marbles, the directory of the program, the data directory and the settings file in a box. Any key closes it
 - **View log**: Show the [log](#the-log)
-
-Select a row with `j`/`k` or its number, and press `Enter` or `Space` to change it. For the language and the color scheme, `l` and `h` select the next and the previous. `Esc` returns. Changes are saved at once.
 
 ### Help
 - `1` **Help**: All the keys and commands of Marbles, as `:help` (`?` on a page shows the keys of that page)
@@ -83,7 +92,7 @@ Press `Esc` to show the options in a box. Select one with `j` `k` (or the arrow 
 - `Q` Exit Marbles
 - `Esc` (or `h`) Close the options
 
-Restarting Marbles, the log and the settings file are on the Configuration tab of the [Select mode](#select-mode) page (`T`).
+Restarting Marbles, the log and the settings file are on the System page of the Configuration tab of the [Select mode](#select-mode) page (`T`).
 
 The data file and the directory are selected on the login page itself, with the arrow keys (see above).
 

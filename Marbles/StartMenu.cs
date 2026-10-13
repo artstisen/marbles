@@ -3,8 +3,8 @@
 /// <summary>
 /// The page shown when Marbles starts, in a frame with three tabs (TabFrame): Mode, where the user selects what
 /// to use Marbles for (notes: the login page, or editing text files: the file browser), Configuration, with the
-/// settings of the page itself and some basic settings on two pages (sub-tabs), and Help (the help and the
-/// about page). Tab goes from page to page.
+/// settings on four pages (the sub-tabs General, Layout, Editor and System), and Help (the help and the about
+/// page). Tab goes from page to page.
 /// The setting "startmode" tells if the page is shown at startup, or if Marbles goes directly to one of the two.
 /// The setting "onlymode" makes Marbles a text editor only or a note application only (for running one of each):
 /// the other mode is not shown in the Mode tab, and as a text editor Marbles does not open data files.
@@ -162,7 +162,8 @@ internal static class StartMenu
                 animate = false;
             },
             new TabItem(() => DialogText.StartModeTab, mode),
-            new TabItem(() => DialogText.StartConfiguration, new SettingsPage(0), new SettingsPage(1)),
+            new TabItem(() => DialogText.StartConfiguration, new SettingsPage(0), new SettingsPage(1),
+                new SettingsPage(2), new SettingsPage(3)),
             new TabItem(() => Lang.T("Help"), new HelpPage()));
         if (_showConfiguration) frame.Selected = 1;
         _showConfiguration = false;
@@ -195,35 +196,47 @@ internal static class StartMenu
         Clipboard,
         EditorOnly,
         NotesOnly,
+        SyntaxColors,
+        Spell,
+        Snippets,
         Reset,
         EditSettings,
         Restart,
+        Info,
         ViewLog
     }
 
-    // The settings shown: some are only shown when they can be used
+    // The settings shown, in the order of the pages: some are only shown when they can be used
     private static List<Setting> Settings()
     {
-        // Starting in a mode that is not used cannot be chosen
+        // General: what happens at startup (starting in a mode that is not used cannot be chosen), using one
+        // mode only, and the language
         var settings = new List<Setting> { Setting.StartSelect };
         if (Only != OnlyMode.Editor) settings.Add(Setting.StartNotes);
         if (Only != OnlyMode.Notes) settings.Add(Setting.StartEditor);
         if (EffectiveMode == StartMode.Editor) settings.Add(Setting.StartFavorites);
+        settings.Add(Setting.EditorOnly);
+        settings.Add(Setting.NotesOnly);
+        settings.Add(Setting.Language);
+        // Layout
+        settings.Add(Setting.AutoSize);
+        if (!Init.AutoSize) settings.Add(Setting.Size);
         settings.Add(Setting.Monochrome);
         if (!ConsoleColors.Monochrome) settings.Add(Setting.ColorScheme);
         settings.Add(Setting.Logo);
-        settings.Add(Setting.Language);
-        settings.Add(Setting.AutoSize);
-        if (!Init.AutoSize) settings.Add(Setting.Size);
+        // Editor
         settings.Add(Setting.LineNumbers);
         settings.Add(Setting.WordWrap);
         settings.Add(Setting.ScrollOff);
         settings.Add(Setting.Clipboard);
-        settings.Add(Setting.EditorOnly);
-        settings.Add(Setting.NotesOnly);
+        settings.Add(Setting.SyntaxColors);
+        settings.Add(Setting.Spell);
+        settings.Add(Setting.Snippets);
+        // System
         settings.Add(Setting.Reset);
         settings.Add(Setting.EditSettings);
         settings.Add(Setting.Restart);
+        settings.Add(Setting.Info);
         settings.Add(Setting.ViewLog);
         return settings;
     }
@@ -252,6 +265,10 @@ internal static class StartMenu
             Setting.ScrollOff => Check(TextArea.ScrollOff) +
                                  Lang.F("Keep {0} lines around the cursor in the editor", TextArea.ScrollOffLines),
             Setting.Clipboard => indent + Lang.T("Clipboard and paste bin (Enter: Change)"),
+            Setting.SyntaxColors => Check(SyntaxHighlighter.ColorFiles) + Lang.T("Syntax highlighting"),
+            Setting.Spell => indent + SpellText(),
+            Setting.Snippets => indent + Lang.T("Snippet editor (Enter: Open)"),
+            Setting.Info => indent + DialogText.FileInfo,
             Setting.EditorOnly => Check(Only == OnlyMode.Editor) + Lang.T("Text Editor only"),
             Setting.NotesOnly => Check(Only == OnlyMode.Notes) + Lang.T("Note Management only"),
             Setting.EditSettings => indent + Lang.F("Edit {0}", FileIo.SettingsFileName),
@@ -261,8 +278,86 @@ internal static class StartMenu
         };
     }
 
-    // The settings are shown on two pages: the start page and the display, and the editor and the rest
-    private static int PageOf(Setting setting) => setting >= Setting.LineNumbers ? 1 : 0;
+    // The languages of the spell checker (":spell" turns it on in the editor), or that there are no spell files
+    private static string SpellText()
+    {
+        return SpellChecker.AvailableLanguages().Count == 0
+            ? Lang.T("Spell checker: no spell files")
+            : Lang.F("Spell checker: {0}", SpellChecker.Languages);
+    }
+
+    private const int PageCount = 4;
+
+    // The settings are shown on four pages: General, Layout, Editor and System
+    private static int PageOf(Setting setting)
+    {
+        return setting switch
+        {
+            Setting.StartSelect or Setting.StartNotes or Setting.StartEditor or Setting.StartFavorites
+                or Setting.EditorOnly or Setting.NotesOnly or Setting.Language => 0,
+            Setting.AutoSize or Setting.Size or Setting.Monochrome or Setting.ColorScheme or Setting.Logo => 1,
+            Setting.LineNumbers or Setting.WordWrap or Setting.ScrollOff or Setting.Clipboard
+                or Setting.SyntaxColors or Setting.Spell or Setting.Snippets => 2,
+            _ => 3
+        };
+    }
+
+    // In the language in use
+    private static string PageTitle(int page)
+    {
+        return page switch
+        {
+            0 => Lang.T("General"),
+            1 => Lang.T("Layout"),
+            2 => Lang.T("Editor"),
+            _ => Lang.T("System")
+        };
+    }
+
+    // A blank row is shown above these settings when there is room: they start a group of their page
+    private static bool StartsGroup(Setting setting) => setting is Setting.EditorOnly or Setting.Language;
+
+    // Pick the languages of the spell checker from the ones there is a spell file for: Enter turns one on or
+    // off, until the box is closed with Esc
+    private static void PickSpellLanguages()
+    {
+        var available = SpellChecker.AvailableLanguages();
+        ChoiceBox.Forget();
+        if (available.Count == 0)
+        {
+            ChoiceBox.Message(DialogText.CaptionsSpell,
+                DialogText.SpellFileNotFound + Path.GetFullPath(SpellChecker.DirectoryName), string.Empty);
+            return;
+        }
+
+        var keys = Enumerable.Range(1, available.Count).Select(n => n <= 9 ? n.ToString() : " ").ToArray();
+        var selected = 0;
+        while (true)
+        {
+            var used = SpellChecker.Languages.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var choices = available.Select(language =>
+                Check(used.Contains(language, StringComparer.OrdinalIgnoreCase)) + language).ToArray();
+            var picked = ChoiceBox.Pick(DialogText.CaptionsSpell, Lang.T("The languages of the spell checker"),
+                Lang.T("Enter turns a language on or off. Esc closes."), choices, keys, selected, false);
+            if (picked < 0) return;
+            selected = picked;
+            SpellChecker.Languages = SpellChecker.ToggleLanguage(available, SpellChecker.Languages, available[picked]);
+            FileIo.SaveSettings();
+        }
+    }
+
+    // Where Marbles is: its version, and the directories of the program and of the data
+    private static void ShowInfo()
+    {
+        ChoiceBox.Forget();
+        ChoiceBox.ShowRows(DialogText.FileInfo, new List<(string Label, string Value)>
+        {
+            (Lang.T("Version:"), DialogText.ApplicationName + " " + DialogText.ApplicationVersion),
+            (Lang.T("Program:"), Path.TrimEndingDirectorySeparator(Path.GetFullPath(AppContext.BaseDirectory))),
+            (Lang.T("Data:"), Path.GetFullPath(FileIo.GetDataDirectoryName())),
+            (Lang.T("Settings:"), Path.Combine(Path.GetFullPath(FileIo.GetDataDirectoryName()), FileIo.SettingsFileName))
+        });
+    }
 
     /// <summary>
     /// The Mode tab: what to use Marbles for (notes or text files), the quick guide, and exit
@@ -481,7 +576,7 @@ internal static class StartMenu
             _page = page;
         }
 
-        public string Title => Lang.F("Page {0}", _page + 1);
+        public string Title => PageTitle(_page);
         public string Keys => DialogText.StartConfigKeys;
         public Tools.HelpTopic Help => Tools.HelpTopic.Start;
 
@@ -494,9 +589,10 @@ internal static class StartMenu
         {
             var settings = PageSettings;
             var selected = SelectedIndex(settings);
-            // A blank row between the settings of the start page and the basic settings, when there is room for it
-            var gap = settings.Count + 1 <= area.Height ? 1 : 0;
-            int Row(int i) => area.Top + i + (settings[i] >= Setting.Monochrome && _page == 0 ? gap : 0);
+            // A blank row above the groups of the page, when there is room for them
+            var groups = settings.Count(StartsGroup);
+            var gaps = settings.Count + groups <= area.Height;
+            int Row(int i) => area.Top + i + (gaps ? settings.Take(i + 1).Count(StartsGroup) : 0);
             if (full)
             {
                 for (var i = 0; i < settings.Count; i++)
@@ -557,6 +653,12 @@ internal static class StartMenu
                 LogoEditor.Show();
                 return TabResult.Redraw;
             }
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && setting == Setting.Spell)
+            {
+                // Pick the languages of the spell checker in a box (l and h select the next and previous)
+                PickSpellLanguages();
+                return TabResult.Redraw;
+            }
             else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && setting == Setting.Language)
             {
                 // Pick the language in a box (l and h select the next and previous)
@@ -569,7 +671,7 @@ internal static class StartMenu
                 _selected = setting;
                 return TabResult.Redraw;
             }
-            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow && setting is Setting.Language)
+            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow && setting is Setting.Language or Setting.Spell)
             {
                 // The previous language
                 ChangeSetting(setting, false);
@@ -621,6 +723,24 @@ internal static class StartMenu
             case Setting.WordWrap:
                 TextArea.WordWrap = !TextArea.WordWrap;
                 break;
+            case Setting.SyntaxColors:
+                SyntaxHighlighter.ColorFiles = !SyntaxHighlighter.ColorFiles;
+                break;
+            case Setting.Spell:
+                // The next or the previous language there is a spell file for
+                SpellChecker.Languages = SpellChecker.NextLanguage(SpellChecker.AvailableLanguages(),
+                    SpellChecker.Languages, next);
+                break;
+            case Setting.Snippets:
+                // The file of snippets in the editor (it is made first, if the user wants that)
+                ChoiceBox.Forget();
+                if (SnippetBox.EnsureFile()) FileExplorer.EditSnippets(0);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Tools.ClearScreen();
+                return;
+            case Setting.Info:
+                ShowInfo();
+                return;
             case Setting.EditorOnly:
                 // Only one of the two can be set
                 SetOnly(Only == OnlyMode.Editor ? OnlyMode.None : OnlyMode.Editor);

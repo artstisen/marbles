@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Configuration**: the settings are on four pages with names, **General**, **Layout**, **Editor** and **System**, instead of Page 1 and Page 2. New there: **Syntax highlighting** (on/off), **Spell checker** (the languages of `:spell`: `h` `l` select one, `Enter` turns several on or off in a list), **Snippet editor** (the file of snippets in the editor) and **Info** (the version, and where the program and the data are).
 - **Select mode page**: a third tab, **Help**, with _Help_ (all the keys, as `:help`) and _About_. Configuration (Page 2) has **Edit settings.ini**, below _Reset all settings_.
 - **Login page**: _Restart_, _Log_ and _settings.ini_ are no longer in the options: they are on the Configuration tab.
 - **Main menu** (Marbles tab): _About_ and _Restart Marbles_ are replaced by `:config` **More configurations**, which goes to the Configuration tab of the Select mode page. `:about` and `:restart` still work as commands.

@@ -573,6 +573,7 @@ internal static class DialogText
 
     // Spell checking
     public static string SpellFileInvalid => Lang.T("Not a spell file that can be used (a UTF-8 .spl file is needed)");
+    public static string CaptionsSpell => Lang.T("Spell checker");
     public static string SpellFileNotFound => Lang.T("Spell file not found: ");
     public static string SpellNoLanguage => Lang.T("No language given");
     public static string SpellNoWord => Lang.T("No word to add");

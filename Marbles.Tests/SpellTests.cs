@@ -578,4 +578,51 @@ public class SpellTests : IDisposable
     }
 
     #endregion
+
+    [Fact]
+    public void TheLanguagesOfTheSpellChecker_AreSteppedThrough_AndTurnedOnAndOff()
+    {
+        var available = new[] { "da", "de", "en" };
+        // The next and the previous, going round
+        Assert.Equal("de", SpellChecker.NextLanguage(available, "da", true));
+        Assert.Equal("da", SpellChecker.NextLanguage(available, "en", true));
+        Assert.Equal("en", SpellChecker.NextLanguage(available, "da", false));
+        Assert.Equal("de", SpellChecker.NextLanguage(available, " EN ", false));
+        // Several in use, or one without a spell file: the first (or the last)
+        Assert.Equal("da", SpellChecker.NextLanguage(available, "en,da", true));
+        Assert.Equal("en", SpellChecker.NextLanguage(available, "fr", false));
+        // No spell files: as it was
+        Assert.Equal("en", SpellChecker.NextLanguage(Array.Empty<string>(), "en", true));
+
+        // On and off, in the order of the spell files. The last one stays on
+        Assert.Equal("da,en", SpellChecker.ToggleLanguage(available, "en", "da"));
+        Assert.Equal("da", SpellChecker.ToggleLanguage(available, "da,en", "en"));
+        Assert.Equal("da", SpellChecker.ToggleLanguage(available, "da", "da"));
+        // A language without a spell file is dropped
+        Assert.Equal("de", SpellChecker.ToggleLanguage(available, "fr", "de"));
+    }
+
+    [Fact]
+    public void TheLanguagesThereIsASpellFileFor_AreFound_WithoutTheFilesOfAddedWords()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "marbles-spell-" + Guid.NewGuid());
+        var before = SpellChecker.DirectoryName;
+        try
+        {
+            SpellChecker.DirectoryName = directory;
+            Assert.Empty(SpellChecker.AvailableLanguages()); // No directory
+            Directory.CreateDirectory(directory);
+            foreach (var name in new[] { "en.utf-8.spl", "da.utf-8.spl", "da.utf-8.add", "da.utf-8.add.spl", "readme.txt" })
+            {
+                File.WriteAllText(Path.Combine(directory, name), "x");
+            }
+
+            Assert.Equal(new[] { "da", "en" }, SpellChecker.AvailableLanguages());
+        }
+        finally
+        {
+            SpellChecker.DirectoryName = before;
+            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+        }
+    }
 }
