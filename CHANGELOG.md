@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Login page**: the options have `S` **Configuration**, which goes to the Configuration tab of the Select mode page.
 - **Data files**: when a data file of an older format is converted, the dates of entries that an early version wrote with the day first (`17-11-2021 12:21:46`) are turned around (`2021-11-17 12:21:46`), so the entries sort by their dates in the lists.
 - **Editor**: `:info` shows the text being edited in a box: the name, the number of characters, words and lines, the dates created and changed, and the path of the file (for an entry: its title, the numbers and its dates).
 - **Logos and color schemes**: `Y` in the lists duplicates the selected one (a built-in one too) as one of your own, with a name you type. _Deep Blue_ is used with the logo _Marbles_, as _Default_.
