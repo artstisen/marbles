@@ -1,9 +1,9 @@
 # Guide to the start and login pages
 
 ## Select mode
-Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with two tabs at its top: **Mode**, where you select what to use Marbles for, and **Configuration**, with the settings. The settings are on two pages, shown as the sub-tabs **Page 1** and **Page 2** in a row at the top of the frame. The tab and sub-tab shown are highlighted in the color of the frame.
+Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with three tabs at its top: **Mode**, where you select what to use Marbles for, **Configuration**, with the settings, and **Help**, with the help and the about page. The settings are on two pages, shown as the sub-tabs **Page 1** and **Page 2** in a row at the top of the frame. The tab and sub-tab shown are highlighted in the color of the frame.
 
-`Tab` goes to the next tab: Mode, Configuration (Page 1), Configuration (Page 2), and round to Mode again. `Shift+Tab` goes the other way.
+`Tab` goes to the next tab: Mode, Configuration (Page 1), Configuration (Page 2), Help, and round to Mode again. `Shift+Tab` goes the other way.
 
 ### Mode
 - `1` **Note Management (encrypted notes)**: Continue to the login page
@@ -41,10 +41,17 @@ Below these are some basic settings, so they can be changed without logging in t
   - The choices of the Mode tab are numbered as they are shown (`1` to `3`), and starting in the mode that is not used cannot be chosen on _Page 1_ (if it was chosen, the choices are shown at startup)
   - Saved as `onlymode` (`none`, `editor` or `notes`) in the settings file. _Reset all settings_ and `:defaults` turn both off
 - **Reset all settings**: Set all settings back to their defaults (you are asked first, in a box where _No_ is selected first)
+- **Edit settings.ini**: Open the settings file in the editor (it can also be edited from the file system). When the file is saved, Marbles starts over and reads the settings again; closing it without saving returns to the page
 - **Restart Marbles**: Start Marbles over: the settings are read again and the start page is shown as at startup (you are asked first, in a box)
 - **View log**: Show the [log](#the-log)
 
 Select a row with `j`/`k` or its number, and press `Enter` or `Space` to change it. For the language and the color scheme, `l` and `h` select the next and the previous. `Esc` returns. Changes are saved at once.
+
+### Help
+- `1` **Help**: All the keys and commands of Marbles, as `:help` (`?` on a page shows the keys of that page)
+- `2` **About**: General information about Marbles, and its license on the next page. `Esc` closes it
+
+Select with `j`/`k` or the number and press `Enter`. `Esc` goes back to the Mode tab.
 
 When Marbles starts directly in one of the two, the choices can still be reached: from the login page with `Esc`, `T`, and from the file browser by closing it.
 
@@ -71,13 +78,12 @@ Press `Esc` to show the options in a box. Select one with `j` `k` (or the arrow 
 - `M` Merge two data files into a new, or export a data file as XML (the exported file is not encrypted)
 - `I` Show information about the data file in a box (name, type, size, dates, path and backup directory). Any key closes it
 - `R` Refresh the login page
-- `Y` Restart Marbles
-- `V` Show the [log](#the-log)
 - `U` Show the quick guide
-- `S` Edit the settings file _settings.ini_ (it can also be edited from the file system). Marbles restarts and loads the settings when the file is saved
 - `?` Show the help (the list of keys)
 - `Q` Exit Marbles
 - `Esc` (or `h`) Close the options
+
+Restarting Marbles, the log and the settings file are on the Configuration tab of the [Select mode](#select-mode) page (`T`).
 
 The data file and the directory are selected on the login page itself, with the arrow keys (see above).
 
@@ -228,7 +234,7 @@ The file history lists the files you have opened in the editor from the file bro
 The history holds the last 100 files: when it is full, the file opened longest ago is dropped. A file that is gone is shown as _(missing)_. The list is kept in the file `history.txt` in the data directory (one line per file: the time it was opened, a tab character and the path). Like the favorites, it is not encrypted.
 
 ## The log
-The log lists what has happened since Marbles was started: the startup, logins, commands, and the file operations of the file browser (new, open, rename, copy, move and delete, with the reason if one failed). It is shown from the options of the login page (`Esc`, `V`) and from the Configuration page.
+The log lists what has happened since Marbles was started: the startup, logins, commands, and the file operations of the file browser (new, open, rename, copy, move and delete, with the reason if one failed). It is shown from the Configuration tab of the Select mode page (_View log_).
 
 - The log opens at the end, with the latest lines
 - `h` `l` Previous/Next page, `j` `k` One line, `gg` `G` First/Last
@@ -240,7 +246,7 @@ The log is kept in memory only: nothing is written to disk, and it is empty when
 As the log can be read without a password, commands given in the menus and in the editor are logged by name only (`:new ...`, `:s ...`): titles, search texts and other text typed after a command are not in the log. Something typed on a command line that is not a command is logged as "(not a command)". File names and paths in the file browser are logged in full.
 
 ## Logo animation
-The logo is drawn with a sweep when arriving at the login page. Any key ends the sweep. To turn it off, set `logoanim=false` in the settings file (`Esc`, `S`).
+The logo is drawn with a sweep when arriving at the login page. Any key ends the sweep. To turn it off, set `logoanim=false` in the settings file (_Edit settings.ini_ on the Configuration tab).
 
 ## Directories
 Marbles creates the directory "data" in the directory it is started from, and keeps the data files and the settings file there.

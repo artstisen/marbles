@@ -1,9 +1,10 @@
 ﻿namespace Marbles;
 
 /// <summary>
-/// The page shown when Marbles starts, in a frame with two tabs (TabFrame): Mode, where the user selects what to
-/// use Marbles for (notes: the login page, or editing text files: the file browser), and Configuration, with the
-/// settings of the page itself and some basic settings on two pages (sub-tabs). Tab goes from page to page.
+/// The page shown when Marbles starts, in a frame with three tabs (TabFrame): Mode, where the user selects what
+/// to use Marbles for (notes: the login page, or editing text files: the file browser), Configuration, with the
+/// settings of the page itself and some basic settings on two pages (sub-tabs), and Help (the help and the
+/// about page). Tab goes from page to page.
 /// The setting "startmode" tells if the page is shown at startup, or if Marbles goes directly to one of the two.
 /// The setting "onlymode" makes Marbles a text editor only or a note application only (for running one of each):
 /// the other mode is not shown in the Mode tab, and as a text editor Marbles does not open data files.
@@ -79,6 +80,9 @@ internal static class StartMenu
     // True to show the choices whatever the setting is
     private static bool _showChoices;
 
+    // True to show the Configuration tab first
+    private static bool _showConfiguration;
+
     // The row of the tabs (below the logo)
     private const int TabRow = 6;
 
@@ -118,15 +122,18 @@ internal static class StartMenu
     {
         Pending = true;
         _showChoices = false;
+        _showConfiguration = false;
     }
 
     /// <summary>
     /// Show the choices before the login page is shown again
     /// </summary>
-    internal static void Open()
+    /// <param name="configuration">Show the Configuration tab first</param>
+    internal static void Open(bool configuration = false)
     {
         Pending = true;
         _showChoices = true;
+        _showConfiguration = configuration;
     }
 
     /// <summary>
@@ -155,7 +162,10 @@ internal static class StartMenu
                 animate = false;
             },
             new TabItem(() => DialogText.StartModeTab, mode),
-            new TabItem(() => DialogText.StartConfiguration, new SettingsPage(0), new SettingsPage(1)));
+            new TabItem(() => DialogText.StartConfiguration, new SettingsPage(0), new SettingsPage(1)),
+            new TabItem(() => Lang.T("Help"), new HelpPage()));
+        if (_showConfiguration) frame.Selected = 1;
+        _showConfiguration = false;
         // Returns when notes are chosen, or a data file was selected in the file browser
         frame.Run();
     }
@@ -186,6 +196,7 @@ internal static class StartMenu
         EditorOnly,
         NotesOnly,
         Reset,
+        EditSettings,
         Restart,
         ViewLog
     }
@@ -211,6 +222,7 @@ internal static class StartMenu
         settings.Add(Setting.EditorOnly);
         settings.Add(Setting.NotesOnly);
         settings.Add(Setting.Reset);
+        settings.Add(Setting.EditSettings);
         settings.Add(Setting.Restart);
         settings.Add(Setting.ViewLog);
         return settings;
@@ -242,6 +254,7 @@ internal static class StartMenu
             Setting.Clipboard => indent + Lang.T("Clipboard and paste bin (Enter: Change)"),
             Setting.EditorOnly => Check(Only == OnlyMode.Editor) + Lang.T("Text Editor only"),
             Setting.NotesOnly => Check(Only == OnlyMode.Notes) + Lang.T("Note Management only"),
+            Setting.EditSettings => indent + Lang.F("Edit {0}", FileIo.SettingsFileName),
             Setting.Restart => indent + DialogText.ConfigRestart,
             Setting.ViewLog => indent + DialogText.ConfigViewLog,
             _ => indent + DialogText.ConfigReset
@@ -370,6 +383,88 @@ internal static class StartMenu
                     Tools.ExitApplication();
                     return TabResult.Redraw;
             }
+        }
+    }
+
+    /// <summary>
+    /// The Help tab: the help (all the keys) and the about page
+    /// </summary>
+    private sealed class HelpPage : ITabPage
+    {
+        private int _selected;
+
+        // In the language in use
+        private static string[] Choices => new[] { Lang.T("Help"), Lang.T("About") };
+
+        public string Title => Lang.T("Help");
+        public string Keys => DialogText.StartHelpKeys;
+        public Tools.HelpTopic Help => Tools.HelpTopic.Start;
+
+        public void Draw(TabArea area, bool full)
+        {
+            var choices = Choices;
+            if (full)
+            {
+                for (var i = 0; i < choices.Length; i++)
+                {
+                    Tools.SetCursorEx(area.Top + i, area.Left + 3);
+                    Console.Write(Tools.TruncateString((i + 1) + " .... " + choices[i], area.Width - 4, true));
+                }
+            }
+
+            for (var i = 0; i < choices.Length; i++)
+            {
+                Tools.SetCursorEx(area.Top + i, area.Left);
+                if (i == _selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
+                Console.Write(i == _selected ? "->" : "  ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            }
+        }
+
+        public TabResult HandleKey(ConsoleKeyInfo key)
+        {
+            var count = Choices.Length;
+            // Back to the Mode tab
+            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return TabResult.FirstTab;
+            if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow)
+            {
+                if (_selected == 0)
+                {
+                    // As ":help": all the keys
+                    Tools.WriteEditorHelp(false);
+                }
+                else
+                {
+                    Actions.ShowAboutPages();
+                }
+
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Tools.ClearScreen();
+                return TabResult.Redraw;
+            }
+
+            if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
+            {
+                _selected = (_selected + 1) % count;
+            }
+            else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+            {
+                _selected = (_selected + count - 1) % count;
+            }
+            else if (key.KeyChar >= '1' && key.KeyChar - '1' < count)
+            {
+                _selected = key.KeyChar - '1';
+            }
+            else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
+            {
+                _selected = count - 1;
+            }
+            else if (key.Key == ConsoleKey.Home || (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g'))
+            {
+                _selected = 0;
+            }
+
+            return TabResult.None;
         }
     }
 
@@ -539,6 +634,11 @@ internal static class StartMenu
             case Setting.Clipboard:
                 // Saves the settings itself
                 ClipboardPage.Show();
+                return;
+            case Setting.EditSettings:
+                // The settings file in the editor. Saved: Marbles starts over and reads the settings again
+                if (Tools.EditSettingsFile()) Tools.RestartFromStartPage();
+                Tools.ClearScreen();
                 return;
             case Setting.Restart:
                 if (ChoiceBox.Confirm(DialogText.Restart, DialogText.RestartQuestion, string.Empty, false))

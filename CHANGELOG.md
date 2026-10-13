@@ -1,6 +1,9 @@
 # Changes
 
 ## v1.5.3
+- **Select mode page**: a third tab, **Help**, with _Help_ (all the keys, as `:help`) and _About_. Configuration (Page 2) has **Edit settings.ini**, below _Reset all settings_.
+- **Login page**: _Restart_, _Log_ and _settings.ini_ are no longer in the options: they are on the Configuration tab.
+- **Main menu** (Marbles tab): _About_ and _Restart Marbles_ are replaced by `:config` **More configurations**, which goes to the Configuration tab of the Select mode page. `:about` and `:restart` still work as commands.
 - **Login page**: the options (`Esc`) are a list with a selector, one option on each row: `j` `k` `gg` `G` select and `Enter` or `l` opens, or press the key of the option. _File/Directory_ is gone from the list (the arrow keys of the login page select them), and the log is `V` (`G` goes to the last option).
 - **Configuration** (Page 2): **Text Editor only** and **Note Management only**, for running one Marbles as a text editor and another for notes. The other mode is not shown in the Mode tab, and as a text editor Marbles does not open data files. Setting `onlymode`; off after _Reset all settings_.
 - **Logos**: two more built-in logos, **Reflections** (the Marbles logo with a color for each row) and **Islands** (islands with palms, drawn with a color for each cell). They can be used as they are, or edited and saved as logos of your own.

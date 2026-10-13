@@ -62,11 +62,12 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 - `:browse` **Browse files**: Open the file browser.
 - `D` **Display timestamp**: The current date and time (also in compact form) and the week number, in a box on top of the page. Any key closes it.
 - `:guide` **Quick guide**: A short introduction to Marbles. It is also found on the start page and in the options of the login page.
-- `:about` **About**: General information about Marbles.
 - `:defaults` **Default settings**: Reset all settings.
-- `:restart` **Restart Marbles**
+- `:config` **More configurations**: Go to the Configuration tab of the [Select mode](Guide-to-login-menu.md#select-mode) page, with the rest of the settings, the settings file, _Restart Marbles_ and the log. You are logged out of the data file, as with _Logout_. The Help tab of that page has the help and _About_
 - `:logout` **Logout**
 - `:q` **Exit**
+
+`:about` (general information about Marbles) and `:restart` are not in the menu, but still work as commands.
 
 ### Color schemes
 The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEMES_, opened with `:scheme` in the main menu (or its item on the Settings tab) or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It is a frame with three tabs, as the start page: **Schemes**, **Colors** (with the sub-tabs _Page 1_, _Page 2_ and _Page 3_) and **Preview**. `Tab` goes from tab to tab, and `Shift+Tab` the other way.

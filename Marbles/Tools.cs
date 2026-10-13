@@ -404,9 +404,6 @@ internal static class Tools
             ("M", DialogText.MergeFiles),
             ("I", DialogText.FileInfo),
             ("R", DialogText.Refresh),
-            ("Y", DialogText.Restart),
-            ("V", DialogText.Log),
-            ("S", FileIo.SettingsFileName),
             ("U", DialogText.QuickGuide),
             ("?", Lang.T("Help")),
             ("Q", DialogText.Exit)
@@ -418,11 +415,6 @@ internal static class Tools
         {
             // Refresh
             LoginRoutine(true);
-        }
-        else if (choice == "Y")
-        {
-            // Restart
-            Restart();
         }
         else if (choice == "I")
         {
@@ -477,37 +469,11 @@ internal static class Tools
             StartMenu.Open();
             LoginRoutine(true);
         }
-        else if (choice == "V")
-        {
-            // Log
-            Init.WriteLog();
-            LoginRoutine(true);
-        }
         else if (choice == "U")
         {
             // Quick guide
             QuickGuide.Show();
             LoginRoutine(true);
-        }
-        else if (choice == "S")
-        {
-            // Settings
-            Mode.SetMode(Mode.SelectedMode.Edit);
-            ClearScreen();
-            Actions.DrawEditSettingsMenu();
-            TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                Init.LineCount - 5, FileIo.ReadSettingsFile(), 0, false, false, false, 1);
-            // Cleanup
-            textArea.ClearUndoRedoCache();
-            // Restart if settings where saved to reload with new settings
-            if (textArea.SaveWasInvoked)
-            {
-                ColdRestart();
-            }
-            else
-            {
-                LoginRoutine(true);
-            }
         }
         else if (choice == "Q")
         {
@@ -525,6 +491,24 @@ internal static class Tools
             // Close the options
             LoginRoutine(true);
         }
+    }
+
+    /// <summary>
+    /// Edit the settings file in the editor (from the Configuration page)
+    /// </summary>
+    /// <returns>True if the file was saved: Marbles must start over to read the settings again</returns>
+    internal static bool EditSettingsFile()
+    {
+        var mode = Mode.CurrentMode;
+        Mode.SetMode(Mode.SelectedMode.Edit);
+        ClearScreen();
+        Actions.DrawEditSettingsMenu();
+        TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
+            Init.LineCount - 5, FileIo.ReadSettingsFile(), 0, false, false, false, 1);
+        // Cleanup
+        textArea.ClearUndoRedoCache();
+        Mode.SetMode(mode);
+        return textArea.SaveWasInvoked;
     }
 
     internal static string ReadMaskedSimple(bool enableCancelCommand)
@@ -1350,7 +1334,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  2", Lang.T("Text Editor/File Management: the file browser"), false));
             _shortcutList.Add(new Shortcut("  3", Lang.T("Quick guide: a short introduction"), false));
             _shortcutList.Add(new Shortcut("  4", Lang.T("Exit Marbles (without asking)"), false));
-            _shortcutList.Add(new Shortcut("Tab", Lang.T("Next tab: Mode, Configuration (Page 1, Page 2)"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Next tab: Mode, Configuration (2 pages), Help"), false));
             _shortcutList.Add(new Shortcut("Shift+Tab", Lang.T("The tab before"), false));
             _shortcutList.Add(new Shortcut("Q Esc", Lang.T("Exit Marbles, asking first (Configuration: to Mode)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("j k or the number of the row: Select"), false));
@@ -1363,6 +1347,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Color scheme"), Lang.T("Enter: pick from a list (or edit the colors)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Language"), Lang.T("Enter: pick from a list"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("View log"), Lang.T("/text only shows lines containing \"text\""), false));
+            _shortcutList.Add(new Shortcut("  " + FileIo.SettingsFileName, Lang.T("Edit the settings file (saved: Marbles restarts)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Help"), Lang.T("The tab Help: all the keys, and About Marbles"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogin, true));
             _shortcutList.Add(new Shortcut("Enter", Lang.T("Log in with the password typed"), false));
             _shortcutList.Add(new Shortcut("Left Right Tab", Lang.T("Select a data file"), false));
@@ -1376,8 +1362,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc M", Lang.T("Merge two data files, or export one as XML"), false));
             _shortcutList.Add(new Shortcut("Esc I", Lang.T("Information about the data file"), false));
             _shortcutList.Add(new Shortcut("Esc j k Enter", Lang.T("Select an option and open it (or type its key)"), false));
-            _shortcutList.Add(new Shortcut("Esc R Y", Lang.T("Refresh the page/Restart Marbles"), false));
-            _shortcutList.Add(new Shortcut("Esc V S", Lang.T("Show the log/Edit settings.ini"), false));
+            _shortcutList.Add(new Shortcut("Esc R", Lang.T("Refresh the page"), false));
             _shortcutList.Add(new Shortcut("Esc U", Lang.T("Quick guide: a short introduction"), false));
             _shortcutList.Add(new Shortcut("Esc ?", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Exit Marbles"), false));

@@ -262,6 +262,11 @@ internal static class Actions
             case "about":
                 ShowAbout();
                 break;
+            case "config":
+                // More configurations: the Configuration tab of the Select mode page (logs out)
+                StartMenu.Open(true);
+                Tools.LoginRoutine(true);
+                break;
             case "guide":
                 QuickGuide.Show();
                 Menu.DrawTopMenu(false, true, false);
@@ -1296,7 +1301,18 @@ internal static class Actions
     private static string _tempAboutText = string.Empty;
     private static string TempPageNumber => Lang.F("Page {0}/{1}", 1, 2);
 
+    // ":about" in the main menu
     private static void ShowAbout()
+    {
+        ShowAboutPages();
+        Menu.DrawTopMenu(false, true, false);
+    }
+
+    /// <summary>
+    /// Show the about page and, unless Esc is pressed, the license. The page it was opened from must be drawn
+    /// again afterwards
+    /// </summary>
+    internal static void ShowAboutPages()
     {
         Tools.ClearScreen();
         Tools.CursorTopLeft();
@@ -1323,7 +1339,6 @@ internal static class Actions
         if (Keyboard.AwaitAnyKeyOrEscape())
         {
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Menu.DrawTopMenu(false, true, false);
             return;
         }
 
@@ -1343,7 +1358,6 @@ internal static class Actions
         Tools.CursorRight();
         Keyboard.AwaitAnyKey();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Menu.DrawTopMenu(false, true, false);
     }
 
     internal static bool IsFavorite(Entry e)

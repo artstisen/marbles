@@ -303,9 +303,8 @@ internal static class Menu
                 new(":browse", Lang.T("Browse files"), ":browse"),
                 new("D", Lang.T("Display timestamp"), "D"),
                 new(":guide", DialogText.QuickGuide, ":guide"),
-                new(":about", Lang.T("About"), ":about"),
                 new(":defaults", Lang.T("Default settings"), ":defaults"),
-                new(":restart", Lang.T("Restart Marbles"), ":restart"),
+                new(":config", Lang.T("More configurations"), ":config"),
                 new(":logout", Lang.T("Logout"), ":logout"),
                 new(":q", Lang.T("Exit"), ":q")
             }
