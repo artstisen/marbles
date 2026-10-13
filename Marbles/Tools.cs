@@ -1334,7 +1334,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  2", Lang.T("Text Editor/File Management: the file browser"), false));
             _shortcutList.Add(new Shortcut("  3", Lang.T("Quick guide: a short introduction"), false));
             _shortcutList.Add(new Shortcut("  4", Lang.T("Exit Marbles (without asking)"), false));
-            _shortcutList.Add(new Shortcut("Tab", Lang.T("Next tab: Mode, Configuration (4 pages), Help"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Next tab: Mode, Configuration, Help"), false));
             _shortcutList.Add(new Shortcut("Shift+Tab", Lang.T("The tab before"), false));
             _shortcutList.Add(new Shortcut("Q Esc", Lang.T("Exit Marbles, asking first (Configuration: to Mode)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("The pages General, Layout, Editor and System"), false));
@@ -1344,7 +1344,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Note Management only: no Text Editor in Mode"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("One at a time, to run one Marbles of each"), false));
             _shortcutList.Add(new Shortcut("Enter Space", Lang.T("Change the selected setting"), false));
-            _shortcutList.Add(new Shortcut("l h", Lang.T("Next/Previous language (also of the spell checker)"), false));
+            _shortcutList.Add(new Shortcut("l h", Lang.T("Configuration: the next/previous page"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Spell checker"), Lang.T("Enter: turn languages on or off in a list"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Snippet editor"), Lang.T("The file of snippets in the editor"), false));
             _shortcutList.Add(new Shortcut("  " + DialogText.FileInfo, Lang.T("The version, and where the program and the data are"), false));
@@ -1523,10 +1523,11 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  OSC 52", Lang.T("Windows Terminal, iTerm2, kitty, WezTerm, tmux, SSH"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Paste bin"), Lang.T("For terminals without OSC 52 (Raspberry Pi)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionColorScheme, true));
-            _shortcutList.Add(new Shortcut("Tab", Lang.T("Schemes, Colors (Page 1 to 3), Preview"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Next tab: Schemes, Colors, Preview"), false));
+            _shortcutList.Add(new Shortcut("l h", Lang.T("Colors: the next/previous page (Page 1 to 3)"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select a scheme or a group of colors"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Schemes"), Lang.T("Enter: use, R: rename, D: delete (your own)"), false));
-            _shortcutList.Add(new Shortcut("l Enter Space", Lang.T("On a group: pick its color from a list"), false));
+            _shortcutList.Add(new Shortcut("Enter Space", Lang.T("On a group: pick its color from a list"), false));
             _shortcutList.Add(new Shortcut("T", Lang.T("Pick the text color (Highlight, Attention ... Tabs)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tab highlight"), Lang.T("Focused tab ([Default]: Tab focus on the tab frames)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tab focus"), Lang.T("Its name, when the tab is not highlighted"), false));
@@ -1549,6 +1550,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("x r", Lang.T("Clear the character/Replace it with the next key"), false));
             _shortcutList.Add(new Shortcut("dd u", Lang.T("Clear the row/Undo"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Colors"), Lang.T("Each row in a color of its own, or all in one"), false));
+            _shortcutList.Add(new Shortcut("l h", Lang.T("Colors: Rows/Cells (on the grid of Cells: L H)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Cells"), Lang.T("Cells in colors of their own, painted on the grid"), false));
             _shortcutList.Add(new Shortcut("c Space", Lang.T("Pick the color to paint with/Paint the cell"), false));
             _shortcutList.Add(new Shortcut("e", Lang.T("Paint with the color of the cell"), false));

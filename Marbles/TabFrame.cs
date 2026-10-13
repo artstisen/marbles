@@ -50,6 +50,12 @@ internal interface ITabPage
     bool CapturesKeys => false;
 
     /// <summary>
+    /// True for a page that uses h and l (and the arrow keys) itself, as a grid the cursor moves in: its
+    /// sub-tabs are then changed with H and L
+    /// </summary>
+    bool UsesSideKeys => false;
+
+    /// <summary>
     /// Where the cursor is shown while a key is waited for (null: it is hidden)
     /// </summary>
     (int Row, int Column)? Cursor => null;
@@ -72,8 +78,10 @@ internal sealed class TabItem
 
 /// <summary>
 /// A frame in the style of the boxes, with tabs on its top (and sub-tabs in a row inside it), where one page is
-/// shown at a time. The tab and sub-tab shown have the colors of the tabs (by default the frame color inverted). Tab and Shift+Tab go through all the pages in order (the sub-tabs of a tab too), "?" shows
-/// the help of the page, and the other keys go to the page. The frame goes from its top row to the row above
+/// shown at a time. The tab and sub-tab shown have the colors of the tabs (by default the frame color inverted).
+/// Tab and Shift+Tab go from tab to tab (a tab shows the sub-tab it showed last), h and l (or the arrow keys)
+/// go through the sub-tabs of the tab shown, "?" shows the help of the page, and the other keys go to the page.
+/// The keys are shown at the right ends of the rows of the tabs and of the sub-tabs. The frame goes from its top row to the row above
 /// the bottom line, where the keys of the page are shown. The layout is found by TabLayout.
 /// </summary>
 internal sealed class TabFrame
@@ -85,6 +93,10 @@ internal sealed class TabFrame
     // All the pages in order, and the tab of each
     private readonly List<(int Tab, ITabPage Page)> _pages = new();
 
+    // The number of the first page of each tab, and the page of the tab (of its own pages) that was shown last
+    private readonly int[] _firstPage;
+    private readonly int[] _shownPage;
+
     /// <param name="top">The row of the tops of the tabs (the frame starts two rows below)</param>
     /// <param name="drawAbove">Draws what is above the frame (a logo), after the screen is cleared</param>
     /// <param name="tabs">The tabs</param>
@@ -93,8 +105,11 @@ internal sealed class TabFrame
         _top = top;
         _drawAbove = drawAbove;
         _tabs = tabs;
+        _firstPage = new int[tabs.Length];
+        _shownPage = new int[tabs.Length];
         for (var tab = 0; tab < tabs.Length; tab++)
         {
+            _firstPage[tab] = _pages.Count;
             foreach (var page in tabs[tab].Pages) _pages.Add((tab, page));
         }
     }
@@ -118,6 +133,8 @@ internal sealed class TabFrame
         {
             Selected = Math.Clamp(Selected, 0, _pages.Count - 1);
             var page = Page;
+            var tab = _pages[Selected].Tab;
+            _shownPage[tab] = Selected - _firstPage[tab];
             if (full)
             {
                 Draw();
@@ -156,7 +173,19 @@ internal sealed class TabFrame
 
             if (key.Key == ConsoleKey.Tab && !page.CapturesKeys)
             {
-                Selected = TabLayout.Next(Selected, _pages.Count, (key.Modifiers & ConsoleModifiers.Shift) != 0);
+                // The next tab (or the one before), with the sub-tab it showed last
+                var next = TabLayout.Next(tab, _tabs.Count, (key.Modifiers & ConsoleModifiers.Shift) != 0);
+                Selected = _firstPage[next] + _shownPage[next];
+                full = true;
+                continue;
+            }
+
+            // The next sub-tab of the tab (or the one before)
+            var subTabs = _tabs[tab].Pages.Count;
+            var step = subTabs > 1 && !page.CapturesKeys ? TabLayout.SubTabStep(key, page.UsesSideKeys) : 0;
+            if (step != 0)
+            {
+                Selected = _firstPage[tab] + TabLayout.Next(_shownPage[tab], subTabs, step < 0);
                 full = true;
                 continue;
             }
@@ -199,7 +228,7 @@ internal sealed class TabFrame
         var pages = _tabs[tab].Pages;
         var subNames = pages.Count > 1 ? pages.Select(item => item.Title).ToList() : null;
         _area = DrawChrome(_top, _tabs.Select(item => item.Title()).ToList(), tab, subNames,
-            pages.ToList().IndexOf(page));
+            pages.ToList().IndexOf(page), page.UsesSideKeys ? "H/L" : "h/l");
         page.Draw(_area, true);
 
         // The keys of the page
@@ -219,9 +248,10 @@ internal sealed class TabFrame
     /// <param name="tab">The tab shown</param>
     /// <param name="subNames">The names of the sub-tabs of the tab shown, or null</param>
     /// <param name="sub">The sub-tab shown</param>
+    /// <param name="subKeys">The keys that change the sub-tab, shown at the right end of their row</param>
     /// <returns>The area inside the frame where the page is drawn</returns>
     internal static TabArea DrawChrome(int top, IReadOnlyList<string> names, int tab,
-        IReadOnlyList<string>? subNames, int sub)
+        IReadOnlyList<string>? subNames, int sub, string subKeys = "h/l")
     {
         var width = Init.LineWidth - 2; // From column 1, with a corner at each end
         var right = width; // The column of the right side
@@ -241,6 +271,15 @@ internal sealed class TabFrame
             if (i == tab) ConsoleColors.SetTabColors();
             else ConsoleColors.SetColors(ConsoleColors.ColorPreset.OtherTabs);
             Console.Write(" " + fitted[i] + " ");
+        }
+
+        // The key that goes to the next tab, at the right end of the row of the tabs (when there is room)
+        const string tabKey = "Tab"; // English: a key
+        if (fitted.Count > 1 && labels.Length + 2 <= right - tabKey.Length)
+        {
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHint);
+            Tools.SetCursorEx(top + 1, right - tabKey.Length + 1);
+            Console.Write(tabKey);
         }
 
         // The corner of the tab shown (its left side, corner and top) in its color
@@ -280,6 +319,16 @@ internal sealed class TabFrame
                 if (i == sub) ConsoleColors.SetTabColors();
                 else ConsoleColors.SetColors(ConsoleColors.ColorPreset.OtherTabs);
                 Console.Write(" " + subNames[i] + " ");
+            }
+
+            // The keys that change the sub-tab, at the right end of the row (when there is room)
+            var subEnd = 3 + subStarts[^1] - 1 + TextMetrics.WidthOf(subNames[^1]) + 2;
+            var keyColumn = right - 1 - subKeys.Length;
+            if (subNames.Count > 1 && keyColumn > subEnd)
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHint);
+                Tools.SetCursorEx(top + 3, keyColumn);
+                Console.Write(subKeys);
             }
 
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabFrame);

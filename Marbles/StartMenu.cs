@@ -639,14 +639,14 @@ internal static class StartMenu
             {
                 _selected = settings[0];
             }
-            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow &&
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar &&
                      setting == Setting.ColorScheme)
             {
                 // The color schemes: select and edit them
                 SchemeEditor.Show();
                 return TabResult.Redraw;
             }
-            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow &&
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar &&
                      setting == Setting.Logo)
             {
                 // The logos: select and edit them
@@ -655,26 +655,20 @@ internal static class StartMenu
             }
             else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && setting == Setting.Spell)
             {
-                // Pick the languages of the spell checker in a box (l and h select the next and previous)
+                // Pick the languages of the spell checker in a box
                 PickSpellLanguages();
                 return TabResult.Redraw;
             }
             else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar && setting == Setting.Language)
             {
-                // Pick the language in a box (l and h select the next and previous)
+                // Pick the language in a box
                 Actions.PickLanguage();
                 return TabResult.Redraw;
             }
-            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar or ConsoleKey.L or ConsoleKey.RightArrow)
+            else if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar)
             {
                 ChangeSetting(setting, true);
                 _selected = setting;
-                return TabResult.Redraw;
-            }
-            else if (key.Key is ConsoleKey.H or ConsoleKey.LeftArrow && setting is Setting.Language or Setting.Spell)
-            {
-                // The previous language
-                ChangeSetting(setting, false);
                 return TabResult.Redraw;
             }
 
@@ -725,11 +719,6 @@ internal static class StartMenu
                 break;
             case Setting.SyntaxColors:
                 SyntaxHighlighter.ColorFiles = !SyntaxHighlighter.ColorFiles;
-                break;
-            case Setting.Spell:
-                // The next or the previous language there is a spell file for
-                SpellChecker.Languages = SpellChecker.NextLanguage(SpellChecker.AvailableLanguages(),
-                    SpellChecker.Languages, next);
                 break;
             case Setting.Snippets:
                 // The file of snippets in the editor (it is made first, if the user wants that)

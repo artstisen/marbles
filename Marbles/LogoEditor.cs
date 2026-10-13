@@ -214,6 +214,9 @@ internal static class LogoEditor
         public string Keys => _visual ? DialogText.LogoCellVisualKeys : DialogText.LogoCellKeys;
         public Tools.HelpTopic Help => Tools.HelpTopic.Logos;
 
+        // h and l move in the grid: H and L go to the other page of Colors
+        public bool UsesSideKeys => true;
+
         /// <summary>
         /// The cursor is shown in the grid
         /// </summary>

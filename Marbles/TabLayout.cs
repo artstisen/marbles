@@ -123,6 +123,21 @@ internal static class TabLayout
     }
 
     /// <summary>
+    /// What a key does to the sub-tabs of a tab: 1 for the next (l, Right), -1 for the one before (h, Left), 0 for
+    /// nothing. On a page that uses h and l itself (a grid the cursor moves in) only H and L do it
+    /// </summary>
+    internal static int SubTabStep(ConsoleKeyInfo key, bool sideKeysTaken)
+    {
+        if ((key.Modifiers & (ConsoleModifiers.Control | ConsoleModifiers.Alt)) != 0) return 0;
+        if (key.KeyChar == 'L') return 1;
+        if (key.KeyChar == 'H') return -1;
+        if (sideKeysTaken) return 0;
+        if (key.KeyChar == 'l' || key.Key == ConsoleKey.RightArrow) return 1;
+        if (key.KeyChar == 'h' || key.Key == ConsoleKey.LeftArrow) return -1;
+        return 0;
+    }
+
+    /// <summary>
     /// The next page (or the one before) of a number of pages, going round from the last to the first
     /// </summary>
     internal static int Next(int page, int count, bool back)

@@ -3,7 +3,8 @@
 ## Select mode
 Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with three tabs at its top: **Mode**, where you select what to use Marbles for, **Configuration**, with the settings, and **Help**, with the help and the about page. The settings are on four pages, shown as the sub-tabs **General**, **Layout**, **Editor** and **System** in a row at the top of the frame. The tab and sub-tab shown are highlighted in the color of the frame.
 
-`Tab` goes to the next tab: Mode, the four pages of Configuration (General, Layout, Editor, System), Help, and round to Mode again. `Shift+Tab` goes the other way.
+`Tab` goes to the next tab (Mode, Configuration, Help, and round to Mode again), and `Shift+Tab` the other way. `h` and `l` (or `Left`/`Right`) go to the previous and the next sub-tab of the tab shown, going round, so in Configuration they go through General, Layout, Editor and System. The keys are shown at the right ends of the two rows: `Tab` after the tabs and `h/l` after the sub-tabs. A tab opens with the sub-tab it showed last. This is the same in all the frames with tabs (the color schemes, the logos).
+
 
 ### Mode
 - `1` **Note Management (encrypted notes)**: Continue to the login page
@@ -28,7 +29,7 @@ The settings are on four pages, so they can be changed in one place without logg
   - _Note Management only_: _Text Editor/File Management_ is not shown in the Mode tab
   - The choices of the Mode tab are numbered as they are shown (`1` to `3`), and starting in the mode that is not used cannot be chosen (if it was chosen, the choices are shown at startup)
   - Saved as `onlymode` (`none`, `editor` or `notes`) in the settings file. _Reset all settings_ and `:defaults` turn both off
-- **Language**: The language of the menus, help and messages: English, Dansk (Danish), Deutsch (German), Norsk bokmål (Norwegian), Svenska (Swedish), Español (Spanish) or Français (French). `l` and `h` select the next and the previous, and `Enter` shows the languages in a box to pick from. Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
+- **Language**: The language of the menus, help and messages: English, Dansk (Danish), Deutsch (German), Norsk bokmål (Norwegian), Svenska (Swedish), Español (Spanish) or Français (French). `Enter` shows the languages in a box to pick from. Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
 
 **Layout**
 
@@ -45,7 +46,7 @@ The settings are on four pages, so they can be changed in one place without logg
 - **Keep 12 lines around the cursor in the editor**: When the cursor comes within 12 lines of the top or the bottom of the editor, the text scrolls, so you see what comes next (on from the start). The number is set with `:scrolloff 8` in the editor (see [the guide to the editor](Guide-to-editor.md#scrolling))
 - **Clipboard and paste bin**: `Enter` opens the clipboard settings: where yanked text goes out of Marbles (see [the guide to the editor](Guide-to-editor.md#system-clipboard-and-paste-bin))
 - **Syntax highlighting**: Color the text of the kinds of files the editor knows (Markdown, HTML, CSS, JavaScript, JSON, XML), on from the start. It is the setting `syntaxcolors`, which `:syntax off` and `:syntax on` in the editor also change
-- **Spell checker**: The languages used when spell checking is turned on in the editor with `:spell` (it is not turned on here). `l` and `h` select the next and the previous of the languages there is a spell file for, and `Enter` shows them in a box, where `Enter` turns a language on or off (several can be on, and the last one stays on) and `Esc` closes. Saved as `spelllang` (`en` or `da,en`). The spell files are in the directory `spell`; without any, the row says so
+- **Spell checker**: The languages used when spell checking is turned on in the editor with `:spell` (it is not turned on here). `Enter` shows the languages there is a spell file for in a box, where `Enter` turns a language on or off (several can be on, and the last one stays on) and `Esc` closes. Saved as `spelllang` (`en` or `da,en`). The spell files are in the directory `spell`; without any, the row says so
 - **Snippet editor**: Open the file of [snippets](Guide-to-editor.md#snippets), `snippets.txt`, in the editor. If there is no file yet, you are asked whether to make one, with two examples. Closing the editor returns to this page
 
 **System**

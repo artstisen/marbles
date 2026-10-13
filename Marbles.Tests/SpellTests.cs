@@ -580,20 +580,9 @@ public class SpellTests : IDisposable
     #endregion
 
     [Fact]
-    public void TheLanguagesOfTheSpellChecker_AreSteppedThrough_AndTurnedOnAndOff()
+    public void TheLanguagesOfTheSpellChecker_AreTurnedOnAndOff()
     {
         var available = new[] { "da", "de", "en" };
-        // The next and the previous, going round
-        Assert.Equal("de", SpellChecker.NextLanguage(available, "da", true));
-        Assert.Equal("da", SpellChecker.NextLanguage(available, "en", true));
-        Assert.Equal("en", SpellChecker.NextLanguage(available, "da", false));
-        Assert.Equal("de", SpellChecker.NextLanguage(available, " EN ", false));
-        // Several in use, or one without a spell file: the first (or the last)
-        Assert.Equal("da", SpellChecker.NextLanguage(available, "en,da", true));
-        Assert.Equal("en", SpellChecker.NextLanguage(available, "fr", false));
-        // No spell files: as it was
-        Assert.Equal("en", SpellChecker.NextLanguage(Array.Empty<string>(), "en", true));
-
         // On and off, in the order of the spell files. The last one stays on
         Assert.Equal("da,en", SpellChecker.ToggleLanguage(available, "en", "da"));
         Assert.Equal("da", SpellChecker.ToggleLanguage(available, "da,en", "en"));

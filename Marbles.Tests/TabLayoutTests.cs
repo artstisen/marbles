@@ -73,4 +73,24 @@ public class TabLayoutTests
         Assert.Equal(".-------", tops.Substring(index, length));
         Assert.Equal("| Three ", labels.Substring(index, length));
     }
+
+    [Theory]
+    [InlineData('l', ConsoleKey.L, false, 1)]
+    [InlineData('h', ConsoleKey.H, false, -1)]
+    [InlineData('\0', ConsoleKey.RightArrow, false, 1)]
+    [InlineData('\0', ConsoleKey.LeftArrow, false, -1)]
+    [InlineData('L', ConsoleKey.L, false, 1)]
+    [InlineData('j', ConsoleKey.J, false, 0)]
+    // A page that uses h and l itself: only H and L
+    [InlineData('l', ConsoleKey.L, true, 0)]
+    [InlineData('\0', ConsoleKey.LeftArrow, true, 0)]
+    [InlineData('L', ConsoleKey.L, true, 1)]
+    [InlineData('H', ConsoleKey.H, true, -1)]
+    public void TheSubTabs_AreChangedWithHAndL(char character, ConsoleKey key, bool sideKeysTaken, int step)
+    {
+        var shift = char.IsUpper(character);
+        Assert.Equal(step, TabLayout.SubTabStep(new ConsoleKeyInfo(character, key, shift, false, false), sideKeysTaken));
+        // Not with Ctrl
+        Assert.Equal(0, TabLayout.SubTabStep(new ConsoleKeyInfo(character, key, shift, false, true), sideKeysTaken));
+    }
 }

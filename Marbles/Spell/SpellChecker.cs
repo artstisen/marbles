@@ -57,23 +57,6 @@ internal sealed class SpellChecker
     }
 
     /// <summary>
-    /// The language after (or before) the one in use, of the ones there is a spell file for, going round. With
-    /// several languages in use, or one without a spell file, it is the first (or the last)
-    /// </summary>
-    internal static string NextLanguage(IReadOnlyList<string> available, string languages, bool next)
-    {
-        if (available.Count == 0) return languages;
-        var index = -1;
-        for (var i = 0; i < available.Count; i++)
-        {
-            if (available[i].Equals(languages.Trim(), StringComparison.OrdinalIgnoreCase)) index = i;
-        }
-
-        if (index < 0) return next ? available[0] : available[^1];
-        return available[(index + (next ? 1 : available.Count - 1)) % available.Count];
-    }
-
-    /// <summary>
     /// The languages in use with one of them turned on or off, in the order of the ones there is a spell file
     /// for. The last language in use cannot be turned off
     /// </summary>

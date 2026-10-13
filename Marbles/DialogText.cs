@@ -51,7 +51,7 @@ internal static class DialogText
     // The keys of a list of entries (All, Top 20, Favorites, Session history, Search)
     public static string ListKeys => Lang.T("Enter Open | h/l Page | gg/G First/Last | ? Help | Esc Back");
     public static string HelpSectionMainMenu => Lang.T("Main menu");
-    public static string SchemeEditorKeys => Lang.T("j/k Select | l Pick | T Text | E Reset | S Save | Tab Next | Esc Close");
+    public static string SchemeEditorKeys => Lang.T("j/k Select | Enter Pick | T Text | E Reset | S Save | h/l Page | Esc Close");
     public static string SchemePreviewKeys => Lang.T("Tab Schemes | S Save | ? Help | Esc Close");
     public static string HelpSectionColorScheme => Lang.T("Color schemes");
     public static string HelpSectionLogos => Lang.T("Logos");
@@ -212,7 +212,7 @@ internal static class DialogText
     public static string LogoBuiltInDelete => Lang.T("A built-in logo cannot be deleted");
     public static string LogoListKeys => Lang.T("j/k Select | Enter Use | E Edit | R Rename | D Delete | Esc Close");
     public static string LogoEditorKeys => Lang.T("hjkl Move | i/R Draw | x Clear | r Char | u Undo | S Save | Esc Close");
-    public static string LogoColorKeys => Lang.T("j/k Select | l Pick | S Save | Tab Next | ? Help | Esc Close");
+    public static string LogoColorKeys => Lang.T("j/k Select | Enter Pick | S Save | h/l Page | ? Help | Esc Close");
     public static string LogoCellKeys => Lang.T("hjkl Move | c Color | Space Paint | x Clear | v Select | u Undo | Esc Close");
     public static string LogoCellVisualKeys => Lang.T("hjkl Move | Space Paint | x Clear | Esc NORMAL");
     public static string LogoReplaceKeys => Lang.T("Backspace Clear | Enter Next row | Esc NORMAL");
@@ -351,7 +351,7 @@ internal static class DialogText
     public static string StartConfigEditor => Lang.T("Start in Text Editor (file browser)");
     public static string StartKeys => Lang.T("j/k 1-4 Select | Enter Open | Tab Configuration | ? Help | Q Exit");
     public static string StartHelpKeys => Lang.T("j/k Select | Enter Open | Tab Mode | ? Help | Esc Back");
-    public static string StartConfigKeys => Lang.T("j/k Select | Enter/Space Change | h/l Previous/Next | Tab Page | Esc Back");
+    public static string StartConfigKeys => Lang.T("j/k Select | Enter/Space Change | h/l Page | Tab Next tab | Esc Back");
     public static string ConfigMonochrome => Lang.T("Black and white (no colors)");
     public static string ConfigAutoSize => Lang.T("Automatic size (follow the terminal window)");
     public static string ConfigSize => Lang.T("Size: ");
