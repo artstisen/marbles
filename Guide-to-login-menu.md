@@ -60,7 +60,7 @@ Log in to the selected data file by typing its password and pressing `Enter`.
 - `Esc` Clear the password field. When the field is empty: open the options
 
 ## Options
-Press `Esc` and then one of the following keys:
+Press `Esc` to show the options in a box. Select one with `j` `k` (or the arrow keys, `gg` `G`) and press `Enter` (or `l`), or press the key shown in front of it:
 
 - `F` Browse files: open the [file browser](#file-browser) to edit plain text files
 - `T` Go to the [Select mode](#select-mode) page
@@ -70,15 +70,16 @@ Press `Esc` and then one of the following keys:
 - `D` Delete the selected data file
 - `M` Merge two data files into a new, or export a data file as XML (the exported file is not encrypted)
 - `I` Show information about the data file in a box (name, type, size, dates, path and backup directory). Any key closes it
-- `h` `l` Select the previous/next data file, `j` `k` Select a directory. The options stay open
 - `R` Refresh the login page
 - `Y` Restart Marbles
-- `G` Show the [log](#the-log)
+- `V` Show the [log](#the-log)
 - `U` Show the quick guide
 - `S` Edit the settings file _settings.ini_ (it can also be edited from the file system). Marbles restarts and loads the settings when the file is saved
 - `?` Show the help (the list of keys)
 - `Q` Exit Marbles
-- `Esc` Close the options
+- `Esc` (or `h`) Close the options
+
+The data file and the directory are selected on the login page itself, with the arrow keys (see above).
 
 ## File browser
 The file browser (`Esc`, `F`) is for editing single text files (.txt, .md, .html ...) with the Marbles editor, without logging in to a data file. **Text files are not encrypted.**
@@ -227,7 +228,7 @@ The file history lists the files you have opened in the editor from the file bro
 The history holds the last 100 files: when it is full, the file opened longest ago is dropped. A file that is gone is shown as _(missing)_. The list is kept in the file `history.txt` in the data directory (one line per file: the time it was opened, a tab character and the path). Like the favorites, it is not encrypted.
 
 ## The log
-The log lists what has happened since Marbles was started: the startup, logins, commands, and the file operations of the file browser (new, open, rename, copy, move and delete, with the reason if one failed). It is shown from the options of the login page (`Esc`, `G`) and from the Configuration page.
+The log lists what has happened since Marbles was started: the startup, logins, commands, and the file operations of the file browser (new, open, rename, copy, move and delete, with the reason if one failed). It is shown from the options of the login page (`Esc`, `V`) and from the Configuration page.
 
 - The log opens at the end, with the latest lines
 - `h` `l` Previous/Next page, `j` `k` One line, `gg` `G` First/Last

@@ -276,12 +276,6 @@ internal static class Tools
     {
         _pass = string.Empty;
         _exitLoop = false;
-        // Open the options menu again after a file or directory was selected from it
-        if (enableShortcuts && _reopenLoginOptions && !FileActions.IsLockedForMove())
-        {
-            ShowLoginOptions();
-        }
-
         do
         {
             ShowCursor();
@@ -396,48 +390,47 @@ internal static class Tools
         return _pass;
     }
 
-    private static bool _reopenLoginOptions;
-
-    // The options of the login page: shown in a menu, where the next key selects an option
+    // The options of the login page, in a box: an option is selected (j/k, Enter) or picked with its key
     private static void ShowLoginOptions()
     {
-        _reopenLoginOptions = false;
-        var tempShortcuts = new List<Shortcut>
+        var options = new (string Key, string Text)[]
         {
-            new("F/T", DialogText.BrowseFilesSelectMode, false, 13),
-            new("N", DialogText.NewFile, false, 13),
-            new("X", DialogText.RenameFile, false, 13),
-            new("C/D", DialogText.CopyDeleteFile, false, 13),
-            new("M", DialogText.MergeFiles, false, 13),
-            new("I", DialogText.FileInfo, false, 13),
-            new(string.Empty, "-", true, 13),
-            new("h l / j k", DialogText.SelectFileDirectory, false, 13),
-            new("R/Y", DialogText.Refresh + "/" + DialogText.Restart, false, 13),
-            new("G/S", DialogText.Log + "/" + FileIo.SettingsFileName, false, 13),
-            new("U", DialogText.QuickGuide, false, 13),
-            new("? / Q", Lang.T("Help") + "/" + DialogText.Exit, false, 13)
+            ("F", DialogText.CaptionsFiles),
+            ("T", DialogText.StartSelectMode),
+            ("N", DialogText.NewFile),
+            ("X", DialogText.RenameFile),
+            ("C", DialogText.CopyFile),
+            ("D", DialogText.DeleteFile),
+            ("M", DialogText.MergeFiles),
+            ("I", DialogText.FileInfo),
+            ("R", DialogText.Refresh),
+            ("Y", DialogText.Restart),
+            ("V", DialogText.Log),
+            ("S", FileIo.SettingsFileName),
+            ("U", DialogText.QuickGuide),
+            ("?", Lang.T("Help")),
+            ("Q", DialogText.Exit)
         };
-        Menu.FloatingMenu(DialogText.CaptionsOptions, tempShortcuts, 9, 14, false);
-
-        // Get second key
-        _keyInfo = Console.ReadKey(true);
-        if (_keyInfo.Key == ConsoleKey.R)
+        var picked = ChoiceBox.PickOption(DialogText.CaptionsOptions, options.Select(option => option.Text).ToList(),
+            options.Select(option => option.Key).ToList(), 7, 14);
+        var choice = picked < 0 ? string.Empty : options[picked].Key;
+        if (choice == "R")
         {
             // Refresh
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.Y)
+        else if (choice == "Y")
         {
             // Restart
             Restart();
         }
-        else if (_keyInfo.Key == ConsoleKey.I)
+        else if (choice == "I")
         {
             // File info
             FileActions.ShowDataFileInfo(false);
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.N)
+        else if (choice == "N")
         {
             // New data file
             if (FileActions.NewDataFilePrompt())
@@ -447,56 +440,56 @@ internal static class Tools
 
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.X)
+        else if (choice == "X")
         {
             // Rename file
             FileActions.RenameCurrentDataFile();
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.C)
+        else if (choice == "C")
         {
             // Copy file
             FileActions.CopyCurrentDataFile();
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.D)
+        else if (choice == "D")
         {
             // Delete file
             FileActions.DeleteCurrentDataFile();
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.M)
+        else if (choice == "M")
         {
             // Merge files
             MergeTool merge = new MergeTool();
             merge.MergeExport();
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.F)
+        else if (choice == "F")
         {
             // Browse and edit text files
             FileExplorer.Run();
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.T)
+        else if (choice == "T")
         {
             // Select mode (notes, text editor or configuration)
             StartMenu.Open();
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.G)
+        else if (choice == "V")
         {
             // Log
             Init.WriteLog();
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.U)
+        else if (choice == "U")
         {
             // Quick guide
             QuickGuide.Show();
             LoginRoutine(true);
         }
-        else if (_keyInfo.Key == ConsoleKey.S)
+        else if (choice == "S")
         {
             // Settings
             Mode.SetMode(Mode.SelectedMode.Edit);
@@ -516,43 +509,15 @@ internal static class Tools
                 LoginRoutine(true);
             }
         }
-        else if (_keyInfo.Key == ConsoleKey.Q)
+        else if (choice == "Q")
         {
             // Exit directly
             ExitApplication();
         }
-        else if (_keyInfo.KeyChar == '?')
+        else if (choice == "?")
         {
             // Help
             WriteEditorHelp(false, HelpTopic.Login);
-            LoginRoutine(true);
-        }
-        else if (_keyInfo.Key == ConsoleKey.H)
-        {
-            // Previous datafile (and keep the options open)
-            _reopenLoginOptions = true;
-            FileBrowser.SelectPreviousDataFile();
-            LoginRoutine(true);
-        }
-        else if (_keyInfo.Key == ConsoleKey.L)
-        {
-            // Next datafile
-            _reopenLoginOptions = true;
-            FileBrowser.SelectNextDataFile();
-            LoginRoutine(true);
-        }
-        else if (_keyInfo.Key == ConsoleKey.K)
-        {
-            // Next sub directory
-            _reopenLoginOptions = true;
-            FileBrowser.NextSubfolder();
-            LoginRoutine(true);
-        }
-        else if (_keyInfo.Key == ConsoleKey.J)
-        {
-            // Previous sub directory
-            _reopenLoginOptions = true;
-            FileBrowser.PreviousSubfolder();
             LoginRoutine(true);
         }
         else
@@ -1410,9 +1375,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc X C D", Lang.T("Rename/Copy/Delete the data file"), false));
             _shortcutList.Add(new Shortcut("Esc M", Lang.T("Merge two data files, or export one as XML"), false));
             _shortcutList.Add(new Shortcut("Esc I", Lang.T("Information about the data file"), false));
-            _shortcutList.Add(new Shortcut("Esc h l j k", Lang.T("Select data file/directory"), false));
+            _shortcutList.Add(new Shortcut("Esc j k Enter", Lang.T("Select an option and open it (or type its key)"), false));
             _shortcutList.Add(new Shortcut("Esc R Y", Lang.T("Refresh the page/Restart Marbles"), false));
-            _shortcutList.Add(new Shortcut("Esc G S", Lang.T("Show the log/Edit settings.ini"), false));
+            _shortcutList.Add(new Shortcut("Esc V S", Lang.T("Show the log/Edit settings.ini"), false));
             _shortcutList.Add(new Shortcut("Esc U", Lang.T("Quick guide: a short introduction"), false));
             _shortcutList.Add(new Shortcut("Esc ?", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Exit Marbles"), false));

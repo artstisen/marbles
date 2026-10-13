@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Login page**: the options (`Esc`) are a list with a selector, one option on each row: `j` `k` `gg` `G` select and `Enter` or `l` opens, or press the key of the option. _File/Directory_ is gone from the list (the arrow keys of the login page select them), and the log is `V` (`G` goes to the last option).
 - **Configuration** (Page 2): **Text Editor only** and **Note Management only**, for running one Marbles as a text editor and another for notes. The other mode is not shown in the Mode tab, and as a text editor Marbles does not open data files. Setting `onlymode`; off after _Reset all settings_.
 - **Logos**: two more built-in logos, **Reflections** (the Marbles logo with a color for each row) and **Islands** (islands with palms, drawn with a color for each cell). They can be used as they are, or edited and saved as logos of your own.
 - **Logos and color schemes**: `R` in the lists renames one of your own (the setting follows when it is the one in use).

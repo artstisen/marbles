@@ -336,7 +336,6 @@ internal static class DialogText
 
     // File browser
     public static string CaptionsFiles => Lang.T("Files");
-    public static string BrowseFilesSelectMode => Lang.T("Files/Select mode");
 
     // The page shown at startup
     public static string StartSelectMode => Lang.T("Select mode");
@@ -347,7 +346,6 @@ internal static class DialogText
     public static string StartExit => Lang.T("Exit");
     public static string QuickGuide => Lang.T("Quick guide");
     public static string QuickGuideKeys => Lang.T("| h/l Page | j/k Line | ? All keys | Esc Close");
-    public static string CopyDeleteFile => Lang.T("Copy/Delete file");
     public static string StartConfigSelect => Lang.T("Show choices on startup");
     public static string StartConfigNotes => Lang.T("Start in Note Management");
     public static string StartConfigEditor => Lang.T("Start in Text Editor (file browser)");
@@ -590,7 +588,6 @@ internal static class DialogText
     // Command line
     public static string NotACommand => Lang.T("Not a command: ");
     public const string CommandPrompt = "COMMAND:"; // Shown in front of a command being typed
-    public static string SelectFileDirectory => Lang.T("File/Directory");
 
     // Editor status line
     public const string EditorModeNormal = "-- NORMAL --";

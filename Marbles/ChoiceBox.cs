@@ -98,6 +98,77 @@ internal static class ChoiceBox
     }
 
     /// <summary>
+    /// Pick one of the options of a menu, shown in a box with its title in a tab from a row and column (as low
+    /// as there is room for all the options). The key of each option is shown in front of it and picks it at
+    /// once; j/k (gg, G) select, and Enter or l picks the selected one
+    /// </summary>
+    /// <returns>The number of the option, or -1 if the box was closed with Esc or h</returns>
+    internal static int PickOption(string caption, IReadOnlyList<string> options, IReadOnlyList<string> keys,
+        int tabRow, int left)
+    {
+        var keyWidth = keys.Max(TextMetrics.WidthOf);
+        var inner = Math.Clamp(Math.Max(TextMetrics.WidthOf(caption) + 4,
+            options.Max(TextMetrics.WidthOf) + keyWidth + 12), 10, Init.LineWidth - left - 3);
+        // The tab, the top line, the options and the bottom line end above the bottom line of the screen
+        tabRow = Math.Max(0, Math.Min(tabRow, Init.LineCount - 2 - (options.Count + 2)));
+        var top = tabRow + 1;
+        Tools.HideCursor();
+        DrawTitleTab(tabRow, left, inner, caption);
+        for (var number = 0; number < options.Count; number++)
+        {
+            Tools.SetCursorEx(top + 1 + number, left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+            Console.Write('|');
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            var text = "    " + keys[number].PadRight(keyWidth) + " .... " +
+                       Tools.TruncateString(options[number], inner - keyWidth - 11, true);
+            Console.Write(text + new string(' ', Math.Max(0, inner - TextMetrics.WidthOf(text))));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+            Console.Write('|');
+        }
+
+        Tools.SetCursorEx(top + options.Count + 1, left);
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        WriteHints(DialogText.ChoiceKeys);
+        var selected = 0;
+        while (true)
+        {
+            for (var i = 0; i < options.Count; i++)
+            {
+                Tools.SetCursorEx(top + 1 + i, left + 1);
+                ConsoleColors.SetColors(i == selected
+                    ? ConsoleColors.ColorPreset.SelectorInverted
+                    : ConsoleColors.ColorPreset.Normal);
+                Console.Write(i == selected ? "->" : "  ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            }
+
+            Tools.SetCursorEx(Init.LineCount - 1, 0);
+            var key = Console.ReadKey(true);
+            // The key of an option picks it (also Q, which closes other boxes)
+            var typed = char.ToUpperInvariant(key.KeyChar).ToString();
+            for (var i = 0; i < keys.Count; i++)
+            {
+                if (keys[i] == typed) return i;
+            }
+
+            var navigation = Keyboard.ToNavigationKey(key).Key;
+            if (key.Key == ConsoleKey.Escape || navigation == ConsoleKey.LeftArrow) return -1;
+            if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar || navigation == ConsoleKey.RightArrow)
+            {
+                return selected;
+            }
+
+            if (navigation == ConsoleKey.DownArrow) selected = (selected + 1) % options.Count;
+            if (navigation == ConsoleKey.UpArrow) selected = (selected + options.Count - 1) % options.Count;
+            // gg and G: the first and the last option
+            if (key.KeyChar == 'G') selected = options.Count - 1;
+            if (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g') selected = 0;
+        }
+    }
+
+    /// <summary>
     /// Show a message (highlighted) and a note in a box until a key is pressed
     /// </summary>
     internal static void Message(string caption, string message, string note)
