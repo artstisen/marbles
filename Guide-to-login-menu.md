@@ -264,4 +264,4 @@ Marbles creates the directory "data" in the directory it is started from, and ke
 Directories within the data directory must be created from the file system. Refresh the login page (`Esc`, `R`) to see new directories. Directories inside these directories are not shown.
 
 ## Data files from earlier versions
-The first time you log in to a data file from Marbles v1.0.x it is converted to the current file format. A copy of the original file is kept in the same directory, named as the data file with ".legacy" added. See the [list of changes](CHANGELOG.md).
+The first time you log in to a data file from Marbles v1.0.x it is converted to the current file format. Dates of entries that an early version wrote with the day first (`17-11-2021 12:21:46`) are turned around in the converted file (`2021-11-17 12:21:46`), so the entries sort by their dates. A copy of the original file is kept in the same directory, named as the data file with ".legacy" added. See the [list of changes](CHANGELOG.md).

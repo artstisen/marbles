@@ -329,6 +329,53 @@ public class FileIoTests : IDisposable
         Assert.Equal(expected, Snapshot());
     }
 
+    [Theory]
+    [InlineData("17-11-2021 12:21:46", "2021-11-17 12:21:46")]
+    [InlineData("1-2-2019 7:05:09", "2019-02-01 07:05:09")]
+    [InlineData("03.04.2020 18:30", "2020-04-03 18:30:00")]
+    [InlineData("29/02/2020", "2020-02-29 00:00:00")]
+    // Already as it should be, or not a date with the day first: left alone
+    [InlineData("2021-11-17 12:21:46", null)]
+    [InlineData("11-17-2021 12:21:46", null)] // Not a month
+    [InlineData("31-02-2021 12:21:46", null)] // Not a day of the month
+    [InlineData("17-11-2021 25:00:00", null)]
+    [InlineData("17-11-21 12:21:46", null)]
+    [InlineData("[Cleared]", null)]
+    [InlineData("", null)]
+    public void ATimestampWithTheDayFirst_IsTurnedAround(string timestamp, string? expected)
+    {
+        Assert.Equal(expected ?? timestamp, IsoDateTime.CorrectDayFirst(timestamp, out var corrected));
+        Assert.Equal(expected != null, corrected);
+    }
+
+    [Fact]
+    public void LegacyConversion_TurnsTimestampsWithTheDayFirstAround()
+    {
+        Login(Password);
+        Entries.NewEntry("Old", "Text");
+        Entries.NewEntry("Newer", "Text");
+        Entries.GetEntries()[0].DateCreated = "17-11-2021 12:21:46";
+        Entries.GetEntries()[0].DateChanged = "05-01-2022 08:00:01";
+        var kept = Entries.GetEntries()[1].DateCreated;
+        FileIo.SaveEntries();
+        var document = Encryptor.DecryptData(File.ReadAllBytes(DataFile));
+        File.WriteAllBytes(DataFile, LegacyFileWriter.Create(document, Password));
+
+        Login(Password);
+        Assert.True(FileIo.LoadEntries().IsLegacyFormat);
+        Assert.Equal("17-11-2021 12:21:46", Entries.GetEntries()[0].DateCreated);
+        Assert.Equal(DialogText.Success, FileIo.ConvertLegacyFile());
+
+        // The converted file has the dates turned around, and the others as they were
+        Login(Password);
+        Assert.True(FileIo.LoadEntries().Success);
+        Assert.Equal("2021-11-17 12:21:46", Entries.GetEntries()[0].DateCreated);
+        Assert.Equal("2022-01-05 08:00:01", Entries.GetEntries()[0].DateChanged);
+        Assert.Equal(kept, Entries.GetEntries()[1].DateCreated);
+        // Nothing left to correct
+        Assert.Equal(0, FileIo.CorrectTimestamps(Entries.GetEntries()));
+    }
+
     [Fact]
     public void LegacyConversion_NeverOverwritesAnEarlierCopy()
     {

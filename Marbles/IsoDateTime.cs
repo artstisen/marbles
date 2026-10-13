@@ -7,6 +7,35 @@ public static class IsoDateTime
 {
     #region ISO 8601 Timestamp
 
+    // A date with the day first, as an early version of Marbles wrote it: "17-11-2021 12:21:46"
+    private static readonly System.Text.RegularExpressions.Regex DayFirst = new(
+        @"^\s*(\d{1,2})[-./](\d{1,2})[-./](\d{4})(?:[ T]+(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?)?\s*$",
+        System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// A timestamp written with the day first ("17-11-2021 12:21:46") turned around to the format of Marbles
+    /// ("2021-11-17 12:21:46"), so it sorts by its date. A timestamp in the right format, and anything that is
+    /// not a date with the day first, is returned as it is
+    /// </summary>
+    /// <param name="timestamp">The timestamp of an entry</param>
+    /// <param name="corrected">True if it was turned around</param>
+    internal static string CorrectDayFirst(string timestamp, out bool corrected)
+    {
+        corrected = false;
+        if (string.IsNullOrEmpty(timestamp)) return timestamp;
+        var match = DayFirst.Match(timestamp);
+        if (!match.Success) return timestamp;
+        int Number(int group) => match.Groups[group].Success ? int.Parse(match.Groups[group].Value) : 0;
+        int day = Number(1), month = Number(2), year = Number(3);
+        // Not a day and a month: the text is left alone
+        if (month is < 1 or > 12 || day < 1 || day > DateTime.DaysInMonth(Math.Max(1, year), month)) return timestamp;
+        int hour = Number(4), minute = Number(5), second = Number(6);
+        if (hour > 23 || minute > 59 || second > 59) return timestamp;
+        corrected = true;
+        return year.ToString("0000") + "-" + month.ToString("00") + "-" + day.ToString("00") + " " +
+               hour.ToString("00") + ":" + minute.ToString("00") + ":" + second.ToString("00");
+    }
+
     // ISO-8601 datetime
     // Get culture invariant datetime string
     /// yyyy-MM-dd HH:mm:ss

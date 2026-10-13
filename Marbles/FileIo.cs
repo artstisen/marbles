@@ -331,6 +331,8 @@ internal static class FileIo
     /// <summary>
     /// Save the current (just loaded) legacy data file in the current file format.
     /// A copy of the original file is kept alongside it, with ".legacy" added to the file name.
+    /// The dates of entries written with the day first by an early version ("17-11-2021 12:21:46") are turned
+    /// around ("2021-11-17 12:21:46"), so the entries sort by their dates.
     /// </summary>
     /// <returns>DialogText.Success or an error message</returns>
     internal static string ConvertLegacyFile()
@@ -355,7 +357,26 @@ internal static class FileIo
             return e.Message;
         }
 
+        var corrected = CorrectTimestamps(Entries.GetEntries());
+        if (corrected > 0) Init.Log("Timestamps corrected: " + corrected, false);
         return SaveEntries();
+    }
+
+    /// <summary>
+    /// Turn the dates of entries that are written with the day first around (see IsoDateTime.CorrectDayFirst)
+    /// </summary>
+    /// <returns>The number of dates that were corrected</returns>
+    internal static int CorrectTimestamps(IEnumerable<Entry> entries)
+    {
+        var count = 0;
+        foreach (var entry in entries)
+        {
+            entry.DateCreated = IsoDateTime.CorrectDayFirst(entry.DateCreated, out var created);
+            entry.DateChanged = IsoDateTime.CorrectDayFirst(entry.DateChanged, out var changed);
+            count += (created ? 1 : 0) + (changed ? 1 : 0);
+        }
+
+        return count;
     }
 
     #endregion
