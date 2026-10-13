@@ -194,7 +194,8 @@ internal static class LogoEditor
 
     /// <summary>
     /// The Cells page of the Colors tab: the logo on the grid of the editor, where cells are painted in a color
-    /// of their own (c picks the color to paint with, Space paints, x gives a cell the color of its row again).
+    /// of their own (c picks the color to paint with, e takes the color of the cell of the cursor, Space paints,
+    /// x gives a cell the color of its row again).
     /// "v" selects a rectangle to paint or clear in one go
     /// </summary>
     private sealed class CellsPage : ITabPage
@@ -263,7 +264,9 @@ internal static class LogoEditor
             else ColorLine(area, 3, Lang.T("Paint color:"), null, Lang.T("none (c: pick a color)"));
             if (_editing.CellColor(_row, _column) is { } cell)
             {
-                ColorLine(area, 4, Lang.T("Color of the cell:"), cell, ColorPicker.Name(cell));
+                // A cell with a color of its own: "e" paints with that color
+                ColorLine(area, 4, Lang.T("Color of the cell:"), cell, ColorPicker.Name(cell),
+                    cell == _paint ? string.Empty : Lang.T("(e: pick this color)"));
             }
             else
             {
@@ -272,8 +275,9 @@ internal static class LogoEditor
         }
 
         // A line below the grid: a label, and the name of a color in the color (or a note, in the color of the
-        // dividers)
-        private void ColorLine(TabArea area, int line, string label, ConsoleColor? color, string name)
+        // dividers), and a tip after it
+        private void ColorLine(TabArea area, int line, string label, ConsoleColor? color, string name,
+            string tip = "")
         {
             Tools.SetCursorEx(_gridTop + LogoArt.Rows + line, area.Left + 1);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -283,8 +287,17 @@ internal static class LogoEditor
             var room = Math.Max(0, area.Left + area.Width - 1 - Console.CursorLeft);
             name = Tools.TruncateString(name, room, true);
             Console.Write(name);
+            room -= TextMetrics.WidthOf(name);
+            if (tip.Length > 0)
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                tip = Tools.TruncateString("  " + tip, room, true);
+                Console.Write(tip);
+                room -= TextMetrics.WidthOf(tip);
+            }
+
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(new string(' ', Math.Max(0, room - TextMetrics.WidthOf(name))));
+            Console.Write(new string(' ', Math.Max(0, room)));
         }
 
         private void Move(int rows, int columns)
@@ -382,6 +395,10 @@ internal static class LogoEditor
                 case 'c':
                     PickPaint();
                     return TabResult.Redraw;
+                case 'e':
+                    // Paint with the color the cell of the cursor has of its own
+                    if (_editing.CellColor(_row, _column) is { } own) _paint = own;
+                    return TabResult.None;
                 case 'x':
                     return Apply(null);
                 case 'X':

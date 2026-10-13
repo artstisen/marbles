@@ -132,6 +132,7 @@ The logo of the start and login pages can be one of your own. The logos are chos
 
 - `h` `j` `k` `l` (or the arrow keys) move, `0` `$` go to the start/end of the row, `gg` `G` to the first/last row
 - `c` Pick the color to paint with from the list of colors
+- `e` Paint with the color of the cell under the cursor, when it has a color of its own (the line _Color of the cell_ shows the tip `(e: pick this color)`). It is a quick way to go on with a color that is already in the logo
 - `Space` Paint the cell under the cursor and move to the next one (the first time, the color is asked for)
 - `x` Clear the color of the cell: it has the color of its row again
 - `v` Select a rectangle (**VISUAL**): move to the opposite corner, then `Space` paints all its cells and `x` clears them. `Esc` (or `v`) gives up the selection

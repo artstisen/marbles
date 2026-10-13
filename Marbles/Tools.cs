@@ -1550,6 +1550,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Colors"), Lang.T("Each row in a color of its own, or all in one"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Cells"), Lang.T("Cells in colors of their own, painted on the grid"), false));
             _shortcutList.Add(new Shortcut("c Space", Lang.T("Pick the color to paint with/Paint the cell"), false));
+            _shortcutList.Add(new Shortcut("e", Lang.T("Paint with the color of the cell"), false));
             _shortcutList.Add(new Shortcut("x X", Lang.T("Clear the color of the cell/of all the cells"), false));
             _shortcutList.Add(new Shortcut("v", Lang.T("Select a rectangle to paint or clear (Esc: cancel)"), false));
             _shortcutList.Add(new Shortcut("S", Lang.T("Save as a logo of your own (asks for a name)"), false));
