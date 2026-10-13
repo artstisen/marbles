@@ -273,12 +273,13 @@ internal sealed class TabFrame
             Console.Write(" " + fitted[i] + " ");
         }
 
-        // The key that goes to the next tab, at the right end of the row of the tabs (when there is room)
+        // The key that goes to the next tab, at the right end of the row of the tabs (when there is room), in
+        // the color of the frame and a column in from its right side
         const string tabKey = "Tab"; // English: a key
-        if (fitted.Count > 1 && labels.Length + 2 <= right - tabKey.Length)
+        if (fitted.Count > 1 && labels.Length + 2 <= right - tabKey.Length - 1)
         {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHint);
-            Tools.SetCursorEx(top + 1, right - tabKey.Length + 1);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabFrame);
+            Tools.SetCursorEx(top + 1, right - tabKey.Length);
             Console.Write(tabKey);
         }
 
@@ -321,12 +322,13 @@ internal sealed class TabFrame
                 Console.Write(" " + subNames[i] + " ");
             }
 
-            // The keys that change the sub-tab, at the right end of the row (when there is room)
+            // The keys that change the sub-tab, at the right end of the row (when there is room), in the color
+            // of the frame
             var subEnd = 3 + subStarts[^1] - 1 + TextMetrics.WidthOf(subNames[^1]) + 2;
             var keyColumn = right - 1 - subKeys.Length;
             if (subNames.Count > 1 && keyColumn > subEnd)
             {
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHint);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabFrame);
                 Tools.SetCursorEx(top + 3, keyColumn);
                 Console.Write(subKeys);
             }
