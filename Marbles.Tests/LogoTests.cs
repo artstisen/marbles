@@ -176,20 +176,27 @@ public class LogoTests : IDisposable
         var islands = Logos.Load("Islands")!;
         Assert.Equal("Islands", islands.Name);
         Assert.True(islands.HasCellColors);
-        // Every character that can be seen has a color, and the water is blue
+        // Every character that can be seen has a color, but the four stars in the sky, which have the color of
+        // the logo. The water is blue and the sun yellow
+        var stars = new[] { (0, 1), (0, 20), (0, 40), (1, 13) };
         for (var row = 0; row < LogoArt.Rows; row++)
         {
             for (var column = 0; column < LogoArt.Width; column++)
             {
-                Assert.Equal(islands[row, column] != ' ', islands.CellColor(row, column) != null);
                 Assert.True(LogoArt.Typeable(islands[row, column]));
+                if (islands[row, column] == ' ') continue;
+                Assert.Equal(!stars.Contains((row, column)), islands.CellColor(row, column) != null);
             }
         }
 
+        Assert.All(stars, star => Assert.Equal('.', islands[star.Item1, star.Item2]));
         Assert.Equal('~', islands[3, 1]);
         Assert.Equal(ConsoleColor.Blue, islands.CellColor(3, 1));
-        Assert.Equal('O', islands[1, 30]);
+        Assert.Equal('0', islands[1, 30]);
         Assert.Equal(ConsoleColor.Yellow, islands.CellColor(1, 30));
+        Assert.Equal(" . ,-\\|/-,".PadRight(20) + ".", islands.Row(0)[..21]);
+        Assert.StartsWith("~~~/..;...;", islands.Row(3));
+        Assert.Null(islands.RowColor(0));
 
         // They cannot be saved over, renamed or deleted
         Assert.True(Logos.IsBuiltIn("ISLANDS"));

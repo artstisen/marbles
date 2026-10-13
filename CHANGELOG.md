@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Logos**: the built-in logo _Islands_ is drawn again, with a sun with rays, coconuts, and stars in the sky.
 - **Color schemes**: the built-in scheme _Night Writer_ is replaced by **Tasty Bytes**, which is used with the logo _Reflections_: selecting the scheme selects the logo too (`uselogo=` in a scheme file).
 - **Color schemes**: the **Selector** keeps its colors when the colors of Highlight are changed (it no longer has `[Default]`, which followed the highlight).
 - **Lists of entries**: `T` changes the title of the selected entry (as `:title`). It no longer goes to Top 20 from a list; Top 20 is opened from the main menu.

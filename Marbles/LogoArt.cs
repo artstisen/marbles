@@ -235,16 +235,16 @@ internal sealed class LogoArt
     }
 
     // Two islands with palms, one of sand and one of grass, and the sun over the water between them: a logo with
-    // a color for each cell
+    // colors for its cells (the stars in the sky have the color of the logo)
     private static LogoArt Islands => Parse(string.Join("\n",
-        @"   ,-\|/-,                  \ | /              ,-\|/-, ,-\|/-,",
-        @"   '  |  '      __         -- O --      __     '  |  ' '  |  '",
-        @"    __|_____.--'  '-.       / | \   _.-'  '-._____|_______|_",
-        @"~~~/..:......:.......\~~~~~~~~~~~~~/,,,;,,,,,;,,,,,,,;,,,,,\~~~",
-        "cells=...AAAAAAA..................6.6.6..............AAAAAAA.AAAAAAA",
-        "cells=...A..6..A......EE.........66.E.66......AA.....A..6..A.A..6..A",
-        "cells=....EE6EEEEEEEEE..EEE.......6.6.6...AAAA..AAAAAAAA6AAAAAAA6A",
-        "cells=B99EEE6EEEEEE6EEEEEEEE99B99B9EEE9B9AAAA2AAAAA2AAAAAAA2AAAAAAB99"), IslandsName);
+        @" . ,-\|/-,          .      .\.|./.      .      .(\|/), ,-\|/-,",
+        @"   '  |  '   .  _,       --~= 0 =~--    _.     '' |' : '  |  '",
+        @"    __|_o___.--'. :-.      '/'|'\'  _.-'.;'-.___o_|_;_.___|_",
+        @"~~~/..;...;..;...;...\~~~~~~~~~~~~~/,,,;,,,,,;,,,;,,,;,,,,,\~~~",
+        "cells=...222AAAA.................66EEE66.............AAAAA22.AAAA222",
+        "cells=...2..6..A......EE......666EE6E6EE666...AA.....AA662.2.A..6..2",
+        "cells=....E66E6EEE6EE6E.EEE......66EEE66..AAAAAA2A2AAACA622AAAAA62",
+        "cells=B996EE6EEEEEE6EEEEEEEE99B99B9EEE9B9AAAA2AAAAA2AAAAAAA2AAAAA2B99"), IslandsName);
 }
 
 /// <summary>
