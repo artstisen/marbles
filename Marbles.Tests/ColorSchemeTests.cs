@@ -132,6 +132,38 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
+    public void TheSelector_KeepsItsColors_WhenTheHighlightIsChanged()
+    {
+        foreach (var builtIn in ColorScheme.BuiltIn)
+        {
+            // From the start the colors of the highlight, as colors of its own
+            Assert.Equal(builtIn.Highlight, builtIn.Selector);
+            Assert.Equal(builtIn.HighlightText, builtIn.SelectorText);
+        }
+
+        var scheme = ColorScheme.Default;
+        var selector = scheme.SelectorColor;
+        var selectorText = scheme.SelectorTextColor;
+        scheme.Set(ColorItem.Highlight, ConsoleColor.Magenta);
+        scheme.Set(ColorItem.HighlightText, ConsoleColor.White);
+        Assert.Equal(selector, scheme.SelectorColor);
+        Assert.Equal(selectorText, scheme.SelectorTextColor);
+        Assert.False(ColorScheme.CanBeDefault(ColorItem.Selector));
+        Assert.False(ColorScheme.CanBeDefault(ColorItem.SelectorText));
+        var read = ColorScheme.Parse(scheme.Serialize(), "Mine");
+        Assert.Equal(selector, read.Selector);
+        Assert.Equal(ConsoleColor.Magenta, read.Highlight);
+
+        // A scheme file without the colors of the selector (or with "default"): the ones of its highlight
+        var old = ColorScheme.Parse("highlight=Yellow\nhighlighttext=DarkBlue\n", "Old");
+        Assert.Equal(ConsoleColor.Yellow, old.Selector);
+        Assert.Equal(ConsoleColor.DarkBlue, old.SelectorText);
+        old = ColorScheme.Parse("highlight=Green\nselector=default\nselectortext=default\n", "Old");
+        Assert.Equal(ConsoleColor.Green, old.Selector);
+        Assert.Equal(ColorScheme.Default.HighlightText, old.SelectorText);
+    }
+
+    [Fact]
     public void LineNumbersAndTheSelector_HaveColorsOfTheirOwn()
     {
         var scheme = ColorScheme.BuiltIn[2].Clone();

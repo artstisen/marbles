@@ -679,11 +679,6 @@ internal static class SchemeEditor
             };
         }
 
-        if (group.Color == ColorItem.Selector && Preview.Selector == null && Preview.SelectorText == null)
-        {
-            return Lang.T("[Default]: the highlight");
-        }
-
         if (group.Color == ColorItem.Unsaved && Preview.Unsaved == null && Preview.UnsavedText == null)
         {
             return Lang.T("[Default]: the text inverted");

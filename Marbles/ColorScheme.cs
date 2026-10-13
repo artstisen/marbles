@@ -171,7 +171,7 @@ internal sealed class ColorScheme
             or ColorItem.Tab
             or ColorItem.TabText or ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints
             or ColorItem.Unsaved or ColorItem.UnsavedText or ColorItem.LineNumbers or ColorItem.CurrentLineNumber
-            or ColorItem.Selector or ColorItem.SelectorText || IsSyntax(item, out _);
+            || IsSyntax(item, out _);
 
     internal ConsoleColor? Get(ColorItem item)
     {
@@ -367,6 +367,9 @@ internal sealed class ColorScheme
     {
         var scheme = BuiltIn[0].Clone();
         scheme.Name = name;
+        // The selector has colors of its own: without them in the text, the ones of the highlight of the text
+        scheme.Selector = null;
+        scheme.SelectorText = null;
         foreach (var rawLine in text.Split('\n'))
         {
             var line = rawLine.Trim();
@@ -395,6 +398,8 @@ internal sealed class ColorScheme
             }
         }
 
+        scheme.Selector ??= scheme.Highlight;
+        scheme.SelectorText ??= scheme.HighlightText;
         return scheme;
     }
 
@@ -412,7 +417,9 @@ internal sealed class ColorScheme
             Name = name, Background = background, Text = text, Logo = logo, Dividers = dividers,
             Favorites = favorites, Accent = previewTitle, EditorTitle = editorTitle, Highlight = highlight,
             HighlightText = highlightText, Attention = attention, AttentionText = attentionText, Warning = warning,
-            WarningText = warningText
+            WarningText = warningText,
+            // The selector starts with the colors of the highlight, and keeps them when the highlight is changed
+            Selector = highlight, SelectorText = highlightText
         };
     }
 

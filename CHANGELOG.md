@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Color schemes**: the **Selector** keeps its colors when the colors of Highlight are changed (it no longer has `[Default]`, which followed the highlight).
 - **Lists of entries**: `T` changes the title of the selected entry (as `:title`). It no longer goes to Top 20 from a list; Top 20 is opened from the main menu.
 - **Boxes**: the highlighted text of a message is written without a period at its end (_Invalid password_, _File not found_ ...). The questions about changes that are not saved (logos, color schemes) have _The changes are not saved._ as the note below the question. Configuration (Editor): shorter names, _Line numbers_, _Wrap long lines_ and _Keep 12 lines around the cursor_.
 - **Configuration** (Layout): **Logo animation**, the speed of the sweep of the logo: Slow, Fast (the default), Very fast or Off. Setting `logoanim` (`slow`, `fast`, `veryfast`, `off`).
