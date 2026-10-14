@@ -150,11 +150,11 @@ public class LogoTests : IDisposable
     [Fact]
     public void LogosOfYourOwn_AreFiles()
     {
-        Assert.Equal(new[] { "Marbles", "Reflections", "Islands" }, Logos.AllNames());
+        Assert.Equal(new[] { "Marbles", "Reflections", "Islands", "Adventure" }, Logos.AllNames());
         var mine = new LogoArt("My logo", new[] { "Hello" });
         Assert.Equal(DialogText.Success, Logos.Save(mine));
         Assert.True(File.Exists(Path.Combine(_directory, "My logo.txt")));
-        Assert.Equal(new[] { "Marbles", "Reflections", "Islands", "My logo" }, Logos.AllNames());
+        Assert.Equal(new[] { "Marbles", "Reflections", "Islands", "Adventure", "My logo" }, Logos.AllNames());
         Assert.Equal("Hello".PadRight(63), Logos.Load("my logo")!.Row(0));
         Assert.Equal(DialogText.Success, Logos.Delete("My logo"));
         Assert.Null(Logos.Load("My logo"));
@@ -204,6 +204,30 @@ public class LogoTests : IDisposable
         Assert.NotEqual(DialogText.Success, Logos.Save(islands));
         Assert.NotEqual(DialogText.Success, Logos.Delete("Reflections"));
         Assert.NotEqual(DialogText.Success, Logos.Rename("Islands", "Mine"));
+    }
+
+    [Fact]
+    public void Adventure_IsAHutInTheForest_WithAColorForEachCell()
+    {
+        var adventure = Logos.Load("adventure")!;
+        Assert.Equal("Adventure", adventure.Name);
+        Assert.True(Logos.IsBuiltIn("Adventure"));
+        for (var row = 0; row < LogoArt.Rows; row++)
+        {
+            for (var column = 0; column < LogoArt.Width; column++)
+            {
+                Assert.True(LogoArt.Typeable(adventure[row, column]));
+                if (adventure[row, column] != ' ') Assert.NotNull(adventure.CellColor(row, column));
+            }
+        }
+
+        // The snow on the mountain, the lit window of the hut and the stream
+        Assert.Equal('^', adventure[1, 7]);
+        Assert.Equal(ConsoleColor.White, adventure.CellColor(1, 7));
+        Assert.Equal('#', adventure[3, 31]);
+        Assert.Equal(ConsoleColor.Yellow, adventure.CellColor(3, 31));
+        Assert.Equal('~', adventure[3, 41]);
+        Assert.Equal(ConsoleColor.Blue, adventure.CellColor(3, 41));
     }
 
     [Fact]

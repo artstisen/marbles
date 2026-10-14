@@ -5,7 +5,7 @@ namespace Marbles;
 /// <summary>
 /// A logo of the start and login pages: 4 rows of 63 characters, each row in a color of its own or in the color
 /// of the logo (of the color scheme). The built-in logos are "Marbles" (the one used from the start),
-/// "Reflections" and "Islands"; the ones made by the user are kept as files
+/// "Reflections", "Islands" and "Adventure"; the ones made by the user are kept as files
 /// (Logos): the 4 rows, and a line "colors=" with the color of each row ("default" for the color of the logo).
 /// A cell can have a color of its own, which is used instead of the color of its row: these are 4 lines "cells="
 /// after the others, with a character for each cell (the number of the color as a hex digit, "." for none).
@@ -18,11 +18,12 @@ internal sealed class LogoArt
     internal const string BuiltInName = "Marbles";
     private const string ReflectionsName = "Reflections";
     private const string IslandsName = "Islands";
+    private const string AdventureName = "Adventure";
 
     /// <summary>
     /// The names of the built-in logos, in the order they are listed
     /// </summary>
-    internal static readonly IReadOnlyList<string> BuiltInNames = new[] { BuiltInName, ReflectionsName, IslandsName };
+    internal static readonly IReadOnlyList<string> BuiltInNames = new[] { BuiltInName, ReflectionsName, IslandsName, AdventureName };
 
     internal string Name { get; set; } = BuiltInName;
 
@@ -216,7 +217,8 @@ internal sealed class LogoArt
         name = name.Trim();
         if (name.Equals(BuiltInName, StringComparison.OrdinalIgnoreCase)) return BuiltIn;
         if (name.Equals(ReflectionsName, StringComparison.OrdinalIgnoreCase)) return Reflections;
-        return name.Equals(IslandsName, StringComparison.OrdinalIgnoreCase) ? Islands : null;
+        if (name.Equals(IslandsName, StringComparison.OrdinalIgnoreCase)) return Islands;
+        return name.Equals(AdventureName, StringComparison.OrdinalIgnoreCase) ? Adventure : null;
     }
 
     // The logo of Marbles with a color for each row, from the sky to the grass
@@ -245,6 +247,18 @@ internal sealed class LogoArt
         "cells=...2..6..A...B..EE......666EE6E6EE666...AA.....AA662.2.A..6..2",
         "cells=....E66E6EEE6EE6E.EEE......66EEE66..AAAAAA2A2AAACA622AAAAA62",
         "cells=B996EE6EEEEEE6EEEEEEEE99B99B9EEE9B9AAAA2AAAAA2AAAAAAA2AAAAA2B99"), IslandsName);
+
+    // A hut in the forest with smoke from its chimney and a lit window, a mountain with snow on its top to the
+    // left, a stream coming down past the hut, and birds in the sky: a logo with a color for each of its cells
+    private static LogoArt Adventure => Parse(string.Join("\n",
+        @"       /\          ^             ~~     v          ^    ^",
+        @"      /^^\  /\    /^\   ^    ___|_____     v      /^\  /^\  ^",
+        @"     /    \/  \  /^^^\ /^\  /__________\  .~~~~  /^^^\/^^^\/^\",
+        @"____/__________\___|____|____|[#]__|'||_~~~~~~~~~~_|____|___|__",
+        "cells=.......FF..........A.............78.....8..........A....A",
+        "cells=......7FF7..77....2A2...A....444844444.....8......2A2..2A2..A",
+        "cells=.....7....77..7..2AAA2.2A2..CCCCCCCCCCCC..BBBB9..2AAA22AAA22A2",
+        "cells=2228722222222227822622226222266E6226666299B99B99B92622226222622"), AdventureName);
 }
 
 /// <summary>

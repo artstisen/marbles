@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Logos**: a fourth built-in logo, **Adventure**: a hut in the forest with smoke from the chimney and a lit window, a mountain with snow on its top, and a stream.
 - **Text editor**: a file is opened where the cursor was when it was closed the last time. The line and column are kept in the history and, for a favorite, in the favorites (`3:12` before the path); a file opened from search results goes to the line found.
 - **Entries**: `:readonly` (`:ro`) in the lists makes an entry read only, or not any more. It is marked `RO` in the lists, cannot be changed in the editor (label _Read only_), and is not renamed, reverted or deleted. A copy made with `:duplicate` can be edited.
 - **Color schemes**: **Tab text** (Page 2, below Selector), the color of the text in frames with tabs and in boxes; the names of the tabs, the titles of boxes and highlighted text keep their colors (`frametext` in a scheme file).
