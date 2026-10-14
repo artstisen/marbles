@@ -148,8 +148,8 @@ public class ColorSchemeTests : IDisposable
                        "keyhints=default\nunsaved=default\nunsavedtext=default\nlinenumbers=default\n" +
                        "currentline=White\nselector=Cyan\nselectortext=Black\nframetext=default\n" +
                        "syntax1=default\nsyntax2=default\nsyntax3=default\nsyntax4=default\nsyntax5=default\n" +
-                       "syntax6=default\nsyntax7=Yellow\nsyntax8=Cyan\nsyntax9=Green\nsyntax10=Magenta\n" +
-                       "syntax11=Red\nsyntax12=default\ntabhighlight=false\nuselogo=Marbles\n";
+                       "syntax6=default\nsyntax7=Red\nsyntax8=Magenta\nsyntax9=Yellow\nsyntax10=Cyan\n" +
+                       "syntax11=Green\nsyntax12=default\ntabhighlight=false\nuselogo=Marbles\n";
         // Without the comment lines at the top
         var text = string.Join("\n", ColorScheme.Default.Serialize().Split('\n').Where(line => !line.StartsWith(';')));
         Assert.Equal(expected, text);

@@ -479,11 +479,11 @@ internal sealed class ColorScheme
         scheme.TabCorner = ConsoleColor.Gray;
         scheme.CurrentLineNumber = ConsoleColor.White;
         // Heading 1 to 5 (Syntax 7 to 11)
-        scheme.Set(ColorItem.Syntax7, ConsoleColor.Yellow);
-        scheme.Set(ColorItem.Syntax8, ConsoleColor.Cyan);
-        scheme.Set(ColorItem.Syntax9, ConsoleColor.Green);
-        scheme.Set(ColorItem.Syntax10, ConsoleColor.Magenta);
-        scheme.Set(ColorItem.Syntax11, ConsoleColor.Red);
+        scheme.Set(ColorItem.Syntax7, ConsoleColor.Red);
+        scheme.Set(ColorItem.Syntax8, ConsoleColor.Magenta);
+        scheme.Set(ColorItem.Syntax9, ConsoleColor.Yellow);
+        scheme.Set(ColorItem.Syntax10, ConsoleColor.Cyan);
+        scheme.Set(ColorItem.Syntax11, ConsoleColor.Green);
         scheme.UseLogo = LogoArt.BuiltInName;
         return scheme;
     }
