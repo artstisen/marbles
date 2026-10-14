@@ -12,6 +12,7 @@ Every place with a command line (main menu, entry view, lists of entries, file b
 - A new place with a command line gets a value in `CommandContext`, a table, and passes its context to `CommandLine.Read`
 - `CommandTests` compares the tables with the code that runs the commands (it reads the source files), and fails with the names that differ. If the code that runs the commands of a place is moved or restructured, update where that test looks
 - Also add the command to the help (`Tools.cs`, the section of the place) and to the guide that covers it
+- When what a key or command does changes (a key gets another meaning, a command does more or is refused in a case), update the help rows of the place, its key hints on the bottom line, the guide and `CHANGELOG.md` in the same change, and the language files when a text changes
 
 ## Texts and languages
 Text shown to the user is written in English in the code and given to `Lang.T("...")`, or `Lang.F("... {0} ...", value)` when it has values in it. The other languages are files in `Marbles/Lang/` (`da.txt` ...), built into the program.
