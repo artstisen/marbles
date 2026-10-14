@@ -1741,6 +1741,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md, css, js, json, xml)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Entries"), Lang.T("Remember their colors (shown as MD, HTML ...)"), false));
             _shortcutList.Add(new Shortcut(":number :nu", Lang.T("Line numbers on/off"), false));
+            _shortcutList.Add(new Shortcut(":yankall", Lang.T("Yank all the text (as gg V G y; the clipboard as y)"), false));
             _shortcutList.Add(new Shortcut(":%y :%d :2,9d", Lang.T("Yank all/Delete all/Delete line 2 to 9"), false));
             _shortcutList.Add(new Shortcut(":clear", Lang.T("Clear all"), false));
         }

@@ -61,6 +61,27 @@ public class ClipboardTests : IDisposable
     }
 
     [Fact]
+    public void YankAll_YanksAllTheText_AsAYank()
+    {
+        var editor = Editor("one\ntwo\nthree");
+        editor.ClipboardEveryYank = true;
+        editor.Type("j$");
+        Assert.Equal(EditorRequest.Clipboard, editor.Type(":yankall<CR>"));
+        Assert.Equal("one\ntwo\nthree\n", editor.ClipboardText);
+        Assert.Equal("one\ntwo\nthree", editor.Buffer.GetText());
+        Assert.Equal(0, editor.Cursor.Line);
+        // What is yanked is put as lines
+        editor.Type("Gp");
+        Assert.Equal("one\ntwo\nthree\none\ntwo\nthree", editor.Buffer.GetText());
+        // Only with "+ in front when every yank is not sent to the clipboard
+        var other = Editor("text");
+        other.ClipboardEveryYank = false;
+        Assert.Equal(EditorRequest.None, other.Type(":yankall<CR>"));
+        Assert.Equal(EditorRequest.Clipboard, other.Type("\"+:yankall<CR>"));
+        Assert.Equal("text\n", other.ClipboardText);
+    }
+
+    [Fact]
     public void AnotherRegister_IsNotUsed()
     {
         var editor = Editor("one");

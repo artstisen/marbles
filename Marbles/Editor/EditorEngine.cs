@@ -1168,6 +1168,10 @@ internal sealed partial class EditorEngine
             case "yank":
                 ApplyOperatorToLines('y', Cursor.Line, Cursor.Line);
                 break;
+            case "yankall":
+                // All the text, as "gg V G y" (and ":%y"): to the string memory and the clipboard as a yank
+                ApplyOperatorToLines('y', 0, Buffer.LineCount - 1);
+                break;
             default:
                 SetError(Lang.T("Not an editor command: ") + command);
                 break;
