@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Start page**: the Mode tab has **Jump menu** (`3`, also `Ctrl+O`), below Text Editor/File Management; Quick guide and Exit are now `4` and `5`.
 - **Jump menu** (`Ctrl+O`, `:jump`, `:ju`, and `J` in the options of the login page): a box with the tabs Jumps, Files, Favorites, Configuration and Data files, to go straight to a file, a page of Marbles or a data file. Names only (long ones shortened in the middle), a filter with `/`, `I` for information and `D` to remove a jump. The jumps are kept in `jump.txt`, the latest first.
 - **Logos**: _Adventure_ is the third built-in logo and _Islands_ the fourth.
 - **Logos**: a fourth built-in logo, **Adventure**: a hut in the forest with smoke from the chimney and a lit window, a mountain with snow on its top, and a stream.

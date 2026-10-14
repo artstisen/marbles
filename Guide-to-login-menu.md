@@ -9,8 +9,9 @@ Marbles can be used for encrypted notes and as an editor for ordinary text files
 ### Mode
 - `1` **Note Management (encrypted notes)**: Continue to the login page
 - `2` **Text Editor/File Management**: Open the [file browser](#file-browser) to edit plain text files and manage files. Closing the file browser returns here
-- `3` **Quick guide**: A short introduction to Marbles: what the two parts are for, the keys for moving around, and the modes of the editor. `Esc` closes it, and `?` shows the help with all the keys
-- `4` **Exit**: Close Marbles at once
+- `3` **Jump menu**: Open the [Jump menu](Guide-to-main-menu.md#jump-menu), to go straight to a file, a page of Marbles or a data file (also with `Ctrl+O`). Pages such as Color schemes and Help open on top of the start page
+- `4` **Quick guide**: A short introduction to Marbles: what the two parts are for, the keys for moving around, and the modes of the editor. `Esc` closes it, and `?` shows the help with all the keys
+- `5` **Exit**: Close Marbles at once
 
 Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking in a box on top of the page (`Y`/`N`, or `j`/`k` and `Enter`; `Esc` cancels).
 
@@ -27,7 +28,7 @@ The settings are on four pages, so they can be changed in one place without logg
 - **Text Editor only** and **Note Management only**: Use this Marbles for one of the two modes only. They are for running two copies of Marbles in separate directories, one as a text editor and one for notes. Only one of them can be set (setting one clears the other, and setting it again turns it off)
   - _Text Editor only_: _Note Management_ is not shown in the Mode tab, and the file browser does not open data files (`.mbls`): it says so on its bottom line
   - _Note Management only_: _Text Editor/File Management_ is not shown in the Mode tab
-  - The choices of the Mode tab are numbered as they are shown (`1` to `3`), and starting in the mode that is not used cannot be chosen (if it was chosen, the choices are shown at startup)
+  - The choices of the Mode tab are numbered as they are shown (`1` to `4`), and starting in the mode that is not used cannot be chosen (if it was chosen, the choices are shown at startup)
   - Saved as `onlymode` (`none`, `editor` or `notes`) in the settings file. _Reset all settings_ and `:defaults` turn both off
 - **Language**: The language of the menus, help and messages: English, Dansk (Danish), Deutsch (German), Norsk bokmål (Norwegian), Svenska (Swedish), Español (Spanish) or Français (French). `Enter` shows the languages in a box to pick from. Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
 

@@ -406,6 +406,7 @@ internal static class StartMenu
         {
             Notes,
             Editor,
+            Jump,
             QuickGuide,
             Exit
         }
@@ -416,6 +417,7 @@ internal static class StartMenu
             var choices = new List<Choice>();
             if (Only != OnlyMode.Editor) choices.Add(Choice.Notes);
             if (Only != OnlyMode.Notes) choices.Add(Choice.Editor);
+            choices.Add(Choice.Jump);
             choices.Add(Choice.QuickGuide);
             choices.Add(Choice.Exit);
             return choices;
@@ -426,6 +428,7 @@ internal static class StartMenu
         {
             Choice.Notes => DialogText.StartNotes,
             Choice.Editor => DialogText.StartEditor,
+            Choice.Jump => DialogText.StartJump,
             Choice.QuickGuide => DialogText.QuickGuide,
             _ => DialogText.StartExit
         }).ToArray();
@@ -462,6 +465,8 @@ internal static class StartMenu
             var shown = ChoicesShown();
             var count = shown.Count;
             _selected = Math.Min(_selected, count - 1);
+            // Ctrl+O: the Jump menu, as on the other pages
+            if (Marbles.Jump.IsKey(key)) return Open(Choice.Jump);
             if (key.Key is ConsoleKey.Enter or ConsoleKey.L or ConsoleKey.RightArrow) return Open(shown[_selected]);
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q)
             {
@@ -497,7 +502,7 @@ internal static class StartMenu
             return TabResult.None;
         }
 
-        // Open a choice: notes (the login page), the file browser, the quick guide, or exit
+        // Open a choice: notes (the login page), the file browser, the Jump menu, the quick guide, or exit
         private static TabResult Open(Choice choice)
         {
             switch (choice)
@@ -506,6 +511,10 @@ internal static class StartMenu
                     return TabResult.Close;
                 case Choice.Editor:
                     return BrowseFiles() ? TabResult.Close : TabResult.Redraw;
+                case Choice.Jump:
+                    // A place that is opened on top of the page returns here; the others leave it
+                    Marbles.Jump.Open();
+                    return TabResult.Redraw;
                 case Choice.QuickGuide:
                     QuickGuide.Show();
                     return TabResult.Redraw;

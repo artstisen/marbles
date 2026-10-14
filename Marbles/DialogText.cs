@@ -348,11 +348,12 @@ internal static class DialogText
     public static string StartConfiguration => Lang.T("Configuration");
     public static string StartExit => Lang.T("Exit");
     public static string QuickGuide => Lang.T("Quick guide");
+    public static string StartJump => Lang.T("Jump menu");
     public static string QuickGuideKeys => Lang.T("| h/l Page | j/k Line | ? All keys | Esc Close");
     public static string StartConfigSelect => Lang.T("Show choices on startup");
     public static string StartConfigNotes => Lang.T("Start in Note Management");
     public static string StartConfigEditor => Lang.T("Start in Text Editor (file browser)");
-    public static string StartKeys => Lang.T("j/k 1-4 Select | Enter Open | Tab Configuration | ? Help | Q Exit");
+    public static string StartKeys => Lang.T("j/k 1-5 Select | Enter Open | Tab Configuration | ? Help | Q Exit");
     public static string StartHelpKeys => Lang.T("j/k Select | Enter Open | Tab Mode | ? Help | Esc Back");
     public static string StartConfigKeys => Lang.T("j/k Select | Enter/Space Change | h/l Page | Tab Next tab | Esc Back");
     public static string ConfigMonochrome => Lang.T("Black and white (no colors)");
