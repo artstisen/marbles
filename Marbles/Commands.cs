@@ -74,7 +74,7 @@ internal static class Commands
             "q h fav ju"),
         [CommandContext.Start] = new Table(
             "note file mode config general layout editor system jump help about quick scheme logo snippet clipboard " +
-            "log restart quit exit",
+            "log restart reset quit exit",
             "notes browse ju h guide snip q"),
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +

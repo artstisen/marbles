@@ -1362,6 +1362,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":scheme :logo", Lang.T("Color schemes/Logos"), false));
             _shortcutList.Add(new Shortcut(":snip :clipboard", Lang.T("Snippet editor/Clipboard settings"), false));
             _shortcutList.Add(new Shortcut(":log :restart", Lang.T("View log/Restart Marbles"), false));
+            _shortcutList.Add(new Shortcut(":reset", DialogText.ConfigReset, false));
             _shortcutList.Add(new Shortcut(":q :exit", Lang.T("Exit Marbles (asks first)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("The pages General, Layout, Editor and System"), false));
             _shortcutList.Add(new Shortcut("j k 1-9", Lang.T("Select a setting (or the number of its row)"), false));

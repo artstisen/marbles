@@ -67,7 +67,7 @@ On every tab of the start page (Mode, the pages of Configuration, Help), `:` ope
 - `:jump` (or `:ju`) The [Jump menu](Guide-to-main-menu.md#jump-menu)
 - `:help` (or `:h`) The help of the start page, as `?`; `:about` The about page; `:quick` (or `:guide`) The quick guide
 - `:scheme` The color schemes; `:logo` The logos; `:snippet` (or `:snip`) The snippet editor; `:clipboard` The clipboard settings; `:log` The log
-- `:restart` Restart Marbles (asks first); `:quit`, `:exit` (or `:q`) Exit Marbles (asks first)
+- `:restart` Restart Marbles (asks first); `:reset` Reset all settings (asks first, as on the System page); `:quit`, `:exit` (or `:q`) Exit Marbles (asks first)
 
 The command names are the same in all languages, and the names of the main menu work here too (`:browse`, `:guide`, `:scheme`, `:logo`).
 

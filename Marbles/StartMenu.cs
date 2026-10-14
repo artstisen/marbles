@@ -252,6 +252,10 @@ internal static class StartMenu
             case "restart":
                 ChangeSetting(Setting.Restart, true);
                 break;
+            case "reset":
+                // As Reset all settings on the System page: asked first
+                ChangeSetting(Setting.Reset, true);
+                break;
             case "quit":
             case "exit":
             case "q":
