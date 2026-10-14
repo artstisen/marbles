@@ -5,7 +5,7 @@ namespace Marbles;
 /// <summary>
 /// A logo of the start and login pages: 4 rows of 63 characters, each row in a color of its own or in the color
 /// of the logo (of the color scheme). The built-in logos are "Marbles" (the one used from the start),
-/// "Reflections", "Islands" and "Adventure"; the ones made by the user are kept as files
+/// "Reflections", "Adventure" and "Islands"; the ones made by the user are kept as files
 /// (Logos): the 4 rows, and a line "colors=" with the color of each row ("default" for the color of the logo).
 /// A cell can have a color of its own, which is used instead of the color of its row: these are 4 lines "cells="
 /// after the others, with a character for each cell (the number of the color as a hex digit, "." for none).
@@ -23,7 +23,7 @@ internal sealed class LogoArt
     /// <summary>
     /// The names of the built-in logos, in the order they are listed
     /// </summary>
-    internal static readonly IReadOnlyList<string> BuiltInNames = new[] { BuiltInName, ReflectionsName, IslandsName, AdventureName };
+    internal static readonly IReadOnlyList<string> BuiltInNames = new[] { BuiltInName, ReflectionsName, AdventureName, IslandsName };
 
     internal string Name { get; set; } = BuiltInName;
 

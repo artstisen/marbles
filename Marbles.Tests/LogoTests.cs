@@ -150,11 +150,11 @@ public class LogoTests : IDisposable
     [Fact]
     public void LogosOfYourOwn_AreFiles()
     {
-        Assert.Equal(new[] { "Marbles", "Reflections", "Islands", "Adventure" }, Logos.AllNames());
+        Assert.Equal(new[] { "Marbles", "Reflections", "Adventure", "Islands" }, Logos.AllNames());
         var mine = new LogoArt("My logo", new[] { "Hello" });
         Assert.Equal(DialogText.Success, Logos.Save(mine));
         Assert.True(File.Exists(Path.Combine(_directory, "My logo.txt")));
-        Assert.Equal(new[] { "Marbles", "Reflections", "Islands", "Adventure", "My logo" }, Logos.AllNames());
+        Assert.Equal(new[] { "Marbles", "Reflections", "Adventure", "Islands", "My logo" }, Logos.AllNames());
         Assert.Equal("Hello".PadRight(63), Logos.Load("my logo")!.Row(0));
         Assert.Equal(DialogText.Success, Logos.Delete("My logo"));
         Assert.Null(Logos.Load("My logo"));
