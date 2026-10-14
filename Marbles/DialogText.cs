@@ -453,6 +453,12 @@ internal static class DialogText
         Lang.T("The file of snippets is not encrypted: the text can be read by anyone with access to it.");
     public static string SnippetAdded => Lang.T("Snippet added");
     public static string SnippetsFileOpen => Lang.T("This is the file of snippets");
+    public static string PeekHint => Lang.T("Peek: Esc closes, Enter opens the file");
+    public static string PeekReadOnly => Lang.T("Peek: read only (Enter opens the file)");
+    public static string PeekSelectFile => Lang.T("Select a file to peek at");
+    public static string PeekNotText => Lang.T("Not a text file");
+    public static string PeekMore => Lang.T("... (open the file to see the rest)");
+    public static string PeekDataFile => Lang.T("A data file is not peeked at");
     public static string FileKeepsItsName => Lang.T("This file keeps its name: Marbles uses it");
     public static string TitleIsForEntries => Lang.T(":title is for entries (a file: :rename)");
     public static string TitleChanged => Lang.T("The title is changed");

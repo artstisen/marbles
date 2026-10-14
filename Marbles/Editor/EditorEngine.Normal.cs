@@ -31,7 +31,7 @@ internal sealed partial class EditorEngine
     // A selection: where it was started, where the cursor was, the kind of selection, and "$" in Visual Block mode
     private sealed record Selected(TextPos Anchor, TextPos Cursor, EditorMode Mode, bool ToEnd);
 
-    private bool HasPending => _count.Length > 0 || _opCount.Length > 0 || _operator != NoKey || _prefix != NoKey;
+    internal bool HasPending => _count.Length > 0 || _opCount.Length > 0 || _operator != NoKey || _prefix != NoKey;
 
     private void ResetPending()
     {

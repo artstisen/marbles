@@ -68,4 +68,39 @@ public class ReadOnlyTests
         other.Type("x");
         Assert.Equal("onetw", other.Buffer.GetText());
     }
+
+    [Fact]
+    public void AReadOnlyText_CanHaveItsOwnMessage()
+    {
+        // A peek of the file browser tells that Enter opens the file
+        var editor = new EditorEngine("one", 40, 10, false) { ReadOnly = true, ReadOnlyMessage = DialogText.PeekReadOnly };
+        editor.Type("x");
+        Assert.Equal("one", editor.Buffer.GetText());
+        Assert.True(editor.MessageIsError);
+        Assert.Equal(DialogText.PeekReadOnly, editor.Message);
+    }
+
+    [Fact]
+    public void APeek_ShowsAllOfASmallFile()
+    {
+        Assert.Equal("one\ntwo\n", FileExplorer.PeekText("one\ntwo\n"));
+    }
+
+    [Fact]
+    public void APeek_ShowsTheStartOfALargeFile_AndTellsThatThereIsMore()
+    {
+        var lines = Enumerable.Range(1, FileExplorer.PeekMaxLines + 50).Select(i => "line " + i);
+        var peek = FileExplorer.PeekText(string.Join("\n", lines));
+        var shown = peek.Split('\n');
+        Assert.Equal("line 1", shown[0]);
+        Assert.Equal("line " + FileExplorer.PeekMaxLines, shown[FileExplorer.PeekMaxLines - 1]);
+        Assert.Equal(DialogText.PeekMore, shown[^1]);
+        Assert.Equal(FileExplorer.PeekMaxLines + 2, shown.Length);
+
+        // Long lines: no more than the size of a peek, cut between lines
+        var wide = string.Join("\n", Enumerable.Repeat(new string('x', 999), 300));
+        peek = FileExplorer.PeekText(wide);
+        Assert.True(peek.Length < FileExplorer.PeekMaxCharacters + 100);
+        Assert.All(peek.Split('\n').SkipLast(2), line => Assert.Equal(999, line.Length));
+    }
 }

@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **File browser**: `V` or `:peek` shows the selected file read-only in the other pane (a second pane is shown for it if needed), with the colors of its kind of file. The keys of the editor move and search in it; `Enter` opens the file in the editor at the cursor, `Esc` goes back. Large files are shown up to about 2000 lines.
 - **Start page**: `:` opens the command line on every tab, with `Tab` completion: `:note`, `:file`, `:mode`, `:config`, `:general`, `:layout`, `:editor`, `:system`, `:jump`, `:help`, `:about`, `:quick`, `:scheme`, `:logo`, `:snippet`, `:clipboard`, `:log`, `:restart`, `:reset` and `:quit`/`:exit` (the main menu's `:browse` and `:guide` work too).
 - **Editor**: `:rename` renames the file being edited (in a box, or `:rename name.md`); changes that are not saved stay so, and the favorites, the history and the jumps follow the file. In an entry, `:title` (and `:rename`) changes its title, saved at once. Renaming in the file browser now also updates the file history and the jumps.
 - **Jump menu**: it opens on the tab it was on the last time (while Marbles runs), and it is an item of the Marbles tab of the main menu (`:jump`, below Default settings).

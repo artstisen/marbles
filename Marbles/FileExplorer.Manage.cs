@@ -30,6 +30,9 @@ internal static partial class FileExplorer
             case ConsoleKey.C:
                 CopySelected();
                 break;
+            case ConsoleKey.V:
+                PeekSelected();
+                break;
             case ConsoleKey.Y:
                 DuplicateSelected();
                 break;
@@ -63,6 +66,9 @@ internal static partial class FileExplorer
             case "jump":
             case "ju":
                 Jump.Open();
+                break;
+            case "peek":
+                PeekSelected();
                 break;
             case "new":
                 NewFile(argument);
@@ -427,6 +433,95 @@ internal static partial class FileExplorer
             if (FileHistory.PathChanged(item.Path, path)) FileHistory.Save();
             JumpHistory.Load();
             if (JumpHistory.PathChanged(item.Path, path)) JumpHistory.Save();
+        }
+    }
+
+    // The most of a file a peek shows: the lines up to this size, with a line at the end telling that there
+    // is more
+    internal const int PeekMaxCharacters = 100_000;
+    internal const int PeekMaxLines = 2_000;
+
+    /// <summary>
+    /// The text a peek shows of a file: all of it, or the lines up to the size of a peek and a last line that
+    /// tells that there is more
+    /// </summary>
+    internal static string PeekText(string text)
+    {
+        var lines = text.Split('\n');
+        if (text.Length <= PeekMaxCharacters && lines.Length <= PeekMaxLines) return text;
+        var kept = new System.Text.StringBuilder();
+        var count = 0;
+        foreach (var line in lines)
+        {
+            if (count == PeekMaxLines || kept.Length + line.Length + 1 > PeekMaxCharacters) break;
+            kept.Append(line).Append('\n');
+            count++;
+        }
+
+        return kept + "\n" + DialogText.PeekMore;
+    }
+
+    // ":peek" or V: the selected file shown read-only in the other pane (two panes are shown for it, if one is
+    // shown). Enter opens it in the editor where the cursor is; Esc goes back to the browser
+    private static void PeekSelected()
+    {
+        var item = SelectedItem();
+        if (item == null || item.IsDirectory)
+        {
+            _message = DialogText.PeekSelectFile;
+            return;
+        }
+
+        if (IsDataFile(item))
+        {
+            _message = DialogText.PeekDataFile;
+            return;
+        }
+
+        TextFile file;
+        try
+        {
+            file = TextFile.Load(item.Path);
+        }
+        catch (Exception e)
+        {
+            _message = e.Message;
+            return;
+        }
+
+        // A file with zero bytes in it is not text
+        if (file.Text.Contains('\0'))
+        {
+            _message = DialogText.PeekNotText;
+            return;
+        }
+
+        var wasDual = DualPane;
+        DualPane = true;
+        try
+        {
+            // The pane next to the one with the file: the peek is shown on its list, below its label
+            var pane = 1 - _active;
+            var (left, width) = PaneArea(pane);
+            Draw(true);
+            var syntax = SyntaxHighlighter.TypeOfFile(item.Name);
+            var textArea = new TextArea(left, ListTop, width, PageSize, PeekText(file.Text), 0, false, false, false,
+                TextArea.SaveAsFile, false, new TextArea.PeekOptions(syntax, () => Draw(true)));
+            Tools.HideCursor();
+            if (textArea.OpenRequested)
+            {
+                // The file in the editor, at the place of the peek
+                _openAtIndex = textArea.GetCursorIndex();
+                _openAtFound = true;
+                Open(item);
+                _openAtIndex = 0;
+                _openAtFound = false;
+            }
+        }
+        finally
+        {
+            DualPane = wasDual;
+            if (!wasDual) Reload(OtherPane);
         }
     }
 

@@ -76,6 +76,21 @@ public class TextArea
     internal const int SaveAsFile = 2; // A plain text file opened from the file browser
 
     /// <summary>
+    /// A peek: a file shown read-only in a pane of the file browser (":peek"), with the colors of its kind of
+    /// text, and what draws the file browser behind it when the screen is drawn again
+    /// </summary>
+    internal sealed record PeekOptions(SyntaxType Syntax, Action DrawBehind);
+
+    // Set for a peek: there is no title or mode divider above the text, it is read only, Esc closes it and Enter
+    // asks for the file to be opened in the editor
+    private readonly PeekOptions? _peek;
+
+    /// <summary>
+    /// A peek was closed with Enter: the file is to be opened in the editor (at the cursor)
+    /// </summary>
+    internal bool OpenRequested { get; private set; }
+
+    /// <summary>
     /// The syntax highlighting of the entry shown in the next text area that is made for an entry (the editor or
     /// the preview). It is used once
     /// </summary>
@@ -135,9 +150,11 @@ public class TextArea
     }
 
     /// <param name="modified">Treat the text as changed from the start (it can be saved without editing it)</param>
+    /// <param name="peek">Show the text as a peek in a pane of the file browser (null: the editor)</param>
     internal TextArea(int left, int top, int width, int height, string text, int recallCursorIndex, bool scrollToEnd,
-        bool readOnly, bool openSearchDialog, int saveMode, bool modified)
+        bool readOnly, bool openSearchDialog, int saveMode, bool modified, PeekOptions? peek = null)
     {
+        _peek = peek;
         _top = top;
         _left = left;
         _width = width;
@@ -155,15 +172,17 @@ public class TextArea
         _engine = new EditorEngine(text ?? string.Empty, _textWidth, _height, _singleLine)
         {
             MaxCells = width - 3,
-            LineNumbers = LineNumbers && !_singleLine && !readOnly,
+            // A peek is narrow: no line numbers
+            LineNumbers = LineNumbers && !_singleLine && !readOnly && peek == null,
             Wrap = WordWrap || _singleLine,
             ScrollOffLines = ScrollOffLines,
             ScrollOff = ScrollOff && !_singleLine && !readOnly ? ScrollOffLines : 0
         };
         // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON) are colored, unless that is turned off
-        var fileType = saveMode == SaveAsFile && !_singleLine && !readOnly
-            ? SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName)
-            : SyntaxType.None;
+        var fileType = peek != null ? peek.Syntax
+            : saveMode == SaveAsFile && !_singleLine && !readOnly
+                ? SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName)
+                : SyntaxType.None;
         if (fileType != SyntaxType.None)
         {
             _engine.SyntaxDefault = fileType;
@@ -184,6 +203,13 @@ public class TextArea
         // An entry that is read only cannot be changed in the editor
         _engine.ReadOnly = saveMode == SaveAsEntry && !_singleLine && NextEntryReadOnly;
         NextEntryReadOnly = false;
+        if (peek != null)
+        {
+            // A peek only shows the file
+            _engine.ReadOnly = true;
+            _engine.ReadOnlyMessage = DialogText.PeekReadOnly;
+        }
+
         if (scrollToEnd)
         {
             _engine.CursorToEnd();
@@ -214,6 +240,13 @@ public class TextArea
         if (openSearchDialog && !_engine.Buffer.IsEmpty)
         {
             _engine.OpenSearch();
+        }
+
+        if (_peek != null)
+        {
+            // The pane is cleared where the text is written, and the keys of a peek are told
+            Array.Fill(_shownCells, width - 1);
+            _engine.SetMessage(DialogText.PeekHint, false);
         }
 
         DrawReadOnlyLabel();
@@ -273,7 +306,35 @@ public class TextArea
             while (!_exit)
             {
                 var key = Console.ReadKey(true);
+                if (_peek != null && key.Key == ConsoleKey.Enter && _engine.Mode == EditorMode.Normal)
+                {
+                    // Enter in a peek: the file in the editor
+                    OpenRequested = true;
+                    break;
+                }
+
+                // Esc closes a peek, also when a search is highlighted (a key typed before it is only cancelled)
+                if (_peek != null && key.Key == ConsoleKey.Escape && _engine.Mode == EditorMode.Normal &&
+                    !_engine.HasPending) break;
+
                 var request = _engine.HandleKey(key);
+                if (_peek != null && request is EditorRequest.Quit or EditorRequest.ForceQuit
+                        or EditorRequest.SaveAndQuit)
+                {
+                    // Esc or :q closes a peek (nothing was changed)
+                    break;
+                }
+
+                if (_peek != null && request is not (EditorRequest.None or EditorRequest.Clipboard
+                        or EditorRequest.PasteBinWrite or EditorRequest.Help or EditorRequest.SyntaxChanged
+                        or EditorRequest.WrapChanged or EditorRequest.ScrollOffChanged))
+                {
+                    // What changes the text, saves it, or opens another page is not done in a peek
+                    _engine.SetMessage(DialogText.PeekReadOnly, true);
+                    Draw();
+                    continue;
+                }
+
                 if (_engine.ReadOnly && request is EditorRequest.InsertCalendar or EditorRequest.ClearAll
                         or EditorRequest.PasteBinRead or EditorRequest.Snippets or EditorRequest.StringMemory)
                 {
@@ -1021,7 +1082,7 @@ public class TextArea
     // The label "Read only" at the top right, where the label "Unsaved" is shown for a text with changes
     private void DrawReadOnlyLabel()
     {
-        if (!_engine.ReadOnly) return;
+        if (!_engine.ReadOnly || _peek != null) return;
         var label = " " + Lang.T("Read only") + " ";
         Tools.SetCursorEx(2, Math.Max(0, Init.LineWidth - TextMetrics.WidthOf(label)));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
@@ -1056,6 +1117,17 @@ public class TextArea
         Tools.HideCursor();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.ClearScreen();
+        if (_peek != null)
+        {
+            // The file browser behind the peek, and the peek on top of its pane
+            _peek.DrawBehind();
+            Array.Fill(_shownRows, null);
+            Array.Fill(_shownCells, _width - 1);
+            _shownStatus = null;
+            Draw();
+            return;
+        }
+
         switch (_saveMode)
         {
             case SaveAsSettings:
@@ -1139,7 +1211,8 @@ public class TextArea
     // COMMAND (the command line and search). Written when it changes
     private void DrawModeDivider()
     {
-        if (_top < 1) return;
+        // A peek has no divider above it: the pane is shown there
+        if (_top < 1 || _peek != null) return;
         var label = _engine.Mode switch
         {
             EditorMode.Insert => DialogText.CaptionsEdit,

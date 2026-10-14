@@ -133,6 +133,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `/text` Only show the names containing "text". `Esc` shows all again
 - `N` or `:new name` Create a new file in the directory and open it. Without a name (`N` or `:new`) you are asked for it
 - `I` or `:info` (also in the list of favorites) Show information about the selected file or directory: type, size (for a directory: the number of files and directories in it), when it was created and last changed, and the full path. Any key closes the box
+- `V` or `:peek` Peek at the selected file: it is shown read-only in the other pane (with one pane shown, the second pane is shown while you peek). Move and search in it with the keys of the editor (`j` `k`, `gg` `G`, `Ctrl+D`, `/text`, `y` to yank to the clipboard ...); what would change the text is refused. `Enter` opens the file in the editor at the line of the cursor, and `Esc` (or `:q`) goes back to the browser. A large file is shown up to about 2000 lines (100 KB), with a last line telling that there is more. Directories, data files and files that are not text are not peeked at
 - See [Managing files](#managing-files), [Favorites](#favorites) and [File history](#file-history) below for the other keys
 - `R` Refresh
 - `:path` Copy the full path of the selected file or directory (on `..`: the directory shown) to the system clipboard and/or the paste bin, as set in the [clipboard settings](Guide-to-editor.md#system-clipboard-and-paste-bin)

@@ -378,13 +378,18 @@ internal sealed partial class EditorEngine
     }
 
     /// <summary>
+    /// What is said when a change of a read-only text is refused (null: the text of a read-only entry)
+    /// </summary>
+    internal string? ReadOnlyMessage { get; set; }
+
+    /// <summary>
     /// Tell that the text is read only, if a change of it was refused
     /// </summary>
     /// <returns>True if a change was refused</returns>
     internal bool ReportReadOnly()
     {
         if (!Buffer.TakeChangeRefused()) return false;
-        SetError(DialogText.EditorReadOnly);
+        SetError(ReadOnlyMessage ?? DialogText.EditorReadOnly);
         return true;
     }
 
@@ -471,7 +476,7 @@ internal sealed partial class EditorEngine
             Mode = EditorMode.Normal;
             Buffer.EndStep(Cursor);
             Buffer.TakeChangeRefused();
-            SetError(DialogText.EditorReadOnly);
+            SetError(ReadOnlyMessage ?? DialogText.EditorReadOnly);
         }
         else
         {
