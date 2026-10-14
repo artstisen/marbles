@@ -33,7 +33,7 @@ Only names are shown, not paths: a long name is shortened with `...` in the midd
 - `Enter` Jump to the selected place
 - `I` Information about the place: its name, kind and full path, whether it is there, and when it was jumped to or opened
 - `D` Take the place out of the jump history (on the Jumps tab)
-- `Esc` (or `Q`, `Ctrl+O`) Close the menu; `?` shows its keys
+- `Esc` (or `Q`, `Ctrl+O`) Close the menu; `?` shows its keys. The menu opens on the tab it was on the last time (while Marbles runs), so jumping between files from the Files or Favorites tab goes on there
 
 Where a jump goes:
 
@@ -95,6 +95,7 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 - `D` **Display timestamp**: The current date and time (also in compact form) and the week number, in a box on top of the page. Any key closes it.
 - `:guide` **Quick guide**: A short introduction to Marbles. It is also found on the start page and in the options of the login page.
 - `:defaults` **Default settings**: Reset all settings.
+- `:jump` **Jump menu**: Go straight to a file, a page of Marbles or a data file (see [Jump menu](#jump-menu)). It is also opened with `Ctrl+O`.
 - `:config` **More configurations**: Go to the Configuration tab of the [Select mode](Guide-to-login-menu.md#select-mode) page, with the rest of the settings, the settings file, _Restart Marbles_ and the log. You are logged out of the data file, as with _Logout_. The Help tab of that page has the help and _About_
 - `:logout` **Logout**
 - `:q` **Exit**

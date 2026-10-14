@@ -27,6 +27,10 @@ internal static class JumpMenu
             : null;
     }
 
+    // The tab the menu was on when it was closed: it is shown again the next time it is opened (while Marbles
+    // runs; it is not saved)
+    private static Tab _lastTab = Tab.Jumps;
+
     private const int MarkWidth = 4; // "FILE", "DIR", "PAGE", "DATA"
     private const int TimeWidth = 10; // "09:41" today, else "2026-10-12"
 
@@ -158,12 +162,13 @@ internal static class JumpMenu
         // The favorites, for the colors of the names
         FileFavorites.Load();
         var filters = new Dictionary<Tab, string>();
-        var tab = 0;
+        var tab = Math.Max(0, tabs.IndexOf(_lastTab));
         var selected = 0;
         var scroll = 0;
         while (true)
         {
             var current = tabs[tab];
+            _lastTab = current;
             var filter = filters.GetValueOrDefault(current, string.Empty);
             var rows = RowsOf(current).Where(row => filter.Length == 0 ||
                 row.Target.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();

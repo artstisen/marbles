@@ -304,6 +304,7 @@ internal static class Menu
                 new("D", Lang.T("Display timestamp"), "D"),
                 new(":guide", DialogText.QuickGuide, ":guide"),
                 new(":defaults", Lang.T("Default settings"), ":defaults"),
+                new(":jump", DialogText.StartJump, ":jump"),
                 new(":config", Lang.T("More configurations"), ":config"),
                 new(":logout", Lang.T("Logout"), ":logout"),
                 new(":q", Lang.T("Exit"), ":q")
