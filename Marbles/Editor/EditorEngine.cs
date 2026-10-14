@@ -52,6 +52,8 @@ internal enum EditorRequest
     Snippets, // ":snip": show the snippets (SnippetText: the selected text, which can be added)
     SnippetAdd, // ":snip add": add SnippetText as a snippet
     SnippetsEdit, // ":snip edit": open the file of the snippets
+    CompleteChanged, // Completing words while typing was turned on or off (":complete")
+    CompletionsEdit, // ":complete edit": open the file of the completions
     StringMemory // ":reglist": show the strings of the string memory, to pick one to insert
 }
 
@@ -436,7 +438,13 @@ internal sealed partial class EditorEngine
         switch (Mode)
         {
             case EditorMode.Insert:
-                HandleInsert(key);
+                // Tab, Enter and Esc can be for the completions shown; else the word typed is looked up
+                if (!HandleCompletionKey(key))
+                {
+                    HandleInsert(key);
+                    UpdateCompletions(key);
+                }
+
                 break;
             case EditorMode.Command:
             case EditorMode.Search:
@@ -446,6 +454,8 @@ internal sealed partial class EditorEngine
                 HandleNormal(key);
                 break;
         }
+
+        if (Mode != EditorMode.Insert) ClearCompletions();
 
         if (selectionBefore != null && !IsVisual) _lastSelection = selectionBefore;
 
@@ -595,6 +605,7 @@ internal sealed partial class EditorEngine
     internal void InsertSnippet(string text)
     {
         if (SingleLine) return;
+        ClearCompletions();
         var insertMode = Mode == EditorMode.Insert;
         ResetPending();
         if (!insertMode) Mode = EditorMode.Normal;
@@ -1180,6 +1191,18 @@ internal sealed partial class EditorEngine
                 break;
             case "snip edit":
                 if (!SingleLine) _request = EditorRequest.SnippetsEdit;
+                break;
+            case "complete":
+                SetAutoComplete(!AutoComplete);
+                break;
+            case "complete on":
+                SetAutoComplete(true);
+                break;
+            case "complete off":
+                SetAutoComplete(false);
+                break;
+            case "complete edit":
+                if (!SingleLine) _request = EditorRequest.CompletionsEdit;
                 break;
             case "vsel":
                 StartVisual(EditorMode.Visual);

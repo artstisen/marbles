@@ -453,6 +453,15 @@ internal static class DialogText
         Lang.T("The file of snippets is not encrypted: the text can be read by anyone with access to it.");
     public static string SnippetAdded => Lang.T("Snippet added");
     public static string SnippetsFileOpen => Lang.T("This is the file of snippets");
+    public static string CompletionsFileOpen => Lang.T("This is the file of completions");
+    public static string CompletionsSwitchNote =>
+        Lang.T("The file of completions is opened, and this text again when it is closed.");
+    public static string CaptionsCompletions => Lang.T("Completions");
+    public static string CompleteOn => Lang.T("Completing words: on");
+    public static string CompleteOff => Lang.T("Completing words: off");
+    public static string CompleteOneKeys => Lang.T("Tab Complete");
+    public static string CompleteChooseKeys => Lang.T("Tab Choose");
+    public static string CompleteManyKeys => Lang.T("Tab Next | Enter Use");
     public static string PeekHint => Lang.T("Peek: Esc closes, Enter opens the file");
     public static string PeekReadOnly => Lang.T("Peek: read only (Enter opens the file)");
     public static string PeekSelectFile => Lang.T("Select a file to peek at");

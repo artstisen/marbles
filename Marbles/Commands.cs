@@ -73,13 +73,13 @@ internal static class Commands
             "quit close help jump find info goto favorite",
             "q h fav ju"),
         [CommandContext.Start] = new Table(
-            "note file mode config general layout editor system jump help about quick scheme logo snippet clipboard " +
+            "note file mode config general layout editor system jump help about quick scheme logo snippet completions clipboard " +
             "log restart reset quit exit",
-            "notes browse ju h guide snip q"),
+            "notes browse ju h guide snip comp q"),
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
-            "calendar trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip scrolloff info jump yankall rename title",
+            "calendar trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete scrolloff info jump yankall rename title",
             "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw cal reg sn ju")
     };
 

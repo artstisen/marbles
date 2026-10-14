@@ -1363,6 +1363,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":about :quick", Lang.T("About/The quick guide"), false));
             _shortcutList.Add(new Shortcut(":scheme :logo", Lang.T("Color schemes/Logos"), false));
             _shortcutList.Add(new Shortcut(":snip :clipboard", Lang.T("Snippet editor/Clipboard settings"), false));
+            _shortcutList.Add(new Shortcut(":completions", Lang.T("Completions editor"), false));
             _shortcutList.Add(new Shortcut(":log :restart", Lang.T("View log/Restart Marbles"), false));
             _shortcutList.Add(new Shortcut(":reset", DialogText.ConfigReset, false));
             _shortcutList.Add(new Shortcut(":q :exit", Lang.T("Exit Marbles (asks first)"), false));
@@ -1376,6 +1377,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("l h", Lang.T("Configuration: the next/previous page"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Spell checker"), Lang.T("Enter: turn languages on or off in a list"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Snippet editor"), Lang.T("The file of snippets in the editor"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Completions"), Lang.T("Complete words while typing, and the file"), false));
             _shortcutList.Add(new Shortcut("  " + DialogText.FileInfo, Lang.T("The version, and where the program and the data are"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Color scheme"), Lang.T("Enter: pick from a list (or edit the colors)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Language"), Lang.T("Enter: pick from a list"), false));
@@ -1720,6 +1722,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("CTRL+U", Lang.T("Delete line before the cursor"), false));
             _shortcutList.Add(new Shortcut("CTRL+R", Lang.T("Paste current memory string"), false));
             _shortcutList.Add(new Shortcut("CTRL+K", Lang.T("Snippets: insert one at the cursor"), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.T("Completions shown: complete (more: the next)"), false));
+            _shortcutList.Add(new Shortcut("Shift+Tab Enter", Lang.T("Completions: the previous/use the one chosen"), false));
+            _shortcutList.Add(new Shortcut("Esc", Lang.T("Completions: close the list (again: NORMAL)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.F("String Memory (limit: {0} strings)", MaxLineMemoryCount), true));
             _shortcutList.Add(new Shortcut("y d c", Lang.T("Yanked/deleted text is added to memory"), false));
             _shortcutList.Add(new Shortcut("CTRL+P CTRL+N", Lang.T("Select previous/next memory string"), false));
@@ -1751,6 +1756,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":snip add", Lang.T("Keep the selection (or the line) as a snippet"), false));
             _shortcutList.Add(new Shortcut(":snip edit", Lang.T("Edit the file of snippets (snippets.txt)"), false));
             _shortcutList.Add(new Shortcut("  $0 (css)", Lang.T("Snippets: the cursor goes to $0, (css) first in css"), false));
+            _shortcutList.Add(new Shortcut(":complete", Lang.T("Complete words while typing on/off"), false));
+            _shortcutList.Add(new Shortcut(":complete on/off", Lang.T("Turn completing on/off"), false));
+            _shortcutList.Add(new Shortcut(":complete edit", Lang.T("Edit the file of completions (completions.txt)"), false));
             _shortcutList.Add(new Shortcut(":syntax", Lang.T("Colors on/off (md html css js json xml files: on)"), false));
             _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md, css, js, json, xml)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Entries"), Lang.T("Remember their colors (shown as MD, HTML ...)"), false));

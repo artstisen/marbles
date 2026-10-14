@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Editor: completing words while typing** (off from the start: `:complete`, or Configuration > Editor). In Insert mode the word typed is looked up in lists of completions, shown on the line above the text: `Tab` completes when there is one; with more, `Tab` goes through them (`Shift+Tab` back) and `Enter` uses the one chosen. The lists are in `completions.txt` (HTML tags, CSS properties, JavaScript, Markdown and all text to start with), opened with `:complete edit`, the Completions editor of Configuration, `:completions` on the start page or the Jump menu.
 - **File browser**: the file or directory selected in each pane is remembered and selected again the next time the browser is opened (`browsesel1` and `browsesel2` in the settings file, by name). The places of the panes are now saved however the browser is left (also with a jump or `:exit`, which forgot the directories before) and when a file is opened in the editor.
 - **File browser**: the key hints show `V Peek` instead of `Esc Close` (`Esc` still closes the browser, as the help tells). **Login page**: the Jump menu is `O` in the options (as `Ctrl+O`), as `J` selected it instead of moving down with `j`.
 - **File browser**: `V` or `:peek` shows the selected file read-only in the other pane (a second pane is shown for it if needed), with the colors of its kind of file. The keys of the editor move and search in it; `Enter` opens the file in the editor at the cursor, `Esc` goes back. Large files are shown up to about 2000 lines.

@@ -50,6 +50,8 @@ The settings are on four pages, so they can be changed in one place without logg
 - **Syntax highlighting**: Color the text of the kinds of files the editor knows (Markdown, HTML, CSS, JavaScript, JSON, XML), on from the start. It is the setting `syntaxcolors`, which `:syntax off` and `:syntax on` in the editor also change
 - **Spell checker**: The languages used when spell checking is turned on in the editor with `:spell` (it is not turned on here). `Enter` shows the languages there is a spell file for in a box, where `Enter` turns a language on or off (several can be on, and the last one stays on) and `Esc` closes. Saved as `spelllang` (`en` or `da,en`). The spell files are in the directory `spell`; without any, the row says so
 - **Snippet editor**: Open the file of [snippets](Guide-to-editor.md#snippets), `snippets.txt`, in the editor. If there is no file yet, you are asked whether to make one, with two examples. Closing the editor returns to this page
+- **Complete words while typing**: In Insert mode, the word typed is looked up in the lists of completions, and `Tab` completes it (see [Completing words](Guide-to-editor.md#completing-words)). Off from the start; `:complete` in the editor changes it too. It is the setting `autocomplete`
+- **Completions editor**: Open the file of completions, `completions.txt`, in the editor. If there is no file yet, it is made with lists to start with. Closing the editor returns to this page
 
 **System**
 
@@ -66,7 +68,7 @@ On every tab of the start page (Mode, the pages of Configuration, Help), `:` ope
 - `:mode` The Mode tab; `:config` (or `:general`), `:layout`, `:editor` and `:system` The pages of the Configuration tab (`:editor` is the Editor page of Configuration, not the text editor)
 - `:jump` (or `:ju`) The [Jump menu](Guide-to-main-menu.md#jump-menu)
 - `:help` (or `:h`) The help of the start page, as `?`; `:about` The about page; `:quick` (or `:guide`) The quick guide
-- `:scheme` The color schemes; `:logo` The logos; `:snippet` (or `:snip`) The snippet editor; `:clipboard` The clipboard settings; `:log` The log
+- `:scheme` The color schemes; `:logo` The logos; `:snippet` (or `:snip`) The snippet editor; `:completions` (or `:comp`) The completions editor; `:clipboard` The clipboard settings; `:log` The log
 - `:restart` Restart Marbles (asks first); `:reset` Reset all settings (asks first, as on the System page); `:quit`, `:exit` (or `:q`) Exit Marbles (asks first)
 
 The command names are the same in all languages, and the names of the main menu work here too (`:browse`, `:guide`, `:scheme`, `:logo`).
@@ -139,7 +141,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `:path` Copy the full path of the selected file or directory (on `..`: the directory shown) to the system clipboard and/or the paste bin, as set in the [clipboard settings](Guide-to-editor.md#system-clipboard-and-paste-bin)
 - `:match` With two panes: the other pane shows the directory of the pane with the focus (with the same file or directory selected). The focus stays where it is
 - `:cd path` Go to a directory. `:home` Go to the folder of the data files in use (the data directory, or the subfolder of it chosen for the data files)
-- `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` (the snippets of the editor), `favorites.txt` and `history.txt` (of the file browser), and `jump.txt` (of the Jump menu)
+- `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` and `completions.txt` (the snippets and the completions of the editor), `favorites.txt` and `history.txt` (of the file browser), and `jump.txt` (of the Jump menu)
 - `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again (see [the command line](Guide-to-main-menu.md))
 - `?` Help
 - `Esc`, `Q` or `:q` Close the file browser

@@ -1015,6 +1015,8 @@ internal static class FileIo
         _tempSettings += "browsepane=" + (FileExplorer.StartPane + 1) + Entries.NewLineChar;
         // Two panes side by side in the file browser (false: one pane)
         _tempSettings += "browsedual=" + (FileExplorer.DualPane ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // Complete words while typing in the editor (the lists are in completions.txt)
+        _tempSettings += "autocomplete=" + (Completions.Enabled ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Color Markdown, HTML, CSS, JavaScript and JSON files in the editor (the editor command :syntax turns
         // the colors on and off)
         // The language of the texts (en, da, de, nb, sv, es, fr)
@@ -1219,6 +1221,8 @@ internal static class FileIo
         FileExplorer.StartPane = Get("browsepane").Trim() == "2" ? 1 : 0;
         // Two panes unless turned off
         FileExplorer.DualPane = Tools.TrimToLower(Get("browsedual")) != DialogText.BFalse;
+        // Completing words while typing: off unless turned on
+        Completions.Enabled = Tools.TrimToLower(Get("autocomplete")) == DialogText.BTrue;
 
         // Spell checking languages
         var spellLanguages = Get("spelllang").Replace(" ", string.Empty);

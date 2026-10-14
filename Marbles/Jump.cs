@@ -73,7 +73,7 @@ internal static class JumpPages
     internal static readonly IReadOnlyList<string> Ids = new[]
     {
         "config/general", "config/layout", "config/editor", "config/system", "schemes", "logos", "clipboard",
-        "snippets", "help", "about"
+        "snippets", "completions", "help", "about"
     };
 
     /// <summary>
@@ -103,6 +103,7 @@ internal static class JumpPages
             "logos" => DialogText.CaptionsLogos,
             "clipboard" => Lang.T("Clipboard"),
             "snippets" => Lang.T("Snippet editor"),
+            "completions" => Lang.T("Completions editor"),
             "help" => Lang.T("Help"),
             "about" => Lang.T("About"),
             _ => id
@@ -346,6 +347,9 @@ internal static class Jump
                 break;
             case "snippets":
                 if (SnippetBox.EnsureFile()) FileExplorer.EditSnippets(0);
+                break;
+            case "completions":
+                FileExplorer.EditCompletions();
                 break;
             case "help":
                 Tools.WriteEditorHelp(false);

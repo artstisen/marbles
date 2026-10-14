@@ -852,11 +852,11 @@ internal static class Actions
                     Init.LineCount - 5, Entries.CurrentEntry.Text, cursorIndex, false, false, search, 0);
                 // Cleanup
                 textArea.ClearUndoRedoCache();
-                // ":snip edit": the file of snippets, and then the entry again
-                if (TextArea.TakeSnippetsRequest() is not { } line) break;
+                // ":snip edit" or ":complete edit": that file, and then the entry again
+                if (TextArea.TakeSideFileRequest() is not { } sideFile) break;
                 cursorIndex = textArea.GetCursorIndex();
                 search = false;
-                FileExplorer.EditSnippets(line);
+                FileExplorer.EditSideFile(sideFile);
             }
 
             ReturnFromEntry();

@@ -243,6 +243,11 @@ internal static class StartMenu
                 ChoiceBox.Forget();
                 if (SnippetBox.EnsureFile()) FileExplorer.EditSnippets(0);
                 break;
+            case "completions":
+            case "comp":
+                ChoiceBox.Forget();
+                FileExplorer.EditCompletions();
+                break;
             case "clipboard":
                 ClipboardPage.Show();
                 break;
@@ -318,6 +323,8 @@ internal static class StartMenu
         SyntaxColors,
         Spell,
         Snippets,
+        AutoComplete,
+        Completions,
         Reset,
         EditSettings,
         Restart,
@@ -352,6 +359,8 @@ internal static class StartMenu
         settings.Add(Setting.SyntaxColors);
         settings.Add(Setting.Spell);
         settings.Add(Setting.Snippets);
+        settings.Add(Setting.AutoComplete);
+        settings.Add(Setting.Completions);
         // System
         settings.Add(Setting.Reset);
         settings.Add(Setting.EditSettings);
@@ -389,6 +398,8 @@ internal static class StartMenu
             Setting.SyntaxColors => Check(SyntaxHighlighter.ColorFiles) + Lang.T("Syntax highlighting"),
             Setting.Spell => indent + SpellText(),
             Setting.Snippets => indent + Lang.T("Snippet editor (Enter: Open)"),
+            Setting.AutoComplete => Check(Marbles.Completions.Enabled) + Lang.T("Complete words while typing"),
+            Setting.Completions => indent + Lang.T("Completions editor (Enter: Open)"),
             Setting.Info => indent + DialogText.FileInfo,
             Setting.EditorOnly => Check(Only == OnlyMode.Editor) + Lang.T("Text Editor only"),
             Setting.NotesOnly => Check(Only == OnlyMode.Notes) + Lang.T("Note Management only"),
@@ -419,7 +430,8 @@ internal static class StartMenu
             Setting.AutoSize or Setting.Size or Setting.Monochrome or Setting.ColorScheme or Setting.Logo
                 or Setting.LogoAnimation => 1,
             Setting.LineNumbers or Setting.WordWrap or Setting.ScrollOff or Setting.Clipboard
-                or Setting.SyntaxColors or Setting.Spell or Setting.Snippets => 2,
+                or Setting.SyntaxColors or Setting.Spell or Setting.Snippets or Setting.AutoComplete
+                or Setting.Completions => 2,
             _ => 3
         };
     }
@@ -891,6 +903,18 @@ internal static class StartMenu
                 // The file of snippets in the editor (it is made first, if the user wants that)
                 ChoiceBox.Forget();
                 if (SnippetBox.EnsureFile()) FileExplorer.EditSnippets(0);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                Tools.ClearScreen();
+                return;
+            case Setting.AutoComplete:
+                // Turned on: the file of completions is made if there is none
+                Marbles.Completions.Enabled = !Marbles.Completions.Enabled;
+                if (Marbles.Completions.Enabled) Marbles.Completions.EnsureFile();
+                break;
+            case Setting.Completions:
+                // The file of completions in the editor (made first if there is none)
+                ChoiceBox.Forget();
+                FileExplorer.EditCompletions();
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Tools.ClearScreen();
                 return;

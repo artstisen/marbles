@@ -27,7 +27,7 @@ Typed on the command line: press `:`, type the command and press `Enter`. `Tab` 
 - `I` / `A` Insert at the start/end of the line
 - `o` / `O` Insert on a new line below/above
 
-In Insert mode: `Tab` inserts 4 blank spaces, `CTRL+W` deletes the word before the cursor, `CTRL+U` deletes the line before the cursor, `CTRL+R` pastes the current memory string, and `CTRL+K` shows the snippets (see [Snippets](#snippets)). Text can be pasted from the clipboard with the paste function of your terminal.
+In Insert mode: `Tab` inserts 4 blank spaces (or completes a word, see [Completing words](#completing-words)), `CTRL+W` deletes the word before the cursor, `CTRL+U` deletes the line before the cursor, `CTRL+R` pastes the current memory string, and `CTRL+K` shows the snippets (see [Snippets](#snippets)). Text can be pasted from the clipboard with the paste function of your terminal.
 
 ## Moving the cursor (Normal and Visual mode)
 - `h` `j` `k` `l` Left/Down/Up/Right (as the arrow keys). `j` and `k` move by rows as shown on screen
@@ -185,6 +185,36 @@ justify-content: center;
 - Blank lines at the end of a snippet are not part of it. A line of a snippet that starts with `===` is written with a `\` in front of it (`\===`)
 - The text above the first title is not used (the file starts with a short explanation)
 
+## Completing words
+With completing turned on, the word you type in Insert mode is looked up in lists of words, and what it can be completed to is shown on the line above the text (where the mode is shown otherwise), for notes and text files alike. Nothing is guessed from the text, and the text is not changed until you use a completion. It is off from the start: turn it on with `:complete`, or with **Complete words while typing** on the Editor page of Configuration (the setting `autocomplete`).
+
+- `Tab` When one completion is shown: complete the word with it
+- `Tab` When more are shown: choose the first, and the next with each `Tab` (`Shift+Tab` goes back). The one chosen is highlighted, and `Enter` uses it. Before a completion is chosen, `Enter` starts a new line as usual
+- Typing on, or `Backspace`, looks up the word again. `Esc` closes the list, and the next `Esc` leaves Insert mode
+- Without completions shown, `Tab` inserts blank space as usual
+- A completion is one change: `u` undoes it, and leaves the word that was typed. The lines after the first are indented as the line of the cursor, and the cursor goes to `$0` in the completion (or after it)
+- `:complete` Turn completing on or off (`:complete on`, `:complete off`). It is remembered
+- `:complete edit` Open the file of completions in the editor, as `:snip edit` (changes to the text being edited are asked about first)
+
+A word is looked up when it has 2 characters or more and the cursor is at its end. It can start with `<`, `</`, `<!`, `&`, `@`, `#`, `.` or `:`, so `<d` finds the HTML tags starting so, and `console.lo` the JavaScript `console.log`. At most 8 completions are shown, those for the kind of text first.
+
+The lists are kept in `completions.txt` in the data directory. It is made when completing is turned on (or the file is opened) and there is none, with lists of HTML tags, CSS properties, JavaScript, Markdown and a few for all text, and a short explanation at the top. It is also opened from the Configuration tab of the start page (**Completions editor**), the command `:completions` there, and the Jump menu. A changed file is used as soon as it is saved:
+
+```
+=== HTML tags (html)
+<div = <div>$0</div>
+<ul = <ul>\n    <li>$0</li>\n</ul>
+
+=== All text
+lorem = Lorem ipsum dolor sit amet
+Marbles
+```
+
+- A line starting with `===` starts a list, and the rest of the line is its title. A tag at the end of the title, like `(html)`, `(css)`, `(js)`, `(json)`, `(xml)` or `(md)`, uses the list when that kind of text is edited (the colors used, or the kind of the file); a list without a tag is used for all text
+- Each line of a list is a word, or `word = text`: the word is what you type, and the text what it is completed to. A word alone is completed to itself (a list of words you use often)
+- In the text, `$0` marks where the cursor goes, `\n` starts a new line and `\\` is a `\`
+- Blank lines are not used, and neither is the text above the first title
+
 ## Long lines
 Lines wider than the editor are wrapped onto the next rows (at a blank space when possible). With wrapping turned off, each line is one row, and the view scrolls sideways to follow the cursor. A `<` at the left side or a `>` at the right side tells that the line goes on there.
 
@@ -281,6 +311,7 @@ The paste bin is not encrypted: text from a note written to it can be read by an
 - `:%y` `:%d` Yank all/Delete all, `:2,9d` Delete line 2 to 9
 - `:clear` Clear all text
 - `:snip` `:snip add` `:snip edit` Snippets (see [Snippets](#snippets))
+- `:complete` `:complete edit` Completing words while typing (see [Completing words](#completing-words))
 
 ## Title and other single line fields
 Titles, file names and search queries are typed in a simple field without modes: type the text and press `Enter` to accept or `Esc` to cancel. `Home`/`End` and `CTRL+Left`/`CTRL+Right` move the cursor, and `CTRL+W`, `CTRL+U` and `CTRL+R` work as in Insert mode.

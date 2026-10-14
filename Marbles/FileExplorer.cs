@@ -768,10 +768,10 @@ internal static partial class FileExplorer
                 textArea.ClearUndoRedoCache();
                 if (_file != null) file = _file; // Renamed in the editor
                 KeepCaret(file.Path, textArea);
-                // ":snip edit": the file of snippets, and then this file again (as it is on disk)
-                if (TextArea.TakeSnippetsRequest() is not { } line) break;
+                // ":snip edit" or ":complete edit": that file, and then this file again (as it is on disk)
+                if (TextArea.TakeSideFileRequest() is not { } sideFile) break;
                 cursorIndex = textArea.GetCursorIndex();
-                EditSnippets(line);
+                EditSideFile(sideFile);
                 if (!File.Exists(file.Path)) break;
                 _file = TextFile.Load(file.Path);
                 file = _file;
@@ -878,16 +878,53 @@ internal static partial class FileExplorer
     }
 
     /// <summary>
+    /// Open the file of snippets or completions that the editor was closed for (TextArea.TakeSideFileRequest)
+    /// </summary>
+    internal static void EditSideFile(TextArea.SideFile file)
+    {
+        if (file.Completions)
+        {
+            EditCompletions();
+        }
+        else
+        {
+            EditSnippets(file.Line);
+        }
+    }
+
+    /// <summary>
     /// Open the file of snippets in the editor (at a line), from the editor of a file or an entry (":snip edit").
     /// The file or entry being edited is kept, and the data file stays open
     /// </summary>
     internal static void EditSnippets(int line)
     {
+        EditMarblesFile(Snippets.FilePath, DialogText.CaptionsSnippets, line);
+    }
+
+    /// <summary>
+    /// Open the file of completions in the editor (it is made first if there is none), as the file of snippets
+    /// </summary>
+    internal static void EditCompletions()
+    {
+        var status = Completions.EnsureFile();
+        if (status != DialogText.Success)
+        {
+            Tools.ClearScreen();
+            ChoiceBox.Message(DialogText.CaptionsCompletions, status, string.Empty);
+            return;
+        }
+
+        EditMarblesFile(Completions.FilePath, DialogText.CaptionsCompletions, 0);
+    }
+
+    // Open a file of Marbles (snippets, completions) in the editor at a line
+    private static void EditMarblesFile(string path, string caption, int line)
+    {
         var outer = _file;
         var mode = Mode.CurrentMode;
         try
         {
-            _file = TextFile.Load(Snippets.FilePath);
+            _file = TextFile.Load(path);
             EventLog.Add(DialogText.LogFile + "Open: " + _file.Path);
             Mode.SetMode(Mode.SelectedMode.Edit);
             Tools.ClearScreen();
@@ -896,12 +933,12 @@ internal static partial class FileExplorer
                 Init.LineCount - 5, _file.Text, Snippets.IndexOfLine(_file.Text, line), false, false, false,
                 TextArea.SaveAsFile);
             textArea.ClearUndoRedoCache();
-            TextArea.TakeSnippetsRequest();
+            TextArea.TakeSideFileRequest();
         }
         catch (Exception e) when (e is not NavigationException)
         {
             Tools.ClearScreen();
-            ChoiceBox.Message(DialogText.CaptionsSnippets, e.Message, string.Empty);
+            ChoiceBox.Message(caption, e.Message, string.Empty);
         }
         finally
         {

@@ -22,7 +22,7 @@ The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+
 - **Jumps**: the places you have jumped to with the menu, the latest first, with the time (today) or the date of the jump. Only jumps made in the menu are kept, not files and pages opened in other ways (the tab says so next to the filter)
 - **Files**: the files opened from the file browser (the file history), with when they were opened
 - **Favorites**: the files and directories of your favorites. A favorite with a color of its own is shown in it, on every tab
-- **Configuration**: the pages of the Configuration tab (General, Layout, Editor, System), Color schemes, Logos, Clipboard, Snippet editor, Help and About
+- **Configuration**: the pages of the Configuration tab (General, Layout, Editor, System), Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Help and About
 - **Data files**: the data files in the data directory and the directories in it
 
 Only names are shown, not paths: a long name is shortened with `...` in the middle, so its start and its extension are seen. At the right of each place is its kind: `FILE`, `DIR`, `PAGE` or `DATA`. A place that is gone (a file deleted or moved) is shown dimmed with _(missing)_.
@@ -41,7 +41,7 @@ Where a jump goes:
 - **A directory** is shown in the file browser
 - **A page of Configuration** opens the Select mode page on that page
 - **A data file** is selected on the login page
-- **Color schemes, Logos, Clipboard, Snippet editor, Help and About** open on top of the page you jumped from; closing them returns there
+- **Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Help and About** open on top of the page you jumped from; closing them returns there
 
 When you jump from the editor and the text has changes that are not saved, you are asked whether to save them first (`Esc` stays in the editor). A jump to a file, directory, Configuration page or data file from a data file you are logged in to logs you out of it first. With _Text Editor only_ the Data files tab is not shown, and with _Note Management only_ the Files and Favorites tabs are not.
 

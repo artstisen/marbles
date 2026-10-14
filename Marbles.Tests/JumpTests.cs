@@ -101,14 +101,14 @@ public class JumpTests : IDisposable
         Assert.Equal(new[] { 0, 1, 2, 3 }, new[] { "config/general", "config/layout", "config/editor", "config/system" }
             .Select(JumpPages.ConfigurationPage));
         Assert.Equal(-1, JumpPages.ConfigurationPage("schemes"));
-        foreach (var page in new[] { "schemes", "logos", "clipboard", "snippets", "help", "about" })
+        foreach (var page in new[] { "schemes", "logos", "clipboard", "snippets", "completions", "help", "about" })
         {
             Assert.True(Jump.OpensInPlace(new JumpTarget(JumpKind.Page, page)));
         }
 
         Assert.False(Jump.OpensInPlace(new JumpTarget(JumpKind.Page, "config/system")));
         Assert.False(Jump.OpensInPlace(new JumpTarget(JumpKind.File, In("a.md"))));
-        Assert.Equal(10, JumpPages.Ids.Count);
+        Assert.Equal(11, JumpPages.Ids.Count);
         Assert.All(JumpPages.Ids, id => Assert.NotEqual(id, JumpPages.Label(id)));
     }
 

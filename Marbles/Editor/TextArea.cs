@@ -101,18 +101,25 @@ public class TextArea
     /// </summary>
     internal static bool NextEntryReadOnly { get; set; }
 
-    // The line to open the file of snippets at, when the editor was closed to open it (":snip edit")
-    private static int? _snippetsLine;
+    /// <summary>
+    /// A file of Marbles opened from the editor, which is closed for it: the snippets (":snip edit", at a line) or
+    /// the completions (":complete edit")
+    /// </summary>
+    internal sealed record SideFile(bool Completions, int Line);
+
+    // The file to open when the editor was closed to open it
+    private static SideFile? _sideFile;
 
     /// <summary>
-    /// The editor was closed to open the file of snippets (":snip edit"): the line to open it at (and it is
-    /// forgotten). The caller opens the file, and the text that was edited again when it is closed
+    /// The editor was closed to open the file of snippets or completions: which, and the line to open it at (and
+    /// it is forgotten). The caller opens the file (FileExplorer.EditSideFile), and the text that was edited again
+    /// when it is closed
     /// </summary>
-    internal static int? TakeSnippetsRequest()
+    internal static SideFile? TakeSideFileRequest()
     {
-        var line = _snippetsLine;
-        _snippetsLine = null;
-        return line;
+        var file = _sideFile;
+        _sideFile = null;
+        return file;
     }
     private readonly int _saveMode;
     private readonly string _leftMargin;
@@ -176,13 +183,17 @@ public class TextArea
             LineNumbers = LineNumbers && !_singleLine && !readOnly && peek == null,
             Wrap = WordWrap || _singleLine,
             ScrollOffLines = ScrollOffLines,
-            ScrollOff = ScrollOff && !_singleLine && !readOnly ? ScrollOffLines : 0
+            ScrollOff = ScrollOff && !_singleLine && !readOnly ? ScrollOffLines : 0,
+            // Words are completed while typing, as set (not in a peek or a line of a dialog)
+            AutoComplete = Completions.Enabled && !_singleLine && !readOnly && peek == null
         };
+        if (_engine.AutoComplete) Completions.Refresh();
         // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON) are colored, unless that is turned off
         var fileType = peek != null ? peek.Syntax
             : saveMode == SaveAsFile && !_singleLine && !readOnly
                 ? SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName)
                 : SyntaxType.None;
+        _engine.CompletionSyntax = fileType;
         if (fileType != SyntaxType.None)
         {
             _engine.SyntaxDefault = fileType;
@@ -195,6 +206,7 @@ public class TextArea
         // An entry is colored as set for the entry (a tag in its options)
         if (saveMode == SaveAsEntry && !_singleLine && NextEntrySyntax != SyntaxType.None)
         {
+            _engine.CompletionSyntax = NextEntrySyntax;
             _engine.SyntaxDefault = NextEntrySyntax;
             _engine.Syntax = NextEntrySyntax;
         }
@@ -525,6 +537,14 @@ public class TextArea
             case EditorRequest.SnippetsEdit:
                 OpenSnippets(0);
                 break;
+            case EditorRequest.CompletionsEdit:
+                OpenCompletions();
+                break;
+            case EditorRequest.CompleteChanged:
+                Completions.Enabled = _engine.AutoComplete;
+                if (Completions.Enabled) TurnCompletionsOn();
+                if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
+                break;
             case EditorRequest.Jump:
                 Tools.HideCursor();
                 // Leaving the text asks about changes that are not saved
@@ -657,20 +677,47 @@ public class TextArea
             return;
         }
 
-        // The file of snippets is the one being edited: go to the line
+        OpenSideFile(new SideFile(false, line), Snippets.FilePath, DialogText.SnippetsFileOpen,
+            DialogText.SnippetSwitchNote);
+    }
+
+    // ":complete edit": the file of completions, as ":snip edit" (it is made first if there is none)
+    private void OpenCompletions()
+    {
+        if (_saveMode == SaveAsSettings)
+        {
+            _engine.ShowMessage(DialogText.SnippetsNotHere, true);
+            return;
+        }
+
+        var status = Completions.EnsureFile();
+        if (status != DialogText.Success)
+        {
+            _engine.ShowMessage(status, true);
+            return;
+        }
+
+        Tools.HideCursor();
+        OpenSideFile(new SideFile(true, 0), Completions.FilePath, DialogText.CompletionsFileOpen,
+            DialogText.CompletionsSwitchNote);
+    }
+
+    // Close the editor to open a file of Marbles: the caller opens it, and this text again when it is closed
+    private void OpenSideFile(SideFile file, string path, string isOpenMessage, string switchNote)
+    {
+        // The file is the one being edited: go to the line
         if (_saveMode == SaveAsFile && FileOperations.SamePath(FileExplorer.CurrentFilePath,
-                System.IO.Path.GetFullPath(Snippets.FilePath)))
+                System.IO.Path.GetFullPath(path)))
         {
             RedrawAll();
-            _engine.SetCursorIndex(Snippets.IndexOfLine(GetText(), line));
-            _engine.ShowMessage(DialogText.SnippetsFileOpen, false);
+            _engine.SetCursorIndex(Snippets.IndexOfLine(GetText(), file.Line));
+            _engine.ShowMessage(isOpenMessage, false);
             return;
         }
 
         if (_engine.IsModified)
         {
-            var answer = Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn,
-                DialogText.SnippetSwitchNote, false);
+            var answer = Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn, switchNote, false);
             if (answer == 3 || (answer == 1 && !Save()))
             {
                 RedrawAll();
@@ -678,9 +725,21 @@ public class TextArea
             }
         }
 
-        _snippetsLine = line;
+        _sideFile = file;
         Canceled = _engine.IsModified;
         _exit = true;
+    }
+
+    // Completing was turned on: the file of completions is made if there is none (with the lists it starts with)
+    private void TurnCompletionsOn()
+    {
+        if (!Completions.Exists && Completions.Create() == DialogText.Success)
+        {
+            _engine.ShowMessage(Lang.F("{0} is made (:complete edit)",
+                Completions.FileName), false);
+        }
+
+        Completions.Refresh();
     }
 
     // ":rename" and ":title": a file gets another name (the changes that are not saved stay so, and are saved to
@@ -1213,6 +1272,12 @@ public class TextArea
     {
         // A peek has no divider above it: the pane is shown there
         if (_top < 1 || _peek != null) return;
+        if (_engine.CompletionList.Count > 0)
+        {
+            DrawCompletions();
+            return;
+        }
+
         var label = _engine.Mode switch
         {
             EditorMode.Insert => DialogText.CaptionsEdit,
@@ -1228,6 +1293,46 @@ public class TextArea
         Tools.SetCursorEx(_top - 1, Math.Max(0, Init.LineWidth / 2 - (TextMetrics.WidthOf(label) / 2 + 1)));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
         Console.Write(" " + label + " ");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    // The longest a completion is shown on the divider
+    private const int MaxCompletionWidth = 24;
+
+    // The completions of the word before the cursor, on the divider above the text: the one chosen with Tab is
+    // highlighted, and the keys are shown at the right
+    private void DrawCompletions()
+    {
+        var list = _engine.CompletionList;
+        var chosen = _engine.CompletionIndex;
+        var hints = list.Count == 1 ? DialogText.CompleteOneKeys
+            : chosen < 0 ? DialogText.CompleteChooseKeys : DialogText.CompleteManyKeys;
+        var shown = "\u0001" + chosen + "\u0001" + string.Join("\u0001", list.Select(item => item.Text));
+        if (shown == _shownModeLabel) return;
+        _shownModeLabel = shown;
+        var width = Init.LineWidth;
+        Tools.SetCursorEx(_top - 1, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(new string('-', width));
+        // The keys at the right (as Menu.WriteKeyHints draws them: each with three cells around it)
+        var hintsWidth = hints.Split(" | ").Sum(hint => TextMetrics.WidthOf(hint) + 3) + 1;
+        var hintsAt = Math.Max(0, width - 2 - hintsWidth);
+        var column = 2;
+        for (var i = 0; i < list.Count; i++)
+        {
+            var text = " " + Tools.TruncateString(list[i].Shown, MaxCompletionWidth, true) + " ";
+            var cells = TextMetrics.WidthOf(text);
+            if (column + cells > hintsAt - 1) break;
+            Tools.SetCursorEx(_top - 1, column);
+            ConsoleColors.SetColors(i == chosen
+                ? ConsoleColors.ColorPreset.KeyHintInverted
+                : ConsoleColors.ColorPreset.EditorTitle);
+            Console.Write(text);
+            column += cells + 1;
+        }
+
+        Tools.SetCursorEx(_top - 1, hintsAt);
+        Menu.WriteKeyHints(hints);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
