@@ -54,8 +54,8 @@ internal static class Commands
             "q h nu" + CommonShort),
         [CommandContext.List] = new Table(
             "quit close help browse new title delete color transfer size duplicate revert export import info clipboard" +
-            Common,
-            "q h" + CommonShort),
+            " readonly" + Common,
+            "q h ro" + CommonShort),
         [CommandContext.Files] = new Table(
             "quit close exit home data help cd new info mkdir rename copy duplicate move delete favorite favorites history panes match path find",
             "q h fav favs hist"),

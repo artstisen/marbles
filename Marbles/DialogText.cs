@@ -473,6 +473,10 @@ internal static class DialogText
 
     // Information about a file in the file browser
     public static string InfoCaptionFile => Lang.T("File info");
+    public static string CaptionsReadOnly => Lang.T("Read only");
+    public static string EntryIsReadOnly => Lang.T("The entry is read only");
+    public static string EntryReadOnlyNote => Lang.T("It is not renamed, reverted or deleted. :readonly in the list turns it off.");
+    public static string EditorReadOnly => Lang.T("Read only (:readonly in a list)");
     public static string InfoCaptionDocument => Lang.T("Document info");
     public static string InfoCaptionDirectory => Lang.T("Directory info");
     public static string InfoName => Lang.T("Name:");

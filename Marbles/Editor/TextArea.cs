@@ -81,6 +81,11 @@ public class TextArea
     /// </summary>
     internal static SyntaxType NextEntrySyntax { get; set; }
 
+    /// <summary>
+    /// The next entry opened in the editor is read only (it is used once)
+    /// </summary>
+    internal static bool NextEntryReadOnly { get; set; }
+
     // The line to open the file of snippets at, when the editor was closed to open it (":snip edit")
     private static int? _snippetsLine;
 
@@ -176,6 +181,9 @@ public class TextArea
         }
 
         NextEntrySyntax = SyntaxType.None;
+        // An entry that is read only cannot be changed in the editor
+        _engine.ReadOnly = saveMode == SaveAsEntry && !_singleLine && NextEntryReadOnly;
+        NextEntryReadOnly = false;
         if (scrollToEnd)
         {
             _engine.CursorToEnd();
@@ -208,6 +216,7 @@ public class TextArea
             _engine.OpenSearch();
         }
 
+        DrawReadOnlyLabel();
         Draw();
         MainLoop();
     }
@@ -265,9 +274,16 @@ public class TextArea
             {
                 var key = Console.ReadKey(true);
                 var request = _engine.HandleKey(key);
-                if (request != EditorRequest.None)
+                if (_engine.ReadOnly && request is EditorRequest.InsertCalendar or EditorRequest.ClearAll
+                        or EditorRequest.PasteBinRead or EditorRequest.Snippets or EditorRequest.StringMemory)
+                {
+                    // Read only: what would only insert or clear text is not opened
+                    _engine.SetMessage(DialogText.EditorReadOnly, true);
+                }
+                else if (request != EditorRequest.None)
                 {
                     HandleRequest(request);
+                    _engine.ReportReadOnly();
                 }
 
                 if (_exit) break;
@@ -944,6 +960,17 @@ public class TextArea
     }
 
     // Show or remove the "unsaved" indicator when the state changes
+    // The label "Read only" at the top right, where the label "Unsaved" is shown for a text with changes
+    private void DrawReadOnlyLabel()
+    {
+        if (!_engine.ReadOnly) return;
+        var label = " " + Lang.T("Read only") + " ";
+        Tools.SetCursorEx(2, Math.Max(0, Init.LineWidth - TextMetrics.WidthOf(label)));
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+        Console.Write(label);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
     private void UpdateChangeIndicator()
     {
         var modified = _engine.IsModified;
@@ -985,6 +1012,7 @@ public class TextArea
         }
 
         Menu.IndicateChanges(true);
+        DrawReadOnlyLabel();
         Array.Fill(_shownRows, null);
         Array.Fill(_shownCells, 0);
         _shownStatus = null;

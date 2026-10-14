@@ -158,12 +158,35 @@ internal sealed class TextBuffer
     #region Editing
 
     /// <summary>
+    /// The text cannot be changed: inserting and deleting do nothing, and ChangeRefused tells that it was tried
+    /// </summary>
+    internal bool ReadOnly { get; set; }
+
+    /// <summary>
+    /// A change was tried while the text is read only (it is forgotten when it is taken)
+    /// </summary>
+    internal bool TakeChangeRefused()
+    {
+        var refused = _changeRefused;
+        _changeRefused = false;
+        return refused;
+    }
+
+    private bool _changeRefused;
+
+    /// <summary>
     /// Insert text at a position
     /// </summary>
     /// <returns>The position just after the inserted text</returns>
     internal TextPos Insert(TextPos at, string text)
     {
         if (string.IsNullOrEmpty(text)) return at;
+        if (ReadOnly)
+        {
+            _changeRefused = true;
+            return at;
+        }
+
         Record(new Edit(at, string.Empty, text));
         return ApplyInsert(at, text);
     }
@@ -175,6 +198,12 @@ internal sealed class TextBuffer
     internal string Delete(TextPos from, TextPos to)
     {
         if (to <= from) return string.Empty;
+        if (ReadOnly)
+        {
+            _changeRefused = true;
+            return string.Empty;
+        }
+
         var removed = GetText(from, to);
         Record(new Edit(from, removed, string.Empty));
         ApplyDelete(from, to);

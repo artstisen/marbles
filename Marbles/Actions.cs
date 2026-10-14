@@ -465,6 +465,11 @@ internal static class Actions
             case "title":
                 SelectResultFromIndex(pageNumber, _resultIndex, 1);
                 break;
+            case "readonly":
+            case "ro":
+                // The entry is read only, or not any more
+                SelectResultFromIndex(pageNumber, _resultIndex, 12);
+                break;
             case "duplicate":
                 SelectResultFromIndex(pageNumber, _resultIndex, 8);
                 break;
@@ -826,6 +831,7 @@ internal static class Actions
                 DrawEditMenu();
                 // Insert editor at current cursor position (colored as set for the entry)
                 TextArea.NextEntrySyntax = EntrySyntax.Get(Entries.CurrentEntry.Options);
+                TextArea.NextEntryReadOnly = Entries.IsReadOnly(Entries.CurrentEntry);
                 TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
                     Init.LineCount - 5, Entries.CurrentEntry.Text, cursorIndex, false, false, search, 0);
                 // Cleanup
@@ -966,7 +972,8 @@ internal static class Actions
             (Lang.T("Lines:"), Tools.LineCount(entry.Text).ToString()),
             (Lang.T("Syntax:"), EntrySyntax.Get(entry.Options) == SyntaxType.None
                 ? Lang.T("None (:syntax in the editor)")
-                : SyntaxHighlighter.Name(EntrySyntax.Get(entry.Options)))
+                : SyntaxHighlighter.Name(EntrySyntax.Get(entry.Options))),
+            (Lang.T("Read only:"), Entries.IsReadOnly(entry) ? DialogText.ChoiceYes : DialogText.ChoiceNo)
         }, 60);
     }
 
@@ -2202,14 +2209,24 @@ internal static class Actions
 
                 Console.Write(_tempTruncatedTitle);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                // Dots, ending with the syntax of the entry if it has one ("MD")
+                // Dots, ending with the syntax of the entry if it has one ("MD"), and "RO" if it is read only
                 var dots = Init.LineWidth - (_tempTruncatedTitle.Length + 29);
                 var syntax = EntrySyntax.ShortName(EntrySyntax.Get(_resultPages[page][j].Options));
-                if (syntax.Length > 0 && dots > syntax.Length + 2)
+                var readOnly = Entries.IsReadOnly(_resultPages[page][j]) ? "RO" : string.Empty; // English
+                var marks = (syntax + " " + readOnly).Trim();
+                if (marks.Length > 0 && dots > marks.Length + 2)
                 {
-                    Console.Write(" " + new string('.', dots - syntax.Length - 1) + " ");
+                    Console.Write(" " + new string('.', dots - marks.Length - 1) + " ");
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
                     Console.Write(syntax);
+                    if (readOnly.Length > 0)
+                    {
+                        if (syntax.Length > 0) Console.Write(" ");
+                        // In the color of warnings
+                        ConsoleColors.SetTextColor(ConsoleColors.Current.Warning);
+                        Console.Write(readOnly);
+                    }
+
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                 }
                 else
@@ -2727,6 +2744,24 @@ internal static class Actions
                 _lastSelectedIndex = resultIndex;
                 _lastSelectedPage = pageNumber;
                 Entries.SelectEntryById(_resultPages[pageNumber][resultIndex].Id);
+                if (action is 1 or 2 or 9 && Entries.IsReadOnly(Entries.CurrentEntry))
+                {
+                    // A read only entry is not renamed, deleted or reverted
+                    ChoiceBox.Message(DialogText.CaptionsReadOnly, DialogText.EntryIsReadOnly,
+                        DialogText.EntryReadOnlyNote);
+                    ExitNumericSelect(pageNumber, resultIndex);
+                    return;
+                }
+
+                if (action == 12)
+                {
+                    Entries.SetReadOnly(Entries.CurrentEntry, !Entries.IsReadOnly(Entries.CurrentEntry));
+                    Entries.UpdateEntry(Entries.CurrentEntry, false);
+                    Entries.SaveEntriesToFile();
+                    ExitNumericSelect(pageNumber, resultIndex);
+                    return;
+                }
+
                 if (action == 0)
                 {
                     EditEntry(false);

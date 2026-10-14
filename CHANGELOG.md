@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Entries**: `:readonly` (`:ro`) in the lists makes an entry read only, or not any more. It is marked `RO` in the lists, cannot be changed in the editor (label _Read only_), and is not renamed, reverted or deleted. A copy made with `:duplicate` can be edited.
 - **Color schemes**: **Tab text** (Page 2, below Selector), the color of the text in frames with tabs and in boxes; the names of the tabs, the titles of boxes and highlighted text keep their colors (`frametext` in a scheme file).
 - **Configuration** (System): the settings line up with the pointer, as the page has no check boxes.
 - **Login page**: the options have `S` **Configuration**, which goes to the Configuration tab of the Select mode page.

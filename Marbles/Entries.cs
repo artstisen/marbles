@@ -30,6 +30,23 @@ internal static class Entries
     // Options tags
     internal const char FavoritesTag = 'f';
     internal const char PinnedTag = 'p';
+    internal const char ReadOnlyTag = 'r'; // The entry cannot be edited, renamed, reverted or deleted
+
+    /// <summary>
+    /// True if the entry is read only (a tag in its options, set with ":readonly" in the lists)
+    /// </summary>
+    internal static bool IsReadOnly(Entry entry) =>
+        !string.IsNullOrEmpty(entry.Options) && entry.Options != DialogText.Cleared &&
+        entry.Options.Contains(ReadOnlyTag);
+
+    /// <summary>
+    /// Make an entry read only, or not any more
+    /// </summary>
+    internal static void SetReadOnly(Entry entry, bool readOnly)
+    {
+        var options = new string((entry.Options ?? string.Empty).Where(c => c != ReadOnlyTag).ToArray());
+        entry.Options = readOnly ? options + ReadOnlyTag : options;
+    }
     internal const char DefaultRank = '0';
     private const string DefaultEndRank = "99999";
 
@@ -318,6 +335,8 @@ internal static class Entries
             CursorIndex = originalEntry.CursorIndex,
             Options = originalEntry.Options
         };
+        // A copy can be edited
+        SetReadOnly(_newEntry, false);
         _entryList.Add(_newEntry);
         return _newEntry.Id;
     }

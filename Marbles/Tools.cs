@@ -1417,6 +1417,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("I :info", Lang.T("Info: dates, words, characters, lines and syntax"), false));
             _shortcutList.Add(new Shortcut(":duplicate", Lang.T("Duplicate the selected entry"), false));
             _shortcutList.Add(new Shortcut(":revert", Lang.T("Revert the entry to before its last edit"), false));
+            _shortcutList.Add(new Shortcut(":readonly :ro", Lang.T("Read only on/off: not edited, renamed or deleted"), false));
             _shortcutList.Add(new Shortcut(":export", Lang.T("Export the text as a text file"), false));
             _shortcutList.Add(new Shortcut(":import", Lang.T("Import a text file as a new entry"), false));
             _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings"), false));
@@ -1701,6 +1702,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("\"+y", Lang.T("Yank to the system clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut(":pb :pbread", Lang.T("Write to/Read from the paste bin"), false));
             _shortcutList.Add(new Shortcut(":info", Lang.T("Info: characters, words, lines, dates and path"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Read only"), Lang.T("An entry set with :readonly in a list is not changed"), false));
             _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path of the file to the clipboard"), false));
             _shortcutList.Add(new Shortcut(":snip :sn", Lang.T("Snippets: insert, filter, sort, add, rename, delete"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Selection"), Lang.T(":snip puts a snippet with $0 around it"), false));

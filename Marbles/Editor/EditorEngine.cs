@@ -355,6 +355,27 @@ internal sealed partial class EditorEngine
     #region Key handling
 
     /// <summary>
+    /// The text cannot be changed (an entry that is read only): commands that would change it are refused with
+    /// a message, and INSERT mode is not entered. Moving, searching and yanking work as usual
+    /// </summary>
+    internal bool ReadOnly
+    {
+        get => Buffer.ReadOnly;
+        set => Buffer.ReadOnly = value;
+    }
+
+    /// <summary>
+    /// Tell that the text is read only, if a change of it was refused
+    /// </summary>
+    /// <returns>True if a change was refused</returns>
+    internal bool ReportReadOnly()
+    {
+        if (!Buffer.TakeChangeRefused()) return false;
+        SetError(DialogText.EditorReadOnly);
+        return true;
+    }
+
+    /// <summary>
     /// Handle a key press
     /// </summary>
     /// <returns>What the host must do as a result of the key press</returns>
@@ -418,6 +439,19 @@ internal sealed partial class EditorEngine
             (_recordedInsert || Buffer.Version != _recordedVersion))
         {
             _lastChange = _recordedKeys.ToArray();
+        }
+
+        // Read only: INSERT mode is left at once, and a change that was refused is told about
+        if (ReadOnly && Mode == EditorMode.Insert)
+        {
+            Mode = EditorMode.Normal;
+            Buffer.EndStep(Cursor);
+            Buffer.TakeChangeRefused();
+            SetError(DialogText.EditorReadOnly);
+        }
+        else
+        {
+            ReportReadOnly();
         }
 
         ClampCursor();
