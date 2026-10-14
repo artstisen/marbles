@@ -24,6 +24,8 @@ internal static class FileFavorites
         internal string Name = string.Empty; // The name of a folder
         internal bool Collapsed; // A folder that is closed: the favorites in it are not shown
         internal bool InFolder; // A favorite in the folder above it in the list
+        internal int Line; // Where the cursor was when the file was closed in the editor (from 1; 0: not known)
+        internal int Column;
     }
 
     private static readonly List<Favorite> List = new();
@@ -90,10 +92,15 @@ internal static class FileFavorites
                 continue;
             }
 
-            if (Contains(rest)) continue;
+            // Where the cursor was, before the path
+            var (caretLine, caretColumn) = CaretPosition.Take(ref rest);
+            if (rest.Length == 0 || Contains(rest)) continue;
             // The favorites of a folder follow it directly
             if (!inFolder) hasFolder = false;
-            List.Add(new Favorite { Path = rest, Color = color, InFolder = inFolder });
+            List.Add(new Favorite
+            {
+                Path = rest, Color = color, InFolder = inFolder, Line = caretLine, Column = caretColumn
+            });
         }
     }
 
@@ -111,7 +118,7 @@ internal static class FileFavorites
             }
             else
             {
-                text.Append(favorite.Path);
+                text.Append(CaretPosition.Write(favorite.Line, favorite.Column)).Append(favorite.Path);
             }
 
             text.Append('\n');
@@ -145,6 +152,28 @@ internal static class FileFavorites
     }
 
     internal static bool Contains(string path) => IndexOf(path) >= 0;
+
+    /// <summary>
+    /// Where the cursor was in a favorite file when it was closed (line and column from 1), or null if not known
+    /// </summary>
+    internal static (int Line, int Column)? CaretOf(string path)
+    {
+        var index = IndexOf(path);
+        return index >= 0 && List[index].Line > 0 ? (List[index].Line, List[index].Column) : null;
+    }
+
+    /// <summary>
+    /// Keep where the cursor was in a favorite file when it was closed
+    /// </summary>
+    /// <returns>True if the file is a favorite</returns>
+    internal static bool SetCaret(string path, int line, int column)
+    {
+        var index = IndexOf(path);
+        if (index < 0) return false;
+        List[index].Line = Math.Max(1, line);
+        List[index].Column = Math.Max(1, column);
+        return true;
+    }
 
     /// <summary>
     /// Add a file or directory to the favorites, or remove it if it is one

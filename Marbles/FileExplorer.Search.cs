@@ -16,6 +16,7 @@ internal static partial class FileExplorer
 
     // Where the cursor is placed in the next file opened in the editor
     private static int _openAtIndex;
+    private static bool _openAtFound; // A file is opened at the line found by the search (not where it was left)
 
     // Fill in what to search for, search the directory of the pane with the focus, and show the files found
     private static KeyResult SearchFiles()
@@ -266,6 +267,7 @@ internal static partial class FileExplorer
     {
         if (!FoundExists(result)) return false;
         _openAtIndex = 0;
+        _openAtFound = result.Line > 0;
         if (result.Line > 0)
         {
             try
@@ -286,6 +288,7 @@ internal static partial class FileExplorer
         _message = string.Empty;
         var close = Open(new Item(System.IO.Path.GetFileName(result.Path), result.Path, false, result.Size));
         _openAtIndex = 0;
+        _openAtFound = false;
         _foundMessage = _message;
         _message = string.Empty;
         return close;

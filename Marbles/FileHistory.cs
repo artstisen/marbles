@@ -9,7 +9,9 @@ namespace Marbles;
 /// file opened longest ago is dropped.
 ///
 /// The list is kept in the file "history.txt" in the data directory, with one line for each file: the time it
-/// was last opened (yyyy-MM-dd HH:mm), a tab character and the path.
+/// was last opened (yyyy-MM-dd HH:mm), a tab character and the path. When the file was closed in the editor, the
+/// line and column of the cursor (as "12:5") and a tab character come before the path: the file is opened there
+/// the next time.
 /// </summary>
 internal static class FileHistory
 {
@@ -22,7 +24,11 @@ internal static class FileHistory
 
     private const string TimeFormat = "yyyy-MM-dd HH:mm";
 
-    internal sealed record Entry(string Path, DateTime Opened);
+    /// <summary>
+    /// A file of the list: its path, when it was opened, and where the cursor was when it was closed (the line
+    /// and column, from 1; 0 when it is not known)
+    /// </summary>
+    internal sealed record Entry(string Path, DateTime Opened, int Line = 0, int Column = 0);
 
     private static readonly List<Entry> List = new();
 
@@ -64,6 +70,8 @@ internal static class FileHistory
             var tab = line.IndexOf('\t');
             if (tab < 0) continue;
             var path = line[(tab + 1)..].Trim();
+            // Where the cursor was, before the path
+            var (caretLine, caretColumn) = CaretPosition.Take(ref path);
             if (path.Length == 0 || List.Any(entry => FileOperations.SamePath(entry.Path, path))) continue;
             if (!DateTime.TryParseExact(line[..tab].Trim(), TimeFormat, CultureInfo.InvariantCulture,
                     DateTimeStyles.None, out var opened))
@@ -71,7 +79,7 @@ internal static class FileHistory
                 opened = DateTime.MinValue;
             }
 
-            List.Add(new Entry(path, opened));
+            List.Add(new Entry(path, opened, caretLine, caretColumn));
             if (List.Count == MaxCount) break;
         }
     }
@@ -82,7 +90,7 @@ internal static class FileHistory
         foreach (var entry in List)
         {
             text.Append(entry.Opened.ToString(TimeFormat, CultureInfo.InvariantCulture)).Append('\t')
-                .Append(entry.Path).Append('\n');
+                .Append(CaretPosition.Write(entry.Line, entry.Column)).Append(entry.Path).Append('\n');
         }
 
         return text.ToString();
@@ -114,9 +122,32 @@ internal static class FileHistory
     internal static void Add(string path, DateTime opened)
     {
         path = Path.GetFullPath(path);
+        // Where the cursor was is kept
+        var before = List.FirstOrDefault(entry => FileOperations.SamePath(entry.Path, path));
         List.RemoveAll(entry => FileOperations.SamePath(entry.Path, path));
-        List.Insert(0, new Entry(path, opened));
+        List.Insert(0, new Entry(path, opened, before?.Line ?? 0, before?.Column ?? 0));
         if (List.Count > MaxCount) List.RemoveRange(MaxCount, List.Count - MaxCount);
+    }
+
+    /// <summary>
+    /// Where the cursor was in a file when it was closed (line and column from 1), or null if not known
+    /// </summary>
+    internal static (int Line, int Column)? CaretOf(string path)
+    {
+        var entry = List.FirstOrDefault(item => FileOperations.SamePath(item.Path, path));
+        return entry is { Line: > 0 } ? (entry.Line, entry.Column) : null;
+    }
+
+    /// <summary>
+    /// Keep where the cursor was in a file of the list when it was closed
+    /// </summary>
+    /// <returns>True if the file is in the list</returns>
+    internal static bool SetCaret(string path, int line, int column)
+    {
+        var index = List.FindIndex(item => FileOperations.SamePath(item.Path, path));
+        if (index < 0) return false;
+        List[index] = List[index] with { Line = Math.Max(1, line), Column = Math.Max(1, column) };
+        return true;
     }
 
     /// <summary>
@@ -133,5 +164,68 @@ internal static class FileHistory
     internal static void Clear()
     {
         List.Clear();
+    }
+}
+
+/// <summary>
+/// Where the cursor is in a text, as a line and column (from 1), kept in the lists of the file browser (history
+/// and favorites) as "12:5" and a tab character before a path, so a file is opened where it was left
+/// </summary>
+internal static class CaretPosition
+{
+    private static readonly System.Text.RegularExpressions.Regex Written = new(@"^(\d{1,9}):(\d{1,9})\t");
+
+    /// <summary>
+    /// The line and column at the start of a text from a list ("12:5" and a tab), taken out of it
+    /// </summary>
+    /// <returns>The line and column, or (0, 0) if the text does not start with one</returns>
+    internal static (int Line, int Column) Take(ref string text)
+    {
+        var match = Written.Match(text);
+        if (!match.Success) return (0, 0);
+        text = text[match.Length..].Trim();
+        return (int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value));
+    }
+
+    /// <summary>
+    /// A line and column as written before a path ("12:5" and a tab), or nothing if it is not known
+    /// </summary>
+    internal static string Write(int line, int column) => line > 0 ? line + ":" + Math.Max(1, column) + "\t" : string.Empty;
+
+    /// <summary>
+    /// The line and column (from 1) of a place in a text, where lines end with a line break of one character
+    /// </summary>
+    internal static (int Line, int Column) Of(string text, int index)
+    {
+        index = Math.Clamp(index, 0, text.Length);
+        var line = 1;
+        var start = 0;
+        for (var i = 0; i < index; i++)
+        {
+            if (text[i] != '\n') continue;
+            line++;
+            start = i + 1;
+        }
+
+        return (line, index - start + 1);
+    }
+
+    /// <summary>
+    /// The place in a text of a line and column (from 1). A line or column past the end is the end of the text or
+    /// of the line (the text may have changed since)
+    /// </summary>
+    internal static int IndexOf(string text, int line, int column)
+    {
+        var index = 0;
+        for (var current = 1; current < line; current++)
+        {
+            var next = text.IndexOf('\n', index);
+            if (next < 0) return text.Length;
+            index = next + 1;
+        }
+
+        var end = text.IndexOf('\n', index);
+        if (end < 0) end = text.Length;
+        return Math.Min(index + Math.Max(0, column - 1), end);
     }
 }

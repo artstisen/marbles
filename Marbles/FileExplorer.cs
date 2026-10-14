@@ -637,7 +637,14 @@ internal static partial class FileExplorer
         Mode.SetMode(Mode.SelectedMode.Edit);
         try
         {
+            // The line found by a search, or else where the cursor was when the file was closed last time (a
+            // favorite first, then the history)
             var cursorIndex = _openAtIndex;
+            if (!_openAtFound && CaretOfFile(file.Path) is { } caret)
+            {
+                cursorIndex = CaretPosition.IndexOf(_file?.Text ?? string.Empty, caret.Line, caret.Column);
+            }
+
             while (true)
             {
                 Tools.ClearScreen();
@@ -645,6 +652,7 @@ internal static partial class FileExplorer
                 var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
                     Init.LineCount - 5, _file?.Text ?? string.Empty, cursorIndex, false, false, false, TextArea.SaveAsFile, modified);
                 textArea.ClearUndoRedoCache();
+                KeepCaret(file.Path, textArea);
                 // ":snip edit": the file of snippets, and then this file again (as it is on disk)
                 if (TextArea.TakeSnippetsRequest() is not { } line) break;
                 cursorIndex = textArea.GetCursorIndex();
@@ -662,6 +670,34 @@ internal static partial class FileExplorer
         {
             Mode.SetMode(Mode.SelectedMode.Login);
             _file = null;
+        }
+    }
+
+    // Where the cursor was in a file when it was closed: kept in the favorites first, then in the history
+    private static (int Line, int Column)? CaretOfFile(string path)
+    {
+        FileFavorites.Load();
+        FileHistory.Load();
+        return FileFavorites.CaretOf(path) ?? FileHistory.CaretOf(path);
+    }
+
+    // Keep where the cursor is in a file that is closed in the editor: in the history, and in the favorites if
+    // it is one
+    private static void KeepCaret(string path, TextArea textArea)
+    {
+        var (line, column) = CaretPosition.Of(textArea.GetText(), textArea.GetCursorIndex());
+        FileHistory.Load();
+        if (FileHistory.SetCaret(path, line, column))
+        {
+            var status = FileHistory.Save();
+            if (status != DialogText.Success) EventLog.Add(DialogText.LogFile + "History: " + status);
+        }
+
+        FileFavorites.Load();
+        if (FileFavorites.SetCaret(path, line, column))
+        {
+            var status = FileFavorites.Save();
+            if (status != DialogText.Success) EventLog.Add(DialogText.LogFile + "Favorites: " + status);
         }
     }
 

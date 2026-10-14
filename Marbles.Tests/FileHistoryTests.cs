@@ -27,6 +27,59 @@ public class FileHistoryTests : IDisposable
         string.Join(" ", FileHistory.Items.Select(entry => Path.GetFileName(entry.Path)));
 
     [Fact]
+    public void ThePlaceOfTheCursor_IsALineAndColumn()
+    {
+        const string text = "one\ntwo three\n\nlast";
+        Assert.Equal((1, 1), CaretPosition.Of(text, 0));
+        Assert.Equal((2, 5), CaretPosition.Of(text, 8));
+        Assert.Equal((3, 1), CaretPosition.Of(text, 14));
+        Assert.Equal((4, 5), CaretPosition.Of(text, text.Length));
+        foreach (var index in new[] { 0, 3, 4, 8, 13, 14, 15, text.Length })
+        {
+            var (line, column) = CaretPosition.Of(text, index);
+            Assert.Equal(index, CaretPosition.IndexOf(text, line, column));
+        }
+
+        // A text that has changed since: the end of the line, or of the text
+        Assert.Equal(3, CaretPosition.IndexOf(text, 1, 40));
+        Assert.Equal(text.Length, CaretPosition.IndexOf(text, 99, 1));
+        Assert.Equal(0, CaretPosition.IndexOf(string.Empty, 5, 5));
+
+        // As written in the lists
+        Assert.Equal("12:5\t", CaretPosition.Write(12, 5));
+        Assert.Equal(string.Empty, CaretPosition.Write(0, 0));
+        var written = "12:5\tC:\\notes\\a.md";
+        Assert.Equal((12, 5), CaretPosition.Take(ref written));
+        Assert.Equal("C:\\notes\\a.md", written);
+        var path = "/home/notes/1:2 a.md";
+        Assert.Equal((0, 0), CaretPosition.Take(ref path));
+        Assert.Equal("/home/notes/1:2 a.md", path);
+    }
+
+    [Fact]
+    public void WhereTheCursorWas_IsKeptInTheHistory_AndReadFromAnOlderList()
+    {
+        var time = new DateTime(2026, 10, 14, 9, 30, 0);
+        FileHistory.Add(In("a.txt"), time);
+        FileHistory.Add(In("b.txt"), time);
+        Assert.Null(FileHistory.CaretOf(In("a.txt")));
+        Assert.True(FileHistory.SetCaret(In("a.txt"), 12, 5));
+        Assert.False(FileHistory.SetCaret(In("other.txt"), 1, 1));
+        Assert.Equal((12, 5), FileHistory.CaretOf(In("a.txt")));
+        // Opened again: moved to the top, with the place kept
+        FileHistory.Add(In("a.txt"), time.AddMinutes(1));
+        Assert.Equal((12, 5), FileHistory.CaretOf(In("a.txt")));
+
+        var text = FileHistory.Serialize();
+        Assert.Contains("2026-10-14 09:31\t12:5\t" + In("a.txt") + "\n", text);
+        Assert.Contains("2026-10-14 09:30\t" + In("b.txt") + "\n", text);
+        FileHistory.Parse(text);
+        Assert.Equal((12, 5), FileHistory.CaretOf(In("a.txt")));
+        Assert.Null(FileHistory.CaretOf(In("b.txt")));
+        Assert.Equal(new[] { "a.txt", "b.txt" }, FileHistory.Items.Select(entry => Path.GetFileName(entry.Path)));
+    }
+
+    [Fact]
     public void Add_PutsTheFileFirst_AndMovesAFileOpenedAgain()
     {
         var time = new DateTime(2026, 10, 10, 20, 45, 0);

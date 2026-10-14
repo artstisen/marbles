@@ -280,6 +280,29 @@ public class FileManagementTests : IDisposable
     }
 
     [Fact]
+    public void WhereTheCursorWas_IsKeptInTheFavorites_InFoldersToo()
+    {
+        var a = MakeFile("x", "a.md");
+        var b = MakeFile("y", "b.md");
+        FileFavorites.Parse("Cyan\t" + a + "\n\t[Work]\n \t" + b + "\n");
+        Assert.Null(FileFavorites.CaretOf(a));
+        Assert.True(FileFavorites.SetCaret(a, 3, 7));
+        Assert.True(FileFavorites.SetCaret(b, 20, 1));
+        Assert.False(FileFavorites.SetCaret(In("other.md"), 1, 1));
+        var text = FileFavorites.Serialize();
+        Assert.Contains("Cyan\t3:7\t" + a + "\n", text);
+        Assert.Contains("\t[Work]\n", text);
+        Assert.Contains(" \t20:1\t" + b + "\n", text);
+
+        FileFavorites.Parse(text);
+        Assert.Equal((3, 7), FileFavorites.CaretOf(a));
+        Assert.Equal((20, 1), FileFavorites.CaretOf(b));
+        Assert.Equal(ConsoleColor.Cyan, FileFavorites.Items[0].Color);
+        Assert.True(FileFavorites.Items[2].InFolder);
+        Assert.Equal(text, FileFavorites.Serialize());
+    }
+
+    [Fact]
     public void Favorites_FileFormat()
     {
         FileFavorites.Parse("Red\t/one/a.txt\r\n\t/two/b.txt\n/three/c.txt\nNoColor\t/four\n\n\t/one/a.txt\n");
