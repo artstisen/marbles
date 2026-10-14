@@ -361,6 +361,8 @@ internal static class DialogText
     public static string ConfigSize => Lang.T("Size: ");
     public static string ConfigSizeNote => Lang.T(" (Enter: Change)");
     public static string ConfigLineNumbers => Lang.T("Line numbers");
+    public static string NotesNotUsed => Lang.T("Not used: Marbles is set to Text Editor only");
+    public static string EditorNotUsed => Lang.T("Not used: Marbles is set to Note Management only");
     public static string DataFileNotOpened => Lang.T("Data files are not opened: Marbles is set to Text Editor only");
     public static string ConfigReset => Lang.T("Reset all settings");
     public static string ConfigRestart => Lang.T("Restart Marbles");

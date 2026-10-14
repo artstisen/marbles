@@ -12,7 +12,8 @@ internal enum CommandContext
     Favorites, // The favorites of the file browser
     History, // The files opened from the file browser
     Search, // The files found by a search in the file browser
-    Editor
+    Editor,
+    Start // The start page (Select mode): its tabs Mode, Configuration and Help
 }
 
 /// <summary>
@@ -71,6 +72,10 @@ internal static class Commands
         [CommandContext.Search] = new Table(
             "quit close help jump find info goto favorite",
             "q h fav ju"),
+        [CommandContext.Start] = new Table(
+            "note file mode config general layout editor system jump help about quick scheme logo snippet clipboard " +
+            "log restart quit exit",
+            "notes browse ju h guide snip q"),
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +

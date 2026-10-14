@@ -157,7 +157,7 @@ internal static class StartMenu
         }
 
         var mode = new ModePage();
-        var frame = new TabFrame(TabRow, () =>
+        var frame = _frame = new TabFrame(TabRow, () =>
             {
                 Logo.DrawLogo(true, animate, false);
                 animate = false;
@@ -165,11 +165,124 @@ internal static class StartMenu
             new TabItem(() => DialogText.StartModeTab, mode),
             new TabItem(() => DialogText.StartConfiguration, new SettingsPage(0), new SettingsPage(1),
                 new SettingsPage(2), new SettingsPage(3)),
-            new TabItem(() => Lang.T("Help"), new HelpPage()));
+            new TabItem(() => Lang.T("Help"), new HelpPage())) { Commands = ReadCommand };
         if (_showConfiguration >= 0) frame.Selected = 1 + _showConfiguration;
         _showConfiguration = -1;
         // Returns when notes are chosen, or a data file was selected in the file browser
         frame.Run();
+    }
+
+    // The frame of the page while it is shown (for the commands that go to a tab)
+    private static TabFrame? _frame;
+
+    // ":" on any tab: a command of the start page
+    private static TabResult ReadCommand()
+    {
+        var command = CommandLine.Read(CommandContext.Start);
+        return command == null ? TabResult.Redraw : RunCommand(command);
+    }
+
+    // The commands of the start page: go to a tab or a page of Configuration, open the file browser, the login
+    // page, the Jump menu or a page of Marbles, show the help, or exit
+    private static TabResult RunCommand(string command)
+    {
+        switch (CommandLine.Name(command))
+        {
+            case "note":
+            case "notes":
+                // The login page (not with Text Editor only)
+                if (Only != OnlyMode.Editor) return TabResult.Close;
+                Refused(DialogText.NotesNotUsed);
+                break;
+            case "file":
+            case "browse":
+                // The file browser (not with Note Management only)
+                if (Only != OnlyMode.Notes) return BrowseFiles() ? TabResult.Close : TabResult.Redraw;
+                Refused(DialogText.EditorNotUsed);
+                break;
+            case "mode":
+                ShowPage(0);
+                break;
+            case "config":
+            case "general":
+                ShowPage(1);
+                break;
+            case "layout":
+                ShowPage(2);
+                break;
+            case "editor":
+                ShowPage(3);
+                break;
+            case "system":
+                ShowPage(4);
+                break;
+            case "jump":
+            case "ju":
+                Marbles.Jump.Open();
+                break;
+            case "help":
+            case "h":
+                // The keys of the start page, without going to the Help tab
+                Tools.WriteEditorHelp(false, Tools.HelpTopic.Start);
+                break;
+            case "about":
+                Actions.ShowAboutPages();
+                break;
+            case "quick":
+            case "guide":
+                QuickGuide.Show();
+                break;
+            case "scheme":
+                SchemeEditor.Show();
+                break;
+            case "logo":
+                LogoEditor.Show();
+                break;
+            case "snippet":
+            case "snip":
+                ChoiceBox.Forget();
+                if (SnippetBox.EnsureFile()) FileExplorer.EditSnippets(0);
+                break;
+            case "clipboard":
+                ClipboardPage.Show();
+                break;
+            case "log":
+                EventLog.Show();
+                break;
+            case "restart":
+                ChangeSetting(Setting.Restart, true);
+                break;
+            case "quit":
+            case "exit":
+            case "q":
+                // As Q on the Mode tab: asked first
+                if (ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false))
+                {
+                    Tools.ExitApplication();
+                }
+
+                break;
+            default:
+                CommandLine.ShowUnknown(command);
+                break;
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Tools.ClearScreen();
+        return TabResult.Redraw;
+    }
+
+    // Go to a page of the frame (0 Mode, 1 to 4 the pages of Configuration)
+    private static void ShowPage(int page)
+    {
+        if (_frame != null) _frame.Selected = page;
+    }
+
+    // A mode that is not used
+    private static void Refused(string message)
+    {
+        ChoiceBox.Forget();
+        ChoiceBox.Message(DialogText.StartSelectMode, message, string.Empty);
     }
 
     // Open the file browser. True if a data file was selected there: the login page is shown for it

@@ -119,6 +119,11 @@ internal sealed class TabFrame
     /// </summary>
     internal int Selected { get; set; }
 
+    /// <summary>
+    /// Read and run a command when ":" is pressed on any page of the frame (null: ":" goes to the page)
+    /// </summary>
+    internal Func<TabResult>? Commands { get; init; }
+
     internal ITabPage Page => _pages[Selected].Page;
 
     private TabArea _area;
@@ -186,6 +191,14 @@ internal sealed class TabFrame
             if (step != 0)
             {
                 Selected = _firstPage[tab] + TabLayout.Next(_shownPage[tab], subTabs, step < 0);
+                full = true;
+                continue;
+            }
+
+            if (key.KeyChar == ':' && Commands != null && !page.CapturesKeys)
+            {
+                var result = Commands();
+                if (result == TabResult.Close) return;
                 full = true;
                 continue;
             }

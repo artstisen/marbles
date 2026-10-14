@@ -182,6 +182,12 @@ public class CommandTests
     }
 
     [Fact]
+    public void TheTables_HaveTheCommandsOfTheStartPage()
+    {
+        AssertSame(CommandContext.Start, Compared(Method("StartMenu.cs", "RunCommand")));
+    }
+
+    [Fact]
     public void TheTables_HaveTheCommandsOfTheEditor()
     {
         // (":s/old/new/" is found by its first letter)

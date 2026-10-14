@@ -1353,6 +1353,16 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Tab", Lang.T("Next tab: Mode, Configuration, Help"), false));
             _shortcutList.Add(new Shortcut("Shift+Tab", Lang.T("The tab before"), false));
             _shortcutList.Add(new Shortcut("Q Esc", Lang.T("Exit Marbles, asking first (Configuration: to Mode)"), false));
+            _shortcutList.Add(new Shortcut(":", Lang.T("Command line, on every tab (Tab completes)"), false));
+            _shortcutList.Add(new Shortcut(":note :file", Lang.T("The login page/The file browser"), false));
+            _shortcutList.Add(new Shortcut(":mode :config", Lang.T("The Mode tab/Configuration (General)"), false));
+            _shortcutList.Add(new Shortcut(":layout :editor", Lang.T("The pages of Configuration (and :system)"), false));
+            _shortcutList.Add(new Shortcut(":jump :help", Lang.T("The Jump menu/The help (this list)"), false));
+            _shortcutList.Add(new Shortcut(":about :quick", Lang.T("About/The quick guide"), false));
+            _shortcutList.Add(new Shortcut(":scheme :logo", Lang.T("Color schemes/Logos"), false));
+            _shortcutList.Add(new Shortcut(":snip :clipboard", Lang.T("Snippet editor/Clipboard settings"), false));
+            _shortcutList.Add(new Shortcut(":log :restart", Lang.T("View log/Restart Marbles"), false));
+            _shortcutList.Add(new Shortcut(":q :exit", Lang.T("Exit Marbles (asks first)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("The pages General, Layout, Editor and System"), false));
             _shortcutList.Add(new Shortcut("j k 1-9", Lang.T("Select a setting (or the number of its row)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Startup"), Lang.T("Text Editor can start in the favorites list"), false));

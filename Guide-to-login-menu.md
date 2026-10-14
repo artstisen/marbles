@@ -59,6 +59,18 @@ The settings are on four pages, so they can be changed in one place without logg
 - **Info**: Show the version of Marbles, the directory of the program, the data directory and the settings file in a box. Any key closes it
 - **View log**: Show the [log](#the-log)
 
+### Commands
+On every tab of the start page (Mode, the pages of Configuration, Help), `:` opens the command line on the bottom line. `Tab` completes the command you are typing, from the commands of this page:
+
+- `:note` (or `:notes`) The login page, as _Note Management_ on the Mode tab; `:file` (or `:browse`) The file browser, as _Text Editor/File Management_. With _Text Editor only_ or _Note Management only_, the mode that is not used is refused
+- `:mode` The Mode tab; `:config` (or `:general`), `:layout`, `:editor` and `:system` The pages of the Configuration tab (`:editor` is the Editor page of Configuration, not the text editor)
+- `:jump` (or `:ju`) The [Jump menu](Guide-to-main-menu.md#jump-menu)
+- `:help` (or `:h`) The help of the start page, as `?`; `:about` The about page; `:quick` (or `:guide`) The quick guide
+- `:scheme` The color schemes; `:logo` The logos; `:snippet` (or `:snip`) The snippet editor; `:clipboard` The clipboard settings; `:log` The log
+- `:restart` Restart Marbles (asks first); `:quit`, `:exit` (or `:q`) Exit Marbles (asks first)
+
+The command names are the same in all languages, and the names of the main menu work here too (`:browse`, `:guide`, `:scheme`, `:logo`).
+
 ### Help
 - `1` **Help**: All the keys and commands of Marbles, as `:help` (`?` on a page shows the keys of that page)
 - `2` **About**: General information about Marbles, and its license on the next page. `Esc` closes it
