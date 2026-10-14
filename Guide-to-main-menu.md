@@ -21,7 +21,7 @@ The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+
 
 - **Jumps**: the places you have jumped to with the menu, the latest first, with the time (today) or the date of the jump
 - **Files**: the files opened from the file browser (the file history), with when they were opened
-- **Favorites**: the files and directories of your favorites
+- **Favorites**: the files and directories of your favorites. A favorite with a color of its own is shown in it, on every tab
 - **Configuration**: the pages of the Configuration tab (General, Layout, Editor, System), Color schemes, Logos, Clipboard, Snippet editor, Help and About
 - **Data files**: the data files in the data directory and the directories in it
 

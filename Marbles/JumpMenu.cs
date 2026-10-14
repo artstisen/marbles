@@ -18,8 +18,14 @@ internal static class JumpMenu
         DataFiles
     }
 
-    // A place in the list of a tab, and when it was jumped to or opened (DateTime.MinValue: not known)
-    private sealed record Row(JumpTarget Target, DateTime Time);
+    // A place in the list of a tab, and when it was jumped to or opened (DateTime.MinValue: not known). A file or
+    // directory that is a favorite with a color of its own is shown in it
+    private sealed record Row(JumpTarget Target, DateTime Time)
+    {
+        internal ConsoleColor? Color { get; init; } = Target.Kind is JumpKind.File or JumpKind.Directory
+            ? FileFavorites.ColorOf(Target.Target)
+            : null;
+    }
 
     private const int MarkWidth = 4; // "FILE", "DIR", "PAGE", "DATA"
     private const int TimeWidth = 10; // "09:41" today, else "2026-10-12"
@@ -149,6 +155,8 @@ internal static class JumpMenu
         // In the color of text in frames and boxes
         using var frameText = ConsoleColors.FrameTextScope();
         var tabs = Tabs();
+        // The favorites, for the colors of the names
+        FileFavorites.Load();
         var filters = new Dictionary<Tab, string>();
         var tab = 0;
         var selected = 0;
@@ -311,12 +319,15 @@ internal static class JumpMenu
             else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(index == selected ? "->" : "  ");
 
-            // The name (a place that is not there any more is dimmed and marked)
+            // The name, in the color of a favorite that has one (a place that is not there any more is dimmed and
+            // marked)
             var exists = row.Target.Exists;
             var name = exists ? row.Target.Name : row.Target.Name + " " + DialogText.FavoriteMissing;
             name = ShortName(name, nameWidth);
             Tools.SetCursorEx(first + line, left + 4);
-            ConsoleColors.SetColors(exists ? ConsoleColors.ColorPreset.Normal : ConsoleColors.ColorPreset.Divider);
+            if (!exists) ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            else if (row.Color is { } color) ConsoleColors.SetTextColor(color);
+            else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(name);
 
             // The kind, and when

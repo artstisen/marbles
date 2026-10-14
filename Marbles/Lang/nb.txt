@@ -2183,6 +2183,8 @@ en: "Yanked/deleted text is added to memory"
 nb: "Kopiert/slettet tekst legges i minnet"
 en: "Select previous/next memory string"
 nb: "Velg forrige/neste tekst i minnet"
+en: "Status line: the selected string/how many there are"
+nb: "Statuslinje: den valgte strengen/hvor mange det er"
 en: "Show current memory string"
 nb: "Vis gjeldende tekst i minnet"
 en: "All the strings in a box: pick one to insert"
@@ -2323,6 +2325,10 @@ en: "{0} substitutions"
 nb: "{0} erstatninger"
 en: "1 line"
 nb: "1 linje"
+
+# Editor/TextArea.cs
+en: "String memory ({0} of {1})"
+nb: "Minne ({0} av {1})"
 
 # Lang.cs (names made while running)
 en: "Black"

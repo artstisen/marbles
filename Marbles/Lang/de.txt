@@ -2183,6 +2183,8 @@ en: "Yanked/deleted text is added to memory"
 de: "Kopierter/gelöschter Text kommt in den Speicher"
 en: "Select previous/next memory string"
 de: "Vorigen/nächsten Speichertext wählen"
+en: "Status line: the selected string/how many there are"
+de: "Statuszeile: gewählter Text/wie viele es gibt"
 en: "Show current memory string"
 de: "Aktuellen Speichertext zeigen"
 en: "All the strings in a box: pick one to insert"
@@ -2323,6 +2325,10 @@ en: "{0} substitutions"
 de: "{0} Ersetzungen"
 en: "1 line"
 de: "1 Zeile"
+
+# Editor/TextArea.cs
+en: "String memory ({0} of {1})"
+de: "Zwischenspeicher ({0} von {1})"
 
 # Lang.cs (names made while running)
 en: "Black"

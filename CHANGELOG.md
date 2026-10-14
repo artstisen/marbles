@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Jump menu**: favorites with a color of their own are shown in it, on every tab. **Editor**: the `:reglist` box tells how many strings the memory holds, of how many it can keep (`String memory (11 of 64)`), and the help explains `mem 3/11` on the status line (the selected string/how many there are).
 - **Start page**: the Mode tab has **Jump menu** (`3`, also `Ctrl+O`), below Text Editor/File Management; Quick guide and Exit are now `4` and `5`.
 - **Jump menu** (`Ctrl+O`, `:jump`, `:ju`, and `J` in the options of the login page): a box with the tabs Jumps, Files, Favorites, Configuration and Data files, to go straight to a file, a page of Marbles or a data file. Names only (long ones shortened in the middle), a filter with `/`, `I` for information and `D` to remove a jump. The jumps are kept in `jump.txt`, the latest first.
 - **Logos**: _Adventure_ is the third built-in logo and _Islands_ the fourth.

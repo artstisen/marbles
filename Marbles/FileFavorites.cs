@@ -154,6 +154,15 @@ internal static class FileFavorites
     internal static bool Contains(string path) => IndexOf(path) >= 0;
 
     /// <summary>
+    /// The text color of a favorite file or directory (null: none, or not a favorite)
+    /// </summary>
+    internal static ConsoleColor? ColorOf(string path)
+    {
+        var index = IndexOf(path);
+        return index >= 0 ? List[index].Color : null;
+    }
+
+    /// <summary>
     /// Where the cursor was in a favorite file when it was closed (line and column from 1), or null if not known
     /// </summary>
     internal static (int Line, int Column)? CaretOf(string path)

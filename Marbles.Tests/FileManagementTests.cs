@@ -303,6 +303,17 @@ public class FileManagementTests : IDisposable
     }
 
     [Fact]
+    public void TheColorOfAFavorite_IsFoundByItsPath()
+    {
+        var a = MakeFile("x", "a.md");
+        var b = MakeFile("y", "b.md");
+        FileFavorites.Parse("Magenta\t" + a + "\n\t" + b + "\n");
+        Assert.Equal(ConsoleColor.Magenta, FileFavorites.ColorOf(a));
+        Assert.Null(FileFavorites.ColorOf(b));
+        Assert.Null(FileFavorites.ColorOf(In("other.md")));
+    }
+
+    [Fact]
     public void Favorites_FileFormat()
     {
         FileFavorites.Parse("Red\t/one/a.txt\r\n\t/two/b.txt\n/three/c.txt\nNoColor\t/four\n\n\t/one/a.txt\n");

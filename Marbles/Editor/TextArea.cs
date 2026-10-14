@@ -444,7 +444,8 @@ public class TextArea
                 var rows = Enumerable.Range(0, count)
                     .Select(i => ((count - i).ToString().PadLeft(2) + "  " + Tools.LineMemoryRow(all[count - 1 - i])))
                     .ToList();
-                var picked = PickListBox.Show(DialogText.CaptionsStringMemory, rows,
+                // The title tells how many strings there are, of how many can be kept
+                var picked = PickListBox.Show(Lang.F("String memory ({0} of {1})", count, Tools.MaxLineMemoryCount), rows,
                     i => all[count - 1 - i].TrimEnd(TextBuffer.NewLine), count - 1 - Tools.LineMemoryIndex,
                     DialogText.StringMemoryKeys);
                 RedrawAll();
