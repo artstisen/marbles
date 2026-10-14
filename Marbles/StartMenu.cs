@@ -630,10 +630,15 @@ internal static class StartMenu
             int Row(int i) => area.Top + i + (gaps ? settings.Take(i + 1).Count(StartsGroup) : 0);
             if (full)
             {
+                // The settings without a check box are indented to line up with the names of the ones with a
+                // check box. On a page without check boxes they line up with the pointer
+                var texts = settings.Select(SettingText).ToList();
+                var checkBoxes = texts.Any(text => text.StartsWith('['));
                 for (var i = 0; i < settings.Count; i++)
                 {
                     Tools.SetCursorEx(Row(i), area.Left + 2);
-                    Console.Write(" " + Tools.TruncateString(SettingText(settings[i]), area.Width - 4, true));
+                    var text = checkBoxes ? texts[i] : texts[i].TrimStart();
+                    Console.Write(" " + Tools.TruncateString(text, area.Width - 4, true));
                 }
             }
 
