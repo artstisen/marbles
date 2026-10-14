@@ -451,6 +451,9 @@ internal static class DialogText
         Lang.T("The file of snippets is not encrypted: the text can be read by anyone with access to it.");
     public static string SnippetAdded => Lang.T("Snippet added");
     public static string SnippetsFileOpen => Lang.T("This is the file of snippets");
+    public static string FileKeepsItsName => Lang.T("This file keeps its name: Marbles uses it");
+    public static string TitleIsForEntries => Lang.T(":title is for entries (a file: :rename)");
+    public static string TitleChanged => Lang.T("The title is changed");
     public static string SnippetsNotHere => Lang.T("Not while the settings are edited");
     public static string SnippetSwitchNote => Lang.T("The file of snippets is opened, and this text again when it is closed.");
     public static string MatchNeedsTwoPanes => Lang.T("Only with two panes (T shows them)");

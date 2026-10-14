@@ -239,6 +239,25 @@ internal static class JumpHistory
     }
 
     /// <summary>
+    /// A file or directory has a new path (renamed or moved): the files and directories of the list follow it
+    /// </summary>
+    /// <returns>True if the list was changed</returns>
+    internal static bool PathChanged(string oldPath, string newPath)
+    {
+        var changed = false;
+        for (var i = 0; i < List.Count; i++)
+        {
+            var target = List[i].Target;
+            if (target.Kind is not (JumpKind.File or JumpKind.Directory)) continue;
+            if (CaretPosition.NewPath(target.Target, oldPath, newPath) is not { } path) continue;
+            List[i] = List[i] with { Target = target with { Target = path } };
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    /// <summary>
     /// Take a place out of the list
     /// </summary>
     internal static void RemoveAt(int index)

@@ -151,6 +151,23 @@ internal static class FileHistory
     }
 
     /// <summary>
+    /// A file or directory has a new path (renamed or moved): the files of the list follow it
+    /// </summary>
+    /// <returns>True if the list was changed</returns>
+    internal static bool PathChanged(string oldPath, string newPath)
+    {
+        var changed = false;
+        for (var i = 0; i < List.Count; i++)
+        {
+            if (CaretPosition.NewPath(List[i].Path, oldPath, newPath) is not { } path) continue;
+            List[i] = List[i] with { Path = path };
+            changed = true;
+        }
+
+        return changed;
+    }
+
+    /// <summary>
     /// Take a file out of the list (the file itself is not changed)
     /// </summary>
     internal static void RemoveAt(int index)
@@ -185,6 +202,18 @@ internal static class CaretPosition
         if (!match.Success) return (0, 0);
         text = text[match.Length..].Trim();
         return (int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value));
+    }
+
+    /// <summary>
+    /// The new path of a path when a file or directory has a new path (the path itself, or one in the directory),
+    /// or null if it is not affected
+    /// </summary>
+    internal static string? NewPath(string path, string oldPath, string newPath)
+    {
+        if (FileOperations.SamePath(path, oldPath)) return Path.GetFullPath(newPath);
+        if (!FileOperations.IsInside(path, oldPath)) return null;
+        var rest = Path.GetRelativePath(Path.GetFullPath(oldPath), Path.GetFullPath(path));
+        return Path.GetFullPath(Path.Combine(newPath, rest));
     }
 
     /// <summary>

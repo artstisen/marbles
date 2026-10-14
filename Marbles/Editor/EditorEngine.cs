@@ -44,6 +44,8 @@ internal enum EditorRequest
     ClipboardSettings, // ":clipboard": show the clipboard settings
     DocumentInfo, // ":info": show the size, the dates and the path of the text being edited
     Jump, // ":jump", ":ju" or Ctrl+O: show the Jump menu
+    Rename, // ":rename" or ":title": rename the file (RenameText: the new name, or empty to ask), or the title
+            // of the entry
     WrapChanged, // Wrapping of long lines was turned on or off
     ScrollOffChanged, // The lines kept around the cursor (ScrollOff) were changed
     CopyPath, // ":path": the path of the file being edited to the clipboard
@@ -354,6 +356,16 @@ internal sealed partial class EditorEngine
     }
 
     #region Key handling
+
+    /// <summary>
+    /// The new name given with ":rename" or ":title" (empty: it is asked for)
+    /// </summary>
+    internal string RenameText { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// True if the command was ":title" (in a file, the name is changed with ":rename")
+    /// </summary>
+    internal bool RenameIsTitle { get; private set; }
 
     /// <summary>
     /// The text cannot be changed (an entry that is read only): commands that would change it are refused with
@@ -870,6 +882,14 @@ internal sealed partial class EditorEngine
 
         // ":sn" is short for ":snip"
         if (command == "sn" || command.StartsWith("sn ", StringComparison.Ordinal)) command = "snip" + command[2..];
+        // ":rename name" and ":title text": the new name (as typed) follows the command
+        var renameTo = Regex.Match(command, "^(rename|title)(?: +(.*))?$");
+        if (renameTo.Success)
+        {
+            RenameText = renameTo.Groups[2].Value.Trim();
+            command = renameTo.Groups[1].Value;
+        }
+
         // ":dup 5" makes five copies
         var copies = 1;
         var dupCount = Regex.Match(command, "^(dup|duplicate) +([0-9]+)$");
@@ -1134,6 +1154,12 @@ internal sealed partial class EditorEngine
             case "jump":
             case "ju":
                 if (!SingleLine) _request = EditorRequest.Jump;
+                break;
+            case "rename":
+            case "title":
+                if (SingleLine) break;
+                RenameIsTitle = command == "title";
+                _request = EditorRequest.Rename;
                 break;
             case "path":
                 if (!SingleLine) _request = EditorRequest.CopyPath;

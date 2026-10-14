@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Editor**: `:rename` renames the file being edited (in a box, or `:rename name.md`); changes that are not saved stay so, and the favorites, the history and the jumps follow the file. In an entry, `:title` (and `:rename`) changes its title, saved at once. Renaming in the file browser now also updates the file history and the jumps.
 - **Jump menu**: it opens on the tab it was on the last time (while Marbles runs), and it is an item of the Marbles tab of the main menu (`:jump`, below Default settings).
 - **Color schemes**: the built-in scheme _Water Sport_ is replaced by **Gray Box**: black text on a dark gray background, with the focused tab black on gray, used with the logo _Marbles_. _Tasty Bytes_ has its comments (Syntax 6) in dark gray. _Marbles Quest_ has cyan text, green text in frames and boxes, a cyan tab corner, magenta tabs, headings in the colors of the rainbow, and is used with the logo _Reflections_.
 - **Editor**: `:yankall` yanks all the text, as `gg` `V` `G` `y`, following the clipboard settings of `y`.

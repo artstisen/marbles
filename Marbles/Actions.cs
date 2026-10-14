@@ -900,6 +900,35 @@ internal static class Actions
 
     /// <param name="fromList">True when changed from a list of entries: the list is shown again afterwards
     /// (else the entry)</param>
+    /// <summary>
+    /// Give the entry being edited another title (":title" or ":rename" in the editor). It is saved in the data
+    /// file at once, as when it is changed in a list. A read-only entry keeps its title
+    /// </summary>
+    /// <param name="title">The new title, or empty to ask for it</param>
+    /// <returns>DialogText.Success, an error message, or empty if the box was closed without a title</returns>
+    internal static string RetitleCurrentEntry(string title)
+    {
+        if (!Entries.CurrentEntryExists()) return DialogText.NoEntrySelected;
+        if (Entries.IsReadOnly(Entries.CurrentEntry)) return DialogText.EntryIsReadOnly;
+        if (title.Length == 0)
+        {
+            ChoiceBox.Forget();
+            var asked = ChoiceBox.AskText(DialogText.EditTitle, DialogText.EditTitleAndPressEnter,
+                DialogText.TitleColon, Entries.CurrentEntry.Title);
+            if (asked == null) return string.Empty;
+            title = asked;
+        }
+
+        var constrained = Tools.ConstrainTitle(title);
+        if (!Tools.IsValid(constrained)) return string.Empty;
+        if (constrained == Entries.CurrentEntry.Title) return DialogText.Success;
+        ResetLastSelectedIndex();
+        Entries.CurrentEntry.Title = constrained;
+        Entries.UpdateEntry(Entries.CurrentEntry, true);
+        Entries.SaveEntriesToFile();
+        return DialogText.Success;
+    }
+
     private static void ChangeTitle(bool fromList = false)
     {
         if (Entries.CurrentEntryExists())

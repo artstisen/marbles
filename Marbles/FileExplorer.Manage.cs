@@ -420,6 +420,14 @@ internal static partial class FileExplorer
         LogOperation("Rename", item.Path + " -> " + name, result);
         Finish(result, result == DialogText.Success ? path : item.Path, string.Empty);
         if (result == DialogText.Success && FileFavorites.PathChanged(item.Path, path)) SaveFavorites();
+        // The history and the jumps follow it too
+        if (result == DialogText.Success)
+        {
+            FileHistory.Load();
+            if (FileHistory.PathChanged(item.Path, path)) FileHistory.Save();
+            JumpHistory.Load();
+            if (JumpHistory.PathChanged(item.Path, path)) JumpHistory.Save();
+        }
     }
 
     // ":path": the full path of the selected file or directory (on ".." the directory shown) to the clipboard and/or

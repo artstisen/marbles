@@ -483,6 +483,11 @@ public class TextArea
                 });
                 RedrawAll();
                 break;
+            case EditorRequest.Rename:
+                Tools.HideCursor();
+                RenameDocument();
+                RedrawAll();
+                break;
             case EditorRequest.DocumentInfo:
                 Tools.HideCursor();
                 ShowDocumentInfo();
@@ -615,6 +620,39 @@ public class TextArea
         _snippetsLine = line;
         Canceled = _engine.IsModified;
         _exit = true;
+    }
+
+    // ":rename" and ":title": a file gets another name (the changes that are not saved stay so, and are saved to
+    // it with ":w"), and an entry another title (saved at once, as when it is changed in a list)
+    private void RenameDocument()
+    {
+        string status;
+        switch (_saveMode)
+        {
+            case SaveAsFile when _engine.RenameIsTitle:
+                _engine.SetMessage(DialogText.TitleIsForEntries, true);
+                return;
+            case SaveAsFile:
+                status = FileExplorer.RenameCurrentFile(_engine.RenameText);
+                if (status != DialogText.Success) break;
+                // The colors follow the kind of file the new name tells
+                var type = SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName);
+                _engine.SyntaxDefault = type;
+                if (SyntaxHighlighter.ColorFiles) _engine.Syntax = type;
+                _engine.SetMessage(Lang.F("Renamed to {0}", FileExplorer.CurrentFileName), false);
+                return;
+            case SaveAsEntry:
+                status = Actions.RetitleCurrentEntry(_engine.RenameText);
+                if (status != DialogText.Success) break;
+                _engine.SetMessage(DialogText.TitleChanged, false);
+                return;
+            default:
+                status = DialogText.SnippetsNotHere;
+                break;
+        }
+
+        // Nothing is said when the box was closed without a name
+        if (status.Length > 0) _engine.SetMessage(status, true);
     }
 
     // ":info": the text being edited in a box: its name (a file) or title (an entry), how many characters, words

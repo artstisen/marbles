@@ -654,7 +654,8 @@ internal static partial class FileExplorer
         }
 
         Edit(file, converted);
-        LoadItems(System.IO.Path.GetFileName(file.Path));
+        // The file is selected (by the name it has now, if it was renamed in the editor)
+        LoadItems(System.IO.Path.GetFileName(_lastEditedPath.Length > 0 ? _lastEditedPath : file.Path));
         return false;
     }
 
@@ -698,6 +699,7 @@ internal static partial class FileExplorer
                 var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
                     Init.LineCount - 5, _file?.Text ?? string.Empty, cursorIndex, false, false, false, TextArea.SaveAsFile, modified);
                 textArea.ClearUndoRedoCache();
+                if (_file != null) file = _file; // Renamed in the editor
                 KeepCaret(file.Path, textArea);
                 // ":snip edit": the file of snippets, and then this file again (as it is on disk)
                 if (TextArea.TakeSnippetsRequest() is not { } line) break;
@@ -705,6 +707,7 @@ internal static partial class FileExplorer
                 EditSnippets(line);
                 if (!File.Exists(file.Path)) break;
                 _file = TextFile.Load(file.Path);
+                file = _file;
                 modified = false;
             }
         }
@@ -715,8 +718,60 @@ internal static partial class FileExplorer
         finally
         {
             Mode.SetMode(Mode.SelectedMode.Login);
+            _lastEditedPath = _file?.Path ?? file.Path;
             _file = null;
         }
+    }
+
+    // The path of the file edited last (it can have been renamed in the editor)
+    private static string _lastEditedPath = string.Empty;
+
+    /// <summary>
+    /// Give the file being edited another name in its directory (":rename" in the editor). The favorites, the
+    /// history and the jumps follow it. The text in the editor is not saved: ":w" saves it to the file by its new
+    /// name. The settings file and the file of snippets keep their names
+    /// </summary>
+    /// <param name="name">The new name, or empty to ask for it</param>
+    /// <returns>DialogText.Success, an error message, or empty if the box was closed without a name</returns>
+    internal static string RenameCurrentFile(string name)
+    {
+        if (_file == null) return DialogText.FileNotFound;
+        var path = System.IO.Path.GetFullPath(_file.Path);
+        var settings = System.IO.Path.GetFullPath(System.IO.Path.Combine(FileIo.GetDataDirectoryName(),
+            FileIo.SettingsFileName));
+        if (FileOperations.SamePath(path, settings) ||
+            FileOperations.SamePath(path, System.IO.Path.GetFullPath(Snippets.FilePath)))
+        {
+            return DialogText.FileKeepsItsName;
+        }
+
+        if (name.Length == 0)
+        {
+            ChoiceBox.Forget();
+            var asked = AskName(DialogText.RenameFile, System.IO.Path.GetFileName(path));
+            if (asked == null) return string.Empty;
+            name = asked;
+        }
+
+        var result = FileOperations.Rename(path, name, out var renamed);
+        LogOperation("Rename", path + " -> " + name, result);
+        if (result != DialogText.Success) return result;
+        _file.Path = renamed;
+        PathRenamed(path, renamed);
+        return DialogText.Success;
+    }
+
+    /// <summary>
+    /// A file or directory has a new path: the favorites, the history and the jumps follow it
+    /// </summary>
+    internal static void PathRenamed(string oldPath, string newPath)
+    {
+        FileFavorites.Load();
+        if (FileFavorites.PathChanged(oldPath, newPath)) FileFavorites.Save();
+        FileHistory.Load();
+        if (FileHistory.PathChanged(oldPath, newPath)) FileHistory.Save();
+        JumpHistory.Load();
+        if (JumpHistory.PathChanged(oldPath, newPath)) JumpHistory.Save();
     }
 
     // Where the cursor was in a file when it was closed: kept in the favorites first, then in the history

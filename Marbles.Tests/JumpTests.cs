@@ -113,6 +113,57 @@ public class JumpTests : IDisposable
     }
 
     [Fact]
+    public void ARenamedFile_IsFollowed_ByTheJumpsAndTheHistory()
+    {
+        var time = new DateTime(2026, 10, 14, 9, 0, 0);
+        JumpHistory.Add(new JumpTarget(JumpKind.File, In("old.md")), time);
+        JumpHistory.Add(new JumpTarget(JumpKind.File, In(Path.Combine("dir", "inside.md"))), time);
+        JumpHistory.Add(new JumpTarget(JumpKind.Page, "about"), time);
+        Assert.True(JumpHistory.PathChanged(In("old.md"), In("new.md")));
+        Assert.Contains(JumpHistory.Items, entry => entry.Target.Target == In("new.md"));
+        Assert.DoesNotContain(JumpHistory.Items, entry => entry.Target.Target == In("old.md"));
+        // A file in a renamed directory follows it, and a page is not touched
+        Assert.True(JumpHistory.PathChanged(In("dir"), In("renamed")));
+        Assert.Contains(JumpHistory.Items, entry => entry.Target.Target == In(Path.Combine("renamed", "inside.md")));
+        Assert.False(JumpHistory.PathChanged(In("other.md"), In("x.md")));
+        Assert.Equal("about", JumpHistory.Items.Single(entry => entry.Target.Kind == JumpKind.Page).Target.Target);
+
+        var savedHistory = FileHistory.FilePathOverride;
+        try
+        {
+            FileHistory.FilePathOverride = In("history.txt");
+            FileHistory.Clear();
+            FileHistory.Add(In("old.md"), time);
+            FileHistory.SetCaret(In("old.md"), 4, 2);
+            Assert.True(FileHistory.PathChanged(In("old.md"), In("new.md")));
+            // The place of the cursor goes with it
+            Assert.Equal((4, 2), FileHistory.CaretOf(In("new.md")));
+            Assert.Null(FileHistory.CaretOf(In("old.md")));
+        }
+        finally
+        {
+            FileHistory.Clear();
+            FileHistory.FilePathOverride = savedHistory;
+        }
+    }
+
+    [Fact]
+    public void RenameAndTitle_AskTheEditorToRename_WithTheNameAsTyped()
+    {
+        var editor = new EditorEngine("text", 40, 10, false);
+        Assert.Equal(EditorRequest.Rename, editor.Type(":rename Notes 2026.MD<CR>"));
+        Assert.Equal("Notes 2026.MD", editor.RenameText);
+        Assert.False(editor.RenameIsTitle);
+        Assert.Equal(EditorRequest.Rename, editor.Type(":title A New Title<CR>"));
+        Assert.Equal("A New Title", editor.RenameText);
+        Assert.True(editor.RenameIsTitle);
+        // Without a name: it is asked for
+        Assert.Equal(EditorRequest.Rename, editor.Type(":rename<CR>"));
+        Assert.Equal(string.Empty, editor.RenameText);
+        Assert.Equal("text", editor.Buffer.GetText());
+    }
+
+    [Fact]
     public void CtrlO_OpensTheJumpMenu_InTheEditorToo()
     {
         Assert.True(Jump.IsKey(new ConsoleKeyInfo('\u000f', ConsoleKey.O, false, false, true)));
