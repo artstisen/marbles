@@ -540,6 +540,30 @@ internal sealed class ColorScheme
         return scheme;
     }
 
+    // "Marbles Quest": cyan text with blue dividers, green text in frames and boxes, the focused tab white with a
+    // cyan corner and the other tabs magenta, headings in the colors of the rainbow, and the logo "Reflections",
+    // which is used when the scheme is selected
+    private static ColorScheme MarblesQuest()
+    {
+        var scheme = WithTabs(Make("Marbles Quest", null, ConsoleColor.Cyan, ConsoleColor.Cyan, ConsoleColor.Blue,
+                ConsoleColor.Yellow, ConsoleColor.Magenta, ConsoleColor.Green, ConsoleColor.DarkBlue, ConsoleColor.Cyan,
+                ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
+            null, null, null, null, ConsoleColor.White, ConsoleColor.Magenta, true);
+        scheme.TabCorner = ConsoleColor.Cyan;
+        scheme.FrameText = ConsoleColor.Green;
+        // Text in quotes, numbers (Syntax 3 and 4), and heading 1 to 6 (Syntax 7 to 12)
+        scheme.Set(ColorItem.Syntax3, ConsoleColor.Yellow);
+        scheme.Set(ColorItem.Syntax4, ConsoleColor.Red);
+        scheme.Set(ColorItem.Syntax7, ConsoleColor.Red);
+        scheme.Set(ColorItem.Syntax8, ConsoleColor.Yellow);
+        scheme.Set(ColorItem.Syntax9, ConsoleColor.Green);
+        scheme.Set(ColorItem.Syntax10, ConsoleColor.Cyan);
+        scheme.Set(ColorItem.Syntax11, ConsoleColor.Magenta);
+        scheme.Set(ColorItem.Syntax12, ConsoleColor.Blue);
+        scheme.UseLogo = "Reflections";
+        return scheme;
+    }
+
     // "Tasty Bytes": magenta dividers, highlighted tabs in dark blue with a yellow corner, and the logo
     // "Reflections", which is used when the scheme is selected
     private static ColorScheme TastyBytes()
@@ -569,9 +593,7 @@ internal sealed class ColorScheme
     {
         DefaultScheme(),
         DeepBlue(),
-        Make("Marbles Quest", null, ConsoleColor.Green, ConsoleColor.Cyan, ConsoleColor.Blue, ConsoleColor.Magenta,
-            ConsoleColor.Magenta, ConsoleColor.Green, ConsoleColor.DarkBlue, ConsoleColor.Cyan, ConsoleColor.Yellow,
-            ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
+        MarblesQuest(),
         TastyBytes(),
         Make("Yellow Monochrome", null, ConsoleColor.Yellow, ConsoleColor.DarkYellow, ConsoleColor.DarkYellow,
             ConsoleColor.Yellow, ConsoleColor.Yellow, ConsoleColor.Yellow, ConsoleColor.DarkYellow,

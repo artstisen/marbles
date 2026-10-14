@@ -1,7 +1,7 @@
 # Changes
 
 ## v1.5.3
-- **Color schemes**: the built-in scheme _Water Sport_ is replaced by **Gray Box**: black text on a dark gray background, with the focused tab black on gray, used with the logo _Marbles_. _Tasty Bytes_ has its comments (Syntax 6) in dark gray.
+- **Color schemes**: the built-in scheme _Water Sport_ is replaced by **Gray Box**: black text on a dark gray background, with the focused tab black on gray, used with the logo _Marbles_. _Tasty Bytes_ has its comments (Syntax 6) in dark gray. _Marbles Quest_ has cyan text, green text in frames and boxes, a cyan tab corner, magenta tabs, headings in the colors of the rainbow, and is used with the logo _Reflections_.
 - **Editor**: `:yankall` yanks all the text, as `gg` `V` `G` `y`, following the clipboard settings of `y`.
 - **Jump menu**: favorites with a color of their own are shown in it, on every tab. **Editor**: the `:reglist` box tells how many strings the memory holds, of how many it can keep (`String memory (11 of 64)`), and the help explains `mem 3/11` on the status line (the selected string/how many there are).
 - **Start page**: the Mode tab has **Jump menu** (`3`, also `Ctrl+O`), below Text Editor/File Management; Quick guide and Exit are now `4` and `5`.

@@ -86,14 +86,14 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void TheDefaults_StandForOtherColors()
     {
-        var scheme = ColorScheme.BuiltIn[2].Clone();
+        var scheme = ColorScheme.BuiltIn[6].Clone();
         Assert.Equal(ConsoleColor.Blue, scheme.TabFrameColor);
         Assert.Equal(ConsoleColor.Blue, scheme.TabColor);
         // The text of the highlighted tab is the color of the focused tab
-        Assert.Equal(ConsoleColor.Green, scheme.TabTextColor);
+        Assert.Equal(ConsoleColor.White, scheme.TabTextColor);
         // The names of the tabs (the one shown without highlight, and the others) are the text
-        Assert.Equal(ConsoleColor.Green, scheme.TabShownColor);
-        Assert.Equal(ConsoleColor.Green, scheme.OtherTabsColor);
+        Assert.Equal(ConsoleColor.White, scheme.TabShownColor);
+        Assert.Equal(ConsoleColor.White, scheme.OtherTabsColor);
         scheme.Set(ColorItem.OtherTabs, ConsoleColor.DarkGray);
         Assert.Equal(ConsoleColor.DarkGray, scheme.OtherTabsColor);
         Assert.Contains("othertabs=DarkGray\n", scheme.Serialize());
@@ -108,7 +108,7 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(ConsoleColor.Blue, scheme.BoxBorderColor);
         // Only some colors can be "default"
         scheme.Set(ColorItem.Text, null);
-        Assert.Equal(ConsoleColor.Green, scheme.Text);
+        Assert.Equal(ConsoleColor.White, scheme.Text);
         scheme.Set(ColorItem.TabFrames, null);
         Assert.Null(scheme.TabFrames);
     }
@@ -116,7 +116,7 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void TheColorsOfColoredText_HaveTheColorsTheyHadBefore_UntilTheyAreSet()
     {
-        var scheme = ColorScheme.BuiltIn[2].Clone();
+        var scheme = ColorScheme.BuiltIn[6].Clone();
         // 1 keywords: the logo, 2 names: the accent, 3 strings: the favorites, 4 numbers, 5 links: the editor
         // title, 6 comments: the dividers, 7 to 12 the headings
         Assert.Equal(scheme.Logo, scheme.SyntaxColor(0));
@@ -163,6 +163,24 @@ public class ColorSchemeTests : IDisposable
         Assert.Null(some.BoxBorders);
         Assert.Null(some.Get(ColorItem.Syntax7));
         Assert.Equal(ConsoleColor.Cyan, some.Logo); // As the default scheme
+    }
+
+    [Fact]
+    public void MarblesQuest_HasItsColors_AndIsUsedWithTheLogoReflections()
+    {
+        var expected = "background=default\ntext=Cyan\nlogo=Cyan\ndividers=Blue\nfavorites=Yellow\naccent=Magenta\n" +
+                       "editortitle=Green\nhighlight=DarkBlue\nhighlighttext=Cyan\nattention=Yellow\n" +
+                       "attentiontext=Black\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=Cyan\n" +
+                       "boxborders=default\ntab=default\ntabtext=default\ntabshown=White\nothertabs=Magenta\n" +
+                       "keyhints=default\nunsaved=default\nunsavedtext=default\nlinenumbers=default\n" +
+                       "currentline=default\nselector=DarkBlue\nselectortext=Cyan\nframetext=Green\n" +
+                       "syntax1=default\nsyntax2=default\nsyntax3=Yellow\nsyntax4=Red\nsyntax5=default\n" +
+                       "syntax6=default\nsyntax7=Red\nsyntax8=Yellow\nsyntax9=Green\nsyntax10=Cyan\n" +
+                       "syntax11=Magenta\nsyntax12=Blue\ntabhighlight=true\nuselogo=Reflections\n";
+        // Without the comment lines at the top
+        var text = string.Join("\n", ColorSchemes.Load("marbles quest")!.Serialize().Split('\n')
+            .Where(line => !line.StartsWith(';')));
+        Assert.Equal(expected, text);
     }
 
     [Fact]
@@ -225,10 +243,10 @@ public class ColorSchemeTests : IDisposable
         var read = ColorScheme.Parse(scheme.Serialize(), "Mine");
         Assert.Equal("Reflections", read.UseLogo);
         Assert.Equal("Reflections", read.Clone().UseLogo);
-        Assert.All(ColorScheme.BuiltIn.Skip(2).Where(builtIn => builtIn.Name is not ("Tasty Bytes" or "Gray Box")),
+        Assert.All(ColorScheme.BuiltIn.Skip(2).Where(builtIn => builtIn.Name is not ("Tasty Bytes" or "Gray Box" or "Marbles Quest")),
             builtIn => Assert.Equal(string.Empty, builtIn.UseLogo));
-        Assert.DoesNotContain("uselogo", ColorScheme.BuiltIn[2].Serialize());
-        Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.BuiltIn[2].Serialize(), "X").UseLogo);
+        Assert.DoesNotContain("uselogo", ColorScheme.BuiltIn[6].Serialize());
+        Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.BuiltIn[6].Serialize(), "X").UseLogo);
         // A scheme file without it has no logo (not the one of the default scheme)
         Assert.Equal(string.Empty, ColorScheme.Parse("text=White\n", "X").UseLogo);
     }
@@ -335,7 +353,7 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void TheCornerOfTheTabShown_HasTheColorOfTheTabFrames_UntilItIsSet()
     {
-        var scheme = ColorScheme.BuiltIn[2].Clone();
+        var scheme = ColorScheme.BuiltIn[6].Clone();
         Assert.Null(scheme.TabCorner);
         Assert.Equal(scheme.TabFrameColor, scheme.TabCornerColor);
         Assert.Contains("tabcorner=default\n", scheme.Serialize());
