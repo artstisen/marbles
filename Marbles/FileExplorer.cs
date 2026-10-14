@@ -24,6 +24,14 @@ internal static partial class FileExplorer
     internal static string StartDirectory2 { get; set; } = string.Empty;
 
     /// <summary>
+    /// The names of the files or directories selected in the two panes when the browser was closed (settings
+    /// "browsesel1" and "browsesel2"): selected again when it is opened. Empty, or a name that is gone: the first row
+    /// </summary>
+    internal static string StartSelected { get; set; } = string.Empty;
+
+    internal static string StartSelected2 { get; set; } = string.Empty;
+
+    /// <summary>
     /// The pane that has the focus when the browser is opened: 0 or 1 (setting "browsepane")
     /// </summary>
     internal static int StartPane { get; set; }
@@ -131,14 +139,16 @@ internal static partial class FileExplorer
         return Browse(BrowseMode.PickDirectory, caption);
     }
 
-    // Show a directory in a pane (the data directory if it does not exist)
-    private static void StartPaneIn(Pane pane, string directory)
+    // Show a directory in a pane (the data directory if it does not exist), with the file or directory of that
+    // name selected (null: the first row)
+    private static void StartPaneIn(Pane pane, string directory, string? select = null)
     {
         var active = _active;
         if (_mode == BrowseMode.Edit) _active = Array.IndexOf(Panes, pane);
         pane.Filter = string.Empty;
         pane.Directory = string.Empty;
-        ChangeDirectory(System.IO.Directory.Exists(directory) ? directory : DataDirectory(), null);
+        var exists = System.IO.Directory.Exists(directory);
+        ChangeDirectory(exists ? directory : DataDirectory(), exists && select?.Length > 0 ? select : null);
         pane.ShownTop = -1;
         _active = active;
     }
@@ -176,9 +186,16 @@ internal static partial class FileExplorer
         {
             FileFavorites.Load();
             _active = Math.Clamp(StartPane, 0, 1);
-            StartPaneIn(Panes[0], StartDirectory);
+            StartPaneIn(Panes[0], StartDirectory, StartSelected);
             // The second pane starts where the first is until it has a directory of its own
-            StartPaneIn(Panes[1], StartDirectory2.Length > 0 ? StartDirectory2 : Panes[0].Directory);
+            if (StartDirectory2.Length > 0)
+            {
+                StartPaneIn(Panes[1], StartDirectory2, StartSelected2);
+            }
+            else
+            {
+                StartPaneIn(Panes[1], Panes[0].Directory);
+            }
         }
         else
         {
@@ -194,6 +211,63 @@ internal static partial class FileExplorer
 
         _jumpDirectory = null;
         _jumpFile = null;
+        // The places of the panes are saved however the browser is left: closed, a jump (to another page),
+        // logging in from it, or exiting Marbles (Tools.ExitApplication)
+        _browsing = mode == BrowseMode.Edit;
+        try
+        {
+            return BrowseLoop(mode, jumpFile);
+        }
+        finally
+        {
+            if (mode == BrowseMode.Edit)
+            {
+                _browsing = false;
+                RememberPanes();
+            }
+        }
+    }
+
+    // The browser is shown for editing files (not for picking one): its places are saved when Marbles exits
+    private static bool _browsing;
+
+    /// <summary>
+    /// Save the places of the file browser if Marbles exits while it is open (also from the editor opened from it)
+    /// </summary>
+    internal static void RememberOnExit()
+    {
+        if (_browsing) RememberPanes();
+    }
+
+    // Save the directories of the panes, the file or directory selected in each, and the pane with the focus, for
+    // the next time the browser is opened
+    private static void RememberPanes()
+    {
+        if (Panes[0].Directory.Length > 0)
+        {
+            StartDirectory = Panes[0].Directory;
+            StartSelected = SelectedName(Panes[0]);
+        }
+
+        if (Panes[1].Directory.Length > 0)
+        {
+            StartDirectory2 = Panes[1].Directory;
+            StartSelected2 = SelectedName(Panes[1]);
+        }
+
+        StartPane = _active;
+        FileIo.SaveSettings();
+    }
+
+    // The name of the file or directory selected in a pane (empty on "..": the first row)
+    private static string SelectedName(Pane pane)
+    {
+        if (pane.Index <= 0 || pane.Index >= pane.Items.Count) return string.Empty;
+        return pane.Items[pane.Index].Name;
+    }
+
+    private static string? BrowseLoop(BrowseMode mode, string? jumpFile)
+    {
         Init.ApplyAutoSize();
         Draw(true);
         if (Tools.TakeRedrawRequest()) Draw(true);
@@ -443,15 +517,6 @@ internal static partial class FileExplorer
             if (Tools.TakeRedrawRequest()) Draw(true);
         }
 
-        if (_mode == BrowseMode.Edit)
-        {
-            // Remember the directories and the pane for next time
-            if (Panes[0].Directory.Length > 0) StartDirectory = Panes[0].Directory;
-            if (Panes[1].Directory.Length > 0) StartDirectory2 = Panes[1].Directory;
-            StartPane = _active;
-            FileIo.SaveSettings();
-        }
-
         return _picked;
     }
 
@@ -677,6 +742,8 @@ internal static partial class FileExplorer
     // Open a text file in the editor
     private static void Edit(TextFile file, bool modified)
     {
+        // The places of the browser are saved before the editor is opened, should Marbles not be closed as usual
+        if (_browsing) RememberPanes();
         EndSession();
         _file = file;
         EventLog.Add(DialogText.LogFile + "Open: " + file.Path);

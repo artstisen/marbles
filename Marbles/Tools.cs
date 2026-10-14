@@ -1121,6 +1121,8 @@ internal static class Tools
 
     internal static void ExitApplication()
     {
+        // The places of the file browser, if Marbles is left from it (or from the editor opened from it)
+        FileExplorer.RememberOnExit();
         RemovePrivileges(false);
         ShowCursor(); // Remember to show cursor again for continuous work in the console
         // Exit the application reverting to the original console colors

@@ -123,7 +123,7 @@ The browser shows two panes side by side, each with its own directory. The pane 
 
 In a pane that is narrow, as when the window is 80 columns wide, the type column is left out and long names are shortened. With one pane, or a wide window, all columns are shown.
 
-The browser starts in the Marbles data directory and remembers the directories of both panes, the pane that had the focus and whether one or two panes were shown (`browsedir1`, `browsedir2`, `browsepane` and `browsedual` in the settings file).
+The browser starts in the Marbles data directory and remembers the directories of both panes, the file or directory selected in each, the pane that had the focus and whether one or two panes were shown (`browsedir1`, `browsedir2`, `browsesel1`, `browsesel2`, `browsepane` and `browsedual` in the settings file). They are saved however the browser is left (closed, a jump to another page, or exiting Marbles), and also when a file is opened in the editor. The selection is remembered by name: if the file is gone, the first row is selected.
 
 The file browser can also be opened with the command `:browse` when you are logged in to a data file. You can look around and close the browser again without anything else happening, but opening a file logs you out of the data file, and the login page is shown when you close the browser.
 

@@ -1006,9 +1006,12 @@ internal static class FileIo
         // Comment
         _tempSettings += Entries.NewLineChar;
         _tempSettings += "; FILE BROWSER AND EDITOR" + Entries.NewLineChar;
-        // The directories last shown in the two panes of the file browser, and the pane that had the focus (1 or 2)
+        // The directories last shown in the two panes of the file browser, the names selected in them, and the pane
+        // that had the focus (1 or 2)
         _tempSettings += "browsedir1=" + FileExplorer.StartDirectory + Entries.NewLineChar;
         _tempSettings += "browsedir2=" + FileExplorer.StartDirectory2 + Entries.NewLineChar;
+        _tempSettings += "browsesel1=" + FileExplorer.StartSelected + Entries.NewLineChar;
+        _tempSettings += "browsesel2=" + FileExplorer.StartSelected2 + Entries.NewLineChar;
         _tempSettings += "browsepane=" + (FileExplorer.StartPane + 1) + Entries.NewLineChar;
         // Two panes side by side in the file browser (false: one pane)
         _tempSettings += "browsedual=" + (FileExplorer.DualPane ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
@@ -1210,6 +1213,9 @@ internal static class FileIo
         var browseDirectory = Get("browsedir1").Length > 0 ? Get("browsedir1") : Get("browsedir");
         FileExplorer.StartDirectory = Tools.IsValidPath(browseDirectory) ? browseDirectory : string.Empty;
         FileExplorer.StartDirectory2 = Tools.IsValidPath(Get("browsedir2")) ? Get("browsedir2") : string.Empty;
+        // The names selected in the panes (one that is gone selects the first row)
+        FileExplorer.StartSelected = Get("browsesel1").Trim();
+        FileExplorer.StartSelected2 = Get("browsesel2").Trim();
         FileExplorer.StartPane = Get("browsepane").Trim() == "2" ? 1 : 0;
         // Two panes unless turned off
         FileExplorer.DualPane = Tools.TrimToLower(Get("browsedual")) != DialogText.BFalse;

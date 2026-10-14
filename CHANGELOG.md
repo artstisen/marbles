@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **File browser**: the file or directory selected in each pane is remembered and selected again the next time the browser is opened (`browsesel1` and `browsesel2` in the settings file, by name). The places of the panes are now saved however the browser is left (also with a jump or `:exit`, which forgot the directories before) and when a file is opened in the editor.
 - **File browser**: the key hints show `V Peek` instead of `Esc Close` (`Esc` still closes the browser, as the help tells). **Login page**: the Jump menu is `O` in the options (as `Ctrl+O`), as `J` selected it instead of moving down with `j`.
 - **File browser**: `V` or `:peek` shows the selected file read-only in the other pane (a second pane is shown for it if needed), with the colors of its kind of file. The keys of the editor move and search in it; `Enter` opens the file in the editor at the cursor, `Esc` goes back. Large files are shown up to about 2000 lines.
 - **Start page**: `:` opens the command line on every tab, with `Tab` completion: `:note`, `:file`, `:mode`, `:config`, `:general`, `:layout`, `:editor`, `:system`, `:jump`, `:help`, `:about`, `:quick`, `:scheme`, `:logo`, `:snippet`, `:clipboard`, `:log`, `:restart`, `:reset` and `:quit`/`:exit` (the main menu's `:browse` and `:guide` work too).

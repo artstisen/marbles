@@ -221,7 +221,7 @@ backup=
         Assert.Equal("Marbles", settings["logo"]);
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(32, settings.Count);
+        Assert.Equal(34, settings.Count);
         Assert.Equal("none", settings["onlymode"]);
         Assert.Equal("fast", settings["logoanim"]);
         Assert.Equal("true", settings["wrap"]);
@@ -243,6 +243,8 @@ backup=
         Assert.Equal("false", settings["linenumbers"]);
         Assert.Equal("true", settings["browsedual"]);
         Assert.Equal("1", settings["browsepane"]);
+        Assert.Equal(string.Empty, settings["browsesel1"]);
+        Assert.Equal(string.Empty, settings["browsesel2"]);
         Assert.Equal("true", settings["syntaxcolors"]);
         Assert.Equal("false", settings["monochrome"]);
         Assert.Equal("select", settings["startmode"]);
@@ -250,6 +252,25 @@ backup=
         Init.SetDefaultOutputDimensions();
         Assert.True(FileIo.LoadSettings());
         Assert.Equal(100, Init.LineWidth);
+    }
+
+    [Fact]
+    public void TheNamesSelectedInTheFileBrowser_AreLoadedAndSaved()
+    {
+        File.WriteAllText(SettingsFile, "browsesel1=notes.md\nbrowsesel2=My folder\n");
+        Assert.True(FileIo.LoadSettings());
+        Assert.Equal("notes.md", FileExplorer.StartSelected);
+        Assert.Equal("My folder", FileExplorer.StartSelected2);
+        FileIo.SaveSettings();
+        var settings = FileIo.ParseSettings(File.ReadAllText(SettingsFile));
+        Assert.Equal("notes.md", settings["browsesel1"]);
+        Assert.Equal("My folder", settings["browsesel2"]);
+
+        // Missing: the first row
+        File.WriteAllText(SettingsFile, "linecount=40\n");
+        Assert.True(FileIo.LoadSettings());
+        Assert.Equal(string.Empty, FileExplorer.StartSelected);
+        Assert.Equal(string.Empty, FileExplorer.StartSelected2);
     }
 
     [Fact]
