@@ -26,10 +26,11 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(new[]
         {
             "Default", "Deep Blue", "Marbles Quest", "Tasty Bytes", "Yellow Monochrome", "Green Monochrome",
-            "Ice Warp", "Water Sport"
+            "Ice Warp", "Gray Box"
         }, ColorScheme.BuiltIn.Select(scheme => scheme.Name));
         Assert.Equal(ConsoleColor.DarkBlue, ColorScheme.BuiltIn[1].Background);
-        Assert.All(ColorScheme.BuiltIn.Where(scheme => scheme.Name != "Deep Blue"),
+        Assert.Equal(ConsoleColor.DarkGray, ColorScheme.BuiltIn[7].Background);
+        Assert.All(ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Deep Blue" or "Gray Box")),
             scheme => Assert.Null(scheme.Background));
         // The default scheme: white box borders, the focused tab cyan (not highlighted) with a gray corner, the
         // other tabs dark gray, and the logo of Marbles
@@ -165,6 +166,25 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
+    public void GrayBox_HasItsColors()
+    {
+        var expected = "background=DarkGray\ntext=Black\nlogo=Black\ndividers=Black\nfavorites=Black\naccent=White\n" +
+                       "editortitle=Black\nhighlight=Black\nhighlighttext=DarkGray\nattention=Gray\n" +
+                       "attentiontext=Black\nwarning=White\nwarningtext=Black\ntabframes=default\ntabcorner=Black\n" +
+                       "boxborders=default\ntab=Gray\ntabtext=Black\ntabshown=White\nothertabs=default\n" +
+                       "keyhints=Black\nunsaved=default\nunsavedtext=default\nlinenumbers=Black\n" +
+                       "currentline=White\nselector=Gray\nselectortext=Black\nframetext=Black\n" +
+                       "syntax1=DarkBlue\nsyntax2=default\nsyntax3=DarkMagenta\nsyntax4=Blue\nsyntax5=DarkRed\n" +
+                       "syntax6=Gray\nsyntax7=default\nsyntax8=default\nsyntax9=default\nsyntax10=default\n" +
+                       "syntax11=default\nsyntax12=default\ntabhighlight=true\n";
+        // Without the comment lines at the top
+        var text = string.Join("\n", ColorSchemes.Load("gray box")!.Serialize().Split('\n')
+            .Where(line => !line.StartsWith(';')));
+        Assert.Equal(expected, text);
+        Assert.Null(ColorSchemes.Load("Water Sport")); // The scheme it replaces
+    }
+
+    [Fact]
     public void DeepBlue_HasItsColors()
     {
         var expected = "background=DarkBlue\ntext=Gray\nlogo=Cyan\ndividers=Cyan\nfavorites=Green\naccent=Magenta\n" +
@@ -216,7 +236,7 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void TheSelector_KeepsItsColors_WhenTheHighlightIsChanged()
     {
-        foreach (var builtIn in ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Tasty Bytes" or "Deep Blue")))
+        foreach (var builtIn in ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Tasty Bytes" or "Deep Blue" or "Gray Box")))
         {
             // From the start the colors of the highlight, as colors of its own
             Assert.Equal(builtIn.Highlight, builtIn.Selector);

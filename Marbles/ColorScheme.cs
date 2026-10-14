@@ -514,6 +514,30 @@ internal sealed class ColorScheme
         return scheme;
     }
 
+    // "Gray Box": black text on a dark gray background, the focused tab white on gray with a black corner, and
+    // colored text in dark colors that can be read on the gray
+    private static ColorScheme GrayBox()
+    {
+        var scheme = WithTabs(Make("Gray Box", ConsoleColor.DarkGray, ConsoleColor.Black, ConsoleColor.Black,
+                ConsoleColor.Black, ConsoleColor.Black, ConsoleColor.White, ConsoleColor.Black, ConsoleColor.Black,
+                ConsoleColor.DarkGray, ConsoleColor.Gray, ConsoleColor.Black, ConsoleColor.White, ConsoleColor.Black),
+            null, null, ConsoleColor.Gray, ConsoleColor.Black, ConsoleColor.White, null, true);
+        scheme.TabCorner = ConsoleColor.Black;
+        scheme.KeyHints = ConsoleColor.Black;
+        scheme.LineNumbers = ConsoleColor.Black;
+        scheme.CurrentLineNumber = ConsoleColor.White;
+        scheme.Selector = ConsoleColor.Gray;
+        scheme.SelectorText = ConsoleColor.Black;
+        scheme.FrameText = ConsoleColor.Black;
+        // Keywords and tags, text in quotes, numbers, links and comments (Syntax 1, 3 to 6)
+        scheme.Set(ColorItem.Syntax1, ConsoleColor.DarkBlue);
+        scheme.Set(ColorItem.Syntax3, ConsoleColor.DarkMagenta);
+        scheme.Set(ColorItem.Syntax4, ConsoleColor.Blue);
+        scheme.Set(ColorItem.Syntax5, ConsoleColor.DarkRed);
+        scheme.Set(ColorItem.Syntax6, ConsoleColor.Gray);
+        return scheme;
+    }
+
     // "Tasty Bytes": magenta dividers, highlighted tabs in dark blue with a yellow corner, and the logo
     // "Reflections", which is used when the scheme is selected
     private static ColorScheme TastyBytes()
@@ -555,9 +579,7 @@ internal sealed class ColorScheme
         Make("Ice Warp", null, ConsoleColor.White, ConsoleColor.Cyan, ConsoleColor.Blue, ConsoleColor.Magenta,
             ConsoleColor.Yellow, ConsoleColor.Green, ConsoleColor.DarkBlue, ConsoleColor.Cyan, ConsoleColor.Yellow,
             ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
-        Make("Water Sport", null, ConsoleColor.DarkCyan, ConsoleColor.Green, ConsoleColor.DarkCyan,
-            ConsoleColor.Yellow, ConsoleColor.White, ConsoleColor.Red, ConsoleColor.DarkGreen, ConsoleColor.White,
-            ConsoleColor.DarkCyan, ConsoleColor.White, ConsoleColor.DarkMagenta, ConsoleColor.White)
+        GrayBox()
     };
 
     /// <summary>
