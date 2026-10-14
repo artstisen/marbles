@@ -96,7 +96,7 @@ Press `Esc` to show the options in a box. Select one with `j` `k` (or the arrow 
 - `F` Browse files: open the [file browser](#file-browser) to edit plain text files
 - `T` Go to the [Select mode](#select-mode) page
 - `S` Go to the [Configuration](#configuration) tab of the Select mode page, with the settings
-- `J` Open the [Jump menu](Guide-to-main-menu.md#jump-menu), to go straight to a file, a page of Marbles or a data file
+- `O` Open the [Jump menu](Guide-to-main-menu.md#jump-menu), to go straight to a file, a page of Marbles or a data file
 - `N` Create a new data file
 - `X` Rename the selected data file
 - `C` Create a copy of the selected data file

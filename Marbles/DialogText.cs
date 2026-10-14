@@ -391,9 +391,9 @@ internal static class DialogText
     public static string Drives => Lang.T("Drives");
     public const string DirectoryMark = "<DIR>";
     public static string DataFileMark => Lang.T("[Data file]");
-    public static string FileBrowserKeys => Lang.T("j/k Select | l Open | F Faves | O History | ? Help | Esc Close");
+    public static string FileBrowserKeys => Lang.T("j/k Select | l Open | V Peek | F Faves | O History | ? Help");
 
-    public static string FileBrowserDualKeys => Lang.T("Tab Pane | l Open | F Faves | O History | ? Help | Esc Close");
+    public static string FileBrowserDualKeys => Lang.T("Tab Pane | l Open | V Peek | F Faves | O History | ? Help");
     public static string FileTargetDualKeys => Lang.T("Tab Pane | l Open | h Up | / Filter | S {0} | Esc Cancel");
     public static string FileTargetKeys => Lang.T("j/k Select | l Open | h Up | / Filter | S {0} | Esc Cancel");
     public static string FileCopyHere => Lang.T("Copy here");

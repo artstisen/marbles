@@ -398,7 +398,7 @@ internal static class Tools
             ("F", DialogText.CaptionsFiles),
             ("T", DialogText.StartSelectMode),
             ("S", DialogText.StartConfiguration),
-            ("J", DialogText.CaptionsJump),
+            ("O", DialogText.CaptionsJump),
             ("N", DialogText.NewFile),
             ("X", DialogText.RenameFile),
             ("C", DialogText.CopyFile),
@@ -471,9 +471,9 @@ internal static class Tools
             StartMenu.Open(0);
             LoginRoutine(true);
         }
-        else if (choice == "J")
+        else if (choice == "O")
         {
-            // The Jump menu
+            // The Jump menu (O as Ctrl+O: J is taken by j, which selects in the box)
             Jump.Open();
             LoginRoutine(true);
         }
@@ -1390,7 +1390,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc F", Lang.T("Browse and edit text files"), false));
             _shortcutList.Add(new Shortcut("Esc T", Lang.T("Select mode (notes/text editor/startup)"), false));
             _shortcutList.Add(new Shortcut("Esc S", Lang.T("Configuration"), false));
-            _shortcutList.Add(new Shortcut("Esc J", Lang.T("The Jump menu: files, pages and data files"), false));
+            _shortcutList.Add(new Shortcut("Esc O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut("Esc N", Lang.T("New data file"), false));
             _shortcutList.Add(new Shortcut("Esc X C D", Lang.T("Rename/Copy/Delete the data file"), false));
             _shortcutList.Add(new Shortcut("Esc M", Lang.T("Merge two data files, or export one as XML"), false));
