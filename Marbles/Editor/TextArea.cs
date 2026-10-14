@@ -463,6 +463,25 @@ public class TextArea
             case EditorRequest.SnippetsEdit:
                 OpenSnippets(0);
                 break;
+            case EditorRequest.Jump:
+                Tools.HideCursor();
+                // Leaving the text asks about changes that are not saved
+                Jump.Open(() =>
+                {
+                    var leave = !_engine.IsModified ||
+                                Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn, string.Empty, false)
+                                    switch
+                                    {
+                                        1 => Save(),
+                                        2 => true,
+                                        _ => false
+                                    };
+                    // A file is opened where the cursor is the next time, as when it is closed
+                    if (leave && _saveMode == SaveAsFile) FileExplorer.KeepCaretOfCurrentFile(this);
+                    return leave;
+                });
+                RedrawAll();
+                break;
             case EditorRequest.DocumentInfo:
                 Tools.HideCursor();
                 ShowDocumentInfo();

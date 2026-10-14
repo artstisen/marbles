@@ -115,6 +115,13 @@ internal static partial class FileExplorer
             _favoriteMessage = string.Empty;
             var selected = _favorites.Count > 0 ? _favorites[_favoriteIndex] : -1;
             var key = Console.ReadKey(true);
+            if (Jump.IsKey(key))
+            {
+                // The Jump menu
+                Jump.Open();
+                continue;
+            }
+
             var navigation = Keyboard.ToNavigationKey(key).Key;
 
             if (_favoriteMoving)
@@ -145,6 +152,13 @@ internal static partial class FileExplorer
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read(CommandContext.Favorites);
+                if (command is "jump" or "ju")
+                {
+                    // The Jump menu
+                    Jump.Open();
+                    continue;
+                }
+
                 // A name can follow the command
                 if (command != null && CommandLine.Name(command) is "folder" or "rename")
                 {

@@ -87,6 +87,30 @@ internal static partial class FileExplorer
         Browse(BrowseMode.Edit, DialogText.CaptionsFiles);
     }
 
+    // A jump: the directory to show, and the file to open in the editor when the browser is shown
+    private static string? _jumpDirectory;
+    private static string? _jumpFile;
+
+    /// <summary>
+    /// Open the file browser in the directory of a file, and the file in the editor (a jump)
+    /// </summary>
+    internal static void RunAtFile(string path)
+    {
+        _jumpDirectory = System.IO.Path.GetDirectoryName(path);
+        _jumpFile = path;
+        Run();
+    }
+
+    /// <summary>
+    /// Open the file browser in a directory (a jump)
+    /// </summary>
+    internal static void RunAtDirectory(string path)
+    {
+        _jumpDirectory = path;
+        _jumpFile = null;
+        Run();
+    }
+
     private static bool _openFavorites; // The favorites list is opened as soon as the file browser is shown
 
     /// <summary>
@@ -161,9 +185,26 @@ internal static partial class FileExplorer
             StartPaneIn(PickPane, StartDirectory);
         }
 
+        // A jump: the directory of the jump, and the file opened in the editor
+        var jumpFile = _jumpFile;
+        if (mode == BrowseMode.Edit && _jumpDirectory != null && System.IO.Directory.Exists(_jumpDirectory))
+        {
+            StartPaneIn(ActivePane, _jumpDirectory);
+        }
+
+        _jumpDirectory = null;
+        _jumpFile = null;
         Init.ApplyAutoSize();
         Draw(true);
         if (Tools.TakeRedrawRequest()) Draw(true);
+        if (mode == BrowseMode.Edit && jumpFile != null && File.Exists(jumpFile))
+        {
+            var info = new FileInfo(jumpFile);
+            if (Open(new Item(info.Name, info.FullName, false, info.Length))) return _picked;
+            LoadItems(info.Name);
+            Draw(true);
+        }
+
         while (true)
         {
             // Starting in the favorites list is the same as pressing F (closing the list shows the file browser)
@@ -175,7 +216,12 @@ internal static partial class FileExplorer
             var redraw = true;
             var hadMessage = _message.Length > 0;
             _message = string.Empty;
-            if (_pending != null && key.Key is ConsoleKey.Escape or ConsoleKey.Q)
+            if (_mode == BrowseMode.Edit && _pending == null && Jump.IsKey(key))
+            {
+                // The Jump menu
+                Jump.Open();
+            }
+            else if (_pending != null && key.Key is ConsoleKey.Escape or ConsoleKey.Q)
             {
                 // Not copied or moved after all
                 StopSelectingTarget();
@@ -679,6 +725,14 @@ internal static partial class FileExplorer
         FileFavorites.Load();
         FileHistory.Load();
         return FileFavorites.CaretOf(path) ?? FileHistory.CaretOf(path);
+    }
+
+    /// <summary>
+    /// Keep where the cursor is in the file being edited, when the editor is left by a jump
+    /// </summary>
+    internal static void KeepCaretOfCurrentFile(TextArea textArea)
+    {
+        if (_file != null) KeepCaret(_file.Path, textArea);
     }
 
     // Keep where the cursor is in a file that is closed in the editor: in the history, and in the favorites if

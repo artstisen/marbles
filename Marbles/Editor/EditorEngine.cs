@@ -43,6 +43,7 @@ internal enum EditorRequest
     PasteBinClear, // ":pbclear": empty the paste bin
     ClipboardSettings, // ":clipboard": show the clipboard settings
     DocumentInfo, // ":info": show the size, the dates and the path of the text being edited
+    Jump, // ":jump", ":ju" or Ctrl+O: show the Jump menu
     WrapChanged, // Wrapping of long lines was turned on or off
     ScrollOffChanged, // The lines kept around the cursor (ScrollOff) were changed
     CopyPath, // ":path": the path of the file being edited to the clipboard
@@ -400,6 +401,17 @@ internal sealed partial class EditorEngine
             }
 
             _recordedKeys.Add(key);
+        }
+
+        // Ctrl+O: the Jump menu (INSERT mode is left first, as with Esc)
+        if (!SingleLine && IsControl(key, ConsoleKey.O) && Mode is EditorMode.Normal or EditorMode.Insert)
+        {
+            if (Mode == EditorMode.Insert) HandleInsert(new ConsoleKeyInfo('\u001b', ConsoleKey.Escape, false, false, false));
+            Buffer.EndStep(Cursor);
+            _request = EditorRequest.Jump;
+            ClampCursor();
+            EnsureCursorVisible();
+            return _request;
         }
 
         // The selection is remembered when Visual mode is left, for "gv"
@@ -1118,6 +1130,10 @@ internal sealed partial class EditorEngine
                 break;
             case "info":
                 if (!SingleLine) _request = EditorRequest.DocumentInfo;
+                break;
+            case "jump":
+            case "ju":
+                if (!SingleLine) _request = EditorRequest.Jump;
                 break;
             case "path":
                 if (!SingleLine) _request = EditorRequest.CopyPath;

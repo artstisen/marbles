@@ -398,6 +398,7 @@ internal static class Tools
             ("F", DialogText.CaptionsFiles),
             ("T", DialogText.StartSelectMode),
             ("S", DialogText.StartConfiguration),
+            ("J", DialogText.CaptionsJump),
             ("N", DialogText.NewFile),
             ("X", DialogText.RenameFile),
             ("C", DialogText.CopyFile),
@@ -467,7 +468,13 @@ internal static class Tools
         else if (choice == "S")
         {
             // The Configuration tab of the Select mode page
-            StartMenu.Open(true);
+            StartMenu.Open(0);
+            LoginRoutine(true);
+        }
+        else if (choice == "J")
+        {
+            // The Jump menu
+            Jump.Open();
             LoginRoutine(true);
         }
         else if (choice == "T")
@@ -1318,6 +1325,7 @@ internal static class Tools
         Search, // The files found by a search in the file browser
         ColorScheme, // The color scheme editor
         Logos, // The logos and the logo editor
+        Jump, // The Jump menu
         Clipboard, // The clipboard settings
         Editor
     }
@@ -1370,6 +1378,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc F", Lang.T("Browse and edit text files"), false));
             _shortcutList.Add(new Shortcut("Esc T", Lang.T("Select mode (notes/text editor/startup)"), false));
             _shortcutList.Add(new Shortcut("Esc S", Lang.T("Configuration"), false));
+            _shortcutList.Add(new Shortcut("Esc J", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut("Esc N", Lang.T("New data file"), false));
             _shortcutList.Add(new Shortcut("Esc X C D", Lang.T("Rename/Copy/Delete the data file"), false));
             _shortcutList.Add(new Shortcut("Esc M", Lang.T("Merge two data files, or export one as XML"), false));
@@ -1380,6 +1389,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc ?", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Exit Marbles"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMainMenu, true));
+            _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select an item (on into the next tab)"), false));
             _shortcutList.Add(new Shortcut("l Enter Space", Lang.T("Open the selected item (Space: also on/off)"), false));
             _shortcutList.Add(new Shortcut("Tab", Lang.T("The next tab (Shift: back)"), false));
@@ -1402,6 +1412,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings"), false));
             _shortcutList.Add(new Shortcut(":browse", Lang.T("Browse files (opening a file logs out)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
+            _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
             _shortcutList.Add(new Shortcut("Enter Space", Lang.T("Edit the selected entry"), false));
             _shortcutList.Add(new Shortcut("1-9 0 :12", Lang.T("Select by number (0 is the 10th)"), false));
@@ -1432,6 +1443,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("X :logout", Lang.T("Logout"), false));
             _shortcutList.Add(new Shortcut("Esc - :q", Lang.T("Back to the main menu"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFiles, true));
+            _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last"), false));
             _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("One page up/down"), false));
@@ -1468,6 +1480,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Not UTF-8"), Lang.T("Can be converted (replace file or save copy)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Data files"), Lang.T("Opening one selects it on the login page"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionSearch, true));
+            _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Name"), Lang.T("Part of the name, or with * and ? (*.md)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Text in files"), Lang.T("Text files containing the text"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Regular expr."), Lang.T("Name and text are regular expressions"), false));
@@ -1481,6 +1494,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFavorites, true));
+            _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file (a directory: go to it)"), false));
             _shortcutList.Add(new Shortcut("B :goto", Lang.T("Show the file in the file browser"), false));
@@ -1507,6 +1521,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc Q F h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.T("Kept in favorites.txt in the data directory"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionHistory, true));
+            _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file in the editor"), false));
             _shortcutList.Add(new Shortcut("B :goto", Lang.T("Show the file in the file browser"), false));
@@ -1518,6 +1533,16 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q O h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.F("The last {0} files opened, kept in history.txt", FileHistory.MaxCount), false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionJump, true));
+            _shortcutList.Add(new Shortcut(":jump :ju Ctrl+O", Lang.T("Open the Jump menu (from most places)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Tabs"), Lang.T("Jumps, Files, Favorites, Configuration, Data files"), false));
+            _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select a place"), false));
+            _shortcutList.Add(new Shortcut("h l", Lang.T("The tab before/after"), false));
+            _shortcutList.Add(new Shortcut("Enter", Lang.T("Jump: open the file or page, or select the data file"), false));
+            _shortcutList.Add(new Shortcut("/", Lang.T("Filter the places of the tab by name (Esc: all)"), false));
+            _shortcutList.Add(new Shortcut("I D", Lang.T("Info about the place/Remove it from the jumps"), false));
+            _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Close the Jump menu"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Jumps"), Lang.T("The places jumped to, the latest first (jump.txt)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionClipboard, true));
             _shortcutList.Add(new Shortcut("\"+y \"+yy", Lang.T("Editor: yank to the clipboard (and/or the paste bin)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Every yank"), Lang.T("Can be set to go out too (not deletes)"), false));
@@ -1572,6 +1597,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Open"), Lang.T(":logo, or Configuration: Logo"), false));
             _shortcutList.Add(new Shortcut(":logo Name", Lang.T("Use the logo with the name"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionEditor, true));
+            _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Modes"), true));
             _shortcutList.Add(new Shortcut("Esc", Lang.T("Normal mode (navigate and give commands)"), false));
             _shortcutList.Add(new Shortcut("i a", Lang.T("Insert mode before/after the cursor"), false));
@@ -1741,6 +1767,7 @@ internal static class Tools
             HelpTopic.Clipboard => DialogText.HelpSectionClipboard,
             HelpTopic.ColorScheme => DialogText.HelpSectionColorScheme,
             HelpTopic.Logos => DialogText.HelpSectionLogos,
+            HelpTopic.Jump => DialogText.HelpSectionJump,
             HelpTopic.Editor => DialogText.HelpSectionEditor,
             _ => string.Empty
         };

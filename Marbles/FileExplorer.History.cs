@@ -32,10 +32,24 @@ internal static partial class FileExplorer
             _historyMessage = string.Empty;
             var selected = _historyShown.Count > 0 ? _historyShown[_historyIndex] : -1;
             var key = Console.ReadKey(true);
+            if (Jump.IsKey(key))
+            {
+                // The Jump menu
+                Jump.Open();
+                continue;
+            }
+
             var navigation = Keyboard.ToNavigationKey(key).Key;
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read(CommandContext.History);
+                if (command is "jump" or "ju")
+                {
+                    // The Jump menu
+                    Jump.Open();
+                    continue;
+                }
+
                 switch (command)
                 {
                     case null:

@@ -83,6 +83,7 @@ Press `Esc` to show the options in a box. Select one with `j` `k` (or the arrow 
 - `F` Browse files: open the [file browser](#file-browser) to edit plain text files
 - `T` Go to the [Select mode](#select-mode) page
 - `S` Go to the [Configuration](#configuration) tab of the Select mode page, with the settings
+- `J` Open the [Jump menu](Guide-to-main-menu.md#jump-menu), to go straight to a file, a page of Marbles or a data file
 - `N` Create a new data file
 - `X` Rename the selected data file
 - `C` Create a copy of the selected data file
@@ -124,7 +125,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `:path` Copy the full path of the selected file or directory (on `..`: the directory shown) to the system clipboard and/or the paste bin, as set in the [clipboard settings](Guide-to-editor.md#system-clipboard-and-paste-bin)
 - `:match` With two panes: the other pane shows the directory of the pane with the focus (with the same file or directory selected). The focus stays where it is
 - `:cd path` Go to a directory. `:home` Go to the folder of the data files in use (the data directory, or the subfolder of it chosen for the data files)
-- `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` (the snippets of the editor), `favorites.txt` and `history.txt` (of the file browser)
+- `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` (the snippets of the editor), `favorites.txt` and `history.txt` (of the file browser), and `jump.txt` (of the Jump menu)
 - `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again (see [the command line](Guide-to-main-menu.md))
 - `?` Help
 - `Esc`, `Q` or `:q` Close the file browser

@@ -80,8 +80,8 @@ internal static class StartMenu
     // True to show the choices whatever the setting is
     private static bool _showChoices;
 
-    // True to show the Configuration tab first
-    private static bool _showConfiguration;
+    // The page of the Configuration tab to show first (0 to 3), or -1 for the Mode tab
+    private static int _showConfiguration = -1;
 
     // The row of the tabs (below the logo)
     private const int TabRow = 6;
@@ -122,18 +122,19 @@ internal static class StartMenu
     {
         Pending = true;
         _showChoices = false;
-        _showConfiguration = false;
+        _showConfiguration = -1;
     }
 
     /// <summary>
     /// Show the choices before the login page is shown again
     /// </summary>
-    /// <param name="configuration">Show the Configuration tab first</param>
-    internal static void Open(bool configuration = false)
+    /// <param name="configurationPage">Show a page of the Configuration tab first (0 General, 1 Layout, 2 Editor,
+    /// 3 System), or -1 for the Mode tab</param>
+    internal static void Open(int configurationPage = -1)
     {
         Pending = true;
         _showChoices = true;
-        _showConfiguration = configuration;
+        _showConfiguration = Math.Clamp(configurationPage, -1, 3);
     }
 
     /// <summary>
@@ -165,8 +166,8 @@ internal static class StartMenu
             new TabItem(() => DialogText.StartConfiguration, new SettingsPage(0), new SettingsPage(1),
                 new SettingsPage(2), new SettingsPage(3)),
             new TabItem(() => Lang.T("Help"), new HelpPage()));
-        if (_showConfiguration) frame.Selected = 1;
-        _showConfiguration = false;
+        if (_showConfiguration >= 0) frame.Selected = 1 + _showConfiguration;
+        _showConfiguration = -1;
         // Returns when notes are chosen, or a data file was selected in the file browser
         frame.Run();
     }

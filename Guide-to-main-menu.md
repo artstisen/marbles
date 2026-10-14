@@ -8,12 +8,44 @@ The same keys are used everywhere in Marbles:
 - `/` Search
 - `?` Help: the list of keys. The help is shown in pages (`h` `l` previous/next page, `j` `k` one line) and can be searched: `/text` goes to the first line containing "text", and `n` `N` to the next/previous. The help shows the keys of the page you are on (start page, login page, menus and lists, file browser, favorites or editor); press `?` in the help to see all keys, and `?` again to return to the keys of the page
 - `:browse` Open the [file browser](Guide-to-login-menu.md#file-browser) to edit text files. Opening a file logs out of the data file
+- `Ctrl+O` or `:jump` (`:ju`) Open the [Jump menu](#jump-menu), to go straight to a file, a page of Marbles or a data file
 - `:` Command line: type a command and press `Enter`. The commands are shown in the menus
 - `Tab` on the command line completes the command you are typing: `:und` and `Tab` gives `:undelete`. Press `Tab` again for the next command that starts the same (`Shift+Tab` for the previous); after the last one, what you typed is shown again. With nothing typed, `Tab` goes through all the commands that can be used on the page. Only the name of the command is completed, not what follows it (a title, a number), and the short forms (`:q`, `:h`) are not shown. This works on every command line: in the menus, lists, file browser and editor, each with its own commands
 - `:q` Close/Return. In the main menu: Exit Marbles
 - `:qa` Exit Marbles from anywhere
 - `:logout` (or `X`) Close the data file and return to the [login page](Guide-to-login-menu.md)
 - `Esc` Return/Cancel
+
+## Jump menu
+The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`), from the main menu, the lists of entries, the file browser (with its favorites, history and search results) and the editor, and from the options of the login page (`Esc`, `J`). It is a box on top of the page with five tabs:
+
+- **Jumps**: the places you have jumped to with the menu, the latest first, with the time (today) or the date of the jump
+- **Files**: the files opened from the file browser (the file history), with when they were opened
+- **Favorites**: the files and directories of your favorites
+- **Configuration**: the pages of the Configuration tab (General, Layout, Editor, System), Color schemes, Logos, Clipboard, Snippet editor, Help and About
+- **Data files**: the data files in the data directory and the directories in it
+
+Only names are shown, not paths: a long name is shortened with `...` in the middle, so its start and its extension are seen. At the right of each place is its kind: `FILE`, `DIR`, `PAGE` or `DATA`. A place that is gone (a file deleted or moved) is shown dimmed with _(missing)_.
+
+- `j` `k` (or `Down`/`Up`, `gg` `G`, `PgUp` `PgDn`) Select a place
+- `h` `l` (or `Left`/`Right`) The tab before/after
+- `/` Filter the places of the tab: only the ones with the text in their names are shown. `Esc` shows all again
+- `Enter` Jump to the selected place
+- `I` Information about the place: its name, kind and full path, whether it is there, and when it was jumped to or opened
+- `D` Take the place out of the jump history (on the Jumps tab)
+- `Esc` (or `Q`, `Ctrl+O`) Close the menu; `?` shows its keys
+
+Where a jump goes:
+
+- **A file** is opened in the editor (where the cursor was the last time), with the file browser in its directory behind it. Closing the browser shows the Select mode page
+- **A directory** is shown in the file browser
+- **A page of Configuration** opens the Select mode page on that page
+- **A data file** is selected on the login page
+- **Color schemes, Logos, Clipboard, Snippet editor, Help and About** open on top of the page you jumped from; closing them returns there
+
+When you jump from the editor and the text has changes that are not saved, you are asked whether to save them first (`Esc` stays in the editor). A jump to a file, directory, Configuration page or data file from a data file you are logged in to logs you out of it first. With _Text Editor only_ the Data files tab is not shown, and with _Note Management only_ the Files and Favorites tabs are not.
+
+The jumps are kept in the file `jump.txt` in the data directory, one line for each place (at most 100): the time, a tab character, the kind (`file`, `dir`, `page` or `data`), a tab character and the place (the path of a file or directory, the name of a page such as `config/editor`, or the path of a data file in the data directory such as `notes/work.mbls`). Like the file history it is not encrypted, and it holds no titles or text of notes.
 
 ## Main menu
 The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** and **Marbles**, each with its keys and commands. The tab shown is highlighted (in the colors of the tabs, set in the [color schemes](#color-schemes)). _MENU_ is shown at the top left, and the name of the data file at the top right, above a dividing line. The keys of the page are shown at the bottom.

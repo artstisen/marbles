@@ -24,7 +24,12 @@ class Program
                     Menu.DrawTopMenu(true, true, false);
                 }
 
-                if (Mode.CurrentMode == Mode.SelectedMode.Login)
+                if (Jump.Pending != null)
+                {
+                    // A place was picked in the Jump menu: go there
+                    Jump.RunPending();
+                }
+                else if (Mode.CurrentMode == Mode.SelectedMode.Login)
                 {
                     Tools.ShowLogin(Navigation.LoginFullRedraw);
                 }

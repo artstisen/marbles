@@ -60,6 +60,10 @@ internal static partial class FileExplorer
     {
         switch (name)
         {
+            case "jump":
+            case "ju":
+                Jump.Open();
+                break;
             case "new":
                 NewFile(argument);
                 break;

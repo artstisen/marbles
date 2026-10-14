@@ -49,33 +49,33 @@ internal static class Commands
     private static readonly Dictionary<CommandContext, Table> Tables = new()
     {
         [CommandContext.Menu] = new Table(
-            "quit help about guide new browse number import transfer undelete backup defaults scheme " +
+            "quit help about guide jump new browse number import transfer undelete backup defaults scheme " +
             "bw size password restart language clipboard logo config" + Common,
-            "q h nu" + CommonShort),
+            "q h nu ju" + CommonShort),
         [CommandContext.List] = new Table(
-            "quit close help browse new title delete color transfer size duplicate revert export import info clipboard" +
+            "quit close help jump browse new title delete color transfer size duplicate revert export import info clipboard" +
             " readonly" + Common,
-            "q h ro" + CommonShort),
+            "q h ro ju" + CommonShort),
         [CommandContext.Files] = new Table(
-            "quit close exit home data help cd new info mkdir rename copy duplicate move delete favorite favorites history panes match path find",
-            "q h fav favs hist"),
+            "quit close exit home data help jump cd new info mkdir rename copy duplicate move delete favorite favorites history panes match path find",
+            "q h fav favs hist ju"),
         [CommandContext.FilePicker] = new Table(
             "quit close home data help cd",
             "q h"),
         [CommandContext.Favorites] = new Table(
-            "quit close help color info remove move top bottom undo folder expand collapse rename goto",
-            "q h u"),
+            "quit close help jump color info remove move top bottom undo folder expand collapse rename goto",
+            "q h u ju"),
         [CommandContext.History] = new Table(
-            "quit close help info goto favorite remove clear",
-            "q h fav"),
+            "quit close help jump info goto favorite remove clear",
+            "q h fav ju"),
         [CommandContext.Search] = new Table(
-            "quit close help find info goto favorite",
-            "q h fav"),
+            "quit close help jump find info goto favorite",
+            "q h fav ju"),
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
-            "calendar trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip scrolloff info",
-            "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw cal reg sn")
+            "calendar trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip scrolloff info jump",
+            "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw cal reg sn ju")
     };
 
     /// <summary>

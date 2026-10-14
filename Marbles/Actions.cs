@@ -17,7 +17,13 @@ internal static class Actions
         {
             #region Manage actions
 
-            if (_c.KeyChar == ':')
+            if (Jump.IsKey(_c))
+            {
+                // The Jump menu
+                Jump.Open();
+                Menu.DrawTopMenu(false, true, false);
+            }
+            else if (_c.KeyChar == ':')
             {
                 // Command line
                 var command = CommandLine.Read(CommandContext.Menu);
@@ -262,9 +268,14 @@ internal static class Actions
             case "about":
                 ShowAbout();
                 break;
+            case "jump":
+            case "ju":
+                Jump.Open();
+                Menu.DrawTopMenu(false, true, false);
+                break;
             case "config":
                 // More configurations: the Configuration tab of the Select mode page (logs out)
-                StartMenu.Open(true);
+                StartMenu.Open(0);
                 Tools.LoginRoutine(true);
                 break;
             case "guide":
@@ -464,6 +475,11 @@ internal static class Actions
                 break;
             case "title":
                 SelectResultFromIndex(pageNumber, _resultIndex, 1);
+                break;
+            case "jump":
+            case "ju":
+                // The list is shown again afterwards
+                Jump.Open();
                 break;
             case "readonly":
             case "ro":
@@ -2404,6 +2420,14 @@ internal static class Actions
         if (_movingPinned)
         {
             HandleMovePinnedKey(pageNumber);
+            return;
+        }
+
+        if (Jump.IsKey(_c))
+        {
+            // The Jump menu, and the list again
+            Jump.Open();
+            ExitNumericSelect(pageNumber, _resultIndex);
             return;
         }
 

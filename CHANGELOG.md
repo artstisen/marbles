@@ -1,6 +1,8 @@
 # Changes
 
 ## v1.5.3
+- **Jump menu** (`Ctrl+O`, `:jump`, `:ju`, and `J` in the options of the login page): a box with the tabs Jumps, Files, Favorites, Configuration and Data files, to go straight to a file, a page of Marbles or a data file. Names only (long ones shortened in the middle), a filter with `/`, `I` for information and `D` to remove a jump. The jumps are kept in `jump.txt`, the latest first.
+- **Logos**: _Adventure_ is the third built-in logo and _Islands_ the fourth.
 - **Logos**: a fourth built-in logo, **Adventure**: a hut in the forest with smoke from the chimney and a lit window, a mountain with snow on its top, and a stream.
 - **Text editor**: a file is opened where the cursor was when it was closed the last time. The line and column are kept in the history and, for a favorite, in the favorites (`3:12` before the path); a file opened from search results goes to the line found.
 - **Entries**: `:readonly` (`:ro`) in the lists makes an entry read only, or not any more. It is marked `RO` in the lists, cannot be changed in the editor (label _Read only_), and is not renamed, reverted or deleted. A copy made with `:duplicate` can be edited.

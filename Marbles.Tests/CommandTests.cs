@@ -40,7 +40,7 @@ public class CommandTests
     public void Tab_WithNothingTyped_GoesThroughAllTheCommands()
     {
         var names = Commands.Names(CommandContext.Search);
-        Assert.Equal(new[] { "close", "favorite", "find", "goto", "help", "info", "quit" }, names);
+        Assert.Equal(new[] { "close", "favorite", "find", "goto", "help", "info", "jump", "quit" }, names);
         Assert.Equal(string.Join(" ", names) + "  close", Tabs(CommandContext.Search, "", names.Count + 2));
     }
 
