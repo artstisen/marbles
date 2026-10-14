@@ -171,12 +171,12 @@ public class ColorSchemeTests : IDisposable
         var expected = "background=DarkGray\ntext=Black\nlogo=Black\ndividers=Black\nfavorites=Black\naccent=White\n" +
                        "editortitle=Black\nhighlight=Black\nhighlighttext=DarkGray\nattention=Gray\n" +
                        "attentiontext=Black\nwarning=White\nwarningtext=Black\ntabframes=default\ntabcorner=Black\n" +
-                       "boxborders=default\ntab=Gray\ntabtext=Black\ntabshown=White\nothertabs=default\n" +
+                       "boxborders=default\ntab=Gray\ntabtext=Black\ntabshown=Black\nothertabs=default\n" +
                        "keyhints=Black\nunsaved=default\nunsavedtext=default\nlinenumbers=Black\n" +
                        "currentline=White\nselector=Gray\nselectortext=Black\nframetext=Black\n" +
                        "syntax1=DarkBlue\nsyntax2=default\nsyntax3=DarkMagenta\nsyntax4=Blue\nsyntax5=DarkRed\n" +
                        "syntax6=Gray\nsyntax7=default\nsyntax8=default\nsyntax9=default\nsyntax10=default\n" +
-                       "syntax11=default\nsyntax12=default\ntabhighlight=true\n";
+                       "syntax11=default\nsyntax12=default\ntabhighlight=true\nuselogo=Marbles\n";
         // Without the comment lines at the top
         var text = string.Join("\n", ColorSchemes.Load("gray box")!.Serialize().Split('\n')
             .Where(line => !line.StartsWith(';')));
@@ -215,7 +215,7 @@ public class ColorSchemeTests : IDisposable
                        "boxborders=Cyan\ntab=DarkBlue\ntabtext=White\ntabshown=default\nothertabs=Cyan\n" +
                        "keyhints=Green\nunsaved=DarkMagenta\nunsavedtext=White\nlinenumbers=DarkMagenta\n" +
                        "currentline=Cyan\nselector=Blue\nselectortext=White\nframetext=default\n" +
-                       string.Concat(Enumerable.Range(1, 12).Select(n => "syntax" + n + "=default\n")) +
+                       string.Concat(Enumerable.Range(1, 12).Select(n => "syntax" + n + (n == 6 ? "=DarkGray" : "=default") + "\n")) +
                        "tabhighlight=true\nuselogo=Reflections\n";
         // Without the comment lines at the top
         var text = string.Join("\n", scheme.Serialize().Split('\n').Where(line => !line.StartsWith(';')));
@@ -225,7 +225,7 @@ public class ColorSchemeTests : IDisposable
         var read = ColorScheme.Parse(scheme.Serialize(), "Mine");
         Assert.Equal("Reflections", read.UseLogo);
         Assert.Equal("Reflections", read.Clone().UseLogo);
-        Assert.All(ColorScheme.BuiltIn.Skip(2).Where(builtIn => builtIn.Name != "Tasty Bytes"),
+        Assert.All(ColorScheme.BuiltIn.Skip(2).Where(builtIn => builtIn.Name is not ("Tasty Bytes" or "Gray Box")),
             builtIn => Assert.Equal(string.Empty, builtIn.UseLogo));
         Assert.DoesNotContain("uselogo", ColorScheme.BuiltIn[2].Serialize());
         Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.BuiltIn[2].Serialize(), "X").UseLogo);

@@ -514,14 +514,15 @@ internal sealed class ColorScheme
         return scheme;
     }
 
-    // "Gray Box": black text on a dark gray background, the focused tab white on gray with a black corner, and
-    // colored text in dark colors that can be read on the gray
+    // "Gray Box": black text on a dark gray background, the focused tab black on gray with a black corner,
+    // colored text in dark colors that can be read on the gray, and the logo "Marbles", which is used when the
+    // scheme is selected
     private static ColorScheme GrayBox()
     {
         var scheme = WithTabs(Make("Gray Box", ConsoleColor.DarkGray, ConsoleColor.Black, ConsoleColor.Black,
                 ConsoleColor.Black, ConsoleColor.Black, ConsoleColor.White, ConsoleColor.Black, ConsoleColor.Black,
                 ConsoleColor.DarkGray, ConsoleColor.Gray, ConsoleColor.Black, ConsoleColor.White, ConsoleColor.Black),
-            null, null, ConsoleColor.Gray, ConsoleColor.Black, ConsoleColor.White, null, true);
+            null, null, ConsoleColor.Gray, ConsoleColor.Black, ConsoleColor.Black, null, true);
         scheme.TabCorner = ConsoleColor.Black;
         scheme.KeyHints = ConsoleColor.Black;
         scheme.LineNumbers = ConsoleColor.Black;
@@ -535,6 +536,7 @@ internal sealed class ColorScheme
         scheme.Set(ColorItem.Syntax4, ConsoleColor.Blue);
         scheme.Set(ColorItem.Syntax5, ConsoleColor.DarkRed);
         scheme.Set(ColorItem.Syntax6, ConsoleColor.Gray);
+        scheme.UseLogo = LogoArt.BuiltInName;
         return scheme;
     }
 
@@ -554,6 +556,8 @@ internal sealed class ColorScheme
         scheme.CurrentLineNumber = ConsoleColor.Cyan;
         scheme.Selector = ConsoleColor.Blue;
         scheme.SelectorText = ConsoleColor.White;
+        // The comments (Syntax 6)
+        scheme.Set(ColorItem.Syntax6, ConsoleColor.DarkGray);
         scheme.UseLogo = "Reflections";
         return scheme;
     }
