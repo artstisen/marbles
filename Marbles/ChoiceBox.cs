@@ -42,6 +42,9 @@ internal static class ChoiceBox
     internal static int Pick(string caption, string question, string note, IReadOnlyList<string> choices,
         IReadOnlyList<string> keys, int selected, bool warning)
     {
+        // In the color of text in frames and boxes
+        using var frameText = ConsoleColors.FrameTextScope();
+
         var keyWidth = keys.Max(TextMetrics.WidthOf);
         var widest = Math.Max(TextMetrics.WidthOf(caption) + 4,
             Math.Max(TextMetrics.WidthOf(question) + 4, choices.Max(TextMetrics.WidthOf) + keyWidth + 12));
@@ -106,6 +109,9 @@ internal static class ChoiceBox
     internal static int PickOption(string caption, IReadOnlyList<string> options, IReadOnlyList<string> keys,
         int tabRow, int left)
     {
+        // In the color of text in frames and boxes
+        using var frameText = ConsoleColors.FrameTextScope();
+
         var keyWidth = keys.Max(TextMetrics.WidthOf);
         var inner = Math.Clamp(Math.Max(TextMetrics.WidthOf(caption) + 4,
             options.Max(TextMetrics.WidthOf) + keyWidth + 12), 10, Init.LineWidth - left - 3);
@@ -173,6 +179,9 @@ internal static class ChoiceBox
     /// </summary>
     internal static void Message(string caption, string message, string note)
     {
+        // In the color of text in frames and boxes
+        using var frameText = ConsoleColors.FrameTextScope();
+
         var inner = Math.Clamp(Math.Max(Math.Max(TextMetrics.WidthOf(message), TextMetrics.WidthOf(caption)) + 4,
             MinInner), 10, Init.LineWidth - 6);
         var messageLines = Wrap(message, inner - 4);
@@ -197,6 +206,9 @@ internal static class ChoiceBox
     /// <returns>The number picked, or null if canceled</returns>
     internal static int? PickNumber(string caption, string prompt, int value)
     {
+        // In the color of text in frames and boxes
+        using var frameText = ConsoleColors.FrameTextScope();
+
         var inner = Math.Clamp(Math.Max(TextMetrics.WidthOf(prompt) + 4, MinInner), 10, Init.LineWidth - 6);
         var promptLines = Wrap(prompt, inner - 4);
         // A blank row, the prompt, a blank row, the number and a blank row
@@ -233,6 +245,9 @@ internal static class ChoiceBox
     /// <returns>The text typed (trimmed), or null if canceled or empty</returns>
     internal static string? AskText(string caption, string prompt, string label, string text)
     {
+        // In the color of text in frames and boxes
+        using var frameText = ConsoleColors.FrameTextScope();
+
         var (fieldTop, fieldLeft, fieldWidth) = DrawField(caption, prompt, label);
         var textArea = new TextArea(fieldLeft, fieldTop, fieldWidth, 1, text, 0, text.Length > 0, false, false, 0);
         var typed = textArea.GetText().Trim();
@@ -246,6 +261,9 @@ internal static class ChoiceBox
     /// <returns>The key typed, or null if canceled</returns>
     internal static string? AskSecret(string caption, string prompt, string label)
     {
+        // In the color of text in frames and boxes
+        using var frameText = ConsoleColors.FrameTextScope();
+
         var (fieldTop, fieldLeft, _) = DrawField(caption, prompt, label);
         Tools.SetCursorEx(fieldTop, fieldLeft + 1);
         var typed = Tools.ReadMaskedSimple(true);
@@ -278,6 +296,9 @@ internal static class ChoiceBox
     /// <param name="width">The width inside the box (0: the width of the screen)</param>
     internal static void ShowRows(string caption, IReadOnlyList<(string Label, string Value)> rows, int width = 0)
     {
+        // In the color of text in frames and boxes
+        using var frameText = ConsoleColors.FrameTextScope();
+
         var inner = width > 0 ? Math.Min(width, Init.LineWidth - 6) : Init.LineWidth - 6;
         // The labels take the width of the longest (translated) label
         var labelWidth = Math.Max(10, rows.Max(row => TextMetrics.WidthOf(row.Label)) + 1);

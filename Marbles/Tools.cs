@@ -1543,6 +1543,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Other tabs"), Lang.T("The names of the tabs not shown"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tab corner"), Lang.T("The left side, corner and top of the tab shown"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Selector"), Lang.T("The arrow -> of lists, menus and settings"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Tab text"), Lang.T("The text in frames with tabs and in boxes"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.F("Page {0}", 3), Lang.T("Syntax 1-12: the colors of colored text"), false));
             _shortcutList.Add(new Shortcut("E", Lang.T("Back to the colors of the scheme in use"), false));
             _shortcutList.Add(new Shortcut("S", Lang.T("Save as a scheme of your own (asks for a name)"), false));

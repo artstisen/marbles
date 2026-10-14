@@ -38,6 +38,9 @@ internal static class ColorPicker
     internal static bool Pick(string caption, int left, bool withDefault, ConsoleColor? current,
         Func<ConsoleColor, bool>? isAllowed, Action<ConsoleColor>? setSampleColors, out ConsoleColor? picked)
     {
+        // In the color of text in frames and boxes
+        using var frameText = ConsoleColors.FrameTextScope();
+
         picked = current;
         var first = withDefault ? 1 : 0; // The row of the first color
         var rows = Count + first;

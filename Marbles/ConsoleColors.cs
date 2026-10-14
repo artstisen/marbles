@@ -67,7 +67,8 @@ internal static class ConsoleColors
         UnsavedInverted, // The label "Unsaved" (a text has changes that are not saved)
         LineNumber, // The line numbers of the editor
         CurrentLineNumber, // The number of the line the cursor is on
-        SelectorInverted // The selection arrow "->" of lists, menus and settings
+        SelectorInverted, // The selection arrow "->" of lists, menus and settings
+        FrameText // The text in frames with tabs and in boxes
     }
 
     // The colors of text on the normal background: the background of the color scheme, or that of the terminal
@@ -123,7 +124,34 @@ internal static class ConsoleColors
             return;
         }
 
-        SetStyle(Current, preset);
+        // In a frame with tabs or a box the normal text has the color of text there
+        SetStyle(Current, preset == ColorPreset.Normal && _inFrame ? ColorPreset.FrameText : preset);
+    }
+
+    // True while the text in a frame with tabs or a box is written
+    private static bool _inFrame;
+
+    /// <summary>
+    /// While the scope is open (until it is disposed), the normal text is written in the color of the text in
+    /// frames with tabs and in boxes ("Tab text" of the color scheme). The highlighted text keeps its colors.
+    /// The normal colors are set when it opens and when it is disposed, for text written without setting them
+    /// </summary>
+    internal static IDisposable FrameTextScope()
+    {
+        var before = _inFrame;
+        _inFrame = true;
+        SetColors(ColorPreset.Normal);
+        return new FrameScope(before);
+    }
+
+    // Puts back what was before the scope when it is disposed
+    private sealed class FrameScope(bool before) : IDisposable
+    {
+        public void Dispose()
+        {
+            _inFrame = before;
+            SetColors(ColorPreset.Normal);
+        }
     }
 
     /// <summary>
@@ -184,6 +212,7 @@ internal static class ConsoleColors
             ColorPreset.KeyHint => scheme.KeyHintsColor,
             ColorPreset.LineNumber => scheme.LineNumbersColor,
             ColorPreset.CurrentLineNumber => scheme.CurrentLineNumberColor,
+            ColorPreset.FrameText => scheme.FrameTextColor,
             _ => scheme.Text
         };
     }

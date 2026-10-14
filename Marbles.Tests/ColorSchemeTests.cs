@@ -145,7 +145,7 @@ public class ColorSchemeTests : IDisposable
                        "attentiontext=Black\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=Gray\n" +
                        "boxborders=White\ntab=DarkGray\ntabtext=default\ntabshown=Cyan\nothertabs=DarkGray\n" +
                        "keyhints=default\nunsaved=default\nunsavedtext=default\nlinenumbers=default\n" +
-                       "currentline=White\nselector=Cyan\nselectortext=Black\n" +
+                       "currentline=White\nselector=Cyan\nselectortext=Black\nframetext=default\n" +
                        "syntax1=default\nsyntax2=default\nsyntax3=default\nsyntax4=default\nsyntax5=default\n" +
                        "syntax6=default\nsyntax7=Yellow\nsyntax8=Cyan\nsyntax9=Green\nsyntax10=Magenta\n" +
                        "syntax11=Red\nsyntax12=default\ntabhighlight=false\nuselogo=Marbles\n";
@@ -172,7 +172,7 @@ public class ColorSchemeTests : IDisposable
                        "attentiontext=Black\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=White\n" +
                        "boxborders=default\ntab=Blue\ntabtext=default\ntabshown=White\nothertabs=Gray\n" +
                        "keyhints=Gray\nunsaved=default\nunsavedtext=default\nlinenumbers=Gray\n" +
-                       "currentline=White\nselector=Blue\nselectortext=White\n" +
+                       "currentline=White\nselector=Blue\nselectortext=White\nframetext=default\n" +
                        "syntax1=default\nsyntax2=Yellow\nsyntax3=default\nsyntax4=default\nsyntax5=default\n" +
                        "syntax6=Gray\nsyntax7=Yellow\nsyntax8=Green\nsyntax9=Cyan\nsyntax10=Magenta\n" +
                        "syntax11=Red\nsyntax12=default\ntabhighlight=true\nuselogo=Marbles\n";
@@ -194,7 +194,7 @@ public class ColorSchemeTests : IDisposable
                        "attentiontext=Red\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=Yellow\n" +
                        "boxborders=Cyan\ntab=DarkBlue\ntabtext=White\ntabshown=default\nothertabs=Cyan\n" +
                        "keyhints=Green\nunsaved=DarkMagenta\nunsavedtext=White\nlinenumbers=DarkMagenta\n" +
-                       "currentline=Cyan\nselector=Blue\nselectortext=White\n" +
+                       "currentline=Cyan\nselector=Blue\nselectortext=White\nframetext=default\n" +
                        string.Concat(Enumerable.Range(1, 12).Select(n => "syntax" + n + "=default\n")) +
                        "tabhighlight=true\nuselogo=Reflections\n";
         // Without the comment lines at the top

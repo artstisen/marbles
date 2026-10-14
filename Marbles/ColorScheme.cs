@@ -34,6 +34,7 @@ internal enum ColorItem
     CurrentLineNumber, // The number of the line the cursor is on (null: the text)
     Selector, // The background of the selection arrow "->" (null: the highlight)
     SelectorText, // The arrow itself (null: the text of the highlight)
+    FrameText, // The text in frames with tabs and in boxes, not the highlighted text (null: the text)
 
     // The colors of colored text in the editor (null: the color each has from the start, see SyntaxDefault).
     // 1 keywords, tags and selectors (bold and list marks in Markdown), 2 names of attributes and properties
@@ -92,6 +93,7 @@ internal sealed class ColorScheme
     internal ConsoleColor? CurrentLineNumber { get; set; }
     internal ConsoleColor? Selector { get; set; }
     internal ConsoleColor? SelectorText { get; set; }
+    internal ConsoleColor? FrameText { get; set; }
 
     internal const int SyntaxCount = 12;
 
@@ -119,6 +121,7 @@ internal sealed class ColorScheme
     internal ConsoleColor CurrentLineNumberColor => CurrentLineNumber ?? Text;
     internal ConsoleColor SelectorColor => Selector ?? Highlight;
     internal ConsoleColor SelectorTextColor => SelectorText ?? HighlightText;
+    internal ConsoleColor FrameTextColor => FrameText ?? Text;
 
     // True for the colors of colored text (Syntax 1 to 12), with the number of the color (from 0)
     private static bool IsSyntax(ColorItem item, out int number)
@@ -177,7 +180,7 @@ internal sealed class ColorScheme
             or ColorItem.Tab
             or ColorItem.TabText or ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints
             or ColorItem.Unsaved or ColorItem.UnsavedText or ColorItem.LineNumbers or ColorItem.CurrentLineNumber
-            || IsSyntax(item, out _);
+            or ColorItem.FrameText || IsSyntax(item, out _);
 
     internal ConsoleColor? Get(ColorItem item)
     {
@@ -210,6 +213,7 @@ internal sealed class ColorScheme
             ColorItem.LineNumbers => LineNumbers,
             ColorItem.CurrentLineNumber => CurrentLineNumber,
             ColorItem.Selector => Selector,
+            ColorItem.FrameText => FrameText,
             _ => SelectorText
         };
     }
@@ -237,6 +241,7 @@ internal sealed class ColorScheme
             ColorItem.CurrentLineNumber => CurrentLineNumberColor,
             ColorItem.Selector => SelectorColor,
             ColorItem.SelectorText => SelectorTextColor,
+            ColorItem.FrameText => FrameTextColor,
             _ => Get(item)!.Value
         };
     }
@@ -281,6 +286,7 @@ internal sealed class ColorScheme
             case ColorItem.LineNumbers: LineNumbers = color; break;
             case ColorItem.CurrentLineNumber: CurrentLineNumber = color; break;
             case ColorItem.Selector: Selector = color; break;
+            case ColorItem.FrameText: FrameText = color; break;
             default: SelectorText = color; break;
         }
     }
@@ -291,7 +297,7 @@ internal sealed class ColorScheme
         ColorItem.Text, ColorItem.Logo, ColorItem.Dividers, ColorItem.Favorites, ColorItem.Accent,
         ColorItem.EditorTitle, ColorItem.TabFrames, ColorItem.TabCorner, ColorItem.BoxBorders, ColorItem.TabShown,
         ColorItem.OtherTabs,
-        ColorItem.KeyHints, ColorItem.LineNumbers, ColorItem.CurrentLineNumber
+        ColorItem.KeyHints, ColorItem.LineNumbers, ColorItem.CurrentLineNumber, ColorItem.FrameText
     };
 
     private static readonly (ColorItem Background, ColorItem Text)[] Pairs =
@@ -339,6 +345,7 @@ internal sealed class ColorScheme
         ("keyhints", ColorItem.KeyHints), ("unsaved", ColorItem.Unsaved), ("unsavedtext", ColorItem.UnsavedText),
         ("linenumbers", ColorItem.LineNumbers), ("currentline", ColorItem.CurrentLineNumber),
         ("selector", ColorItem.Selector), ("selectortext", ColorItem.SelectorText),
+        ("frametext", ColorItem.FrameText),
         ("syntax1", ColorItem.Syntax1), ("syntax2", ColorItem.Syntax2), ("syntax3", ColorItem.Syntax3),
         ("syntax4", ColorItem.Syntax4), ("syntax5", ColorItem.Syntax5), ("syntax6", ColorItem.Syntax6),
         ("syntax7", ColorItem.Syntax7), ("syntax8", ColorItem.Syntax8), ("syntax9", ColorItem.Syntax9),

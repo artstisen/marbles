@@ -54,6 +54,7 @@ internal static class SchemeEditor
                         ConsoleColors.ColorPreset.WarningInverted),
                     new Group(Lang.T("Selector"), ColorItem.Selector, ColorItem.SelectorText,
                         ConsoleColors.ColorPreset.SelectorInverted),
+                    new Group(Lang.T("Tab text"), ColorItem.FrameText, null, ConsoleColors.ColorPreset.FrameText),
                     new Group(Lang.T("Tab frames"), ColorItem.TabFrames, null, ConsoleColors.ColorPreset.TabFrame),
                     new Group(Lang.T("Tab corner"), ColorItem.TabCorner, null, ConsoleColors.ColorPreset.TabCorner),
                     new Group(Lang.T("Box borders"), ColorItem.BoxBorders, null, ConsoleColors.ColorPreset.BoxBorder),
@@ -712,8 +713,8 @@ internal static class SchemeEditor
                 ColorItem.TabFrames or ColorItem.BoxBorders or ColorItem.LineNumbers =>
                     Lang.T("[Default]: the dividers"),
                 ColorItem.TabCorner => Lang.T("[Default]: the tab frames"),
-                ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints or ColorItem.CurrentLineNumber =>
-                    Lang.T("[Default]: the text"),
+                ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints or ColorItem.CurrentLineNumber
+                    or ColorItem.FrameText => Lang.T("[Default]: the text"),
                 >= ColorItem.Syntax1 and <= ColorItem.Syntax12 =>
                     Lang.F("[Default]: {0}", ColorPicker.Name(Preview.Shown(item))),
                 _ => DialogText.ColorDefault

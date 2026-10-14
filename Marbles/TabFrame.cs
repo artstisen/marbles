@@ -141,7 +141,7 @@ internal sealed class TabFrame
             }
             else
             {
-                page.Draw(_area, false);
+                using (ConsoleColors.FrameTextScope()) page.Draw(_area, false);
             }
 
             full = false;
@@ -229,7 +229,7 @@ internal sealed class TabFrame
         var subNames = pages.Count > 1 ? pages.Select(item => item.Title).ToList() : null;
         _area = DrawChrome(_top, _tabs.Select(item => item.Title()).ToList(), tab, subNames,
             pages.ToList().IndexOf(page), page.UsesSideKeys ? "H/L" : "h/l");
-        page.Draw(_area, true);
+        using (ConsoleColors.FrameTextScope()) page.Draw(_area, true);
 
         // The keys of the page
         Tools.SetCursorEx(Init.LineCount - 1, 0);

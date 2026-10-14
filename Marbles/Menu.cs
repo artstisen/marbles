@@ -324,6 +324,8 @@ internal static class Menu
         _menuItems = MenuItems(tab);
         ClampMenuSelection();
         _menuArea = TabFrame.DrawChrome(MenuTabRow, MenuTabTitles, tab, null, 0);
+        // The items in the color of text in frames
+        var frameText = ConsoleColors.FrameTextScope();
         for (var row = 0; row < _menuArea.Height; row++)
         {
             Tools.SetCursorEx(_menuArea.Top + row, _menuArea.Left);
@@ -340,6 +342,8 @@ internal static class Menu
             var room = _menuArea.Left + _menuArea.Width - Console.CursorLeft;
             Console.Write(Tools.TruncateString(item.Text, Math.Max(0, room), true));
         }
+
+        frameText.Dispose();
 
         // The keys of the page
         Tools.SetCursorEx(Init.LineCount - 1, 0);
@@ -423,6 +427,9 @@ internal static class Menu
     /// <returns>The number of the choice (0, 1, 2), or -1 if the box was closed</returns>
     internal static int LeaveChoice()
     {
+        // In the color of text in frames and boxes
+        using var frameText = ConsoleColors.FrameTextScope();
+
         var choices = new[] { Lang.T("Logout"), DialogText.StartSelectMode, DialogText.Exit };
         var inner = Math.Max(TextMetrics.WidthOf(DialogText.CaptionsOptions) + 4,
             choices.Max(c => TextMetrics.WidthOf(c)) + 12);
@@ -603,6 +610,9 @@ internal static class Menu
 
     public static void FloatingMenu(string caption, List<Shortcut> shortcuts, int top, int left, bool dockRight)
     {
+        // In the color of text in frames and boxes
+        using var frameText = ConsoleColors.FrameTextScope();
+
         // Return if list is null or empty
         if (shortcuts.Count == 0)
         {
