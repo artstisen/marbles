@@ -298,6 +298,14 @@ internal static class JumpMenu
             Console.Write(Tools.TruncateString(Lang.F("Filter: {0}", filter), width - 4, true));
         }
 
+        // The jump history only holds the jumps made in the menu (not the files and pages opened in other ways)
+        var room = left + width - 1 - Console.CursorLeft - 2;
+        if (tabs[tab] == Tab.Jumps && room > 10)
+        {
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write("  " + Tools.TruncateString(Lang.T("Only jumps made in this menu, the latest first"), room, true));
+        }
+
         // The places
         var first = top + 5;
         var visible = Math.Max(1, top + height - first + 1);

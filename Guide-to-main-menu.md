@@ -19,7 +19,7 @@ The same keys are used everywhere in Marbles:
 ## Jump menu
 The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`), from the main menu, the lists of entries, the file browser (with its favorites, history and search results) and the editor, and from the options of the login page (`Esc`, `J`), and it is a choice of the Mode tab of the start page (`3`, or `Ctrl+O` there too). It is a box on top of the page with five tabs:
 
-- **Jumps**: the places you have jumped to with the menu, the latest first, with the time (today) or the date of the jump
+- **Jumps**: the places you have jumped to with the menu, the latest first, with the time (today) or the date of the jump. Only jumps made in the menu are kept, not files and pages opened in other ways (the tab says so next to the filter)
 - **Files**: the files opened from the file browser (the file history), with when they were opened
 - **Favorites**: the files and directories of your favorites. A favorite with a color of its own is shown in it, on every tab
 - **Configuration**: the pages of the Configuration tab (General, Layout, Editor, System), Color schemes, Logos, Clipboard, Snippet editor, Help and About
