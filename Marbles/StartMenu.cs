@@ -553,11 +553,11 @@ internal static class StartMenu
         }
 
         // The keys that open a choice at once (the same in all languages; the numbers only select). Notes: N,
-        // the file browser: F or T, the Jump menu: O (as Ctrl+O; j moves down), the quick guide: U, exit: Q (asks)
+        // the file browser: F, the Jump menu: O (as Ctrl+O; j moves down), the quick guide: U, exit: Q (asks)
         private static string KeysOf(Choice choice) => choice switch
         {
             Choice.Notes => "N",
-            Choice.Editor => "F T",
+            Choice.Editor => "F",
             Choice.Jump => "O",
             Choice.QuickGuide => "U",
             _ => "Q"
@@ -588,7 +588,7 @@ internal static class StartMenu
                 {
                     // The number, the keys that open the choice at once, and the choice
                     Tools.SetCursorEx(area.Top + i, area.Left + 3);
-                    Console.Write(Tools.TruncateString((i + 1) + " " + KeysOf(shown[i]).PadRight(3) + " .... " +
+                    Console.Write(Tools.TruncateString((i + 1) + " " + KeysOf(shown[i]) + " .... " +
                                                        choices[i], area.Width - 4, true));
                 }
             }
@@ -615,7 +615,7 @@ internal static class StartMenu
             var direct = key.Key switch
             {
                 ConsoleKey.N => Choice.Notes,
-                ConsoleKey.F or ConsoleKey.T => Choice.Editor,
+                ConsoleKey.F => Choice.Editor,
                 ConsoleKey.O => Choice.Jump,
                 ConsoleKey.U => Choice.QuickGuide,
                 _ => (Choice?)null

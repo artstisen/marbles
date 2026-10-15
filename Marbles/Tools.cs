@@ -1347,9 +1347,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("j k 1-5", Lang.T("Select"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last (also in Configuration)"), false));
             _shortcutList.Add(new Shortcut("Enter", Lang.T("Open the selected"), false));
-            _shortcutList.Add(new Shortcut("N F T O U", Lang.T("Open the choice of the key at once"), false));
+            _shortcutList.Add(new Shortcut("N F O U", Lang.T("Open the choice of the key at once"), false));
             _shortcutList.Add(new Shortcut("  1 N", Lang.T("Note Management: the login page"), false));
-            _shortcutList.Add(new Shortcut("  2 F T", Lang.T("Text Editor/File Management: the file browser"), false));
+            _shortcutList.Add(new Shortcut("  2 F", Lang.T("Text Editor/File Management: the file browser"), false));
             _shortcutList.Add(new Shortcut("  3 O Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut("  4 U", Lang.T("Quick guide: a short introduction"), false));
             _shortcutList.Add(new Shortcut("  5", Lang.T("Exit Marbles (without asking)"), false));
