@@ -776,7 +776,7 @@ internal static partial class FileExplorer
             var room = Init.LineWidth - column - info.Length - 3;
             if (room > 8)
             {
-                if (directory.Length > room) directory = "..." + directory[^(room - 3)..];
+                directory = TextMetrics.KeepEnd(directory, room);
                 Tools.SetCursorEx(ListTop + row, column);
                 Console.Write(directory);
             }

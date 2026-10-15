@@ -93,6 +93,55 @@ internal static class TextMetrics
         return WidthOfRange(s, 0, s.Length);
     }
 
+    /// <summary>
+    /// A text (a path) that fits in a number of terminal cells: as it is, or its end with "..." in front of it.
+    /// Wide characters count as two cells, and a character (or emoji) is never split
+    /// </summary>
+    internal static string KeepEnd(string s, int cells)
+    {
+        if (WidthOf(s) <= cells) return s;
+        var dots = cells > 3 ? "..." : string.Empty;
+        return dots + EndPart(s, cells - dots.Length);
+    }
+
+    /// <summary>
+    /// The start of a text that fits in a number of terminal cells (a character is never split)
+    /// </summary>
+    internal static string StartPart(string s, int cells)
+    {
+        var end = 0;
+        var used = 0;
+        while (end < s.Length)
+        {
+            var length = ElementLength(s, end);
+            var width = Width(s, end, length);
+            if (used + width > cells) break;
+            used += width;
+            end += length;
+        }
+
+        return s[..end];
+    }
+
+    /// <summary>
+    /// The end of a text that fits in a number of terminal cells (a character is never split)
+    /// </summary>
+    internal static string EndPart(string s, int cells)
+    {
+        var start = s.Length;
+        var used = 0;
+        while (start > 0)
+        {
+            var length = PreviousElementLength(s, start);
+            var width = Width(s, start - length, length);
+            if (used + width > cells) break;
+            used += width;
+            start -= length;
+        }
+
+        return s[start..];
+    }
+
     private static int RuneWidth(Rune rune)
     {
         var value = rune.Value;

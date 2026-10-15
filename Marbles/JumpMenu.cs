@@ -144,11 +144,12 @@ internal static class JumpMenu
     /// </summary>
     internal static string ShortName(string name, int width)
     {
-        if (name.Length <= width) return name;
-        if (width <= 3) return name[..Math.Max(0, width)];
+        // Counted in terminal cells: a wide character takes two, and none is split
+        if (TextMetrics.WidthOf(name) <= width) return name;
+        if (width <= 3) return TextMetrics.StartPart(name, Math.Max(0, width));
         var end = (width - 3) / 2;
         var start = width - 3 - end;
-        return name[..start] + "..." + name[^end..];
+        return TextMetrics.StartPart(name, start) + "..." + TextMetrics.EndPart(name, end);
     }
 
     // The kind of a place, in short (English, as the kinds of text in the lists of entries)

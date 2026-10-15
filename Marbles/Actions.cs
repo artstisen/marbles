@@ -1050,7 +1050,7 @@ internal static class Actions
     private static string FitPath(string label, string path)
     {
         var room = Init.LineWidth - 2 - label.Length;
-        return label + (path.Length <= room ? path : "..." + path[^Math.Max(1, room - 3)..]);
+        return label + TextMetrics.KeepEnd(path, Math.Max(1, room));
     }
 
     // Export the text of the current entry as a text file. The directory is selected in the file browser,

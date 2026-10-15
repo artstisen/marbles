@@ -98,6 +98,31 @@ public class HotlistTests : IDisposable
     }
 
     [Fact]
+    public void BlankSpaceAtTheEndsOfAPath_IsKept_WhenTheDirectoryHasIt()
+    {
+        // Linux and macOS allow a directory name that ends with blank space (Windows does not)
+        if (OperatingSystem.IsWindows()) return;
+        var spaced = In("notes ");
+        Directory.CreateDirectory(spaced);
+        DirectoryHotlist.Parse(spaced + "\n  " + In("other") + "  \n");
+        Assert.Equal(new[] { spaced, In("other") }, Paths());
+    }
+
+    [Fact]
+    public void LongPaths_AreShortenedByTheCellsTheyTake()
+    {
+        // Wide characters (Japanese, Chinese) take two cells, and an emoji is not split
+        Assert.Equal("/home/lars", TextMetrics.KeepEnd("/home/lars", 10));
+        Assert.Equal("...資料/メモ", TextMetrics.KeepEnd("/home/lars/資料/メモ", 12));
+        Assert.Equal(12, TextMetrics.WidthOf(TextMetrics.KeepEnd("/home/lars/資料/メモ", 12)));
+        Assert.Equal(".../📁x", TextMetrics.KeepEnd("/home/📁/📁x", 7));
+        Assert.Equal("...lars/x", TextMetrics.KeepEnd("/home/lars/x", 9));
+        // The Jump menu shortens in the middle, by cells too
+        Assert.Equal("資料...メモ", JumpMenu.ShortName("資料フォルダのメモ", 11));
+        Assert.Equal("a-rath...ing.md", JumpMenu.ShortName("a-rather-long-name-for-testing.md", 15));
+    }
+
+    [Fact]
     public void ARenamedOrMovedDirectory_IsFollowed_WithTheDirectoriesInIt()
     {
         DirectoryHotlist.Add(In("work"));

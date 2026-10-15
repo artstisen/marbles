@@ -72,7 +72,7 @@ internal static partial class FileExplorer
     {
         var text = DialogText.SearchProgress.Replace("{0}", count.ToString());
         var room = Init.LineWidth - 4 - text.Length;
-        if (room > 8 && directory.Length > room) directory = "..." + directory[^(room - 3)..];
+        if (room > 8) directory = TextMetrics.KeepEnd(directory, room);
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Console.Write(new string(' ', Init.LineWidth - 1));
@@ -371,7 +371,7 @@ internal static partial class FileExplorer
         var header = _foundSummary + " " + Lang.T("in") + " ";
         var room = Init.LineWidth - 2 - header.Length;
         var root = _foundRoot;
-        if (room > 8 && root.Length > room) root = "..." + root[^(room - 3)..];
+        if (room > 8) root = TextMetrics.KeepEnd(root, room);
         Tools.SetCursorEx(1, 1);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
         Console.Write(Tools.TruncateString(header + root, Init.LineWidth - 2, true));
@@ -423,7 +423,7 @@ internal static partial class FileExplorer
                     // The directory it is in, from the directory that was searched
                     var directory = System.IO.Path.GetRelativePath(_foundRoot,
                         System.IO.Path.GetDirectoryName(result.Path) ?? _foundRoot);
-                    if (directory.Length > room) directory = "..." + directory[^(room - 3)..];
+                    directory = TextMetrics.KeepEnd(directory, room);
                     Console.Write(directory);
                 }
             }

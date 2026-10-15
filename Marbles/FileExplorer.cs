@@ -1216,7 +1216,7 @@ internal static partial class FileExplorer
         // The directory (the end of a long path is shown)
         var room = width - 2;
         var path = pane.Directory.Length == 0 ? DialogText.Drives : pane.Directory;
-        if (path.Length > room) path = "..." + path[^(room - 3)..];
+        path = TextMetrics.KeepEnd(path, room);
         Tools.SetCursorEx(1, left);
         ConsoleColors.SetColors(HasFocus(number)
             ? ConsoleColors.ColorPreset.HeaderColor

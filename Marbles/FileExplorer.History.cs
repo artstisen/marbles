@@ -371,7 +371,7 @@ internal static partial class FileExplorer
             if (room > 8)
             {
                 var directory = System.IO.Path.GetDirectoryName(entry.Path) ?? string.Empty;
-                if (directory.Length > room) directory = "..." + directory[^(room - 3)..];
+                directory = TextMetrics.KeepEnd(directory, room);
                 Tools.SetCursorEx(ListTop + row, column);
                 Console.Write(directory);
             }

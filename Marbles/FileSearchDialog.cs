@@ -128,7 +128,7 @@ internal static class FileSearchDialog
         Console.Write(AsciiStyles.GetBottomCorner() + new string('-', InnerWidth) + AsciiStyles.GetBottomCorner());
         // Where the search starts (the end of a long path is shown)
         var room = InnerWidth - 4 - DialogText.SearchIn.Length;
-        if (directory.Length > room) directory = "..." + directory[^(room - 3)..];
+        directory = TextMetrics.KeepEnd(directory, room);
         Tools.SetCursorEx(_top + 1, _left + 2);
         Console.Write(DialogText.SearchIn + directory);
         Tools.SetCursorEx(_top + Height - 2, _left + 2);

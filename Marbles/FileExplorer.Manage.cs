@@ -409,7 +409,7 @@ internal static partial class FileExplorer
     private static string ShortPath(string path)
     {
         var room = Math.Max(10, Init.LineWidth - 20);
-        return path.Length <= room ? path : "..." + path[^(room - 3)..];
+        return TextMetrics.KeepEnd(path, room);
     }
 
     // Add a file operation to the log, with what went wrong if it failed

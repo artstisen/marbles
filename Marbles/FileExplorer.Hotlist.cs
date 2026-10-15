@@ -457,7 +457,7 @@ internal static partial class FileExplorer
             var room = Init.LineWidth - column - TextMetrics.WidthOf(missing) - 3;
             if (room > 8)
             {
-                var shownPath = path.Length > room ? "..." + path[^(room - 3)..] : path;
+                var shownPath = TextMetrics.KeepEnd(path, room);
                 Tools.SetCursorEx(ListTop + row, column);
                 Console.Write(shownPath);
             }
