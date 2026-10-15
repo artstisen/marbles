@@ -498,6 +498,21 @@ public class SpellTests : IDisposable
     }
 
     [Fact]
+    public void Editor_GsAndGS_JumpAsTheBrackets()
+    {
+        // For keyboards where [ and ] take more than one key
+        var editor = Editor("hello wurld\nthe wird is helo\nhello");
+        editor.Type(":spell xx<CR>gs");
+        Assert.Equal(new TextPos(0, 6), editor.Cursor);
+        editor.Type("gs");
+        Assert.Equal(new TextPos(1, 4), editor.Cursor);
+        editor.Type("gS");
+        Assert.Equal(new TextPos(0, 6), editor.Cursor);
+        editor.Type("2gs");
+        Assert.Equal(new TextPos(1, 12), editor.Cursor);
+    }
+
+    [Fact]
     public void Editor_SuggestionsReplaceTheWord()
     {
         var editor = Editor("the helo world");

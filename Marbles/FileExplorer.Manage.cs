@@ -70,6 +70,9 @@ internal static partial class FileExplorer
             case "peek":
                 PeekSelected();
                 break;
+            case "diff":
+                CompareFiles(argument);
+                break;
             case "new":
                 NewFile(argument);
                 break;
@@ -128,8 +131,13 @@ internal static partial class FileExplorer
     // The selected file or directory, if it is one that can be managed (not ".." or a drive)
     private static Item? SelectedItem()
     {
-        if (ActivePane.Directory.Length == 0 || ActivePane.Items.Count == 0) return null;
-        var item = ActivePane.Items[ActivePane.Index];
+        return SelectedItem(ActivePane);
+    }
+
+    private static Item? SelectedItem(Pane pane)
+    {
+        if (pane.Directory.Length == 0 || pane.Items.Count == 0) return null;
+        var item = pane.Items[pane.Index];
         return item.Name == ParentName ? null : item;
     }
 
@@ -536,6 +544,161 @@ internal static partial class FileExplorer
         if (path.Length == 0) return;
         var (message, _) = SystemClipboard.Copy(path, false, true);
         _message = message;
+    }
+
+    // ":diff" (":diff -w": blank space does not count): compare two files, the two marked ones, or the one selected
+    // in each pane, or ":diff name" the selected one and the file of that name (in the directory). The older one
+    // (by the time it was changed) is the old one. Enter in the comparison opens the file at the line
+    private static void CompareFiles(string argument)
+    {
+        var words = argument.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+        var ignoreSpace = words.Remove("-w");
+        var name = string.Join(' ', words);
+        var paths = new List<string>();
+        if (name.Length > 0)
+        {
+            var item = SelectedItem();
+            if (item == null || item.IsDirectory)
+            {
+                _message = DialogText.DiffSelectFile;
+                return;
+            }
+
+            paths.Add(item.Path);
+            try
+            {
+                paths.Add(System.IO.Path.GetFullPath(System.IO.Path.Combine(ActivePane.Directory, name)));
+            }
+            catch (Exception e)
+            {
+                _message = e.Message;
+                return;
+            }
+        }
+        else if (ActivePane.Marks.Count > 0)
+        {
+            if (ActivePane.Marks.Count != 2)
+            {
+                _message = DialogText.DiffMarkTwo;
+                return;
+            }
+
+            paths.AddRange(ActivePane.Marks.Order(StringComparer.Ordinal));
+        }
+        else if (IsDual && SelectedItem() is { IsDirectory: false } mine &&
+                 SelectedItem(OtherPane) is { IsDirectory: false } theirs)
+        {
+            paths.Add(mine.Path);
+            paths.Add(theirs.Path);
+        }
+        else
+        {
+            _message = DialogText.DiffHowTo;
+            return;
+        }
+
+        if (FileOperations.SamePath(paths[0], paths[1]))
+        {
+            _message = DialogText.DiffSameFile;
+            return;
+        }
+
+        var files = new List<(string Path, TextFile File, DateTime Changed)>();
+        foreach (var path in paths)
+        {
+            if (Directory.Exists(path))
+            {
+                _message = DialogText.DiffSelectFile;
+                return;
+            }
+
+            if (!File.Exists(path))
+            {
+                _message = Lang.F("Not found: {0}", System.IO.Path.GetFileName(path));
+                return;
+            }
+
+            if (path.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase))
+            {
+                _message = DialogText.DiffDataFile;
+                return;
+            }
+
+            try
+            {
+                var file = TextFile.Load(path);
+                if (file.Text.Contains('\0'))
+                {
+                    _message = DialogText.PeekNotText;
+                    return;
+                }
+
+                files.Add((path, file, File.GetLastWriteTime(path)));
+            }
+            catch (Exception e)
+            {
+                _message = e.Message;
+                return;
+            }
+        }
+
+        // The older one first: "+" is what was added since
+        if (files[1].Changed < files[0].Changed) files.Reverse();
+        var (oldPath, oldFile, oldChanged) = files[0];
+        var (newPath, newFile, newChanged) = files[1];
+        // The names, or when the names are the same (two versions in two directories) the paths from the directory
+        // both are in: "v1/notes.md" and "v2/notes.md"
+        var sameName = string.Equals(System.IO.Path.GetFileName(oldPath), System.IO.Path.GetFileName(newPath),
+            StringComparison.OrdinalIgnoreCase);
+        var common = sameName ? CommonDirectory(oldPath, newPath) : string.Empty;
+        string Named(string path, DateTime changed) =>
+            (!sameName ? System.IO.Path.GetFileName(path)
+                : common.Length > 0 ? System.IO.Path.GetRelativePath(common, path)
+                : path) + "  " + changed.ToString("yyyy-MM-dd HH:mm");
+        // The line endings and the encodings are not compared: they are told about
+        var notes = new List<string>();
+        if (oldFile.LineEndingLabel != newFile.LineEndingLabel)
+        {
+            notes.Add(Lang.F("Line endings: {0}/{1}", oldFile.LineEndingLabel, newFile.LineEndingLabel));
+        }
+
+        if (oldFile.EncodingLabel != newFile.EncodingLabel)
+        {
+            notes.Add(Lang.F("Encodings: {0}/{1}", oldFile.EncodingLabel, newFile.EncodingLabel));
+        }
+
+        var place = DiffView.Show(oldFile.Text, newFile.Text, Named(oldPath, oldChanged), Named(newPath, newChanged),
+            ActivePane.Directory.Length > 0 ? ActivePane.Directory : DataDirectory(), ignoreSpace,
+            string.Join(" ", notes), out var message);
+        _message = message;
+        if (place is not { } at) return;
+
+        // Enter: the file of the line, at the line
+        var openPath = at.InOld ? oldPath : newPath;
+        var openFile = at.InOld ? oldFile : newFile;
+        _openAtIndex = Snippets.IndexOfLine(openFile.Text, at.Line);
+        _openAtFound = true;
+        Open(new Item(System.IO.Path.GetFileName(openPath), openPath, false, new FileInfo(openPath).Length));
+        _openAtIndex = 0;
+        _openAtFound = false;
+    }
+
+    // The directory two paths are both in (empty if none: two drives)
+    private static string CommonDirectory(string first, string second)
+    {
+        var directory = System.IO.Path.GetDirectoryName(first);
+        while (directory != null)
+        {
+            var withSeparator = directory.EndsWith(System.IO.Path.DirectorySeparatorChar)
+                ? directory
+                : directory + System.IO.Path.DirectorySeparatorChar;
+            if (second.StartsWith(withSeparator, OperatingSystem.IsWindows()
+                    ? StringComparison.OrdinalIgnoreCase
+                    : StringComparison.Ordinal)) return directory;
+            directory = System.IO.Path.GetDirectoryName(directory);
+        }
+
+        return string.Empty;
     }
 
     // ":name": the name of the selected file or directory to the clipboard (on "..": of the directory shown, and

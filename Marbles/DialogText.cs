@@ -379,7 +379,7 @@ internal static class DialogText
     public static string WrapOff => Lang.T("Long lines are not wrapped (zh zl: scroll)");
     public static string SyntaxOn => Lang.T("Colors on: ");
     public static string SyntaxOff => Lang.T("Colors off");
-    public static string SyntaxUnknown => Lang.T("Use md, html, css, js, json or xml, not: ");
+    public static string SyntaxUnknown => Lang.T("Use md, html, css, js, json, xml or diff, not: ");
 
     // The log
     public static string LogKeys => Lang.T("| h/l Page | j/k Line | gg G First/Last | /text Filter | Esc Close");
@@ -457,6 +457,24 @@ internal static class DialogText
     public static string CompletionsSwitchNote =>
         Lang.T("The file of completions is opened, and this text again when it is closed.");
     public static string CaptionsCompletions => Lang.T("Completions");
+    // Comparisons (":diff")
+    public static string CaptionsCompare => Lang.T("COMPARE");
+    public static string DiffHint => Lang.T("n N: changes, Enter: open, Esc: close");
+    public static string DiffReadOnly => Lang.T("Compare: read only (Enter opens the file)");
+    public static string DiffSame => Lang.T("The files are the same");
+    public static string DiffSameIgnoringSpace => Lang.T("The same, except for blank space");
+    public static string DiffBlankSpaceIgnored => Lang.T("(blank space ignored)");
+    public static string DiffNoChanges => Lang.T("No changes");
+    public static string DiffNoMoreChanges => Lang.T("No more changes after this");
+    public static string DiffNoChangesBefore => Lang.T("No changes before this");
+    public static string DiffNotHere => Lang.T(":diff compares a file or an entry with the saved one");
+    public static string DiffSelectFile => Lang.T("Select a file to compare");
+    public static string DiffMarkTwo => Lang.T("Mark two files to compare");
+    public static string DiffHowTo => Lang.T("Mark two files, select one in each pane, or :diff name");
+    public static string DiffSameFile => Lang.T("That is the same file");
+    public static string DiffDataFile => Lang.T("Data files are not compared");
+    public static string DiffReplaceNote => Lang.T("The file is replaced by the comparison.");
+    public static string WriteCopyNotHere => Lang.T(":w name saves a comparison (:diff) as a file");
     public static string CompleteOn => Lang.T("Completing words: on");
     public static string CompleteOff => Lang.T("Completing words: off");
     public static string CompleteOneKeys => Lang.T("Tab Complete");

@@ -11,7 +11,8 @@ internal enum SyntaxType
     Css,
     JavaScript,
     Json,
-    Xml
+    Xml,
+    Diff // A comparison (":diff"), and .diff and .patch files
 }
 
 /// <summary>
@@ -44,6 +45,7 @@ internal static class SyntaxHighlighter
             ".json" => SyntaxType.Json,
             ".xml" or ".xsd" or ".xsl" or ".xslt" or ".svg" or ".xaml" or ".rss" or ".atom" or ".plist"
                 or ".csproj" or ".props" or ".targets" or ".resx" => SyntaxType.Xml,
+            ".diff" or ".patch" => SyntaxType.Diff,
             _ => SyntaxType.None
         };
     }
@@ -61,6 +63,7 @@ internal static class SyntaxHighlighter
             "js" or "javascript" => SyntaxType.JavaScript,
             "json" => SyntaxType.Json,
             "xml" => SyntaxType.Xml,
+            "diff" or "patch" => SyntaxType.Diff,
             _ => SyntaxType.None
         };
     }
@@ -75,6 +78,7 @@ internal static class SyntaxHighlighter
             SyntaxType.JavaScript => "JavaScript",
             SyntaxType.Json => "JSON",
             SyntaxType.Xml => "XML",
+            SyntaxType.Diff => "Diff",
             _ => string.Empty
         };
     }
@@ -116,8 +120,47 @@ internal static class SyntaxHighlighter
             case SyntaxType.Xml:
                 nextState = HtmlHighlighter.Scan(line, state, styles, true);
                 break;
+            case SyntaxType.Diff:
+                nextState = ScanDiff(line, state, styles);
+                break;
         }
 
         return Array.Exists(styles, style => style != SyntaxStyle.None) ? styles : null;
+    }
+
+    // A line of a unified diff: the lines naming the files (before the first "@@"), "@@" lines, and the lines
+    // removed ("-") and added ("+"). The state is 1 after the first "@@" (where "---" is a line removed)
+    private static int ScanDiff(string line, int state, SyntaxStyle[] styles)
+    {
+        var style = SyntaxStyle.None;
+        if (line.StartsWith("@@", StringComparison.Ordinal))
+        {
+            style = SyntaxStyle.DiffPart;
+            state = 1;
+        }
+        else if (state == 0 && (line.StartsWith("---", StringComparison.Ordinal) ||
+                                line.StartsWith("+++", StringComparison.Ordinal) ||
+                                line.StartsWith("diff ", StringComparison.Ordinal) ||
+                                line.StartsWith("index ", StringComparison.Ordinal)))
+        {
+            style = SyntaxStyle.DiffFile;
+        }
+        else if (line[0] == '-')
+        {
+            style = SyntaxStyle.DiffRemoved;
+        }
+        else if (line[0] == '+')
+        {
+            style = SyntaxStyle.DiffAdded;
+        }
+        else if (line.StartsWith("diff ", StringComparison.Ordinal))
+        {
+            // The next file of a patch
+            style = SyntaxStyle.DiffFile;
+            state = 0;
+        }
+
+        Array.Fill(styles, style);
+        return state;
     }
 }

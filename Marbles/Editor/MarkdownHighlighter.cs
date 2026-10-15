@@ -26,7 +26,11 @@ internal enum SyntaxStyle
     String, // Text in quotes, and the values of attributes
     Keyword, // The words of a language, the tags of HTML, the selectors of CSS
     Name, // The names of attributes and properties
-    Number // Numbers, also with units, colors and character entities
+    Number, // Numbers, also with units, colors and character entities
+    DiffFile, // The lines of a comparison that name the files ("---", "+++")
+    DiffPart, // "@@ -12,7 +12,8 @@": where a part of a comparison is
+    DiffRemoved, // A line removed ("-")
+    DiffAdded // A line added ("+")
 }
 
 /// <summary>

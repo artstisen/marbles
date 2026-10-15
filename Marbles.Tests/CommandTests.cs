@@ -73,7 +73,7 @@ public class CommandTests
     [Fact]
     public void Tab_InTheEditor_KeepsTheLinesInFrontOfTheCommand()
     {
-        Assert.Equal("%delete %dup %duplicate %d", Tabs(CommandContext.Editor, "%d", 4));
+        Assert.Equal("%delete %diff %dup %duplicate %d", Tabs(CommandContext.Editor, "%d", 5));
         Assert.Equal("'<,'>yank", Tabs(CommandContext.Editor, "'<,'>y", 1));
         Assert.Equal("2,5replace", Tabs(CommandContext.Editor, "2,5rep", 1));
         // "quit" is a command, and there is one more that starts with it
@@ -190,8 +190,8 @@ public class CommandTests
     [Fact]
     public void TheTables_HaveTheCommandsOfTheEditor()
     {
-        // (":s/old/new/" is found by its first letter)
-        AssertSame(CommandContext.Editor, Compared(Method("Editor/EditorEngine.cs", "ExecuteCommand")), "s");
+        // (":s/old/new/" is found by its first letter, and ":diff" by a pattern, as it can have "-w")
+        AssertSame(CommandContext.Editor, Compared(Method("Editor/EditorEngine.cs", "ExecuteCommand")), "s", "diff");
     }
 
     [Fact]

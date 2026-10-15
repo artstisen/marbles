@@ -813,6 +813,29 @@ internal static class Actions
         Tools.LoadCursorPosition(1);
     }
 
+    /// <summary>
+    /// The top of the view of a comparison (DiffView), as that of the editor: the caption, and a line about the
+    /// comparison where the editor names the file. The cursor is left where the text starts
+    /// </summary>
+    internal static void DrawCompareMenu(string about)
+    {
+        // Not Menu.DrawTopMenu: it shows the page of the mode (the login page, from the file browser)
+        Tools.CursorTopLeft();
+        Menu.WriteEditorTop(DialogText.CaptionsCompare);
+        Tools.CursorTopLeft();
+        Tools.CursorDown(1);
+        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
+        Console.Write(" " + Tools.TruncateString(about, Init.LineWidth - 3, true) + " ");
+        Tools.CursorReturn();
+        Tools.CursorDown();
+        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.EditorTitle);
+        Tools.SaveCursorPosition(1);
+        Tools.CursorTopLeft();
+        Tools.CursorDown(Init.LineCount - 1);
+        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
+        Tools.LoadCursorPosition(1);
+    }
+
     internal static void DrawEditSettingsMenu()
     {
         Menu.DrawTopMenu(false, false, false);

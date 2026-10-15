@@ -129,7 +129,7 @@ Spell checking is off until you ask for it. It uses the spell files of Vim and N
 - `:spell` Check the text and mark the misspelled words. The bottom line tells how many were found. When the words are marked already, `:spell` removes the marks (as `:nospell`). `:set spell` only turns checking on
 - `:spell da,en` As above, with Danish and English. The languages are remembered (`spelllang` in the settings file)
 - `:nospell` Remove the marks
-- `]s` `[s` (or `:spellnext` `:spellprev`) Go to the next/previous misspelled word
+- `]s` `[s` (or `gs` `gS`, or `:spellnext` `:spellprev`) Go to the next/previous misspelled word. `gs` and `gS` are for keyboards where `[` and `]` take more than one key (Danish, German ...)
 - `z=` (or `:suggest`) Show suggestions for the word under the cursor. Press the number of a suggestion (or select it with `j` `k` and press `Enter`) to replace the word, `a` to add the word to your word list, or `Esc` to close
 - `zg` (or `:spelladd`) Add the word under the cursor to your word list
 
@@ -139,6 +139,20 @@ The marks follow the text while you edit, until you use `:nospell` or close the 
 Marbles reads spell files from a directory named `spell`, next to the `data` directory. A language needs one file, named like `en.utf-8.spl` or `da.utf-8.spl`. These are the files Vim and Neovim use, so you can copy them from there (the directory `spell` of the Vim runtime or of your Neovim configuration), or download them from the [Vim spell file archive](https://ftp.nluug.nl/pub/vim/runtime/spell/). Only UTF-8 files can be used.
 
 The words you add are saved as plain text, one word per line, in `spell/<language>.utf-8.add` (for the first of the languages). This is the format of Neovim's word list, so an existing list can be copied to the directory as well.
+
+## Comparing
+`:diff` compares the text you are editing with the file as it is saved on disk (or, in a note, with the note as it was saved), so you can see what you have changed before you save it. Two files are compared in the [file browser](Guide-to-login-menu.md#file-browser), with `:diff` there.
+
+The comparison is shown read only, as a unified diff (as `git diff` shows one): the lines that differ, with three unchanged lines around them. A line removed starts with `-` (colored as heading 1, red in the Default scheme), a line added with `+` (heading 5, green), and each part of the comparison starts with a line like `@@ -12,7 +12,8 @@`: where it is in the old text (line 12, 7 lines) and in the new one. The line at the top tells how many changes there are, and how many lines were added and removed.
+
+- `n` `N` Go to the next/previous change (the first line of it). After a search with `/`, `n` `N` go to what was found; `Esc` removes the highlighting, and they go to the changes again
+- `]c` `[c` Go to the next/previous change (also after a search)
+- `Enter` Open the file at the line of the cursor (in the editor: go to the line in the text). A line removed opens the old file there
+- `Esc` (or `:q`) Close the comparison. The keys for moving and searching are those of the editor; the text cannot be changed
+- `:w name.diff` Save the comparison as a file, in the directory of the file (a file that is there is replaced if you want that). A `.diff` or `.patch` file is colored as a comparison when it is opened in the editor
+- `:diff -w` Compare without counting blank space: lines that differ only in their indentation or spaces are the same
+
+If too many lines differ (more than 2000), the comparison is not shown.
 
 ## Line numbers
 - `:number` (or `:nu`) Show or hide line numbers (they are off until turned on). `:set number` and `:set nonumber` do one of the two
@@ -236,7 +250,7 @@ The editor can color the parts of a text by what they are, for Markdown, HTML, C
 
 - Files named `.md`, `.html`/`.htm`, `.css`, `.js`/`.mjs`, `.json` and `.xml` (also `.svg`, `.xsd`, `.xsl`, `.xaml`, `.rss`, `.csproj` and other XML files) are colored when they are opened from the file browser
 - `:syntax` Turn the colors on or off (`:syntax on` and `:syntax off` do one of the two). When you turn them off in one of these files, that is remembered (`syntaxcolors` in the settings file), so files are opened without colors until you turn them on again
-- `:syntax md`, `:syntax html`, `:syntax css`, `:syntax js`, `:syntax json`, `:syntax xml` Color the text as that kind, whatever the name of the file is. This is how the colors are used in a note of a data file, where they are off until you ask for them. In a note, `:syntax` alone colors it as Markdown. A note remembers its colors: they are kept in the note (in the encrypted data file), so it is colored when it is opened again, and the lists show the kind (_MD_, _HTML_, _CSS_, _JS_, _JSON_, _XML_) before the date. `:syntax off` removes it
+- `:syntax md`, `:syntax html`, `:syntax css`, `:syntax js`, `:syntax json`, `:syntax xml`, `:syntax diff` Color the text as that kind, whatever the name of the file is. This is how the colors are used in a note of a data file, where they are off until you ask for them. In a note, `:syntax` alone colors it as Markdown. A note remembers its colors: they are kept in the note (in the encrypted data file), so it is colored when it is opened again, and the lists show the kind (_MD_, _HTML_, _CSS_, _JS_, _JSON_, _XML_, _DIFF_) before the date. `:syntax off` removes it
 
 Selected text, search matches and misspelled words are shown on top of the colors. With _Black and white_ on, the colored parts are shown brighter than the text.
 
@@ -307,6 +321,7 @@ The paste bin is not encrypted: text from a note written to it can be read by an
 - `:ol` Make the selected lines a numbered list (`1. `, `2. ` ...), and `:ul` a bulleted list (`- `). Select the lines with `V` (or `v`, `Q`) and type the command: the command line then starts with `'<,'>`, which stands for the selected lines. Without a selection the command works on the line of the cursor, and `:2,5ol` on lines 2 to 5. Lines that are a list of the other kind are changed to this kind, and when all the lines already are a list of the kind asked for, the list marks are removed again. Blank lines are left as they are, the indentation is kept, and indented lines are numbered as a list of their own (1, 2 ... again under each item). One `u` undoes it
 - `:sort` Sort the selected lines (select them and type `:sort`), or all the lines without a selection, or `:2,9sort` lines 2 to 9. `:sort!` sorts them the other way, and `:sort i` (or `:sort! i`) does not tell upper and lower case apart. The lines are sorted by the values of their characters (uppercase before lowercase, æøå after z). One `u` undoes it
 - `:dup` (or `:duplicate`) Duplicate the selection: select the text and type `:dup` (the command line starts with `'<,'>`). Text selected with `v` is copied right after itself, the lines selected with `V` are copied below the last of them, and a block selected with `Q` is copied to the right of the block (the text to the right of it stays in line). Without a selection the line of the cursor is duplicated, and `:2,5dup` copies lines 2 to 5 below line 5. A number after the command makes that many copies (at most 500): `:dup 5` makes five copies of the line (or the selection), to fill out a list of HTML elements afterwards. The cursor goes to the start of the (first) copy, and one `u` undoes it
+- `:diff` Compare the text with the file on disk, or the saved note (see [Comparing](#comparing))
 - `:yankall` Yank all the text, as `gg` `V` `G` `y` (and `:%y`). It goes to the string memory, and to the system clipboard and/or the paste bin as set for `y`
 - `:%y` `:%d` Yank all/Delete all, `:2,9d` Delete line 2 to 9
 - `:clear` Clear all text

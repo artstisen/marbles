@@ -58,7 +58,7 @@ internal static class Commands
             " readonly" + Common,
             "q h ro ju" + CommonShort),
         [CommandContext.Files] = new Table(
-            "quit close exit home data help jump peek cd new info mkdir rename copy duplicate move delete favorite favorites history panes match path name find",
+            "quit close exit home data help jump peek diff cd new info mkdir rename copy duplicate move delete favorite favorites history panes match path name find",
             "q h fav favs hist ju"),
         [CommandContext.FilePicker] = new Table(
             "quit close home data help cd",
@@ -79,7 +79,7 @@ internal static class Commands
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
-            "calendar trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete scrolloff info jump yankall rename title",
+            "calendar trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete diff scrolloff info jump yankall rename title",
             "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw cal reg sn ju")
     };
 

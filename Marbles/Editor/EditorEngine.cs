@@ -54,6 +54,8 @@ internal enum EditorRequest
     SnippetsEdit, // ":snip edit": open the file of the snippets
     CompleteChanged, // Completing words while typing was turned on or off (":complete")
     CompletionsEdit, // ":complete edit": open the file of the completions
+    Diff, // ":diff": compare the text with the file on disk (or the saved entry)
+    WriteCopy, // ":w name": save the text as a new file (a comparison)
     StringMemory // ":reglist": show the strings of the string memory, to pick one to insert
 }
 
@@ -898,6 +900,23 @@ internal sealed partial class EditorEngine
 
         // ":sn" is short for ":snip"
         if (command == "sn" || command.StartsWith("sn ", StringComparison.Ordinal)) command = "snip" + command[2..];
+        // ":diff" and ":diff -w"
+        var diff = Regex.Match(command, "^diff(?: +(-w))?$");
+        if (diff.Success)
+        {
+            RequestDiff(diff.Groups[1].Success);
+            return;
+        }
+
+        // ":w name": the text as a new file (the host tells where this can be done)
+        var writeTo = Regex.Match(command, "^(?:w|write) +(.+)$");
+        if (writeTo.Success && !SingleLine)
+        {
+            WriteName = writeTo.Groups[1].Value.Trim();
+            _request = EditorRequest.WriteCopy;
+            return;
+        }
+
         // ":rename name" and ":title text": the new name (as typed) follows the command
         var renameTo = Regex.Match(command, "^(rename|title)(?: +(.*))?$");
         if (renameTo.Success)

@@ -79,7 +79,28 @@ public class TextArea
     /// A peek: a file shown read-only in a pane of the file browser (":peek"), with the colors of its kind of
     /// text, and what draws the file browser behind it when the screen is drawn again
     /// </summary>
-    internal sealed record PeekOptions(SyntaxType Syntax, Action DrawBehind);
+    internal sealed record PeekOptions(SyntaxType Syntax, Action DrawBehind)
+    {
+        /// <summary>
+        /// The message shown when it is opened (null: that of a peek)
+        /// </summary>
+        internal string? Hint { get; init; }
+
+        /// <summary>
+        /// What is said when a change is refused (null: that of a peek)
+        /// </summary>
+        internal string? ReadOnlyText { get; init; }
+
+        /// <summary>
+        /// A comparison (DiffView): the lines where the changes start ("n" "N" "]c" "[c" go to them)
+        /// </summary>
+        internal IReadOnlyList<int>? Changes { get; init; }
+
+        /// <summary>
+        /// A comparison: ":w name" saves the text as a file in this directory (null: it is not saved)
+        /// </summary>
+        internal string? SaveDirectory { get; init; }
+    }
 
     // Set for a peek: there is no title or mode divider above the text, it is read only, Esc closes it and Enter
     // asks for the file to be opened in the editor
@@ -219,7 +240,10 @@ public class TextArea
         {
             // A peek only shows the file
             _engine.ReadOnly = true;
-            _engine.ReadOnlyMessage = DialogText.PeekReadOnly;
+            _engine.ReadOnlyMessage = peek.ReadOnlyText ?? DialogText.PeekReadOnly;
+            _engine.ChangeLines = peek.Changes;
+            // A comparison is colored, also when colors are turned off for files
+            if (peek.Changes != null) _engine.Syntax = peek.Syntax;
         }
 
         if (scrollToEnd)
@@ -258,7 +282,7 @@ public class TextArea
         {
             // The pane is cleared where the text is written, and the keys of a peek are told
             Array.Fill(_shownCells, width - 1);
-            _engine.SetMessage(DialogText.PeekHint, false);
+            _engine.SetMessage(_peek.Hint ?? DialogText.PeekHint, false);
         }
 
         DrawReadOnlyLabel();
@@ -325,9 +349,10 @@ public class TextArea
                     break;
                 }
 
-                // Esc closes a peek, also when a search is highlighted (a key typed before it is only cancelled)
+                // Esc closes a peek, also when a search is highlighted (a key typed before it is only cancelled). In a
+                // comparison it removes the highlighting first, so "n" "N" go to the changes again
                 if (_peek != null && key.Key == ConsoleKey.Escape && _engine.Mode == EditorMode.Normal &&
-                    !_engine.HasPending) break;
+                    !_engine.HasPending && !(_peek.Changes != null && _engine.IsSearchHighlighted)) break;
 
                 var request = _engine.HandleKey(key);
                 if (_peek != null && request is EditorRequest.Quit or EditorRequest.ForceQuit
@@ -337,12 +362,20 @@ public class TextArea
                     break;
                 }
 
+                if (_peek?.SaveDirectory != null && request == EditorRequest.WriteCopy)
+                {
+                    // ":w name" in a comparison
+                    SaveComparison(_peek.SaveDirectory);
+                    Draw();
+                    continue;
+                }
+
                 if (_peek != null && request is not (EditorRequest.None or EditorRequest.Clipboard
                         or EditorRequest.PasteBinWrite or EditorRequest.Help or EditorRequest.SyntaxChanged
                         or EditorRequest.WrapChanged or EditorRequest.ScrollOffChanged))
                 {
                     // What changes the text, saves it, or opens another page is not done in a peek
-                    _engine.SetMessage(DialogText.PeekReadOnly, true);
+                    _engine.SetMessage(_peek.ReadOnlyText ?? DialogText.PeekReadOnly, true);
                     Draw();
                     continue;
                 }
@@ -540,6 +573,12 @@ public class TextArea
             case EditorRequest.CompletionsEdit:
                 OpenCompletions();
                 break;
+            case EditorRequest.Diff:
+                CompareWithSaved();
+                break;
+            case EditorRequest.WriteCopy:
+                _engine.ShowMessage(DialogText.WriteCopyNotHere, true);
+                break;
             case EditorRequest.CompleteChanged:
                 Completions.Enabled = _engine.AutoComplete;
                 if (Completions.Enabled) TurnCompletionsOn();
@@ -728,6 +767,95 @@ public class TextArea
         _sideFile = file;
         Canceled = _engine.IsModified;
         _exit = true;
+    }
+
+    // ":diff": the text compared with the file on disk (a file), or with the text saved (an entry). Enter in the
+    // comparison goes to the line in this text
+    private void CompareWithSaved()
+    {
+        string saved;
+        string name;
+        switch (_saveMode)
+        {
+            case SaveAsFile when FileExplorer.CurrentFilePath.Length > 0:
+                try
+                {
+                    saved = TextFile.Load(FileExplorer.CurrentFilePath).Text;
+                }
+                catch (Exception e)
+                {
+                    _engine.ShowMessage(e.Message, true);
+                    return;
+                }
+
+                name = FileExplorer.CurrentFileName;
+                break;
+            case SaveAsEntry when Entries.CurrentEntry != null:
+                saved = Entries.CurrentEntry.Text;
+                name = Entries.CurrentEntry.Title;
+                break;
+            default:
+                _engine.ShowMessage(DialogText.DiffNotHere, true);
+                return;
+        }
+
+        var directory = _saveMode == SaveAsFile
+            ? System.IO.Path.GetDirectoryName(FileExplorer.CurrentFilePath) ?? FileIo.GetDataDirectoryName()
+            : FileIo.GetDataDirectoryName();
+        Tools.HideCursor();
+        var place = DiffView.Show(saved, GetText(), Lang.F("{0} (saved)", name), Lang.F("{0} (edited)", name),
+            directory, _engine.DiffIgnoreSpace, string.Empty, out var message);
+        if (message.Length > 0)
+        {
+            _engine.ShowMessage(message, false);
+            return;
+        }
+
+        RedrawAll();
+        // Enter: the line in this text (a line that was removed: where it was)
+        if (place is { } at) _engine.SetCursorIndex(Snippets.IndexOfLine(GetText(), at.NewLine));
+    }
+
+    // ":w name" in a comparison: the text is saved as a file (in the directory, if the name is not a full path).
+    // A file that is there is replaced if the user wants that
+    private void SaveComparison(string directory)
+    {
+        string path;
+        try
+        {
+            path = System.IO.Path.GetFullPath(System.IO.Path.Combine(directory, _engine.WriteName));
+        }
+        catch (Exception e)
+        {
+            _engine.ShowMessage(e.Message, true);
+            return;
+        }
+
+        var name = System.IO.Path.GetFileName(path);
+        if (Directory.Exists(path))
+        {
+            _engine.ShowMessage(Lang.F("{0} is a directory", name), true);
+            return;
+        }
+
+        if (File.Exists(path))
+        {
+            Tools.HideCursor();
+            var replace = ChoiceBox.Confirm(DialogText.CaptionsCompare, Lang.F("Replace {0}?", name),
+                DialogText.DiffReplaceNote, true);
+            RedrawAll();
+            if (!replace) return;
+        }
+
+        try
+        {
+            FileIo.WriteAllBytesSafe(path, new System.Text.UTF8Encoding(false).GetBytes(GetText() + "\n"));
+            _engine.ShowMessage(Lang.F("Saved as {0}", name), false);
+        }
+        catch (Exception e)
+        {
+            _engine.ShowMessage(e.Message, true);
+        }
     }
 
     // Completing was turned on: the file of completions is made if there is none (with the lists it starts with)
@@ -1540,7 +1668,7 @@ public class TextArea
         return style switch
         {
             // 1: the words of a language, tags and selectors; bold and list marks
-            SyntaxStyle.Keyword or SyntaxStyle.Bold or SyntaxStyle.ListMarker => 0,
+            SyntaxStyle.Keyword or SyntaxStyle.Bold or SyntaxStyle.ListMarker or SyntaxStyle.DiffFile => 0,
             // 2: the names of attributes and properties; italic
             SyntaxStyle.Name or SyntaxStyle.Italic => 1,
             // 3: text in quotes and values; code
@@ -1556,6 +1684,10 @@ public class TextArea
             SyntaxStyle.Heading4 => 9,
             SyntaxStyle.Heading5 => 10,
             SyntaxStyle.Heading6 => 11,
+            // A comparison: the colors of headings 1, 5 and 4 (red, green and cyan in the Default scheme)
+            SyntaxStyle.DiffRemoved => 6,
+            SyntaxStyle.DiffAdded => 10,
+            SyntaxStyle.DiffPart => 9,
             // 6: comments, quotes, web addresses and rules
             _ => 5
         };
@@ -1637,7 +1769,8 @@ public class TextArea
         if (Tools.HasLineMemory()) right += DialogText.EditorMemory + " " + Tools.GetLineMemoryPosition() + " | ";
         if (_engine.IsSpellOn) right += DialogText.SpellStatus + " " + _engine.SpellLanguages + " | ";
         // A text file: its type and encoding
-        if (_saveMode == SaveAsFile) right += FileExplorer.CurrentFileLabel + " | ";
+        // (not in a peek or a comparison: it is not the file being edited)
+        if (_saveMode == SaveAsFile && _peek == null) right += FileExplorer.CurrentFileLabel + " | ";
         right += (cursor.Line + 1) + ":" + column + " | " + percent + "% ";
 
         // A blank space between the mode and the line, as a break in the line

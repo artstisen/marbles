@@ -780,7 +780,13 @@ internal static class Menu
     /// </summary>
     internal static void WriteEditorTop()
     {
-        WriteModeLabel(DialogText.CaptionsEditor, string.Empty, 0);
+        WriteEditorTop(DialogText.CaptionsEditor);
+    }
+
+    // The top line of the editor, with another caption (a comparison)
+    internal static void WriteEditorTop(string caption)
+    {
+        WriteModeLabel(caption, string.Empty, 0);
         WriteNameInTopBar(false);
         var key = " :help ";
         var text = " " + Lang.T("Help") + " ";

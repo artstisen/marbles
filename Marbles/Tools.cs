@@ -1487,6 +1487,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("S :find", Lang.T("Search for files by name and by text"), false));
             _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path to the clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut(":name", Lang.T("Copy the name to the clipboard"), false));
+            _shortcutList.Add(new Shortcut(":diff", Lang.T("Compare 2 marked files, or 1 in each pane"), false));
+            _shortcutList.Add(new Shortcut(":diff name", Lang.T("Compare the selected file with that file"), false));
+            _shortcutList.Add(new Shortcut(":diff -w", Lang.T("Compare, blank space does not count"), false));
             _shortcutList.Add(new Shortcut("R", Lang.T("Refresh"), false));
             _shortcutList.Add(new Shortcut(":cd path", Lang.T("Go to a directory"), false));
             _shortcutList.Add(new Shortcut(":home", Lang.T("Go to the folder of the data files in use"), false));
@@ -1664,8 +1667,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":spell", Lang.T("Mark the misspelled words (again: remove the marks)"), false));
             _shortcutList.Add(new Shortcut(":spell da,en", Lang.T("As above, and set the languages"), false));
             _shortcutList.Add(new Shortcut(":nospell", Lang.T("Remove the marks"), false));
-            _shortcutList.Add(new Shortcut("]s :spellnext", Lang.T("Next misspelled word"), false));
-            _shortcutList.Add(new Shortcut("[s :spellprev", Lang.T("Previous misspelled word"), false));
+            _shortcutList.Add(new Shortcut("]s gs :spellnext", Lang.T("Next misspelled word"), false));
+            _shortcutList.Add(new Shortcut("[s gS :spellprev", Lang.T("Previous misspelled word"), false));
             _shortcutList.Add(new Shortcut("z= :suggest", Lang.T("Suggest spellings for the word"), false));
             _shortcutList.Add(new Shortcut("zg :spelladd", Lang.T("Add the word to the word list"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Replace (command line)"), true));
@@ -1766,6 +1769,10 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Entries"), Lang.T("Remember their colors (shown as MD, HTML ...)"), false));
             _shortcutList.Add(new Shortcut(":number :nu", Lang.T("Line numbers on/off"), false));
             _shortcutList.Add(new Shortcut(":yankall", Lang.T("Yank all the text (as gg V G y; the clipboard as y)"), false));
+            _shortcutList.Add(new Shortcut(":diff :diff -w", Lang.T("Compare with the saved text (-w: not blank space)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Comparison"), Lang.T("n N ]c [c: the next/previous change"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Enter: open at the line, Esc: close"), false));
+            _shortcutList.Add(new Shortcut(":w name.diff", Lang.T("Save a comparison as a file"), false));
             _shortcutList.Add(new Shortcut(":rename :title", Lang.T("Rename the file, or change the title of the entry"), false));
             _shortcutList.Add(new Shortcut(":%y :%d :2,9d", Lang.T("Yank all/Delete all/Delete line 2 to 9"), false));
             _shortcutList.Add(new Shortcut(":clear", Lang.T("Clear all"), false));

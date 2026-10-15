@@ -158,6 +158,14 @@ internal sealed partial class EditorEngine
             return;
         }
 
+        // A comparison: "n" "N" go to the changes (to the matches when a search is highlighted)
+        if (!operatorPending && cmd is 'n' or 'N' && ChangeLines != null && !IsSearchHighlighted)
+        {
+            JumpToChange(cmd == 'n', TakeCount() ?? 1);
+            ResetPending();
+            return;
+        }
+
         // Up and down move by rows as shown on screen (as the target of an operator they are whole lines)
         if (!operatorPending && cmd is 'j' or 'k')
         {
@@ -314,6 +322,10 @@ internal sealed partial class EditorEngine
                     case 'v' when _operator == NoKey:
                         ReselectLast();
                         break;
+                    case 's' or 'S' when _operator == NoKey:
+                        // The next/previous misspelled word (as "]s" "[s", for keyboards without [ and ])
+                        JumpToMisspelled(cmd == 's', TakeCount() ?? 1);
+                        break;
                     case 'm':
                     case 'M':
                     {
@@ -364,6 +376,8 @@ internal sealed partial class EditorEngine
                 break;
             case '[' or ']':
                 if (cmd == 's') JumpToMisspelled(prefix == ']', TakeCount() ?? 1);
+                // A comparison: the next/previous change
+                if (cmd == 'c' && ChangeLines != null) JumpToChange(prefix == ']', TakeCount() ?? 1);
                 break;
             case 'z' when cmd == '=':
                 RequestSuggestions();
