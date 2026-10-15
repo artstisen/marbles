@@ -1,9 +1,12 @@
 """Make a language file of Marbles, or bring one up to date with the texts of the code.
 
     python tools/langfile.py da
+    python tools/langfile.py pl path/to/pl.txt     (a file somewhere else, such as the folder lang)
 
-Every text given to Lang.T or Lang.F in the code (and the names listed in Lang.Names) is written to
-Marbles/Lang/da.txt, in the order it appears in the code, with the translation already in the file. A new text
+Every text given to Lang.T or Lang.F in the code (and the names listed in Lang.Names) is written to the file of
+the language, in the order it appears in the code, with the translation already in the file. Danish and German are
+built into the program (Marbles/Lang/da.txt); the other languages are files of the folder lang next to the program
+(Marbles/Lang/External/pl.txt in the source). A new language gets a new file. A new text
 gets an empty translation (it is shown in English until it is translated), and a text that is no longer in the
 code is left out. Run it after changing texts, then fill in the empty translations.
 Needs Python 3 only. The tests (LangTests) check the files against the code in the same way.
@@ -16,7 +19,21 @@ import sys
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Marbles')
 CALL = re.compile(r'\bLang\.[TF]\(\s*((?:"(?:[^"\\]|\\.)*"\s*(?:\+\s*)?)+)')
 LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
-NAMES = {'da': 'Dansk', 'de': 'Deutsch', 'nb': 'Norsk bokmål', 'sv': 'Svenska', 'es': 'Español', 'fr': 'Français'}
+NAMES = {'da': 'Dansk', 'de': 'Deutsch', 'nb': 'Norsk bokmål', 'sv': 'Svenska', 'es': 'Español', 'fr': 'Français',
+         'it': 'Italiano', 'pl': 'Polski', 'nl': 'Nederlands', 'fi': 'Suomi'}
+
+BUILT_IN = ('da', 'de')  # Built into the program (Marbles/Lang); the others are files of the folder lang
+
+
+def language_path(code, given=None):
+    """Where the file of a language is: the path given, Marbles/Lang/xx.txt for a built-in language, else
+    Marbles/Lang/External/xx.txt (published in the folder lang next to the program)"""
+    if given:
+        return given
+    if code in BUILT_IN:
+        return os.path.join(ROOT, 'Lang', code + '.txt')
+    return os.path.join(ROOT, 'Lang', 'External', code + '.txt')
+
 
 
 def unescape(text):
@@ -72,10 +89,17 @@ def read(path, code):
     return pairs
 
 
-def make(code):
-    path = os.path.join(ROOT, 'Lang', code + '.txt')
+def make(code, given=None):
+    path = language_path(code, given)
     old = read(path, code)
-    out = [f'# Marbles: {NAMES.get(code, code)} ({code})',
+    # The name of the language: the one the file has, a known one, or the code
+    name = NAMES.get(code, code)
+    if os.path.exists(path):
+        first = io.open(path, encoding='utf-8').readline()
+        m = re.match(r'^# Marbles: (.+) \(' + re.escape(code) + r'\)\s*$', first)
+        if m:
+            name = m.group(1)
+    out = [f'# Marbles: {name} ({code})',
            '# Each text is given in English ("en:") and translated below it ("' + code + ':"), in quotes. "\\n" is a line break.',
            '# Keep as they are: the placeholders ({0}, {1}), the keys (j/k, Enter, Esc, Tab ...), the commands (:help ...),',
            '# the names of the editor modes (NORMAL, INSERT, VISUAL ...) and blank space at the start or end of a text.',
@@ -96,6 +120,9 @@ def make(code):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    # The texts are printed in UTF-8 (a Windows console uses an older code page by default)
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    if len(sys.argv) not in (2, 3):
         sys.exit(__doc__)
-    make(sys.argv[1])
+    make(sys.argv[1], sys.argv[2] if len(sys.argv) == 3 else None)

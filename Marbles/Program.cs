@@ -5,6 +5,15 @@ class Program
     private static void Main(string[] args)
     {
         Init.RunInitialization();
+        if (Lang.Missing != null)
+        {
+            // The language set has no file (a language file in a folder "lang" that is gone): English is used
+            Tools.ClearScreen();
+            ChoiceBox.Message(DialogText.CaptionsSettings,
+                Lang.F("The language file {0} was not found: English is used.", Lang.Missing + ".txt"),
+                Lang.T("Put it in the folder lang next to Marbles (or in the data directory)."));
+        }
+
         StartMenu.Start();
         MainLoop();
     }

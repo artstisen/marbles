@@ -68,7 +68,7 @@ public class LangTests : IDisposable
     // The pairs of a language file, in order
     private static List<(string English, string Text)> FilePairs(string code)
     {
-        var content = Lang.ReadFile(code);
+        var content = SourceFile(code);
         Assert.NotNull(content);
         var pairs = new List<(string, string)>();
         string? english = null;
@@ -102,8 +102,25 @@ public class LangTests : IDisposable
         return value[1..^1].Replace("\\n", "\n");
     }
 
-    private static readonly string[] Translated = Lang.Languages.Select(l => l.Code)
-        .Where(code => code != Lang.English && Lang.ReadFile(code) != null).ToArray();
+    // A language file as it is in the source: built in (Lang/xx.txt), or a file of the folder lang (Lang/External)
+    private static string? SourceFile(string code)
+    {
+        foreach (var folder in new[] { "Lang", Path.Combine("Lang", "External") })
+        {
+            var path = Path.Combine(SourceDirectory(), folder, code + ".txt");
+            if (File.Exists(path)) return File.ReadAllText(path);
+        }
+
+        return null;
+    }
+
+    // All the language files of the source
+    private static readonly string[] Translated = new[] { "Lang", Path.Combine("Lang", "External") }
+        .Select(folder => Path.Combine(SourceDirectory(), folder))
+        .Where(Directory.Exists)
+        .SelectMany(folder => Directory.GetFiles(folder, "*.txt"))
+        .Select(path => Path.GetFileNameWithoutExtension(path)!)
+        .OrderBy(code => code, StringComparer.Ordinal).ToArray();
 
     public static IEnumerable<object[]> LanguageFiles() => Translated.Select(code => new object[] { code });
 

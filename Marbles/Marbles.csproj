@@ -18,6 +18,9 @@
     <ItemGroup>
         <!-- The translations of the texts (see Lang.cs) -->
         <EmbeddedResource Include="Lang\*.txt" LogicalName="Marbles.Lang.%(Filename).txt" />
+        <!-- The other languages: files in the folder "lang" next to the program, which users can change -->
+        <None Include="Lang\External\*.txt" Link="lang\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest"
+              CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
     </ItemGroup>
 
 </Project>

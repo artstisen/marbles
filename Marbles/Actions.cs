@@ -422,14 +422,26 @@ internal static class Actions
     /// </summary>
     internal static void PickLanguage()
     {
+        // Found again: a file may have been put in a folder "lang" since
+        Lang.Refresh();
         var languages = Lang.Available;
-        var choices = languages.Select(language => language.Name + " (" + language.Code + ")").ToArray();
+        var choices = languages.Select(LanguageChoice).ToArray();
         var keys = Enumerable.Range(1, languages.Length).Select(n => n.ToString()).ToArray();
         var picked = ChoiceBox.Pick(DialogText.PickLanguageCaption, DialogText.PickLanguageQuestion, string.Empty,
             choices, keys, Math.Max(0, Array.FindIndex(languages, language => language.Code == Lang.Current)), false);
         if (picked < 0) return;
         Lang.Set(languages[picked].Code);
         FileIo.SaveSettings();
+    }
+
+    // A language in the list: its name and code, "(lang)" when a file in a folder "lang" replaces the one built in,
+    // and how much of a file in a folder is translated
+    private static string LanguageChoice(Lang.Language language)
+    {
+        var text = language.Name + " (" + language.Code + ")";
+        if (language.Replaced) text += " (" + Lang.FolderName + ")"; // English: the name of the folder
+        if (language.Percent is { } percent) text += "  " + percent + "%";
+        return text;
     }
 
     // Commands when selecting from a list of entries. The commands work on the selected entry

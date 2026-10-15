@@ -1020,7 +1020,8 @@ internal static class FileIo
         // Color Markdown, HTML, CSS, JavaScript and JSON files in the editor (the editor command :syntax turns
         // the colors on and off)
         // The language of the texts (en, da, de, nb, sv, es, fr)
-        _tempSettings += "language=" + Lang.Current + Entries.NewLineChar;
+        // The language set, also when its file is missing (English is used until it is there again)
+        _tempSettings += "language=" + (Lang.Missing ?? Lang.Current) + Entries.NewLineChar;
         _tempSettings += "syntaxcolors=" + (SyntaxHighlighter.ColorFiles ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Line numbers in the editor (the editor command :number turns them on and off)
         _tempSettings += "linenumbers=" + (TextArea.LineNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
@@ -1151,7 +1152,9 @@ internal static class FileIo
         var pasteBinFile = Get("pastebinfile").Trim();
         SystemClipboard.PasteBinFile = pasteBinFile.Length > 0 ? pasteBinFile : SystemClipboard.DefaultPasteBinFile;
         Snippets.Sort = Snippets.ParseSort(Get("snipsort"));
-        Lang.Set(Get("language"));
+        var language = Tools.TrimToLower(Get("language"));
+        Lang.Missing = null;
+        if (!Lang.Set(language) && language.Length > 0) Lang.Missing = language;
         // On unless turned off
         // (named "mdcolors" in an earlier version)
         SyntaxHighlighter.ColorFiles = Tools.TrimToLower(Get("syntaxcolors")) != DialogText.BFalse &&

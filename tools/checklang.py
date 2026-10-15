@@ -1,6 +1,7 @@
 """Check a language file of Marbles: what LangTests checks, and texts that may be too long for the screen.
 
     python tools/checklang.py de
+    python tools/checklang.py pl path/to/pl.txt     (a file somewhere else, such as the folder lang)
 
 Errors (the tests fail on these): an empty translation, placeholders ({0}) that differ, blank space at the start
 or end that differs, key hints whose keys differ, keys in brackets ([Y], [Esc]) that differ, and lines broken by
@@ -16,14 +17,22 @@ import sys
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Marbles')
 
 
+def language_path(code, given=None):
+    """The file of a language: the path given, built in (Marbles/Lang), or of the folder lang (Marbles/Lang/External)"""
+    if given:
+        return given
+    built_in = os.path.join(ROOT, 'Lang', code + '.txt')
+    return built_in if os.path.exists(built_in) else os.path.join(ROOT, 'Lang', 'External', code + '.txt')
+
+
 def unquote(value):
     first, last = value.index('"'), value.rindex('"')
     return value[first + 1:last].replace('\\n', '\n')
 
 
-def pairs(code):
+def pairs(code, given=None):
     result, english = [], None
-    for line in io.open(os.path.join(ROOT, 'Lang', code + '.txt'), encoding='utf-8').read().split('\n'):
+    for line in io.open(language_path(code, given), encoding='utf-8').read().split('\n'):
         if line.startswith('en:'):
             english = unquote(line[3:])
         elif english is not None and line.startswith(code + ':'):
@@ -36,9 +45,9 @@ def key(part):
     return part.split(' ')[0]
 
 
-def check(code):
+def check(code, given=None):
     errors, warnings = [], []
-    for english, text in pairs(code):
+    for english, text in pairs(code, given):
         if text == '':
             errors.append('not translated: ' + english)
             continue
@@ -66,6 +75,9 @@ def check(code):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    # The texts are printed in UTF-8 (a Windows console uses an older code page by default)
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    if len(sys.argv) not in (2, 3):
         sys.exit(__doc__)
-    check(sys.argv[1])
+    check(sys.argv[1], sys.argv[2] if len(sys.argv) == 3 else None)

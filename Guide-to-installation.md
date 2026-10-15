@@ -17,7 +17,24 @@ Ensure that you have the .NET 10 runtime installed on your system. If not you ca
 
 You can create an alias like "_mbls_" to run Marbles with less typing. See [this guide](Guide-to-windows-terminal-crt.md) for more information.
 
-Marbles keeps your notes and settings in a directory named "data", created in the directory you start Marbles from. To use spell checking in the editor, place spell files in a directory named "spell" next to it (see the [guide to the editor](Guide-to-editor.md#spell-checking)). Marbles needs a terminal window of at least 80 columns and 23 rows.
+Marbles keeps your notes and settings in a directory named "data", created in the directory you start Marbles from. The languages other than English, Danish and German are files in the folder "lang" next to the program (see [Language files](#language-files)). To use spell checking in the editor, place spell files in a directory named "spell" next to it (see the [guide to the editor](Guide-to-editor.md#spell-checking)). Marbles needs a terminal window of at least 80 columns and 23 rows.
+
+## Language files
+English, Danish and German are built into Marbles. The other languages are text files in a folder named `lang` next to the Marbles program: `nb.txt` (Norwegian), `sv.txt` (Swedish), `es.txt` (Spanish), `fr.txt` (French), `it.txt` (Italian), `pl.txt` (Polish), `nl.txt` (Dutch) and `fi.txt` (Finnish). They come with Marbles; keep the folder next to the program when you copy or move it. If it is missing, those languages are not offered (and Marbles starts in English if one of them was chosen, keeping the choice for when the file is back).
+
+Marbles also looks for a folder `lang` in the data directory, which is used first. A language file there (or next to the program):
+
+- **Changes a translation**: copy the file (or `da.txt` / `de.txt` from the source, `Marbles/Lang`) into the folder, and edit the translations. A file for Danish or German is used instead of the one built in, and the list of languages shows `(lang)` after it
+- **Adds a language**: a file named by the code of the language (`pt.txt`, `cs.txt`, `pt-br.txt`) is found by itself and offered in the list of languages, with how much of it is translated. Its first line names it: `# Marbles: Português (pt)`
+
+The files are UTF-8 text, with each text in English and translated below it:
+
+```
+en: "File deleted"
+pl: "Plik usunięty"
+```
+
+A translation left empty, or missing, is shown in English. Keep the placeholders (`{0}`), the keys and the commands as they are. In the source, `python tools/langfile.py pl path/to/pl.txt` makes a file with all the texts of Marbles (or brings one up to date, keeping the translations), and `python tools/checklang.py pl path/to/pl.txt` checks it. The list of languages is read again each time it is opened, so a file can be changed and tried without restarting Marbles.
 
 ## Building from source
 With the .NET 10 SDK installed:

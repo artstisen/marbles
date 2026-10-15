@@ -1436,6 +1436,12 @@ es: "Paso 1: Escriba la contraseña"
 en: "Step 2: Enter export file name"
 es: "Paso 2: Escriba el nombre del archivo exportado"
 
+# Program.cs
+en: "The language file {0} was not found: English is used."
+es: "No se encontró el archivo de idioma {0}: se usa el inglés."
+en: "Put it in the folder lang next to Marbles (or in the data directory)."
+es: "Póngalo en la carpeta lang junto a Marbles (o en la carpeta de datos)."
+
 # QuickGuide.cs
 en: "Marbles has two parts, selected on the start page"
 es: "Marbles tiene dos partes, a elegir en la página de inicio"

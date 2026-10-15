@@ -1436,6 +1436,12 @@ nb: "Trinn 1: Skriv passordet"
 en: "Step 2: Enter export file name"
 nb: "Trinn 2: Skriv navnet på eksportfilen"
 
+# Program.cs
+en: "The language file {0} was not found: English is used."
+nb: "Språkfilen {0} ble ikke funnet: engelsk brukes."
+en: "Put it in the folder lang next to Marbles (or in the data directory)."
+nb: "Legg den i mappen lang ved siden av Marbles (eller i datamappen)."
+
 # QuickGuide.cs
 en: "Marbles has two parts, selected on the start page"
 nb: "Marbles har to deler, som velges på startsiden"
