@@ -71,7 +71,7 @@ internal static class Commands
             "quit close help jump info goto favorite remove clear",
             "q h fav ju"),
         [CommandContext.Hotlist] = new Table(
-            "quit close help jump info remove undo top bottom move clear",
+            "quit close help jump info remove undo top bottom move rename clear",
             "q h u ju"),
         [CommandContext.Search] = new Table(
             "quit close help jump find info goto favorite",

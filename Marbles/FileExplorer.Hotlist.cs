@@ -11,7 +11,7 @@ internal static partial class FileExplorer
     private static string _hotlistFilter = string.Empty;
     private static string _hotlistMessage = string.Empty;
     private static bool _hotlistMoving; // Tab or v: j k move the selected directory
-    private static (int Index, string Path)? _hotlistRemoved; // For undo
+    private static (int Index, DirectoryHotlist.Entry Entry)? _hotlistRemoved; // For undo
 
     // B: add the directory shown in the pane with the focus (whatever is selected in it)
     private static void AddToHotlist()
@@ -42,12 +42,7 @@ internal static partial class FileExplorer
     }
 
     // The name of a directory (a drive: its path)
-    private static string HotlistName(string path)
-    {
-        var name = System.IO.Path.GetFileName(path.TrimEnd(System.IO.Path.DirectorySeparatorChar,
-            System.IO.Path.AltDirectorySeparatorChar));
-        return name.Length > 0 ? name : path;
-    }
+    private static string HotlistName(string path) => DirectoryHotlist.NameOf(path);
 
     // Show the hotlist until it is closed. Going to a directory closes it
     private static KeyResult BrowseHotlist()
@@ -109,6 +104,9 @@ internal static partial class FileExplorer
                     continue;
                 }
 
+                // A name can follow ":rename"
+                if (command != null && CommandLine.Name(command) == "rename") command = "rename";
+
                 switch (command)
                 {
                     case null:
@@ -139,6 +137,9 @@ internal static partial class FileExplorer
                         break;
                     case "move":
                         StartHotlistMove(selected);
+                        break;
+                    case "rename":
+                        RenameHotlistEntry(selected, CommandLine.LastArgument);
                         break;
                     case "clear":
                         ClearHotlist();
@@ -210,10 +211,6 @@ internal static partial class FileExplorer
             {
                 UndoHotlistRemove();
             }
-            else if (key.Key == ConsoleKey.X)
-            {
-                ClearHotlist();
-            }
             else if (selected < 0)
             {
                 // The other keys need a directory to work on
@@ -238,6 +235,10 @@ internal static partial class FileExplorer
             {
                 ShowHotlistInfo(selected);
             }
+            else if (key.Key == ConsoleKey.X)
+            {
+                RenameHotlistEntry(selected, string.Empty);
+            }
             else if (key.Key == ConsoleKey.D)
             {
                 RemoveFromHotlist(selected);
@@ -254,8 +255,10 @@ internal static partial class FileExplorer
         _hotlistShown = new List<int>();
         for (var i = 0; i < DirectoryHotlist.Items.Count; i++)
         {
+            var entry = DirectoryHotlist.Items[i];
             if (_hotlistFilter.Length == 0 ||
-                DirectoryHotlist.Items[i].Contains(_hotlistFilter, StringComparison.OrdinalIgnoreCase))
+                entry.Path.Contains(_hotlistFilter, StringComparison.OrdinalIgnoreCase) ||
+                entry.Name.Contains(_hotlistFilter, StringComparison.OrdinalIgnoreCase))
             {
                 _hotlistShown.Add(i);
             }
@@ -266,7 +269,7 @@ internal static partial class FileExplorer
     private static string? HotlistPath(int number)
     {
         if (number < 0) return null;
-        var path = DirectoryHotlist.Items[number];
+        var path = DirectoryHotlist.Items[number].Path;
         if (Directory.Exists(path)) return path;
         _hotlistMessage = DialogText.DirectoryNotFound;
         return null;
@@ -317,15 +320,34 @@ internal static partial class FileExplorer
         if (shown >= 0) _hotlistIndex = shown;
     }
 
+    // X or ":rename name": the name the selected directory is shown with (the directory itself keeps its name).
+    // An empty name shows the name of the directory again
+    private static void RenameHotlistEntry(int number, string name)
+    {
+        if (number < 0) return;
+        var entry = DirectoryHotlist.Items[number];
+        if (name.Length == 0)
+        {
+            var asked = ChoiceBox.AskText(DialogText.HotlistRename, DialogText.HotlistRenameNote,
+                DialogText.NameColon, entry.Shown);
+            if (asked == null) return;
+            name = asked;
+        }
+
+        DirectoryHotlist.Rename(number, name);
+        SaveHotlist();
+        _hotlistMessage = Lang.F("Shown as: {0}", DirectoryHotlist.Items[number].Shown);
+    }
+
     // Take the selected directory out of the list (the directory itself stays). u puts it back
     private static void RemoveFromHotlist(int number)
     {
         if (number < 0) return;
-        var path = DirectoryHotlist.Items[number];
+        var entry = DirectoryHotlist.Items[number];
         DirectoryHotlist.RemoveAt(number);
-        _hotlistRemoved = (number, path);
-        EventLog.Add(DialogText.LogFile + "Hotlist remove: " + path);
-        _hotlistMessage = Lang.F("Removed from the hotlist: {0} (u puts it back)", HotlistName(path));
+        _hotlistRemoved = (number, entry);
+        EventLog.Add(DialogText.LogFile + "Hotlist remove: " + entry.Path);
+        _hotlistMessage = Lang.F("Removed from the hotlist: {0} (u puts it back)", entry.Shown);
         SaveHotlist();
     }
 
@@ -333,11 +355,11 @@ internal static partial class FileExplorer
     {
         if (_hotlistRemoved is not { } removed) return;
         _hotlistRemoved = null;
-        DirectoryHotlist.Insert(removed.Index, removed.Path);
+        DirectoryHotlist.Insert(removed.Index, removed.Entry);
         SaveHotlist();
         _hotlistFilter = string.Empty;
         _hotlistIndex = Math.Clamp(removed.Index, 0, Math.Max(0, DirectoryHotlist.Items.Count - 1));
-        _hotlistMessage = Lang.F("Back in the hotlist: {0}", HotlistName(removed.Path));
+        _hotlistMessage = Lang.F("Back in the hotlist: {0}", removed.Entry.Shown);
     }
 
     // Empty the list, after asking
@@ -414,18 +436,19 @@ internal static partial class FileExplorer
         for (var row = 0; row < HistoryPageSize && _hotlistTop + row < _hotlistShown.Count; row++)
         {
             nameWidth = Math.Max(nameWidth,
-                TextMetrics.WidthOf(HotlistName(DirectoryHotlist.Items[_hotlistShown[_hotlistTop + row]])));
+                TextMetrics.WidthOf(DirectoryHotlist.Items[_hotlistShown[_hotlistTop + row]].Shown));
         }
 
         nameWidth = Math.Min(nameWidth, Init.LineWidth / 2 - 8);
         for (var row = 0; row < HistoryPageSize && _hotlistTop + row < _hotlistShown.Count; row++)
         {
             var index = _hotlistTop + row;
-            var path = DirectoryHotlist.Items[_hotlistShown[index]];
+            var entry = DirectoryHotlist.Items[_hotlistShown[index]];
+            var path = entry.Path;
             var exists = Directory.Exists(path);
             DrawHotlistPointer(index, index == _hotlistIndex);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(" " + Tools.TruncateString(HotlistName(path), nameWidth + 1, true));
+            Console.Write(" " + Tools.TruncateString(entry.Shown, nameWidth + 1, true));
 
             // The path (the end of a long path is shown)
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);

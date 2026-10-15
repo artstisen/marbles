@@ -8,7 +8,8 @@ namespace Marbles;
 /// holds at most MaxCount directories.
 ///
 /// The list is kept in the file "hotlist.txt" in the data directory, with the full path of a directory on each
-/// line (so it can be edited by hand). Blank lines and a directory that is there twice are not used.
+/// line (so it can be edited by hand), and after it a tab character and the name it is shown with, if it was given
+/// one (X on the page of the list). Blank lines and a directory that is there twice are not used.
 ///
 /// This class does not touch the console: the list is shown by FileExplorer (FileExplorer.Hotlist.cs).
 /// </summary>
@@ -21,12 +22,32 @@ internal static class DirectoryHotlist
     /// </summary>
     internal const int MaxCount = 100;
 
-    private static readonly List<string> List = new();
+    /// <summary>
+    /// A directory of the list: its path, and the name it was given (empty: the name of the directory is shown)
+    /// </summary>
+    internal sealed record Entry(string Path, string Name = "")
+    {
+        /// <summary>
+        /// The name shown: the one given, or the name of the directory (a drive: its path)
+        /// </summary>
+        internal string Shown => Name.Length > 0 ? Name : NameOf(Path);
+    }
+
+    /// <summary>
+    /// The name of a directory (a drive: its path)
+    /// </summary>
+    internal static string NameOf(string path)
+    {
+        var name = System.IO.Path.GetFileName(System.IO.Path.TrimEndingDirectorySeparator(path));
+        return name.Length > 0 ? name : path;
+    }
+
+    private static readonly List<Entry> List = new();
 
     /// <summary>
     /// The directories, in the order of the list
     /// </summary>
-    internal static IReadOnlyList<string> Items => List;
+    internal static IReadOnlyList<Entry> Items => List;
 
     /// <summary>
     /// The file with the list. It can be set to another file than the one in the data directory (for testing)
@@ -57,9 +78,12 @@ internal static class DirectoryHotlist
         List.Clear();
         foreach (var rawLine in text.Split('\n'))
         {
-            var path = rawLine.Trim();
+            var line = rawLine.TrimEnd('\r');
+            var tab = line.IndexOf('\t');
+            var path = (tab < 0 ? line : line[..tab]).Trim();
+            var name = tab < 0 ? string.Empty : line[(tab + 1)..].Trim();
             if (path.Length == 0 || Contains(path)) continue;
-            List.Add(path);
+            List.Add(new Entry(path, name));
             if (List.Count == MaxCount) break;
         }
     }
@@ -67,7 +91,13 @@ internal static class DirectoryHotlist
     internal static string Serialize()
     {
         var text = new StringBuilder();
-        foreach (var path in List) text.Append(path).Append('\n');
+        foreach (var entry in List)
+        {
+            text.Append(entry.Path);
+            if (entry.Name.Length > 0) text.Append('\t').Append(entry.Name);
+            text.Append('\n');
+        }
+
         return text.ToString();
     }
 
@@ -90,7 +120,7 @@ internal static class DirectoryHotlist
         }
     }
 
-    internal static bool Contains(string path) => List.Exists(item => FileOperations.SamePath(item, path));
+    internal static bool Contains(string path) => List.Exists(item => FileOperations.SamePath(item.Path, path));
 
     /// <summary>
     /// What adding a directory did
@@ -110,17 +140,30 @@ internal static class DirectoryHotlist
         path = Path.GetFullPath(path);
         if (Contains(path)) return AddResult.AlreadyThere;
         if (List.Count >= MaxCount) return AddResult.Full;
-        List.Add(path);
+        List.Add(new Entry(path));
         return AddResult.Added;
     }
 
     /// <summary>
     /// Put a directory back at a place in the list (undo)
     /// </summary>
-    internal static void Insert(int index, string path)
+    internal static void Insert(int index, Entry entry)
     {
-        if (Contains(path) || List.Count >= MaxCount) return;
-        List.Insert(Math.Clamp(index, 0, List.Count), path);
+        if (Contains(entry.Path) || List.Count >= MaxCount) return;
+        List.Insert(Math.Clamp(index, 0, List.Count), entry);
+    }
+
+    /// <summary>
+    /// Give a directory of the list the name it is shown with (empty: the name of the directory). The directory
+    /// itself is not renamed
+    /// </summary>
+    internal static void Rename(int index, string name)
+    {
+        if (index < 0 || index >= List.Count) return;
+        // A tab would end the name in the file
+        name = name.Replace('\t', ' ').Trim();
+        if (name == NameOf(List[index].Path)) name = string.Empty;
+        List[index] = List[index] with { Name = name };
     }
 
     /// <summary>
@@ -139,9 +182,9 @@ internal static class DirectoryHotlist
     {
         if (from < 0 || from >= List.Count) return from;
         to = Math.Clamp(to, 0, List.Count - 1);
-        var path = List[from];
+        var entry = List[from];
         List.RemoveAt(from);
-        List.Insert(to, path);
+        List.Insert(to, entry);
         return to;
     }
 
@@ -162,8 +205,8 @@ internal static class DirectoryHotlist
         var changed = false;
         for (var i = 0; i < List.Count; i++)
         {
-            if (CaretPosition.NewPath(List[i], oldPath, newPath) is not { } path) continue;
-            List[i] = path;
+            if (CaretPosition.NewPath(List[i].Path, oldPath, newPath) is not { } path) continue;
+            List[i] = List[i] with { Path = path };
             changed = true;
         }
 

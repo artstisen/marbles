@@ -26,13 +26,15 @@ public class HotlistTests : IDisposable
 
     private string In(string name) => Path.GetFullPath(Path.Combine(_directory, name));
 
+    private static IEnumerable<string> Paths() => DirectoryHotlist.Items.Select(entry => entry.Path);
+
     [Fact]
     public void Directories_AreAddedAtTheEnd_Once()
     {
         Assert.Equal(DirectoryHotlist.AddResult.Added, DirectoryHotlist.Add(In("a")));
         Assert.Equal(DirectoryHotlist.AddResult.Added, DirectoryHotlist.Add(In("b")));
         Assert.Equal(DirectoryHotlist.AddResult.AlreadyThere, DirectoryHotlist.Add(In("a")));
-        Assert.Equal(new[] { In("a"), In("b") }, DirectoryHotlist.Items);
+        Assert.Equal(new[] { In("a"), In("b") }, Paths());
     }
 
     [Fact]
@@ -52,10 +54,10 @@ public class HotlistTests : IDisposable
         Assert.Equal(In("a") + "\n" + In("b c") + "\n", File.ReadAllText(DirectoryHotlist.FilePath));
         DirectoryHotlist.Clear();
         DirectoryHotlist.Load();
-        Assert.Equal(new[] { In("a"), In("b c") }, DirectoryHotlist.Items);
+        Assert.Equal(new[] { In("a"), In("b c") }, Paths());
         // Edited by hand: blank lines, spaces around and a directory twice are not used
         DirectoryHotlist.Parse("\r\n  " + In("x") + "  \r\n\r\n" + In("x") + "\n" + In("y"));
-        Assert.Equal(new[] { In("x"), In("y") }, DirectoryHotlist.Items);
+        Assert.Equal(new[] { In("x"), In("y") }, Paths());
     }
 
     [Fact]
@@ -63,13 +65,36 @@ public class HotlistTests : IDisposable
     {
         foreach (var name in new[] { "a", "b", "c", "d" }) DirectoryHotlist.Add(In(name));
         Assert.Equal(0, DirectoryHotlist.Move(2, 0));
-        Assert.Equal(new[] { In("c"), In("a"), In("b"), In("d") }, DirectoryHotlist.Items);
+        Assert.Equal(new[] { In("c"), In("a"), In("b"), In("d") }, Paths());
         Assert.Equal(3, DirectoryHotlist.Move(0, 9));
-        Assert.Equal(new[] { In("a"), In("b"), In("d"), In("c") }, DirectoryHotlist.Items);
+        Assert.Equal(new[] { In("a"), In("b"), In("d"), In("c") }, Paths());
         DirectoryHotlist.RemoveAt(1);
-        Assert.Equal(new[] { In("a"), In("d"), In("c") }, DirectoryHotlist.Items);
-        DirectoryHotlist.Insert(1, In("b"));
-        Assert.Equal(new[] { In("a"), In("b"), In("d"), In("c") }, DirectoryHotlist.Items);
+        Assert.Equal(new[] { In("a"), In("d"), In("c") }, Paths());
+        DirectoryHotlist.Insert(1, new DirectoryHotlist.Entry(In("b")));
+        Assert.Equal(new[] { In("a"), In("b"), In("d"), In("c") }, Paths());
+    }
+
+    [Fact]
+    public void ADirectory_CanBeShownWithANameOfItsOwn_KeptAfterATab()
+    {
+        DirectoryHotlist.Add(In("a"));
+        DirectoryHotlist.Add(In("b"));
+        Assert.Equal("a", DirectoryHotlist.Items[0].Shown);
+        DirectoryHotlist.Rename(0, "  Project\tdocs ");
+        Assert.Equal("Project docs", DirectoryHotlist.Items[0].Shown);
+        Assert.Equal(In("a") + "\tProject docs\n" + In("b") + "\n", DirectoryHotlist.Serialize());
+        DirectoryHotlist.Parse(DirectoryHotlist.Serialize());
+        Assert.Equal("Project docs", DirectoryHotlist.Items[0].Name);
+        Assert.Equal(In("a"), DirectoryHotlist.Items[0].Path);
+        // An empty name, or the name of the directory, shows the name of the directory again
+        DirectoryHotlist.Rename(0, "");
+        Assert.Equal("a", DirectoryHotlist.Items[0].Shown);
+        DirectoryHotlist.Rename(1, "b");
+        Assert.Equal(string.Empty, DirectoryHotlist.Items[1].Name);
+        // The name stays when the directory is renamed
+        DirectoryHotlist.Rename(0, "Mine");
+        DirectoryHotlist.PathChanged(In("a"), In("c"));
+        Assert.Equal(new DirectoryHotlist.Entry(In("c"), "Mine"), DirectoryHotlist.Items[0]);
     }
 
     [Fact]
@@ -79,7 +104,7 @@ public class HotlistTests : IDisposable
         DirectoryHotlist.Add(In(Path.Combine("work", "notes")));
         DirectoryHotlist.Add(In("other"));
         Assert.True(DirectoryHotlist.PathChanged(In("work"), In("job")));
-        Assert.Equal(new[] { In("job"), In(Path.Combine("job", "notes")), In("other") }, DirectoryHotlist.Items);
+        Assert.Equal(new[] { In("job"), In(Path.Combine("job", "notes")), In("other") }, Paths());
         // A directory with a name that starts the same is not in it
         Assert.False(DirectoryHotlist.PathChanged(In("oth"), In("x")));
     }

@@ -2,7 +2,7 @@
 
 /// <summary>
 /// The Jump menu: a box on top of the page with the tabs Jumps (the jump history), Files (the files opened from
-/// the file browser), Favorites, Configuration (pages of Marbles) and Data files. A place is picked with the
+/// the file browser), Favorites, Hotlist (the directory hotlist), Pages (pages of Marbles) and Data (data files). A place is picked with the
 /// selection arrow (j/k, gg/G) and Enter; h/l go from tab to tab, "/" filters the list of the tab, I shows
 /// information about the selected place and D takes a place out of the jump history. Only names are shown, not
 /// paths. With one mode only (see StartMenu.Only) the tabs of the other mode are left out
@@ -14,6 +14,7 @@ internal static class JumpMenu
         Jumps,
         Files,
         Favorites,
+        Hotlist,
         Configuration,
         DataFiles
     }
@@ -22,6 +23,11 @@ internal static class JumpMenu
     // directory that is a favorite with a color of its own is shown in it
     private sealed record Row(JumpTarget Target, DateTime Time)
     {
+        // The name shown, if it is not the name of the place (a directory of the hotlist with a name of its own)
+        internal string? Label { get; init; }
+
+        internal string Name => Label ?? Target.Name;
+
         internal ConsoleColor? Color { get; init; } = Target.Kind is JumpKind.File or JumpKind.Directory
             ? FileFavorites.ColorOf(Target.Target)
             : null;
@@ -42,6 +48,7 @@ internal static class JumpMenu
         {
             tabs.Add(Tab.Files);
             tabs.Add(Tab.Favorites);
+            tabs.Add(Tab.Hotlist);
         }
 
         tabs.Add(Tab.Configuration);
@@ -55,8 +62,10 @@ internal static class JumpMenu
         Tab.Jumps => Lang.T("Jumps"),
         Tab.Files => DialogText.CaptionsFiles,
         Tab.Favorites => Lang.T("Favorites"),
-        Tab.Configuration => DialogText.StartConfiguration,
-        _ => Lang.T("Data files")
+        Tab.Hotlist => DialogText.CaptionsHotlist,
+        // Short, so six tabs fit in all languages
+        Tab.Configuration => Lang.T("Pages"),
+        _ => Lang.T("Data")
     };
 
     // The places a mode that is not used leads to are left out
@@ -86,6 +95,13 @@ internal static class JumpMenu
                     .Select(favorite => new Row(new JumpTarget(
                         Directory.Exists(favorite.Path) ? JumpKind.Directory : JumpKind.File, favorite.Path),
                         DateTime.MinValue)).ToList();
+            case Tab.Hotlist:
+                DirectoryHotlist.Load();
+                return DirectoryHotlist.Items.Select(entry =>
+                    new Row(new JumpTarget(JumpKind.Directory, entry.Path), DateTime.MinValue)
+                    {
+                        Label = entry.Name.Length > 0 ? entry.Name : null
+                    }).ToList();
             case Tab.Configuration:
                 return JumpPages.Ids.Select(id => new Row(new JumpTarget(JumpKind.Page, id), DateTime.MinValue))
                     .ToList();
@@ -171,7 +187,7 @@ internal static class JumpMenu
             _lastTab = current;
             var filter = filters.GetValueOrDefault(current, string.Empty);
             var rows = RowsOf(current).Where(row => filter.Length == 0 ||
-                row.Target.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
+                row.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
             selected = Math.Clamp(selected, 0, Math.Max(0, rows.Count - 1));
             var visible = Draw(tabs, tab, filter, rows, selected, ref scroll);
             var key = Console.ReadKey(true);
@@ -335,7 +351,7 @@ internal static class JumpMenu
             // The name, in the color of a favorite that has one (a place that is not there any more is dimmed and
             // marked)
             var exists = row.Target.Exists;
-            var name = exists ? row.Target.Name : row.Target.Name + " " + DialogText.FavoriteMissing;
+            var name = exists ? row.Name : row.Name + " " + DialogText.FavoriteMissing;
             name = ShortName(name, nameWidth);
             Tools.SetCursorEx(first + line, left + 4);
             if (!exists) ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);

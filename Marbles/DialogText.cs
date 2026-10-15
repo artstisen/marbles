@@ -391,9 +391,9 @@ internal static class DialogText
     public static string Drives => Lang.T("Drives");
     public const string DirectoryMark = "<DIR>";
     public static string DataFileMark => Lang.T("[Data file]");
-    public static string FileBrowserKeys => Lang.T("j/k Select | l Open | V Peek | F Faves | O History | ? Help");
+    public static string FileBrowserKeys => Lang.T("j/k Select | l Open | V Peek | F Faves | O History | W Hotlist");
 
-    public static string FileBrowserDualKeys => Lang.T("Tab Pane | l Open | V Peek | F Faves | O History | ? Help");
+    public static string FileBrowserDualKeys => Lang.T("Tab Pane | l Open | V Peek | F Faves | O History | W Hotlist");
     public static string FileTargetDualKeys => Lang.T("Tab Pane | l Open | h Up | / Filter | S {0} | Esc Cancel");
     public static string FileTargetKeys => Lang.T("j/k Select | l Open | h Up | / Filter | S {0} | Esc Cancel");
     public static string FileCopyHere => Lang.T("Copy here");
@@ -572,6 +572,8 @@ internal static class DialogText
     public static string HotlistMoving => Lang.T("Moving: j/k, then Esc");
     public static string HotlistMoveFiltered => Lang.T("Remove the filter (Esc) to move");
     public static string HotlistNoDirectory => Lang.T("Go to a directory first");
+    public static string HotlistRename => Lang.T("Name in the hotlist");
+    public static string HotlistRenameNote => Lang.T("The directory keeps its name (empty: its name is shown)");
     public static string HotlistCleared => Lang.T("The hotlist is cleared");
     public static string HotlistClearNote => Lang.T("The directories themselves stay.");
     public static string HistoryKeys => Lang.T("Enter Open | B Show | P Fave | D Remove | X Clear | / Filter | Esc Close");

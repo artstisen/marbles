@@ -17,13 +17,14 @@ The same keys are used everywhere in Marbles:
 - `Esc` Return/Cancel
 
 ## Jump menu
-The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`), from the main menu, the lists of entries, the file browser (with its favorites, history and search results) and the editor, and from the options of the login page (`Esc`, `O`), and it is a choice of the Mode tab of the start page (`3`, or `Ctrl+O` there too). It is a box on top of the page with five tabs:
+The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`), from the main menu, the lists of entries, the file browser (with its favorites, history and search results) and the editor, and from the options of the login page (`Esc`, `O`), and it is a choice of the Mode tab of the start page (`3`, or `Ctrl+O` there too). It is a box on top of the page with six tabs:
 
 - **Jumps**: the places you have jumped to with the menu, the latest first, with the time (today) or the date of the jump. Only jumps made in the menu are kept, not files and pages opened in other ways (the tab says so next to the filter)
 - **Files**: the files opened from the file browser (the file history), with when they were opened
 - **Favorites**: the files and directories of your favorites. A favorite with a color of its own is shown in it, on every tab
-- **Configuration**: the pages of the Configuration tab (General, Layout, Editor, System), Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Help and About
-- **Data files**: the data files in the data directory and the directories in it
+- **Hotlist**: the directories of the [directory hotlist](Guide-to-login-menu.md#directory-hotlist) of the file browser, in its order and with the names they are shown with there
+- **Pages**: the pages of the Configuration tab (General, Layout, Editor, System), Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Help and About
+- **Data**: the data files in the data directory and the directories in it
 
 Only names are shown, not paths: a long name is shortened with `...` in the middle, so its start and its extension are seen. At the right of each place is its kind: `FILE`, `DIR`, `PAGE` or `DATA`. A place that is gone (a file deleted or moved) is shown dimmed with _(missing)_.
 
@@ -39,11 +40,11 @@ Where a jump goes:
 
 - **A file** is opened in the editor (where the cursor was the last time), with the file browser in its directory behind it. Closing the browser shows the Select mode page
 - **A directory** is shown in the file browser
-- **A page of Configuration** opens the Select mode page on that page
+- **A page of Configuration** (on the Pages tab) opens the Select mode page on that page
 - **A data file** is selected on the login page
 - **Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Help and About** open on top of the page you jumped from; closing them returns there
 
-When you jump from the editor and the text has changes that are not saved, you are asked whether to save them first (`Esc` stays in the editor). A jump to a file, directory, Configuration page or data file from a data file you are logged in to logs you out of it first. With _Text Editor only_ the Data files tab is not shown, and with _Note Management only_ the Files and Favorites tabs are not.
+When you jump from the editor and the text has changes that are not saved, you are asked whether to save them first (`Esc` stays in the editor). A jump to a file, directory, Configuration page or data file from a data file you are logged in to logs you out of it first. With _Text Editor only_ the Data tab is not shown, and with _Note Management only_ the Files, Favorites and Hotlist tabs are not.
 
 The jumps are kept in the file `jump.txt` in the data directory, one line for each place (at most 100): the time, a tab character, the kind (`file`, `dir`, `page` or `data`), a tab character and the place (the path of a file or directory, the name of a page such as `config/editor`, or the path of a data file in the data directory such as `notes/work.mbls`). Like the file history it is not encrypted, and it holds no titles or text of notes.
 

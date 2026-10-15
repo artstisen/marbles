@@ -270,19 +270,20 @@ The history holds the last 100 files: when it is full, the file opened longest a
 ### Directory hotlist
 The directory hotlist keeps directories you want to go back to. `B` (or `:hotadd`) in the file browser adds the directory shown in the pane with the focus, whatever file or directory is selected in it, at the end of the list. A directory that is in the list already stays where it is. Taking directories out is done on the page of the list.
 
-- `W` or `:hotlist` (or `:hot`) in the file browser: Show the hotlist. Each row has the name of the directory, and its path after it
+- `W` or `:hotlist` (or `:hot`) in the file browser: Show the hotlist. Each row has the name of the directory (or the name you gave it), and its path after it. The hotlist is also a tab of the [Jump menu](Guide-to-main-menu.md#jump-menu)
 - `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down
 - `l` or `Enter` Go to the directory, in the pane with the focus (the hotlist closes)
 - `Tab` or `v` (or `:move`) Move the directory in the list: `j` `k` move it, and `Esc` (or `Enter`, `Tab`, `v`) ends the moving. Not while a filter shows only some of the list
 - `T` or `:top` Move the directory to the top, `E` or `:bottom` to the end
 - `I` or `:info` Show information about the directory
+- `X` or `:rename name` The name the directory is shown with in the hotlist (and the Jump menu), such as "Project docs" for a deep path. Without a name you are asked for it. The directory itself keeps its name; an empty name shows its own name again
 - `D` or `:remove` Take the directory out of the hotlist (the directory itself stays). `u` or `:undo` puts it back
-- `X` or `:clear` Clear the hotlist. You are asked first
+- `:clear` Clear the hotlist. You are asked first
 - `/text` Only show the directories whose path contains "text". `Esc` shows all again
 - `?` Help, `:` the command line
 - `Esc`, `Q`, `W`, `h` or `-` Back to the file browser
 
-The hotlist holds at most 100 directories. A directory that is gone is shown as _(missing)_. When a directory is renamed or moved in the file browser, the hotlist follows it (also the directories in it). The list is kept in `hotlist.txt` in the data directory, with the path of a directory on each line, so it can also be edited by hand (`:data` in the file browser goes there).
+The hotlist holds at most 100 directories. A directory that is gone is shown as _(missing)_. When a directory is renamed or moved in the file browser, the hotlist follows it (also the directories in it). The list is kept in `hotlist.txt` in the data directory, with the path of a directory on each line (and after it a tab character and the name you gave it, if any), so it can also be edited by hand (`:data` in the file browser goes there).
 
 ### Where the cursor was
 When a file is closed in the editor, the line and column of the cursor are kept: in the history, and in the favorites if the file is one. The next time the file is opened, the cursor is placed there, so you go on where you left off; entries of a data file work the same way. The favorites are looked in first, as the history holds only the last 100 files. If the file has changed since and the line or column is no longer there, the cursor goes to the end of the line or of the text. A file opened from the results of a [search](#searching-for-files) is opened at the line found instead.
