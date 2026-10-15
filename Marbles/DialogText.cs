@@ -565,6 +565,15 @@ internal static class DialogText
     public static string HelpSectionHistory => Lang.T("File history");
     public static string CaptionsFileHistory => Lang.T("File history");
     public static string HistoryEmpty => Lang.T("No files yet: the files opened from the file browser are listed here");
+    public static string HelpSectionHotlist => Lang.T("Directory hotlist");
+    public static string CaptionsHotlist => Lang.T("Hotlist");
+    public static string HotlistEmpty => Lang.T("No directories yet: B in the file browser adds the one shown");
+    public static string HotlistKeys => Lang.T("Enter Go | Tab Move | T Top | E End | D Remove | / Filter | Esc Close");
+    public static string HotlistMoving => Lang.T("Moving: j/k, then Esc");
+    public static string HotlistMoveFiltered => Lang.T("Remove the filter (Esc) to move");
+    public static string HotlistNoDirectory => Lang.T("Go to a directory first");
+    public static string HotlistCleared => Lang.T("The hotlist is cleared");
+    public static string HotlistClearNote => Lang.T("The directories themselves stay.");
     public static string HistoryKeys => Lang.T("Enter Open | B Show | P Fave | D Remove | X Clear | / Filter | Esc Close");
     public static string HistoryClearCaption => Lang.T("Clear file history");
     public static string HistoryClearNote => Lang.T("The files themselves are not changed");

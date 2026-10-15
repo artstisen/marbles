@@ -174,6 +174,7 @@ public class CommandTests
         AssertSame(CommandContext.Files, Compared(browser, Method("FileExplorer.Manage.cs", "RunFileCommand")));
         AssertSame(CommandContext.Favorites, Compared(Part("FileExplorer.Favorites.cs", read, help)));
         AssertSame(CommandContext.History, Compared(Part("FileExplorer.History.cs", read, help)));
+        AssertSame(CommandContext.Hotlist, Compared(Part("FileExplorer.Hotlist.cs", read, help)));
         AssertSame(CommandContext.Search, Compared(Part("FileExplorer.Search.cs", read, help)));
         // When a file or directory is picked, only the commands for getting around are run
         var picker = Commands.All(CommandContext.FilePicker);

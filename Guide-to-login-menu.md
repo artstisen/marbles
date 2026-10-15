@@ -138,14 +138,15 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `N` or `:new name` Create a new file in the directory and open it. Without a name (`N` or `:new`) you are asked for it
 - `I` or `:info` (also in the list of favorites) Show information about the selected file or directory: type, size (for a directory: the number of files and directories in it), when it was created and last changed, and the full path. Any key closes the box
 - `V` or `:peek` Peek at the selected file: it is shown read-only in the other pane (with one pane shown, the second pane is shown while you peek). Move and search in it with the keys of the editor (`j` `k`, `gg` `G`, `Ctrl+D`, `/text`, `y` to yank to the clipboard ...); what would change the text is refused. `Enter` opens the file in the editor at the line of the cursor, and `Esc` (or `:q`) goes back to the browser. A large file is shown up to about 2000 lines (100 KB), with a last line telling that there is more. Directories, data files and files that are not text are not peeked at
-- See [Managing files](#managing-files), [Favorites](#favorites) and [File history](#file-history) below for the other keys
-- `R` Refresh
+- See [Managing files](#managing-files), [Favorites](#favorites), [File history](#file-history) and [Directory hotlist](#directory-hotlist) below for the other keys
+- `B` or `:hotadd` Add the directory shown to the [directory hotlist](#directory-hotlist), whatever file is selected in it. `W` or `:hotlist` shows the hotlist
+- `R` or `:refresh` Refresh: read the directories again (the selection stays)
 - `:path` Copy the full path of the selected file or directory (on `..`: the directory shown) to the system clipboard and/or the paste bin, as set in the [clipboard settings](Guide-to-editor.md#system-clipboard-and-paste-bin)
 - `:diff` Compare two text files: the two marked with `Space`, or (without marks, with two panes) the file selected in each pane. `:diff name` compares the selected file with the file of that name in the directory (or a path). The older file, by the time it was last changed, is the old one, so `+` is what was added since. The comparison is shown as in the editor (see [Comparing](Guide-to-editor.md#comparing)): `n` `N` (or `]c` `[c`) go to the changes, `Enter` opens the file at the line, `Esc` returns here. `:diff -w` does not count blank space. If the line endings or the encodings differ, the line at the top says so (they are not compared). Directories, data files and files that are not text are not compared
 - `:name` Copy the name of the selected file or directory (on `..`: of the directory shown) in the same way: `notes.md`, not the whole path
 - `:match` With two panes: the other pane shows the directory of the pane with the focus (with the same file or directory selected). The focus stays where it is
 - `:cd path` Go to a directory. `:home` Go to the folder of the data files in use (the data directory, or the subfolder of it chosen for the data files)
-- `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` and `completions.txt` (the snippets and the completions of the editor), `favorites.txt` and `history.txt` (of the file browser), and `jump.txt` (of the Jump menu)
+- `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` and `completions.txt` (the snippets and the completions of the editor), `favorites.txt`, `history.txt` and `hotlist.txt` (of the file browser), and `jump.txt` (of the Jump menu)
 - `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again (see [the command line](Guide-to-main-menu.md))
 - `?` Help
 - `Esc`, `Q` or `:q` Close the file browser
@@ -265,6 +266,23 @@ The file history lists the files you have opened in the editor from the file bro
 - `Esc`, `Q`, `O`, `h` or `-` Back to the file browser
 
 The history holds the last 100 files: when it is full, the file opened longest ago is dropped. A file that is gone is shown as _(missing)_. The list is kept in the file `history.txt` in the data directory (one line per file: the time it was opened, a tab character and the path, with the line and column of the cursor and a tab character before the path once the file has been closed in the editor). Like the favorites, it is not encrypted.
+
+### Directory hotlist
+The directory hotlist keeps directories you want to go back to. `B` (or `:hotadd`) in the file browser adds the directory shown in the pane with the focus, whatever file or directory is selected in it, at the end of the list. A directory that is in the list already stays where it is. Taking directories out is done on the page of the list.
+
+- `W` or `:hotlist` (or `:hot`) in the file browser: Show the hotlist. Each row has the name of the directory, and its path after it
+- `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down
+- `l` or `Enter` Go to the directory, in the pane with the focus (the hotlist closes)
+- `Tab` or `v` (or `:move`) Move the directory in the list: `j` `k` move it, and `Esc` (or `Enter`, `Tab`, `v`) ends the moving. Not while a filter shows only some of the list
+- `T` or `:top` Move the directory to the top, `E` or `:bottom` to the end
+- `I` or `:info` Show information about the directory
+- `D` or `:remove` Take the directory out of the hotlist (the directory itself stays). `u` or `:undo` puts it back
+- `X` or `:clear` Clear the hotlist. You are asked first
+- `/text` Only show the directories whose path contains "text". `Esc` shows all again
+- `?` Help, `:` the command line
+- `Esc`, `Q`, `W`, `h` or `-` Back to the file browser
+
+The hotlist holds at most 100 directories. A directory that is gone is shown as _(missing)_. When a directory is renamed or moved in the file browser, the hotlist follows it (also the directories in it). The list is kept in `hotlist.txt` in the data directory, with the path of a directory on each line, so it can also be edited by hand (`:data` in the file browser goes there).
 
 ### Where the cursor was
 When a file is closed in the editor, the line and column of the cursor are kept: in the history, and in the favorites if the file is one. The next time the file is opened, the cursor is placed there, so you go on where you left off; entries of a data file work the same way. The favorites are looked in first, as the history holds only the last 100 files. If the file has changed since and the line or column is no longer there, the cursor goes to the end of the line or of the text. A file opened from the results of a [search](#searching-for-files) is opened at the line found instead.

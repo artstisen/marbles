@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **File browser: directory hotlist**: `B` (or `:hotadd`) adds the directory shown, whatever is selected in it, and `W` (or `:hotlist`) shows the hotlist, with the name and the path of each directory: `Enter` goes to it, `Tab`/`v` then `j` `k` move it (`T` top, `E` end), `D` removes it (`u` puts it back), `X` clears the list. Kept in `hotlist.txt`, one path on each line; renamed and moved directories are followed. `:refresh` refreshes as `R`.
 - **Comparing files (`:diff`)**: in the file browser, two marked files, the file selected in each pane, or `:diff name` (the selected file and that one) are compared, the older one as the old; in the editor, `:diff` compares the text with the saved file or note. The comparison is shown read only as a colored unified diff: `n` `N` or `]c` `[c` go to the changes, `Enter` opens the file at the line, `:w name.diff` saves it, and `:diff -w` does not count blank space. `.diff` and `.patch` files are colored (`:syntax diff`).
 - **Editor**: `gs` and `gS` go to the next/previous misspelled word, as `]s` and `[s` (for keyboards without direct `[` and `]` keys).
 - **File browser**: `:name` copies the name of the selected file or directory to the clipboard (as `:path` copies the whole path). **Start page**: the choices of the Mode tab open at once with a key, the same in all languages: `N` Note Management, `F` Text Editor/File Management, `O` Jump menu, `U` Quick guide (the numbers still only select). The keys are shown after the numbers.

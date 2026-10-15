@@ -1324,6 +1324,7 @@ internal static class Tools
         Files, // The file browser
         Favorites, // The favorites of the file browser
         History, // The files opened from the file browser
+        Hotlist, // The directory hotlist of the file browser
         Search, // The files found by a search in the file browser
         ColorScheme, // The color scheme editor
         Logos, // The logos and the logo editor
@@ -1484,13 +1485,15 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("P :fav", Lang.T("Add to/Remove from the favorites (*)"), false));
             _shortcutList.Add(new Shortcut("F :favorites", Lang.T("Show the favorites"), false));
             _shortcutList.Add(new Shortcut("O :history", Lang.T("Show the files opened before (file history)"), false));
+            _shortcutList.Add(new Shortcut("B :hotadd", Lang.T("Add the directory shown to the hotlist"), false));
+            _shortcutList.Add(new Shortcut("W :hotlist", Lang.T("Show the directory hotlist"), false));
             _shortcutList.Add(new Shortcut("S :find", Lang.T("Search for files by name and by text"), false));
             _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path to the clipboard (:clipboard)"), false));
             _shortcutList.Add(new Shortcut(":name", Lang.T("Copy the name to the clipboard"), false));
             _shortcutList.Add(new Shortcut(":diff", Lang.T("Compare 2 marked files, or 1 in each pane"), false));
             _shortcutList.Add(new Shortcut(":diff name", Lang.T("Compare the selected file with that file"), false));
             _shortcutList.Add(new Shortcut(":diff -w", Lang.T("Compare, blank space does not count"), false));
-            _shortcutList.Add(new Shortcut("R", Lang.T("Refresh"), false));
+            _shortcutList.Add(new Shortcut("R :refresh", Lang.T("Refresh"), false));
             _shortcutList.Add(new Shortcut(":cd path", Lang.T("Go to a directory"), false));
             _shortcutList.Add(new Shortcut(":home", Lang.T("Go to the folder of the data files in use"), false));
             _shortcutList.Add(new Shortcut(":data", Lang.T("Go to the data directory (settings, snippets ...)"), false));
@@ -1555,6 +1558,21 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q O h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.F("The last {0} files opened, kept in history.txt", FileHistory.MaxCount), false));
+            _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionHotlist, true));
+            _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
+            _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
+            _shortcutList.Add(new Shortcut("l Enter", Lang.T("Go to the directory (in the pane with the focus)"), false));
+            _shortcutList.Add(new Shortcut("Tab v :move", Lang.T("Move the directory (j k, then Esc)"), false));
+            _shortcutList.Add(new Shortcut("T :top", Lang.T("Move the directory to the top"), false));
+            _shortcutList.Add(new Shortcut("E :bottom", Lang.T("Move the directory to the end"), false));
+            _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
+            _shortcutList.Add(new Shortcut("D :remove", Lang.T("Take it out of the hotlist (the directory stays)"), false));
+            _shortcutList.Add(new Shortcut("u :undo", Lang.T("Put back what was removed last"), false));
+            _shortcutList.Add(new Shortcut("X :clear", Lang.T("Clear the hotlist (asks first)"), false));
+            _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
+            _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("Esc Q W h -", Lang.T("Back to the file browser"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.F("At most {0} directories, kept in hotlist.txt", DirectoryHotlist.MaxCount), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionJump, true));
             _shortcutList.Add(new Shortcut(":jump :ju Ctrl+O", Lang.T("Open the Jump menu (from most places)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tabs"), Lang.T("Jumps, Files, Favorites, Configuration, Data files"), false));
@@ -1798,6 +1816,7 @@ internal static class Tools
             HelpTopic.Files => DialogText.HelpSectionFiles,
             HelpTopic.Favorites => DialogText.HelpSectionFavorites,
             HelpTopic.History => DialogText.HelpSectionHistory,
+            HelpTopic.Hotlist => DialogText.HelpSectionHotlist,
             HelpTopic.Search => DialogText.HelpSectionSearch,
             HelpTopic.Clipboard => DialogText.HelpSectionClipboard,
             HelpTopic.ColorScheme => DialogText.HelpSectionColorScheme,

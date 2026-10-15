@@ -11,6 +11,7 @@ internal enum CommandContext
     FilePicker, // The file browser when a file or directory is picked for something
     Favorites, // The favorites of the file browser
     History, // The files opened from the file browser
+    Hotlist, // The directory hotlist of the file browser
     Search, // The files found by a search in the file browser
     Editor,
     Start // The start page (Select mode): its tabs Mode, Configuration and Help
@@ -58,8 +59,8 @@ internal static class Commands
             " readonly" + Common,
             "q h ro ju" + CommonShort),
         [CommandContext.Files] = new Table(
-            "quit close exit home data help jump peek diff cd new info mkdir rename copy duplicate move delete favorite favorites history panes match path name find",
-            "q h fav favs hist ju"),
+            "quit close exit home data help jump peek diff cd new info mkdir rename copy duplicate move delete favorite favorites history hotlist hotadd refresh panes match path name find",
+            "q h fav favs hist hot ju"),
         [CommandContext.FilePicker] = new Table(
             "quit close home data help cd",
             "q h"),
@@ -69,6 +70,9 @@ internal static class Commands
         [CommandContext.History] = new Table(
             "quit close help jump info goto favorite remove clear",
             "q h fav ju"),
+        [CommandContext.Hotlist] = new Table(
+            "quit close help jump info remove undo top bottom move clear",
+            "q h u ju"),
         [CommandContext.Search] = new Table(
             "quit close help jump find info goto favorite",
             "q h fav ju"),

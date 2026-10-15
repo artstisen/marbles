@@ -49,6 +49,11 @@ internal static partial class FileExplorer
                 return BrowseFavorites();
             case ConsoleKey.O:
                 return BrowseHistory();
+            case ConsoleKey.B:
+                AddToHotlist();
+                break;
+            case ConsoleKey.W:
+                return BrowseHotlist();
             case ConsoleKey.S:
                 return SearchFiles();
             default:
@@ -107,6 +112,17 @@ internal static partial class FileExplorer
             case "hist":
             case "history":
                 return BrowseHistory();
+            case "hotlist":
+            case "hot":
+                return BrowseHotlist();
+            case "hotadd":
+                AddToHotlist();
+                break;
+            case "refresh":
+                // As R: read the directories again, keeping the selection
+                LoadItems(ActivePane.Items.Count > 0 ? ActivePane.Items[ActivePane.Index].Name : null);
+                if (IsDual) Reload(OtherPane);
+                break;
             case "panes":
                 TogglePanes();
                 break;
@@ -324,6 +340,8 @@ internal static partial class FileExplorer
             done++;
             source.Marks.Remove(item.Path);
             if (isMove && FileFavorites.PathChanged(item.Path, path)) favoritesChanged = true;
+            // A directory moved: the hotlist follows it
+            if (isMove && item.IsDirectory) HotlistPathChanged(item.Path, path);
         }
 
         string message;
@@ -444,6 +462,7 @@ internal static partial class FileExplorer
             if (FileHistory.PathChanged(item.Path, path)) FileHistory.Save();
             JumpHistory.Load();
             if (JumpHistory.PathChanged(item.Path, path)) JumpHistory.Save();
+            if (item.IsDirectory) HotlistPathChanged(item.Path, path);
         }
     }
 
