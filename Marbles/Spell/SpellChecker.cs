@@ -13,9 +13,15 @@ namespace Marbles;
 internal sealed class SpellChecker
 {
     /// <summary>
-    /// The directory with the spell files: "spell" in the application folder (next to the data directory)
+    /// The directory with the spell files: "spell" next to the data directory. It can be set to another (for testing)
     /// </summary>
-    internal static string DirectoryName { get; set; } = "spell";
+    internal static string DirectoryName
+    {
+        get => _directoryName ?? Path.Combine(FileIo.DataParentDirectory, "spell");
+        set => _directoryName = value;
+    }
+
+    private static string? _directoryName;
 
     private const string FileNameEnd = ".utf-8.spl";
     private const string AddFileNameEnd = ".utf-8.add";

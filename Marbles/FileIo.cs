@@ -10,8 +10,51 @@ internal static class FileIo
     private const string ExportFileName = "export";
     private const string ExportFileNameExt = ".txt";
 
-    private const string
-        DataDirectory = "data"; // Always use the data directory in the application folder -DO NOT CHANGE
+    private const string DataDirectoryName = "data"; // The name of the data directory -DO NOT CHANGE
+
+    /// <summary>
+    /// The data directory: "data" in the directory Marbles is started in, if there is one there (as Marbles has
+    /// always done), else "data" next to the program, so the same data is used wherever Marbles is started from (a
+    /// terminal in another directory, a file opened with Marbles). If the program directory cannot be written to (a
+    /// program installed for all users), "Marbles/data" in the user's application data is used
+    /// </summary>
+    private static string DataDirectory => Directory.Exists(DataDirectoryName) ? DataDirectoryName : ProgramDataDirectory;
+
+    private static string? _programDataDirectory;
+
+    private static string ProgramDataDirectory => _programDataDirectory ??= FindProgramDataDirectory();
+
+    private static string FindProgramDataDirectory()
+    {
+        var nextToProgram = Path.Combine(AppContext.BaseDirectory, DataDirectoryName);
+        if (Directory.Exists(nextToProgram) || CanWriteIn(AppContext.BaseDirectory)) return nextToProgram;
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData,
+            Environment.SpecialFolderOption.DoNotVerify), "Marbles", DataDirectoryName);
+    }
+
+    // True if a file can be made in a directory (it is made and deleted again)
+    private static bool CanWriteIn(string directory)
+    {
+        try
+        {
+            var test = Path.Combine(directory, ".marbles-" + Guid.NewGuid().ToString("N"));
+            using (File.Create(test, 1, FileOptions.DeleteOnClose))
+            {
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// The directory the data directory is in (where the directory "spell" is too)
+    /// </summary>
+    internal static string DataParentDirectory =>
+        Path.GetDirectoryName(Path.GetFullPath(DataDirectory)) ?? AppContext.BaseDirectory;
 
     internal const string SettingsFileName = "settings.ini";
     private static bool _saveBackup;

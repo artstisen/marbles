@@ -1449,6 +1449,8 @@ en: "The language file {0} was not found: English is used."
 nl: "Taalbestand {0} niet gevonden: Engels wordt gebruikt."
 en: "Put it in the folder lang next to Marbles (or in the data directory)."
 nl: "Zet het in de map lang naast Marbles (of in de datamap)."
+en: "{0} is not there. Make it?"
+nl: "{0} bestaat niet. Aanmaken?"
 
 # QuickGuide.cs
 en: "Marbles has two parts, selected on the start page"

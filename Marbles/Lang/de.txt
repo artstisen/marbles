@@ -1449,6 +1449,8 @@ en: "The language file {0} was not found: English is used."
 de: "Die Sprachdatei {0} wurde nicht gefunden: Englisch wird verwendet."
 en: "Put it in the folder lang next to Marbles (or in the data directory)."
 de: "Lege sie in den Ordner lang neben Marbles (oder in den Datenordner)."
+en: "{0} is not there. Make it?"
+de: "{0} gibt es nicht. Anlegen?"
 
 # QuickGuide.cs
 en: "Marbles has two parts, selected on the start page"

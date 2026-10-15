@@ -1449,6 +1449,8 @@ en: "The language file {0} was not found: English is used."
 da: "Sprogfilen {0} blev ikke fundet: engelsk bruges."
 en: "Put it in the folder lang next to Marbles (or in the data directory)."
 da: "Læg den i mappen lang ved siden af Marbles (eller i datamappen)."
+en: "{0} is not there. Make it?"
+da: "{0} findes ikke. Opret den?"
 
 # QuickGuide.cs
 en: "Marbles has two parts, selected on the start page"

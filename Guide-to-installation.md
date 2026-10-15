@@ -17,7 +17,20 @@ Ensure that you have the .NET 10 runtime installed on your system. If not you ca
 
 You can create an alias like "_mbls_" to run Marbles with less typing. See [this guide](Guide-to-windows-terminal-crt.md) for more information.
 
-Marbles keeps your notes and settings in a directory named "data", created in the directory you start Marbles from. The languages other than English, Danish and German are files in the folder "lang" next to the program (see [Language files](#language-files)). To use spell checking in the editor, place spell files in a directory named "spell" next to it (see the [guide to the editor](Guide-to-editor.md#spell-checking)). Marbles needs a terminal window of at least 80 columns and 23 rows.
+Marbles keeps your notes and settings in a directory named "data", next to the Marbles program, so the same notes and settings are used wherever Marbles is started from. If the directory you start Marbles in has a directory "data" of its own, that one is used instead (as earlier versions did, which used the directory they were started in). If the program directory cannot be written to (a program installed for all users), the data directory is "Marbles/data" in your application data (`~/.local/share` on Linux, `AppData\Local` on Windows). The languages other than English, Danish and German are files in the folder "lang" next to the program (see [Language files](#language-files)). To use spell checking in the editor, place spell files in a directory named "spell" next to it (see the [guide to the editor](Guide-to-editor.md#spell-checking)). Marbles needs a terminal window of at least 80 columns and 23 rows.
+
+## Starting Marbles with a file
+Give a file or a directory when you start Marbles, and it is opened at once, without the start page:
+
+```
+marbles notes.md                Open notes.md in the editor (the file browser is in its directory behind it)
+marbles ~/projects/site         Show the directory in the file browser
+marbles work.mbls               Select the data file on the login page (in the data directory)
+```
+
+A path that is not a full path is taken from the directory you are in. Closing the editor (`:q`) shows the file browser in the directory of the file, and closing the file browser the start page, as after a jump from the [Jump menu](Guide-to-main-menu.md#jump-menu); `:exit` leaves Marbles. A file that is not there yet (in a directory that is) is made if you want that: Marbles asks first. A data file outside the data directory is shown in the file browser, which offers to copy it to the data directory. With _Text Editor only_ a data file is not opened, and with _Note Management only_ a text file or directory is not.
+
+(On Windows the program is `Marbles.exe`, and the portable version is started with `dotnet Marbles.dll notes.md`.)
 
 ## Language files
 English, Danish and German are built into Marbles. The other languages are text files in a folder named `lang` next to the Marbles program: `nb.txt` (Norwegian), `sv.txt` (Swedish), `es.txt` (Spanish), `fr.txt` (French), `it.txt` (Italian), `pl.txt` (Polish), `nl.txt` (Dutch) and `fi.txt` (Finnish). They come with Marbles; keep the folder next to the program when you copy or move it. If it is missing, those languages are not offered (and Marbles starts in English if one of them was chosen, keeping the choice for when the file is back).

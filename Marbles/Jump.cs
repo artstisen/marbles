@@ -285,6 +285,14 @@ internal static class Jump
     internal static JumpTarget? Pending { get; private set; }
 
     /// <summary>
+    /// Go to a place when Marbles has started (a file or directory given when it is started, see StartArgument)
+    /// </summary>
+    internal static void OpenAtStart(JumpTarget target)
+    {
+        Pending = target;
+    }
+
+    /// <summary>
     /// True for the key that opens the Jump menu: Ctrl+O
     /// </summary>
     internal static bool IsKey(ConsoleKeyInfo key) =>

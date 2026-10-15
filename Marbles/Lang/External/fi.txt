@@ -1449,6 +1449,8 @@ en: "The language file {0} was not found: English is used."
 fi: "Kielitiedostoa {0} ei löytynyt: käytetään englantia."
 en: "Put it in the folder lang next to Marbles (or in the data directory)."
 fi: "Laita se lang-kansioon Marblesin viereen (tai data-kansioon)."
+en: "{0} is not there. Make it?"
+fi: "Tiedostoa ei ole: {0}. Luodaanko?"
 
 # QuickGuide.cs
 en: "Marbles has two parts, selected on the start page"

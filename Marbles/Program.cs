@@ -4,6 +4,8 @@ class Program
 {
     private static void Main(string[] args)
     {
+        // A path given (relative to the directory Marbles is started in, which is read before anything else)
+        var currentDirectory = Directory.GetCurrentDirectory();
         Init.RunInitialization();
         if (Lang.Missing != null)
         {
@@ -14,8 +16,50 @@ class Program
                 Lang.T("Put it in the folder lang next to Marbles (or in the data directory)."));
         }
 
-        StartMenu.Start();
+        // Started with a file or directory ("marbles notes.md"): it is opened as a jump, without the start page
+        if (args.Length > 0 && OpenArgument(args[0], currentDirectory) is { } target)
+        {
+            Jump.OpenAtStart(target);
+        }
+        else
+        {
+            StartMenu.Start();
+        }
+
         MainLoop();
+    }
+
+    // The place a path given at startup leads to, or null (a message tells why, or the user did not want a file
+    // that is not there to be made)
+    private static JumpTarget? OpenArgument(string argument, string currentDirectory)
+    {
+        var result = StartArgument.Resolve(argument, currentDirectory, StartMenu.Only);
+        if (result.Message.Length > 0)
+        {
+            Tools.ClearScreen();
+            ChoiceBox.Message(DialogText.ApplicationName, result.Message, string.Empty);
+            return null;
+        }
+
+        if (!result.AskToCreate) return result.Target;
+        Tools.ClearScreen();
+        if (!ChoiceBox.Confirm(DialogText.NewFile, Lang.F("{0} is not there. Make it?", Path.GetFileName(result.Path)),
+                result.Path, false))
+        {
+            return null;
+        }
+
+        try
+        {
+            File.WriteAllText(result.Path, string.Empty);
+            EventLog.Add(DialogText.LogFile + "New: " + result.Path);
+            return result.Target;
+        }
+        catch (Exception e)
+        {
+            ChoiceBox.Message(DialogText.NewFile, e.Message, result.Path);
+            return null;
+        }
     }
 
     // Each round handles one key in the screen of the current mode. When a key leads to another
@@ -30,7 +74,8 @@ class Program
                 if (starting)
                 {
                     starting = false;
-                    Menu.DrawTopMenu(true, true, false);
+                    // (a place given at startup is opened instead of the first page)
+                    if (Jump.Pending == null) Menu.DrawTopMenu(true, true, false);
                 }
 
                 if (Jump.Pending != null)
