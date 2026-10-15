@@ -552,6 +552,17 @@ internal static class StartMenu
             return choices;
         }
 
+        // The keys that open a choice at once (the same in all languages; the numbers only select). Notes: N,
+        // the file browser: F or T, the Jump menu: O (as Ctrl+O; j moves down), the quick guide: U, exit: Q (asks)
+        private static string KeysOf(Choice choice) => choice switch
+        {
+            Choice.Notes => "N",
+            Choice.Editor => "F T",
+            Choice.Jump => "O",
+            Choice.QuickGuide => "U",
+            _ => "Q"
+        };
+
         // In the language in use
         private static string[] Choices => ChoicesShown().Select(choice => choice switch
         {
@@ -569,13 +580,16 @@ internal static class StartMenu
         public void Draw(TabArea area, bool full)
         {
             var choices = Choices;
+            var shown = ChoicesShown();
             _selected = Math.Min(_selected, choices.Length - 1);
             if (full)
             {
                 for (var i = 0; i < choices.Length; i++)
                 {
+                    // The number, the keys that open the choice at once, and the choice
                     Tools.SetCursorEx(area.Top + i, area.Left + 3);
-                    Console.Write(Tools.TruncateString((i + 1) + " .... " + choices[i], area.Width - 4, true));
+                    Console.Write(Tools.TruncateString((i + 1) + " " + KeysOf(shown[i]).PadRight(3) + " .... " +
+                                                       choices[i], area.Width - 4, true));
                 }
             }
 
@@ -597,6 +611,23 @@ internal static class StartMenu
             // Ctrl+O: the Jump menu, as on the other pages
             if (Marbles.Jump.IsKey(key)) return Open(Choice.Jump);
             if (key.Key is ConsoleKey.Enter or ConsoleKey.L or ConsoleKey.RightArrow) return Open(shown[_selected]);
+            // The keys of the choices open them at once
+            var direct = key.Key switch
+            {
+                ConsoleKey.N => Choice.Notes,
+                ConsoleKey.F or ConsoleKey.T => Choice.Editor,
+                ConsoleKey.O => Choice.Jump,
+                ConsoleKey.U => Choice.QuickGuide,
+                _ => (Choice?)null
+            };
+            if (direct is { } choice && (key.Modifiers & (ConsoleModifiers.Control | ConsoleModifiers.Alt)) == 0)
+            {
+                // A mode that is not used (Text Editor only, Note Management only) is not opened
+                if (!shown.Contains(choice)) return TabResult.None;
+                _selected = shown.IndexOf(choice);
+                return Open(choice);
+            }
+
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q)
             {
                 if (ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false))

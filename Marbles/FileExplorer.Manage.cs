@@ -115,6 +115,9 @@ internal static partial class FileExplorer
             case "path":
                 CopyPath();
                 break;
+            case "name":
+                CopyName();
+                break;
             default:
                 return KeyResult.NotHandled;
         }
@@ -532,6 +535,30 @@ internal static partial class FileExplorer
         var path = SelectedItem()?.Path ?? ActivePane.Directory;
         if (path.Length == 0) return;
         var (message, _) = SystemClipboard.Copy(path, false, true);
+        _message = message;
+    }
+
+    // ":name": the name of the selected file or directory to the clipboard (on "..": of the directory shown, and
+    // on a drive: its name)
+    private static void CopyName()
+    {
+        var name = SelectedItem()?.Name;
+        if (name == null && ActivePane.Directory.Length == 0)
+        {
+            // The list of drives
+            name = ActivePane.Items.Count > 0 ? ActivePane.Items[ActivePane.Index].Name : string.Empty;
+        }
+        else if (name == null)
+        {
+            var directory = ActivePane.Directory.TrimEnd(System.IO.Path.DirectorySeparatorChar,
+                System.IO.Path.AltDirectorySeparatorChar);
+            name = System.IO.Path.GetFileName(directory);
+            // The root of a drive has no name of its own
+            if (name.Length == 0) name = ActivePane.Directory;
+        }
+
+        if (name.Length == 0) return;
+        var (message, _) = SystemClipboard.Copy(name, false, true);
         _message = message;
     }
 

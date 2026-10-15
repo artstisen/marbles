@@ -7,11 +7,13 @@ Marbles can be used for encrypted notes and as an editor for ordinary text files
 
 
 ### Mode
-- `1` **Note Management (encrypted notes)**: Continue to the login page
-- `2` **Text Editor/File Management**: Open the [file browser](#file-browser) to edit plain text files and manage files. Closing the file browser returns here
-- `3` **Jump menu**: Open the [Jump menu](Guide-to-main-menu.md#jump-menu), to go straight to a file, a page of Marbles or a data file (also with `Ctrl+O`). Pages such as Color schemes and Help open on top of the start page
-- `4` **Quick guide**: A short introduction to Marbles: what the two parts are for, the keys for moving around, and the modes of the editor. `Esc` closes it, and `?` shows the help with all the keys
-- `5` **Exit**: Close Marbles at once
+Each choice has a number and a key, shown in front of it. The number selects the choice (then `Enter` opens it), and the key opens it at once. The keys are the same in all languages.
+
+- `1` `N` **Note Management (encrypted notes)**: Continue to the login page
+- `2` `F` `T` **Text Editor/File Management**: Open the [file browser](#file-browser) to edit plain text files and manage files. Closing the file browser returns here
+- `3` `O` **Jump menu**: Open the [Jump menu](Guide-to-main-menu.md#jump-menu), to go straight to a file, a page of Marbles or a data file (also with `Ctrl+O`). Pages such as Color schemes and Help open on top of the start page
+- `4` `U` **Quick guide**: A short introduction to Marbles: what the two parts are for, the keys for moving around, and the modes of the editor. `Esc` closes it, and `?` shows the help with all the keys
+- `5` **Exit**: Close Marbles at once (`Enter` on it). `Q` exits too, after asking
 
 Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking in a box on top of the page (`Y`/`N`, or `j`/`k` and `Enter`; `Esc` cancels).
 
@@ -139,6 +141,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - See [Managing files](#managing-files), [Favorites](#favorites) and [File history](#file-history) below for the other keys
 - `R` Refresh
 - `:path` Copy the full path of the selected file or directory (on `..`: the directory shown) to the system clipboard and/or the paste bin, as set in the [clipboard settings](Guide-to-editor.md#system-clipboard-and-paste-bin)
+- `:name` Copy the name of the selected file or directory (on `..`: of the directory shown) in the same way: `notes.md`, not the whole path
 - `:match` With two panes: the other pane shows the directory of the pane with the focus (with the same file or directory selected). The focus stays where it is
 - `:cd path` Go to a directory. `:home` Go to the folder of the data files in use (the data directory, or the subfolder of it chosen for the data files)
 - `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` and `completions.txt` (the snippets and the completions of the editor), `favorites.txt` and `history.txt` (of the file browser), and `jump.txt` (of the Jump menu)

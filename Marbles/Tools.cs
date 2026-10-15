@@ -1347,10 +1347,11 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("j k 1-5", Lang.T("Select"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last (also in Configuration)"), false));
             _shortcutList.Add(new Shortcut("Enter", Lang.T("Open the selected"), false));
-            _shortcutList.Add(new Shortcut("  1", Lang.T("Note Management: the login page"), false));
-            _shortcutList.Add(new Shortcut("  2", Lang.T("Text Editor/File Management: the file browser"), false));
-            _shortcutList.Add(new Shortcut("  3 Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
-            _shortcutList.Add(new Shortcut("  4", Lang.T("Quick guide: a short introduction"), false));
+            _shortcutList.Add(new Shortcut("N F T O U", Lang.T("Open the choice of the key at once"), false));
+            _shortcutList.Add(new Shortcut("  1 N", Lang.T("Note Management: the login page"), false));
+            _shortcutList.Add(new Shortcut("  2 F T", Lang.T("Text Editor/File Management: the file browser"), false));
+            _shortcutList.Add(new Shortcut("  3 O Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
+            _shortcutList.Add(new Shortcut("  4 U", Lang.T("Quick guide: a short introduction"), false));
             _shortcutList.Add(new Shortcut("  5", Lang.T("Exit Marbles (without asking)"), false));
             _shortcutList.Add(new Shortcut("Tab", Lang.T("Next tab: Mode, Configuration, Help"), false));
             _shortcutList.Add(new Shortcut("Shift+Tab", Lang.T("The tab before"), false));
@@ -1485,6 +1486,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("O :history", Lang.T("Show the files opened before (file history)"), false));
             _shortcutList.Add(new Shortcut("S :find", Lang.T("Search for files by name and by text"), false));
             _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path to the clipboard (:clipboard)"), false));
+            _shortcutList.Add(new Shortcut(":name", Lang.T("Copy the name to the clipboard"), false));
             _shortcutList.Add(new Shortcut("R", Lang.T("Refresh"), false));
             _shortcutList.Add(new Shortcut(":cd path", Lang.T("Go to a directory"), false));
             _shortcutList.Add(new Shortcut(":home", Lang.T("Go to the folder of the data files in use"), false));
