@@ -420,6 +420,10 @@ internal static class DialogText
     public static string CopiedToClipboard => Lang.T("Copied to the clipboard");
     public static string CopiedToPasteBin => Lang.T("Copied to the paste bin");
     public static string CopiedToBoth => Lang.T("Copied (clipboard, paste bin)");
+    public static string CopiedToMemory => Lang.T("Copied to the string memory (p in the editor)");
+    public static string CopiedToClipboardAndMemory => Lang.T("Copied to the clipboard and the string memory");
+    public static string CopiedToPasteBinAndMemory => Lang.T("Copied to the paste bin and the string memory");
+    public static string CopiedToAllAndMemory => Lang.T("Copied (clipboard, paste bin, string memory)");
     public static string PasteBinWritten => Lang.T("Written to the paste bin");
     public static string PasteBinAdded => Lang.T("Added to the paste bin");
     public static string PasteBinInserted => Lang.T("Inserted from the paste bin");

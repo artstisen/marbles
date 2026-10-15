@@ -102,6 +102,24 @@ internal static class SystemClipboard
             : DialogText.CopiedToPasteBin, false);
     }
 
+    /// <summary>
+    /// Copy a name or a path (":name", ":path"): to the string memory, as the current string, so "p" and CTRL+R in
+    /// the editor put it in, and to the clipboard and/or the paste bin as set. The string memory is used also when
+    /// both are turned off
+    /// </summary>
+    /// <returns>The message that tells where it went, and whether it is an error</returns>
+    internal static (string Message, bool IsError) CopyWithMemory(string text)
+    {
+        if (text.Length == 0) return (string.Empty, false);
+        Tools.StoreInLineMemory(text);
+        var (message, isError) = Copy(text, false, false);
+        if (isError) return (message, true);
+        return (Osc52 && PasteBin ? DialogText.CopiedToAllAndMemory
+            : Osc52 ? DialogText.CopiedToClipboardAndMemory
+            : PasteBin ? DialogText.CopiedToPasteBinAndMemory
+            : DialogText.CopiedToMemory, false);
+    }
+
     #region The paste bin
 
     /// <summary>

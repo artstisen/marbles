@@ -561,7 +561,8 @@ internal static partial class FileExplorer
     {
         var path = SelectedItem()?.Path ?? ActivePane.Directory;
         if (path.Length == 0) return;
-        var (message, _) = SystemClipboard.Copy(path, false, true);
+        // Also to the string memory: "p" in the editor puts it in
+        var (message, _) = SystemClipboard.CopyWithMemory(path);
         _message = message;
     }
 
@@ -740,7 +741,8 @@ internal static partial class FileExplorer
         }
 
         if (name.Length == 0) return;
-        var (message, _) = SystemClipboard.Copy(name, false, true);
+        // Also to the string memory: "p" in the editor puts it in
+        var (message, _) = SystemClipboard.CopyWithMemory(name);
         _message = message;
     }
 

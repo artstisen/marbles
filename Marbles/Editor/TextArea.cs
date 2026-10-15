@@ -525,7 +525,8 @@ public class TextArea
                     break;
                 }
 
-                var (message, isError) = SystemClipboard.Copy(FileExplorer.CurrentFilePath, false, true);
+                // Also to the string memory, as the current string: "p" puts it in
+                var (message, isError) = SystemClipboard.CopyWithMemory(FileExplorer.CurrentFilePath);
                 _engine.ShowMessage(message, isError);
                 _shownStatus = null;
                 break;

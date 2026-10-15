@@ -1489,6 +1489,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("W :hotlist", Lang.T("Show the directory hotlist"), false));
             _shortcutList.Add(new Shortcut("S :find", Lang.T("Search for files by name and by text"), false));
             _shortcutList.Add(new Shortcut(":path", Lang.T("Copy the path to the clipboard (:clipboard)"), false));
+            _shortcutList.Add(new Shortcut(string.Empty, Lang.T(":path and :name: also p in the editor"), false));
             _shortcutList.Add(new Shortcut(":name", Lang.T("Copy the name to the clipboard"), false));
             _shortcutList.Add(new Shortcut(":diff", Lang.T("Compare 2 marked files, or 1 in each pane"), false));
             _shortcutList.Add(new Shortcut(":diff name", Lang.T("Compare the selected file with that file"), false));

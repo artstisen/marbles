@@ -144,6 +144,28 @@ public class ClipboardTests : IDisposable
     }
 
     [Fact]
+    public void ANameOrPath_GoesToTheStringMemory_ForPInTheEditor()
+    {
+        // Also with the clipboard and the paste bin turned off
+        SystemClipboard.Osc52 = false;
+        SystemClipboard.PasteBin = false;
+        Assert.Equal((DialogText.CopiedToMemory, false), SystemClipboard.CopyWithMemory("notes.md"));
+        Assert.Equal("notes.md", Tools.GetCurrentLineFromLineMemory());
+        var editor = Editor("see ");
+        editor.Type("$p");
+        Assert.Equal("see notes.md", editor.GetText());
+
+        // It is the current string after a yank, and the yank is still in the memory
+        editor.Type("0yiw");
+        SystemClipboard.PasteBin = true;
+        Assert.Equal((DialogText.CopiedToPasteBinAndMemory, false), SystemClipboard.CopyWithMemory("/home/lars"));
+        Assert.Equal("/home/lars", Tools.GetCurrentLineFromLineMemory());
+        Assert.Contains("see", Tools.GetAllLinesFromLineMemory());
+        SystemClipboard.ReadPasteBin(out var text);
+        Assert.Equal("/home/lars", text);
+    }
+
+    [Fact]
     public void ThePasteBin_IsInTheDataDirectory_UnlessAFullPathIsGiven()
     {
         var data = Path.GetFullPath(FileIo.GetDataDirectoryName());
