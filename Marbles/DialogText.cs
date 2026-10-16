@@ -116,13 +116,12 @@ internal static class DialogText
     public static string FileInfo => Lang.T("Info");
     public static string Save => Lang.T("Save");
     public static string Restart => Lang.T("Restart");
-    public static string Clear => Lang.T("Clear");
     public static string Log => Lang.T("Log");
     public static string Refresh => Lang.T("Refresh");
     public static string Exit => Lang.T("Exit");
     public static string Title => Lang.T("Title");
     public static string Select => Lang.T("Select");
-    public static string SortColon => Lang.T("Sort:");
+    public static string SortBy(string order) => Lang.F("Sort: {0}", order);
     public const string TabBrackets = "(Tab)";
     public static string SortOptionDateChanged => Lang.T("Date changed");
     public static string FavoritesSortColumn => Lang.T("Date changed/Custom");
@@ -653,7 +652,7 @@ internal static class DialogText
     // Spell checking
     public static string SpellFileInvalid => Lang.T("Not a spell file that can be used (a UTF-8 .spl file is needed)");
     public static string CaptionsSpell => Lang.T("Spell checker");
-    public static string SpellFileNotFound => Lang.T("Spell file not found: ");
+    public static string SpellFileNotFound(string path) => Lang.F("Spell file not found: {0}", path);
     public static string SpellNoLanguage => Lang.T("No language given");
     public static string SpellNoWord => Lang.T("No word to add");
     public static string SpellOff => Lang.T("Spell checking is off (turn it on with :spell)");
@@ -667,7 +666,9 @@ internal static class DialogText
     public const string SpellStatus = "SPELL";
 
     // Command line
-    public static string NotACommand => Lang.T("Not a command: ");
+    public static string NotACommand(string command) => Lang.F("Not a command: {0}", command);
+    public static string ClearOrMoreOptions => Lang.T("Clear/More options");
+    public static string ApplicationExit => Lang.F("{0} exit", ApplicationName);
     public const string CommandPrompt = "COMMAND:"; // Shown in front of a command being typed
 
     // Editor status line

@@ -73,7 +73,7 @@ internal static class Bookmarks
         {
             var parts = rawLine.TrimEnd('\r').Split('\t', 3);
             if (parts.Length < 2 || JumpHistory.ParseKind(parts[0]) is not { } kind) continue;
-            var place = parts[1].Trim();
+            var place = kind is JumpKind.File or JumpKind.Directory ? FileOperations.ListedPath(parts[1]) : parts[1].Trim();
             if (place.Length == 0) continue;
             var target = new JumpTarget(kind, place);
             if (Contains(target)) continue;
@@ -202,10 +202,8 @@ internal static class Bookmarks
         var changed = false;
         for (var i = 0; i < List.Count; i++)
         {
-            var target = List[i].Target;
-            if (target.Kind is not (JumpKind.File or JumpKind.Directory)) continue;
-            if (CaretPosition.NewPath(target.Target, oldPath, newPath) is not { } path) continue;
-            List[i] = List[i] with { Target = target with { Target = path } };
+            if (List[i].Target.Followed(oldPath, newPath) is not { } target) continue;
+            List[i] = List[i] with { Target = target };
             changed = true;
         }
 

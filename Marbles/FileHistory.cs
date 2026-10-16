@@ -69,9 +69,10 @@ internal static class FileHistory
             var line = rawLine.TrimEnd('\r');
             var tab = line.IndexOf('\t');
             if (tab < 0) continue;
-            var path = line[(tab + 1)..].Trim();
+            var path = line[(tab + 1)..];
             // Where the cursor was, before the path
             var (caretLine, caretColumn) = CaretPosition.Take(ref path);
+            path = FileOperations.ListedPath(path);
             if (path.Length == 0 || List.Any(entry => FileOperations.SamePath(entry.Path, path))) continue;
             if (!DateTime.TryParseExact(line[..tab].Trim(), TimeFormat, CultureInfo.InvariantCulture,
                     DateTimeStyles.None, out var opened))
@@ -200,7 +201,7 @@ internal static class CaretPosition
     {
         var match = Written.Match(text);
         if (!match.Success) return (0, 0);
-        text = text[match.Length..].Trim();
+        text = text[match.Length..];
         return (int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value));
     }
 

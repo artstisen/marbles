@@ -26,17 +26,31 @@ def language_path(code, given=None):
 
 
 def unquote(value):
-    first, last = value.index('"'), value.rindex('"')
+    """The text between the first and last quote, or None if there are not two quotes"""
+    first, last = value.find('"'), value.rfind('"')
+    if first < 0 or last <= first:
+        return None
     return value[first + 1:last].replace('\\n', '\n')
+
+
+# Lines that cannot be read (no text in quotes): counted as errors by check()
+BAD_LINES = []
 
 
 def pairs(code, given=None):
     result, english = [], None
-    for line in io.open(language_path(code, given), encoding='utf-8').read().split('\n'):
+    # utf-8-sig: a file saved with a BOM (as by Notepad) is read as one without
+    for number, line in enumerate(io.open(language_path(code, given), encoding='utf-8-sig').read().split('\n'), 1):
         if line.startswith('en:'):
             english = unquote(line[3:])
+            if english is None:
+                BAD_LINES.append(f'line {number}: no text in quotes')
         elif english is not None and line.startswith(code + ':'):
-            result.append((english, unquote(line[len(code) + 1:])))
+            translation = unquote(line[len(code) + 1:])
+            if translation is None:
+                BAD_LINES.append(f'line {number}: no translation in quotes')
+            else:
+                result.append((english, translation))
             english = None
     return result
 
@@ -67,6 +81,7 @@ def check(code, given=None):
             errors.append('a line longer than 79: ' + english[:40])
         if '\n' not in english and len(text) > max(len(english) * 1.35, len(english) + 8):
             warnings.append(f'long ({len(english)} -> {len(text)}): {english}  ->  {text}')
+    errors = BAD_LINES + errors
     for e in errors:
         print('ERROR', e)
     for w in warnings:

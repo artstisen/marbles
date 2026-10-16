@@ -80,10 +80,8 @@ internal static class DirectoryHotlist
         {
             var line = rawLine.TrimEnd('\r');
             var tab = line.IndexOf('\t');
-            var written = tab < 0 ? line : line[..tab];
-            var path = written.Trim();
             // A directory whose name starts or ends with blank space (Linux and macOS allow it) keeps it
-            if (path.Length > 0 && written != path && Directory.Exists(written)) path = written;
+            var path = FileOperations.ListedPath(tab < 0 ? line : line[..tab]);
             var name = tab < 0 ? string.Empty : line[(tab + 1)..].Trim();
             if (path.Length == 0 || Contains(path)) continue;
             List.Add(new Entry(path, name));

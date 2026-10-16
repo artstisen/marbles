@@ -172,6 +172,8 @@ public static class FileActions
                             // And set the new filename as the current
                             FileIo.SetFileName(newFileName);
                             Init.Log("Rename file: " + _oldFileName + " -> " + FileIo.GetFileName(), false);
+                            PlacesFollow(Path.Combine(FileIo.GetDataAndSubFolder(), _oldFileName),
+                                Path.Combine(FileIo.GetDataAndSubFolder(), newFileName));
                             return true;
                         }
                     }
@@ -362,6 +364,23 @@ public static class FileActions
         }
     }
 
+    // The bookmarks and the jumps (Recent) of a data file follow it when it is renamed or moved
+    private static void PlacesFollow(string oldPath, string newPath)
+    {
+        try
+        {
+            oldPath = Path.GetFullPath(oldPath);
+            newPath = Path.GetFullPath(newPath);
+            Bookmarks.Follow(oldPath, newPath);
+            JumpHistory.Load();
+            if (JumpHistory.PathChanged(oldPath, newPath)) JumpHistory.Save();
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            // The file is renamed or moved: the lists are not what matters
+        }
+    }
+
     internal static void MoveCurrentDataFile()
     {
         // Return if paths are empty
@@ -405,6 +424,7 @@ public static class FileActions
                     Init.Log("Move: " + FileIo.GetFileName(), false);
                     Init.Log("(From: " + _currentPath + ")", false);
                     Init.Log("(To: " + _newPath + ")", false);
+                    PlacesFollow(currentPathAndFileName, targetPathAndFileName);
                     // Remove lock and return to login
                     SetLockForMove(false, false);
                 }

@@ -588,6 +588,77 @@ public class FileIoTests : IDisposable
     }
 
     [Fact]
+    public void TheEndOfACdataSection_InANote_IsSavedAndLoadedAsItIs()
+    {
+        // "]]>" and the word it was written as before (cmdncdatareplace) both come back as they were
+        Login(Password);
+        Entries.NewEntry("a ]]> b", "x ]]> y cmdncdatareplace ]]]]> z");
+        Assert.True(FileIo.SaveEntries().Saved);
+        Login(Password);
+        Assert.True(FileIo.LoadEntries().Success);
+        Assert.Equal("a ]]> b", Entries.GetEntries()[0].Title);
+        Assert.Equal("x ]]> y cmdncdatareplace ]]]]> z", Entries.GetEntries()[0].Text);
+    }
+
+    [Fact]
+    public void ADataFileFromAnEarlierVersion_HasItsCdataWordRead()
+    {
+        // Before v1.5.3 "]]>" was written as the word cmdncdatareplace (and the entries element had no attribute)
+        var document = FileIo.XmlDoctype + "<entries><entry><id>1</id><created>2022-01-01 10:00:00</created>" +
+                       "<changed>2022-01-01 10:00:00</changed><title><![CDATA[t]]></title>" +
+                       "<text><![CDATA[a cmdncdatareplace b]]></text></entry></entries>";
+        Encryptor.SetKey(Password);
+        File.WriteAllBytes(DataFile, Encryptor.EncryptData(document)!);
+        Login(Password);
+        Assert.True(FileIo.LoadEntries().Success);
+        Assert.Equal("a ]]> b", Entries.GetEntries()[0].Text);
+    }
+
+    [Fact]
+    public void FileSizes_AreShownInTheRightUnit()
+    {
+        // (Numbers as the culture writes them: the program has the invariant culture, the tests the one of the PC)
+        Assert.Equal($"{549:n0} " + Lang.T("bytes"), FileSizeFormatter.FormatSize(549));
+        Assert.Equal($"{1023:n0} " + Lang.T("bytes"), FileSizeFormatter.FormatSize(1023));
+        Assert.Equal($"{1.0:n1} kB", FileSizeFormatter.FormatSize(1024));
+        Assert.Equal($"{7.4:n1} kB", FileSizeFormatter.FormatSize(7582));
+        Assert.Equal($"{1.5:n1} MB", FileSizeFormatter.FormatSize(1536 * 1024));
+        // Just under 1 MB is shown as 1.0 MB, not as 1024.0 kB
+        Assert.Equal($"{1.0:n1} MB", FileSizeFormatter.FormatSize(1048575));
+    }
+
+    [Fact]
+    public void TheNameOfADataFile_WithoutItsExtension()
+    {
+        FileIo.SetFileName("a.mblsx.mbls");
+        Assert.Equal("a.mblsx", FileIo.GetFileNameWithoutExtension());
+        FileIo.SetFileName("WORK.MBLS");
+        Assert.Equal("WORK", FileIo.GetFileNameWithoutExtension());
+    }
+
+    [Fact]
+    public void ABookmarkOfADataFile_FollowsItWhenRenamedOrMoved()
+    {
+        // In the data directory: "notes.mbls" renamed to "work.mbls", then moved into "sub"
+        var data = Path.Combine(_workDirectory, "data");
+        var bookmark = new JumpTarget(JumpKind.DataFile, "notes.mbls");
+        var renamed = bookmark.Followed(Path.Combine(data, "notes.mbls"), Path.Combine(data, "work.mbls"));
+        Assert.Equal("work.mbls", renamed?.Target);
+        var moved = renamed!.Followed(Path.Combine(data, "work.mbls"), Path.Combine(data, "sub", "work.mbls"));
+        Assert.Equal(Path.Combine(data, "sub", "work.mbls"), moved?.FullPath);
+        Assert.Equal(JumpKind.DataFile, moved?.Kind);
+        // Another file is not affected
+        Assert.Null(bookmark.Followed(Path.Combine(data, "other.mbls"), Path.Combine(data, "x.mbls")));
+    }
+
+    [Fact]
+    public void TheTimeNow_IsWrittenAsIso8601()
+    {
+        Assert.Matches(@"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$", IsoDateTime.GetDateTimeNow());
+        Assert.Matches(@"^\d{8}-\d{6}$", IsoDateTime.GetDateTimeNowCompressed("-"));
+    }
+
+    [Fact]
     public void AnEntryAddedWhereItsIdIsTaken_GetsAnIdOfItsOwn()
     {
         // As a transfer completed into the data file it came from: the copy is an entry of its own

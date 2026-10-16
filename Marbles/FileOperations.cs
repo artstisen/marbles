@@ -44,6 +44,18 @@ internal static class FileOperations
 
     private static bool Exists(string path) => File.Exists(path) || Directory.Exists(path);
 
+    /// <summary>
+    /// A path as written in a list file (favorites, history, bookmarks, jumps): without blank space at its ends,
+    /// unless a file or directory has those in its name (Linux and macOS allow it) and is there
+    /// </summary>
+    internal static string ListedPath(string written)
+    {
+        var path = written.Trim();
+        // (Windows has no names ending with blank space, and finds "notes.txt " as "notes.txt")
+        if (OperatingSystem.IsWindows()) return path;
+        return path.Length > 0 && written != path && Exists(written) ? written : path;
+    }
+
     // A link to a file or directory (the link is deleted or moved, never what it points to)
     private static bool IsLink(string path)
     {

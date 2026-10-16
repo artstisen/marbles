@@ -44,6 +44,30 @@ public class LangFolderTests : IDisposable
     }
 
     [Fact]
+    public void ABrokenTranslation_ShowsTheEnglishText()
+    {
+        // A placeholder that the text does not have ({1}): formatting it fails, and the English is shown
+        System.IO.File.WriteAllText(Path.Combine(_program, "pl.txt"),
+            File("pl", "Polski", ("Copied: {0}", "Skopiowano: {1}"), ("Moved: {0}", "Przeniesiono: {0}")));
+        Lang.Refresh();
+        Assert.True(Lang.Set("pl"));
+        Assert.Equal("Copied: x", Lang.F("Copied: {0}", "x"));
+        Assert.Equal("Przeniesiono: x", Lang.F("Moved: {0}", "x"));
+    }
+
+    [Fact]
+    public void AFileNamedWithCapitals_IsUsed()
+    {
+        // Found by its name in any letter case, also where file names are case-sensitive (Linux)
+        System.IO.File.WriteAllText(Path.Combine(_program, "PL.txt"),
+            File("pl", "Polski", ("File deleted", "Plik usunięty")));
+        Lang.Refresh();
+        Assert.Contains(Lang.Available, language => language.Code == "pl");
+        Assert.True(Lang.Set("pl"));
+        Assert.Equal("Plik usunięty", Lang.T("File deleted"));
+    }
+
+    [Fact]
     public void AFileInTheFolder_IsALanguage_NamedByItsFirstLine()
     {
         System.IO.File.WriteAllText(Path.Combine(_program, "pl.txt"),

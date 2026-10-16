@@ -277,6 +277,23 @@ internal static class Tools
     private static bool _exitLoop;
     private static string _pass = string.Empty;
 
+    // The password typed: given to the caller, and no longer kept here
+    private static string TakePassword()
+    {
+        var typed = _pass;
+        _pass = string.Empty;
+        return typed;
+    }
+
+    // The passwords typed on the way to a new one: not kept after logging out (or an error on the way)
+    private static void ForgetPasswords()
+    {
+        _pass = string.Empty;
+        _newPass = string.Empty;
+        _newPassRepeat = string.Empty;
+        _tempResetPassword = string.Empty;
+    }
+
     private static string ReadMasked(bool enableShortcuts)
     {
         _pass = string.Empty;
@@ -392,7 +409,7 @@ internal static class Tools
             }
         } while (!_exitLoop);
 
-        return _pass;
+        return TakePassword();
     }
 
     // The options of the login page, in a box: an option is selected (j/k, Enter) or picked with its key
@@ -615,7 +632,7 @@ internal static class Tools
             }
         } while (!_exitLoop);
 
-        return _pass;
+        return TakePassword();
     }
 
 
@@ -1060,7 +1077,7 @@ internal static class Tools
                 // Additional menu items
                 if (!FileBrowser.HasSubFolders()) Menu.DimMenuItem = true;
                 Menu.WriteMenuItem(DialogText.Spacebar, DialogText.MoveFile, true);
-                Menu.WriteMenuItem(DialogText.Escape, DialogText.Clear + "/" + DialogText.CaptionsMoreOptions, true);
+                Menu.WriteMenuItem(DialogText.Escape, DialogText.ClearOrMoreOptions, true);
             }
 
             // Place cursor at login box
@@ -1164,6 +1181,7 @@ internal static class Tools
         Entries.ClearSessionEntryIdList();
         Encryptor.RemoveKey();
         Actions.ClearAtLogout();
+        ForgetPasswords();
         FileIo.ResetBackupFailureNotice();
         FileIo.ForgetKnownVersion();
     }
@@ -1206,7 +1224,7 @@ internal static class Tools
         // Exit the application reverting to the original console colors
         Console.ResetColor();
         Console.Clear();
-        Console.WriteLine(DialogText.ApplicationName + " " + DialogText.Exit.ToLower());
+        Console.WriteLine(DialogText.ApplicationExit);
         Environment.Exit(0);
     }
 
@@ -1250,7 +1268,10 @@ internal static class Tools
         {
             Menu.StatusMessage(DialogText.PasswordLength, true, true, true, DialogText.CaptionsPassword, string.Empty,
                 false);
+            // Asked again: that call does all of it (it ends on the login page; going on here would use the
+            // passwords it has cleared)
             NewPasswordRoutine(isPasswordReset);
+            return;
         }
         else
         {
@@ -1266,6 +1287,7 @@ internal static class Tools
             Menu.StatusMessage(DialogText.PasswordMismatch, true, true, true, DialogText.CaptionsPassword, string.Empty,
                 false);
             NewPasswordRoutine(isPasswordReset);
+            return;
         }
         else
         {

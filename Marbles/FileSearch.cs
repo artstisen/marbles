@@ -193,6 +193,9 @@ internal static class FileSearch
             return false;
         }
 
+        // A file with a null char is not text (as in peek and :diff): its "lines" would be found as garbage
+        if (text.Contains('\0')) return false;
+
         var lineNumber = 0;
         foreach (var rawLine in text.Split('\n'))
         {

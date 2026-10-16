@@ -314,6 +314,7 @@ internal sealed class ColorScheme
     internal bool Allowed(ColorItem item, ConsoleColor color)
     {
         if (item == ColorItem.Background) return OnBackground.All(text => Shown(text) != color);
+        // The text of the focused tab is also the text of the highlight, when that has no text color of its own
         if (item == ColorItem.TabShown && TabText == null && color == TabColor) return false;
         if (OnBackground.Contains(item) || IsSyntax(item, out _)) return color != BackgroundColor;
         foreach (var (background, text) in Pairs)
@@ -321,9 +322,6 @@ internal sealed class ColorScheme
             if (item == background) return color != Shown(text);
             if (item == text) return color != Shown(background);
         }
-
-        // The text of the focused tab is also the text of the highlight, when that has no text color of its own
-        if (item == ColorItem.TabShown && TabText == null && color == TabColor) return false;
 
         return true;
     }

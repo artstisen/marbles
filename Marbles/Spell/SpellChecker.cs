@@ -137,14 +137,14 @@ internal sealed class SpellChecker
             if (names.Contains(name)) continue;
             if (!Tools.IsValidFileName(name))
             {
-                error = DialogText.SpellFileNotFound + name;
+                error = DialogText.SpellFileNotFound(name);
                 return null;
             }
 
             var path = Path.Combine(directory, name + FileNameEnd);
             if (!File.Exists(path))
             {
-                error = DialogText.SpellFileNotFound + Path.Combine(directory, name + FileNameEnd);
+                error = DialogText.SpellFileNotFound(Path.Combine(directory, name + FileNameEnd));
                 return null;
             }
 
@@ -326,6 +326,7 @@ internal sealed class SpellChecker
     private List<(int Start, int End, bool Check)> FindTokens(string line)
     {
         var words = new List<(int, int, bool)>();
+        var lastChunk = (-1, -1, false);
         var i = 0;
         while (i < line.Length)
         {
@@ -348,24 +349,29 @@ internal sealed class SpellChecker
             var check = end - start >= MinWordLength &&
                         !(start > 0 && (char.IsDigit(line[start - 1]) || line[start - 1] == '_')) &&
                         !(end < line.Length && (char.IsDigit(line[end]) || line[end] == '_')) &&
-                        !IsInAddress(line, start, end);
+                        !IsInAddress(line, start, end, ref lastChunk);
             words.Add((start, end, check));
         }
 
         return words;
     }
 
-    // Is the word part of something that looks like a web address, an e-mail address or a file path?
-    private static bool IsInAddress(string line, int start, int end)
+    // Is the word part of something that looks like a web address, an e-mail address or a file path? The part
+    // of the line between blank spaces is kept in "last": the next words in it are not looked at again (a line
+    // with a long address of many words would else take a time growing with the square of its length)
+    private static bool IsInAddress(string line, int start, int end, ref (int Start, int End, bool Address) last)
     {
+        if (start >= last.Start && end <= last.End) return last.Address && !(last.Start == start && last.End == end);
         var chunkStart = start;
         while (chunkStart > 0 && !char.IsWhiteSpace(line[chunkStart - 1])) chunkStart--;
         var chunkEnd = end;
         while (chunkEnd < line.Length && !char.IsWhiteSpace(line[chunkEnd])) chunkEnd++;
-        if (chunkEnd - chunkStart == end - start) return false;
         var chunk = line.AsSpan(chunkStart, chunkEnd - chunkStart);
-        return chunk.Contains("://".AsSpan(), StringComparison.Ordinal) || chunk.Contains('@') ||
-               chunk.Contains('\\') || chunk.StartsWith("www.".AsSpan(), StringComparison.OrdinalIgnoreCase);
+        var address = chunk.Contains("://".AsSpan(), StringComparison.Ordinal) || chunk.Contains('@') ||
+                      chunk.Contains('\\') || chunk.StartsWith("www.".AsSpan(), StringComparison.OrdinalIgnoreCase);
+        last = (chunkStart, chunkEnd, address);
+        // A word that is all of the part is a word
+        return address && chunkEnd - chunkStart != end - start;
     }
 
     /// <summary>

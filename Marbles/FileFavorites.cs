@@ -70,7 +70,8 @@ internal static class FileFavorites
             var inFolder = hasFolder && line.StartsWith(' ');
             line = line.TrimStart(' ');
             var tab = line.IndexOf('\t');
-            var rest = (tab < 0 ? line : line[(tab + 1)..]).Trim();
+            var written = tab < 0 ? line : line[(tab + 1)..];
+            var rest = written.Trim();
             if (rest.Length == 0) continue;
             ConsoleColor? color = null;
             if (tab > 0 && Enum.TryParse<ConsoleColor>(line[..tab].Trim(), true, out var parsed) &&
@@ -93,7 +94,8 @@ internal static class FileFavorites
             }
 
             // Where the cursor was, before the path
-            var (caretLine, caretColumn) = CaretPosition.Take(ref rest);
+            var (caretLine, caretColumn) = CaretPosition.Take(ref written);
+            rest = FileOperations.ListedPath(written);
             if (rest.Length == 0 || Contains(rest)) continue;
             // The favorites of a folder follow it directly
             if (!inFolder) hasFolder = false;

@@ -205,10 +205,13 @@ public class FileBrowser
         _tempDataFileTotalCount = GetDataFileCount(); // Will populate the _dataFilesList
         if (_tempDataFileTotalCount > 0)
         {
+            // The file with exactly the name (on Linux "Notes.mbls" and "notes.mbls" are two files), else one
+            // with the name in other letter case (a name written in the settings by hand)
+            var exact = _dataFilesList.FindIndex(file => file == FileIo.GetFileName());
             for (int i = 0; i < _dataFilesList.Count; i++)
             {
-                // Compare case insensitive
-                if (_dataFilesList[i].ToLower() == FileIo.GetFileName().ToLower())
+                if (exact >= 0 ? i == exact
+                        : string.Equals(_dataFilesList[i], FileIo.GetFileName(), StringComparison.OrdinalIgnoreCase))
                 {
                     // Update local file name to show correct casing (windows uses case insensitive
                     // filenames where linux uses case sensitive.

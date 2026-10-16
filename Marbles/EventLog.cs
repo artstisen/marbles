@@ -31,7 +31,7 @@ internal static class EventLog
     {
         text = text.Replace('\r', ' ').Replace('\n', ' ');
         if (text.Length > MaxLineLength) text = text[..MaxLineLength] + "...";
-        Lines.Add("[" + DateTime.Now.ToString("HH:mm:ss") + "] " + text);
+        Lines.Add("[" + DateTime.Now.ToString("HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture) + "] " + text);
         if (Lines.Count <= MaxLines) return;
         var excess = Lines.Count - MaxLines;
         Lines.RemoveRange(0, excess);

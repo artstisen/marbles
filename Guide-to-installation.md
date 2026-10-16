@@ -38,7 +38,7 @@ English, Danish and German are built into Marbles. The other languages are text 
 Marbles also looks for a folder `lang` in the data directory, which is used first. A language file there (or next to the program):
 
 - **Changes a translation**: copy the file (or `da.txt` / `de.txt` from the source, `Marbles/Lang`) into the folder, and edit the translations. A file for Danish or German is used instead of the one built in, and the list of languages shows `(lang)` after it
-- **Adds a language**: a file named by the code of the language (`pt.txt`, `cs.txt`, `pt-br.txt`) is found by itself and offered in the list of languages, with how much of it is translated. Its first line names it: `# Marbles: Português (pt)`
+- **Adds a language**: a file named by the code of the language (`pt.txt`, `cs.txt`, `pt-br.txt`, in any letter case: `PT-BR.txt`) is found by itself and offered in the list of languages, with how much of it is translated. Its first line names it: `# Marbles: Português (pt)`
 
 The files are UTF-8 text, with each text in English and translated below it:
 

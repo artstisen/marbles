@@ -277,7 +277,14 @@ internal static class JumpMenu
                 // Moving the selected bookmark: j k move it, and Esc, Enter or v end it
                 if (navigation is ConsoleKey.DownArrow or ConsoleKey.UpArrow && rows.Count > 0)
                 {
-                    selected = MoveBookmark(rows[selected], selected + (navigation == ConsoleKey.DownArrow ? 1 : -1));
+                    // Past the next row shown: the rows are not all the bookmarks (filtered, or some cannot be used
+                    // here), so it goes to the place of that bookmark in the whole list
+                    var next = selected + (navigation == ConsoleKey.DownArrow ? 1 : -1);
+                    if (next >= 0 && next < rows.Count)
+                    {
+                        MoveBookmark(rows[selected], BookmarkIndex(rows[next]));
+                        selected = next;
+                    }
                 }
                 else if (key.Key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.V)
                 {
@@ -382,8 +389,9 @@ internal static class JumpMenu
                 case 'E':
                     // The selected bookmark first or last
                     if (current != Tab.Bookmarks || rows.Count == 0) break;
-                    var place = MoveBookmark(rows[selected], key.KeyChar is 't' or 'T' ? 0 : int.MaxValue);
-                    if (filter.Length == 0) selected = place;
+                    // First or last of all the bookmarks: also of the rows shown
+                    MoveBookmark(rows[selected], key.KeyChar is 't' or 'T' ? 0 : int.MaxValue);
+                    selected = key.KeyChar is 't' or 'T' ? 0 : rows.Count - 1;
                     break;
                 case 'x':
                 case 'X':

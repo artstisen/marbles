@@ -360,7 +360,7 @@ public class SpellTests : IDisposable
     public void Checker_MissingFile_GivesAnError()
     {
         Assert.Null(SpellChecker.Load("zz", _directory, out var error));
-        Assert.StartsWith(DialogText.SpellFileNotFound, error);
+        Assert.StartsWith(DialogText.SpellFileNotFound(string.Empty), error);
         Assert.Null(SpellChecker.Load("../xx", _directory, out _));
         Assert.Null(SpellChecker.Load(" , ", _directory, out error));
         Assert.Equal(DialogText.SpellNoLanguage, error);

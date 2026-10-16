@@ -36,39 +36,18 @@ public static class IsoDateTime
                hour.ToString("00") + ":" + minute.ToString("00") + ":" + second.ToString("00");
     }
 
-    // ISO-8601 datetime
-    // Get culture invariant datetime string
-    /// yyyy-MM-dd HH:mm:ss
-    private static string _tempDateTimeIso = string.Empty;
-
+    // The time now as ISO-8601 (yyyy-MM-dd HH:mm:ss), the same in all cultures. The time is read once: read for each part, a date written at midnight could have the day of one day and the
+    // month or year of the next ("2026-12-31" + a second = "2026-01-01")
     public static string GetDateTimeNow()
     {
-        _tempDateTimeIso = "";
-        _tempDateTimeIso += DateTime.Now.Year.ToString();
-        _tempDateTimeIso += "-";
-        _tempDateTimeIso += DateTime.Now.Month.ToString("00");
-        _tempDateTimeIso += "-";
-        _tempDateTimeIso += DateTime.Now.Day.ToString("00");
-        _tempDateTimeIso += " ";
-        _tempDateTimeIso += DateTime.Now.Hour.ToString("00");
-        _tempDateTimeIso += ":";
-        _tempDateTimeIso += DateTime.Now.Minute.ToString("00");
-        _tempDateTimeIso += ":";
-        _tempDateTimeIso += DateTime.Now.Second.ToString("00");
-        return _tempDateTimeIso;
+        return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     public static string GetDateTimeNowCompressed(string divider)
     {
-        _tempDateTimeIso = "";
-        _tempDateTimeIso += DateTime.Now.Year.ToString();
-        _tempDateTimeIso += DateTime.Now.Month.ToString("00");
-        _tempDateTimeIso += DateTime.Now.Day.ToString("00");
-        _tempDateTimeIso += divider;
-        _tempDateTimeIso += DateTime.Now.Hour.ToString("00");
-        _tempDateTimeIso += DateTime.Now.Minute.ToString("00");
-        _tempDateTimeIso += DateTime.Now.Second.ToString("00");
-        return _tempDateTimeIso;
+        var now = DateTime.Now;
+        return now.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture) + divider +
+               now.ToString("HHmmss", System.Globalization.CultureInfo.InvariantCulture);
     }
 
     #endregion

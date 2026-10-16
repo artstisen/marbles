@@ -368,6 +368,8 @@ internal static partial class FileExplorer
             // A directory moved: the hotlist follows it (and the bookmarks follow what is moved)
             if (isMove && item.IsDirectory) HotlistPathChanged(item.Path, path);
             if (isMove) Bookmarks.Follow(item.Path, path);
+            // The file history and the jumps follow it too (as when it is renamed)
+            if (isMove) HistoryFollows(item.Path, path);
         }
 
         string message;
@@ -484,13 +486,19 @@ internal static partial class FileExplorer
         // The history and the jumps follow it too
         if (result == DialogText.Success)
         {
-            FileHistory.Load();
-            if (FileHistory.PathChanged(item.Path, path)) FileHistory.Save();
-            JumpHistory.Load();
-            if (JumpHistory.PathChanged(item.Path, path)) JumpHistory.Save();
+            HistoryFollows(item.Path, path);
             if (item.IsDirectory) HotlistPathChanged(item.Path, path);
             Bookmarks.Follow(item.Path, path);
         }
+    }
+
+    // The file history and the jumps (Recent) follow a file or directory that was renamed or moved
+    private static void HistoryFollows(string oldPath, string newPath)
+    {
+        FileHistory.Load();
+        if (FileHistory.PathChanged(oldPath, newPath)) FileHistory.Save();
+        JumpHistory.Load();
+        if (JumpHistory.PathChanged(oldPath, newPath)) JumpHistory.Save();
     }
 
     // The most of a file a peek shows: the lines up to this size, with a line at the end telling that there

@@ -1804,15 +1804,15 @@ internal static class Actions
     {
         if (_sortOption == 1)
         {
-            return DialogText.SortColon + " " + Lang.T("Date changed") + " " + DialogText.TabBrackets;
+            return DialogText.SortBy(Lang.T("Date changed")) + " " + DialogText.TabBrackets;
         }
         else if (_sortOption == 2)
         {
-            return DialogText.SortColon + " " + Lang.T("Title") + " " + DialogText.TabBrackets;
+            return DialogText.SortBy(Lang.T("Title")) + " " + DialogText.TabBrackets;
         }
         else
         {
-            return DialogText.SortColon + " " + Lang.T("Date created") + " " + DialogText.TabBrackets;
+            return DialogText.SortBy(Lang.T("Date created")) + " " + DialogText.TabBrackets;
         }
     }
 
@@ -2855,7 +2855,8 @@ internal static class Actions
     {
         if (_resultPages.Count > 0 && pageNumber < _resultPages.Count)
         {
-            if (resultIndex <= _resultPages[pageNumber].Count)
+            // An index of an entry on the page (from 0)
+            if (pageNumber >= 0 && resultIndex >= 0 && resultIndex < _resultPages[pageNumber].Count)
             {
                 return true;
             }
@@ -2975,12 +2976,11 @@ internal static class Actions
                 tempNumber = Convert.ToInt32(ck.KeyChar.ToString());
             }
 
-            if (tempNumber >= 0 && tempNumber <= _resultPages[pageNumber].Count)
+            // The key 0 is the tenth entry (a number typed in the box is the number itself)
+            if (!useFreeValue && tempNumber == 0) tempNumber = 10;
+            if (tempNumber >= 1 && tempNumber <= _resultPages[pageNumber].Count)
             {
                 _isSelectingResult = false;
-                // Convert zero to 10
-                if (tempNumber == 0)
-                    tempNumber = 10;
                 // Account for zero indexing
                 tempNumber = tempNumber - 1;
                 if (Entries.EntryExists(_resultPages[pageNumber][tempNumber].Id))

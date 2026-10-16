@@ -4,6 +4,14 @@ class Program
 {
     private static void Main(string[] args)
     {
+        // Keys are read one at a time from the terminal: with its input from a file or a pipe Marbles cannot run
+        if (Console.IsInputRedirected)
+        {
+            // English: written before the settings (and the language) are read
+            Console.Error.WriteLine("Marbles runs in a terminal: its input cannot come from a file or pipe.");
+            Environment.Exit(1);
+        }
+
         // A path given (relative to the directory Marbles is started in, which is read before anything else)
         var currentDirectory = Directory.GetCurrentDirectory();
         Init.RunInitialization();

@@ -23,6 +23,19 @@ internal static class CommandLine
         return Read(Prefix, true, context);
     }
 
+    // The columns of the window: the text stays on its line also when the window is narrower than the pages
+    private static int VisibleWidth()
+    {
+        try
+        {
+            return Math.Min(Init.LineWidth, Console.WindowWidth);
+        }
+        catch (Exception e) when (e is IOException or PlatformNotSupportedException)
+        {
+            return Init.LineWidth;
+        }
+    }
+
     /// <summary>
     /// Let the user type a text on the bottom line
     /// </summary>
@@ -54,11 +67,14 @@ internal static class CommandLine
                 {
                     // Complete the command. Tab again: the next command that starts the same (Shift+Tab: the previous)
                     var completed = completion?.Next(command, (key.Modifiers & ConsoleModifiers.Shift) == 0) ?? command;
-                    if (completed != command)
+                    // (Counted in columns, and only when it fits on the line)
+                    if (completed != command && TextMetrics.WidthOf(completed) + 2 < VisibleWidth() - left)
                     {
-                        Console.SetCursorPosition(left, Console.CursorTop);
-                        Console.Write(completed + new string(' ', Math.Max(0, command.Length - completed.Length)));
-                        Console.SetCursorPosition(left + completed.Length, Console.CursorTop);
+                        var shown = TextMetrics.WidthOf(command);
+                        var width = TextMetrics.WidthOf(completed);
+                        Tools.SetCursorEx(Console.CursorTop, left);
+                        Console.Write(completed + new string(' ', Math.Max(0, shown - width)));
+                        Tools.SetCursorEx(Console.CursorTop, left + width);
                         command = completed;
                     }
 
@@ -81,12 +97,16 @@ internal static class CommandLine
                 if (key.Key == ConsoleKey.Backspace)
                 {
                     if (command.Length == 0) return null;
-                    command = command[..^1];
-                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-                    Console.Write(" ");
-                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                    // A whole character (an emoji is two chars, a wide one two columns)
+                    var length = TextMetrics.PreviousElementLength(command, command.Length);
+                    var cells = TextMetrics.WidthOf(command[^length..]);
+                    command = command[..^length];
+                    Tools.SetCursorEx(Console.CursorTop, Math.Max(left, Console.CursorLeft - cells));
+                    Console.Write(new string(' ', cells));
+                    Tools.SetCursorEx(Console.CursorTop, Math.Max(left, Console.CursorLeft - cells));
                 }
-                else if (!char.IsControl(key.KeyChar) && key.KeyChar != '\0' && command.Length < Init.LineWidth - DialogText.CommandPrompt.Length - 3)
+                else if (!char.IsControl(key.KeyChar) && key.KeyChar != '\0' &&
+                         TextMetrics.WidthOf(command) + 2 < VisibleWidth() - left)
                 {
                     command += key.KeyChar;
                     Console.Write(key.KeyChar);
@@ -106,7 +126,7 @@ internal static class CommandLine
     /// </summary>
     internal static void ShowUnknown(string command)
     {
-        WriteLine(" " + DialogText.NotACommand + command + " ", ConsoleColors.ColorPreset.AttentionInverted, false);
+        WriteLine(" " + DialogText.NotACommand(command) + " ", ConsoleColors.ColorPreset.AttentionInverted, false);
         Console.Write(" ");
         Keyboard.AwaitAnyKey();
     }

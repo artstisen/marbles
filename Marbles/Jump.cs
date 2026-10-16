@@ -55,6 +55,26 @@ internal sealed record JumpTarget(JumpKind Kind, string Target)
     };
 
     /// <summary>
+    /// The place after a file or directory got a new path (renamed or moved), or null if it is not affected. A
+    /// data file stays a data file while it is in the data directory
+    /// </summary>
+    internal JumpTarget? Followed(string oldPath, string newPath)
+    {
+        switch (Kind)
+        {
+            case JumpKind.File or JumpKind.Directory:
+                return CaretPosition.NewPath(Target, oldPath, newPath) is { } path ? this with { Target = path } : null;
+            case JumpKind.DataFile:
+                return CaretPosition.NewPath(FullPath, oldPath, newPath) is { } moved &&
+                       StartArgument.DataFileInDataDirectory(moved) is { } inData
+                    ? this with { Target = inData }
+                    : null;
+            default:
+                return null;
+        }
+    }
+
+    /// <summary>
     /// The same place as another (paths are compared as the file system does)
     /// </summary>
     internal bool SameAs(JumpTarget other) =>
@@ -182,7 +202,7 @@ internal static class JumpHistory
         {
             var parts = rawLine.TrimEnd('\r').Split('\t', 3);
             if (parts.Length < 3 || ParseKind(parts[1]) is not { } kind) continue;
-            var place = parts[2].Trim();
+            var place = kind is JumpKind.File or JumpKind.Directory ? FileOperations.ListedPath(parts[2]) : parts[2].Trim();
             if (place.Length == 0) continue;
             var target = new JumpTarget(kind, place);
             if (List.Any(entry => entry.Target.SameAs(target))) continue;
@@ -240,7 +260,8 @@ internal static class JumpHistory
     }
 
     /// <summary>
-    /// A file or directory has a new path (renamed or moved): the files and directories of the list follow it
+    /// A file or directory has a new path (renamed or moved): the files, directories and data files of the list
+    /// follow it
     /// </summary>
     /// <returns>True if the list was changed</returns>
     internal static bool PathChanged(string oldPath, string newPath)
@@ -248,10 +269,8 @@ internal static class JumpHistory
         var changed = false;
         for (var i = 0; i < List.Count; i++)
         {
-            var target = List[i].Target;
-            if (target.Kind is not (JumpKind.File or JumpKind.Directory)) continue;
-            if (CaretPosition.NewPath(target.Target, oldPath, newPath) is not { } path) continue;
-            List[i] = List[i] with { Target = target with { Target = path } };
+            if (List[i].Target.Followed(oldPath, newPath) is not { } target) continue;
+            List[i] = List[i] with { Target = target };
             changed = true;
         }
 

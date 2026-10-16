@@ -467,7 +467,7 @@ internal static class StartMenu
         if (available.Count == 0)
         {
             ChoiceBox.Message(DialogText.CaptionsSpell,
-                DialogText.SpellFileNotFound + Path.GetFullPath(SpellChecker.DirectoryName), string.Empty);
+                DialogText.SpellFileNotFound(Path.GetFullPath(SpellChecker.DirectoryName)), string.Empty);
             return;
         }
 

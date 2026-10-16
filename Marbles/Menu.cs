@@ -423,9 +423,10 @@ internal static class Menu
     }
 
     /// <summary>
-    /// The choices shown with Esc in the main menu: log out, the Select mode page, or exit Marbles
+    /// The choices shown with Esc in the main menu: the Jump menu, the file browser, the Configuration page, log
+    /// out, or exit Marbles
     /// </summary>
-    /// <returns>The number of the choice (0, 1, 2), or -1 if the box was closed</returns>
+    /// <returns>The number of the choice (0 to 4, in that order), or -1 if the box was closed</returns>
     internal static int LeaveChoice()
     {
         // In the color of text in frames and boxes

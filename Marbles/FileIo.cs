@@ -144,7 +144,10 @@ internal static class FileIo
 
     internal static string GetFileNameWithoutExtension()
     {
-        return _fileName.Replace(DefaultFileNameExtension, "");
+        // Only the extension at the end ("a.mblsx.mbls" is "a.mblsx"), in any letter case ("WORK.MBLS")
+        return _fileName.EndsWith(DefaultFileNameExtension, StringComparison.OrdinalIgnoreCase)
+            ? _fileName[..^DefaultFileNameExtension.Length]
+            : _fileName;
     }
 
     internal static string GetAbsolutePath()
@@ -719,8 +722,13 @@ internal static class FileIo
 
     #region Convert to XML
 
+    // Before v1.5.3 "]]>" in a title or text was written as this word (and every such word read as "]]>"). Now the
+    // text is split into two CDATA sections there, which XML reads back as it was; the entries element tells so
     private const string XmlCdataTagReplacer = "cmdncdatareplace";
     private const string XmlCdataTagToReplace = "]]>";
+    private const string XmlCdataSplit = "]]]]><![CDATA[>";
+    private const string XmlCdataAttribute = "cdata";
+    private const string XmlCdataAttributeSplit = "split";
     private const string XmlChanged = "changed";
     private const string XmlCreated = "created";
     internal const string XmlDoctype = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -738,9 +746,9 @@ internal static class FileIo
         _xmlDocument = new StringBuilder();
         if (entries.Count > 0)
         {
-            // Write doctype and parent start
+            // Write doctype and parent start (telling how "]]>" is written)
             _xmlDocument.Append(XmlDoctype);
-            _xmlDocument.Append(MakeElement(XmlParent, false, false));
+            _xmlDocument.Append("<" + XmlParent + " " + XmlCdataAttribute + "=\"" + XmlCdataAttributeSplit + "\">");
             // Write all items
             foreach (var t in entries)
             {
@@ -777,7 +785,8 @@ internal static class FileIo
         {
             // Write doctype and parent start
             _xmlDocument.Append(XmlDoctype + Environment.NewLine);
-            _xmlDocument.Append(MakeElement(XmlParent, false, false) + Environment.NewLine);
+            _xmlDocument.Append("<" + XmlParent + " " + XmlCdataAttribute + "=\"" + XmlCdataAttributeSplit + "\">" +
+                                Environment.NewLine);
             // Write all items
             foreach (var t in entries)
             {
@@ -805,12 +814,13 @@ internal static class FileIo
     }
 
 
+    // A text in a CDATA section: "]]>" would end it, so the section is ended after "]]" and a new one starts
     private static string ReplaceCdataTag(string s)
     {
         s = RemoveInvalidXmlChars(s);
         if (!string.IsNullOrEmpty(s) && s.Contains(XmlCdataTagToReplace))
         {
-            s = s.Replace(XmlCdataTagToReplace, XmlCdataTagReplacer);
+            s = s.Replace(XmlCdataTagToReplace, XmlCdataSplit);
         }
 
         return s;
@@ -916,6 +926,8 @@ internal static class FileIo
         }
 
         var entries = new List<Entry>();
+        // Written before "]]>" was split: the word it was written as is "]]>"
+        var oldCdata = doc.DocumentElement?.GetAttribute(XmlCdataAttribute) != XmlCdataAttributeSplit;
         var nodes = doc.DocumentElement?.SelectNodes(XmlItem);
         if (nodes == null) return entries;
         foreach (XmlNode node in nodes)
@@ -926,8 +938,8 @@ internal static class FileIo
             if (id.Length > 0) entry.Id = id;
             entry.DateCreated = NodeText(node, XmlCreated, entry.DateCreated);
             entry.DateChanged = NodeText(node, XmlChanged, entry.DateCreated);
-            entry.Title = RestoreCdataTag(NodeText(node, XmlTitle));
-            entry.Text = RestoreCdataTag(NodeText(node, XmlText));
+            entry.Title = oldCdata ? RestoreCdataTag(NodeText(node, XmlTitle)) : NodeText(node, XmlTitle);
+            entry.Text = oldCdata ? RestoreCdataTag(NodeText(node, XmlText)) : NodeText(node, XmlText);
             entry.CursorIndex = int.TryParse(NodeText(node, XmlCursorIndex), out var cursorIndex) && cursorIndex > 0
                 ? cursorIndex
                 : 0;
@@ -1496,13 +1508,22 @@ public static class FileSizeFormatter
         {
             var counter = 0;
             var number = (decimal) bytes;
-            while (Math.Round(number / 1024) >= 1)
+            // 1023 bytes stay bytes ("1 kB" from 513 bytes up was rounded)
+            var suffixes = Suffixes;
+            while (number >= 1024 && counter < suffixes.Length - 1)
             {
                 number = number / 1024;
                 counter++;
             }
 
-            return bytes < 1024 ? $"{number:n0}{Suffixes[counter]}" : $"{number:n1}{Suffixes[counter]}";
+            // Shown with one decimal: 1023.97 kB would be "1024.0 kB"
+            if (counter > 0 && Math.Round(number, 1) >= 1024 && counter < suffixes.Length - 1)
+            {
+                number = number / 1024;
+                counter++;
+            }
+
+            return bytes < 1024 ? $"{number:n0}{suffixes[counter]}" : $"{number:n1}{suffixes[counter]}";
         }
         catch
         {

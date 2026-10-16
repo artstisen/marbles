@@ -307,6 +307,20 @@ public class FileManagementTests : IDisposable
     }
 
     [Fact]
+    public void APathInAListFile_LosesBlankSpaceAtItsEnds_UnlessItIsInTheName()
+    {
+        var file = MakeFile("x", "notes.txt");
+        Assert.Equal(file, FileOperations.ListedPath("  " + file + " "));
+        Assert.Equal(file, FileOperations.ListedPath(file));
+        // Linux and macOS allow a name ending with a blank space: it is kept when that file is there
+        if (!OperatingSystem.IsWindows())
+        {
+            var spaced = MakeFile("y", "draft ");
+            Assert.Equal(spaced, FileOperations.ListedPath(spaced));
+        }
+    }
+
+    [Fact]
     public void SavingALink_WritesTheFileItPointsTo_AndTheLinkStays()
     {
         var target = MakeFile("old text", "real.txt");

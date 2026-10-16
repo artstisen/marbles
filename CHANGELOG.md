@@ -23,6 +23,24 @@
   - **Spelling**: `zg` on a word with a typographic apostrophe (O’Brien) adds it, so it is no longer marked. Word lists with it are read the same way.
   - **Control characters** (as an escape code from a file) in file names, paths, titles, the list of the string memory, the snippets, the favorites, history, hotlist, search results, the Jump menu and the boxes are shown as blank spaces, and no longer sent to the terminal.
   - A test of the color names no longer fails now and then (it ran while other tests changed the language).
+  - **Lists of entries**: `0` in a list with fewer than ten entries no longer shows an error box (it opens the tenth entry only when there is one). A number typed in the number box is the number itself: `0` there opens nothing.
+  - **File sizes** from 513 to 1023 bytes are shown in bytes (they were shown as "1 kB").
+  - **Moving a file** in the file browser: its line in the file history and in Recent (Jump menu) follows it, as when it is renamed.
+  - **Bookmarks and Recent of a data file** follow it when it is renamed or moved (on the login page or in the file browser).
+  - **Moving bookmarks** (`v` `j` `k`, `T` `E`) when some are not shown (only one mode in use, or a filter): the bookmark moves past the next one shown, not a hidden one.
+  - **Login page on Linux**: with `Notes.mbls` and `notes.mbls` in the same directory, the one selected stays selected.
+  - **Favorites, history, bookmarks and Recent** keep a path whose name starts or ends with a blank space (Linux and macOS allow it).
+  - **Data files**: a title or text containing `]]>` is saved in a way that is read back exactly; the word `cmdncdatareplace` in a note no longer turns into `]]>`. Data files saved before are read as before.
+  - The time written on entries is read once, so an entry saved at midnight never gets the day of one date and the month of the next.
+  - **Command line**: `Backspace` removes a whole character (an emoji, a wide character), and the text stays on its line in a window narrower than the pages (before, `Backspace` there could stop Marbles with an error).
+  - Texts made of two translated parts are one text each in the language files ("Sort: {0}", "Not a command: {0}", "Spell file not found: {0}", "Clear/More options", "Marbles exit").
+  - **The difference view** (`:diff`) is made faster for large files with many changes, and spelling (`:spell`) for long lines with a web address of many words.
+  - **File search** does not look for text in a binary file that looks like UTF-16 text.
+  - The passwords typed are not kept in the program after they are used or after logging out; the notes as plain bytes are zeroed after they are encrypted or decrypted.
+  - **Language files** named in capitals (`PL.txt`) are used also on Linux and macOS. `tools/langfile.py` and `tools/checklang.py` read a file saved with a BOM (as by Notepad), and tell the line number of a line without quotes instead of stopping.
+  - A data file named `WORK.MBLS` or `a.mblsx.mbls` is shown with the right name.
+  - **Configuration pages** (tabs): a key pressed just after the window was resized is no longer lost, and key hints that do not fit lose whole hints at the end.
+  - Marbles started with its input from a file or pipe tells so and stops (instead of an error).
   - `publish.ps1` empties the folder of each version before publishing it, so no files are left from earlier versions. It stops, without deleting anything, when one of them has a `data` folder (data files and settings), and stops at an unknown version name.
 - **`:name` and `:path`** also work in the favorites, the file history and the hotlist of the file browser: `:name` copies the name shown (a name given in the hotlist, the name of a folder of favorites), `:path` the full path, to the clipboard as set and to the string memory.
 - **Logos**: a fifth built-in logo, **Terminal sessions**: an 80's computer with a green `C:\>` prompt on its screen and its keyboard, on a wooden table with pencils in a jar, a steaming cup of coffee and a notepad, in many colors.

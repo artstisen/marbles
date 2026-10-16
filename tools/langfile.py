@@ -71,7 +71,10 @@ def quote(text):
 
 
 def unquote(value):
-    first, last = value.index('"'), value.rindex('"')
+    """The text between the first and last quote, or None if there are not two quotes"""
+    first, last = value.find('"'), value.rfind('"')
+    if first < 0 or last <= first:
+        return None
     return value[first + 1:last].replace('\\n', '\n')
 
 
@@ -80,11 +83,18 @@ def read(path, code):
     pairs, english = {}, None
     if not os.path.exists(path):
         return pairs
-    for line in io.open(path, encoding='utf-8').read().split('\n'):
+    # utf-8-sig: a file saved with a BOM (as by Notepad) is read as one without
+    for number, line in enumerate(io.open(path, encoding='utf-8-sig').read().split('\n'), 1):
         if line.startswith('en:'):
             english = unquote(line[3:])
+            if english is None:
+                print(f'{path}:{number}: no text in quotes (the line is not used)')
         elif english is not None and line.startswith(code + ':'):
-            pairs[english] = unquote(line[len(code) + 1:])
+            translation = unquote(line[len(code) + 1:])
+            if translation is None:
+                print(f'{path}:{number}: no translation in quotes (the line is not used)')
+            else:
+                pairs[english] = translation
             english = None
     return pairs
 
@@ -95,7 +105,7 @@ def make(code, given=None):
     # The name of the language: the one the file has, a known one, or the code
     name = NAMES.get(code, code)
     if os.path.exists(path):
-        first = io.open(path, encoding='utf-8').readline()
+        first = io.open(path, encoding='utf-8-sig').readline()
         m = re.match(r'^# Marbles: (.+) \(' + re.escape(code) + r'\)\s*$', first)
         if m:
             name = m.group(1)

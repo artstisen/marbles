@@ -1,4 +1,4 @@
-namespace Marbles.Tests;
+﻿namespace Marbles.Tests;
 
 [Collection("Static state")]
 public class FileSearchTests : IDisposable
@@ -14,6 +14,9 @@ public class FileSearchTests : IDisposable
         Make(Path.Combine("sub", "deep.md"), "nothing here\n\tindented cats line");
         Make(Path.Combine("sub", "inner", "notes(1).txt"), "x");
         File.WriteAllBytes(Path.Combine(_root, "binary.bin"), new byte[] { 0, 1, 2, 0xFF, 0xFE, 0, 99, 97, 116, 115 });
+        // A binary file that starts as UTF-16 does: read as text it has null characters (and "cats")
+        File.WriteAllBytes(Path.Combine(_root, "image.dat"),
+            new byte[] { 0xFF, 0xFE, 99, 0, 97, 0, 116, 0, 115, 0, 0, 0, 1, 0 });
         Directory.CreateDirectory(Path.Combine(_root, "emptydir"));
     }
 

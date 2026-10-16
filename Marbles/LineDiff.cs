@@ -269,6 +269,15 @@ internal static class LineDiff
             newNear[i] = next;
         }
 
+        // The number of lines of each text before each line: counted once (not again for each part)
+        var oldBefore = new int[lines.Count + 1];
+        var newBefore = new int[lines.Count + 1];
+        for (var i = 0; i < lines.Count; i++)
+        {
+            oldBefore[i + 1] = oldBefore[i] + (lines[i].Kind != Kind.Added ? 1 : 0);
+            newBefore[i + 1] = newBefore[i] + (lines[i].Kind != Kind.Removed ? 1 : 0);
+        }
+
         Add("--- " + oldName, (true, 0, 0));
         Add("+++ " + newName, (false, 0, 0));
         var added = 0;
@@ -290,7 +299,7 @@ internal static class LineDiff
             var from = Math.Max(index, first - Context);
             var to = Math.Min(lines.Count - 1, last + Context);
             var part = lines.GetRange(from, to - from + 1);
-            Add(PartHeader(lines, from, part), (false, newNear[first], newNear[first]));
+            Add(PartHeader(oldBefore[from], newBefore[from], part), (false, newNear[first], newNear[first]));
             for (var i = from; i <= to; i++)
             {
                 var line = lines[i];
@@ -320,12 +329,10 @@ internal static class LineDiff
 
     // "@@ -12,7 +12,8 @@": where a part starts in each text (from 1), and how many lines of each it has. A part
     // without lines of a text tells the line before it
-    private static string PartHeader(List<Line> lines, int from, List<Line> part)
+    private static string PartHeader(int oldBefore, int newBefore, List<Line> part)
     {
         var oldCount = part.Count(line => line.Kind != Kind.Added);
         var newCount = part.Count(line => line.Kind != Kind.Removed);
-        var oldBefore = lines.Take(from).Count(line => line.Kind != Kind.Added);
-        var newBefore = lines.Take(from).Count(line => line.Kind != Kind.Removed);
         var oldStart = oldCount == 0 ? oldBefore : oldBefore + 1;
         var newStart = newCount == 0 ? newBefore : newBefore + 1;
         return "@@ -" + oldStart + "," + oldCount + " +" + newStart + "," + newCount + " @@";

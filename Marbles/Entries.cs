@@ -269,8 +269,8 @@ internal static class Entries
 
     internal static void ClearAllEntries(bool overwriteValues)
     {
-        // Overwrite all text in the list before removing reference to the objects
-        // this will ensure that data are not sitting in memory until the GC comes along.
+        // The texts are strings, which .NET cannot overwrite: the entries are emptied so nothing that is kept
+        // (an entry referred to elsewhere) still holds the notes, and the strings are let go
         if (_entryList.Count > 0)
         {
             if (overwriteValues)

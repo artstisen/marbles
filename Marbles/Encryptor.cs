@@ -73,7 +73,7 @@ class Encryptor
 
     internal static void RemoveKey()
     {
-        _key = DialogText.Cleared;
+        // The password is a string, which .NET cannot overwrite: it is let go. The derived key (bytes) is zeroed
         _key = string.Empty;
         ClearDerivedKey();
     }
@@ -134,24 +134,38 @@ class Encryptor
             }
 
             var textbytes = Encoding.UTF8.GetBytes(decrypted);
-            var output = new byte[HeaderLength + textbytes.Length];
-            // Header
-            Magic.CopyTo(output, 0);
-            output[4] = FormatVersion;
-            output[5] = KdfPbkdf2Sha256;
-            BinaryPrimitives.WriteInt32BigEndian(output.AsSpan(IterationsOffset), _iterations);
-            _salt.CopyTo(output, SaltOffset);
-            RandomNumberGenerator.Fill(output.AsSpan(NonceOffset, NonceLength)); // Never reuse a nonce with the same key
-            // Content
-            using var endec = new AesGcm(_derivedKey, TagLength);
-            endec.Encrypt(output.AsSpan(NonceOffset, NonceLength), textbytes, output.AsSpan(HeaderLength),
-                output.AsSpan(TagOffset, TagLength), output.AsSpan(0, TagOffset));
-            return output;
+            try
+            {
+                return Encrypt(textbytes);
+            }
+            finally
+            {
+                // The notes as plain bytes are not left in memory
+                CryptographicOperations.ZeroMemory(textbytes);
+            }
         }
         catch
         {
             return null;
         }
+    }
+
+    // The content of the data file for the notes as plain bytes (the key is derived)
+    private static byte[] Encrypt(byte[] textbytes)
+    {
+        var output = new byte[HeaderLength + textbytes.Length];
+        // Header
+        Magic.CopyTo(output, 0);
+        output[4] = FormatVersion;
+        output[5] = KdfPbkdf2Sha256;
+        BinaryPrimitives.WriteInt32BigEndian(output.AsSpan(IterationsOffset), _iterations);
+        _salt.CopyTo(output, SaltOffset);
+        RandomNumberGenerator.Fill(output.AsSpan(NonceOffset, NonceLength)); // Never reuse a nonce with the same key
+        // Content
+        using var endec = new AesGcm(_derivedKey, TagLength);
+        endec.Encrypt(output.AsSpan(NonceOffset, NonceLength), textbytes, output.AsSpan(HeaderLength),
+            output.AsSpan(TagOffset, TagLength), output.AsSpan(0, TagOffset));
+        return output;
     }
 
     /// <summary>
@@ -195,10 +209,19 @@ class Encryptor
                 : DeriveKey(_key, salt, iterations);
 
             var textbytes = new byte[encrypted.Length - HeaderLength];
-            using var endec = new AesGcm(key, TagLength);
-            // Throws if the password is wrong or if any part of the file was altered
-            endec.Decrypt(encrypted.AsSpan(NonceOffset, NonceLength), encrypted.AsSpan(HeaderLength),
-                encrypted.AsSpan(TagOffset, TagLength), textbytes, encrypted.AsSpan(0, TagOffset));
+            try
+            {
+                using var endec = new AesGcm(key, TagLength);
+                // Throws if the password is wrong or if any part of the file was altered
+                endec.Decrypt(encrypted.AsSpan(NonceOffset, NonceLength), encrypted.AsSpan(HeaderLength),
+                    encrypted.AsSpan(TagOffset, TagLength), textbytes, encrypted.AsSpan(0, TagOffset));
+            }
+            catch
+            {
+                // A key derived for a wrong password is not kept in memory either
+                if (!ReferenceEquals(key, _derivedKey)) CryptographicOperations.ZeroMemory(key);
+                throw;
+            }
 
             // Keep the key for the following saves
             if (!ReferenceEquals(key, _derivedKey))
@@ -209,7 +232,15 @@ class Encryptor
                 _iterations = iterations;
             }
 
-            return Encoding.UTF8.GetString(textbytes);
+            try
+            {
+                return Encoding.UTF8.GetString(textbytes);
+            }
+            finally
+            {
+                // The notes as plain bytes are not left in memory (the string made of them is used)
+                CryptographicOperations.ZeroMemory(textbytes);
+            }
         }
         catch
         {

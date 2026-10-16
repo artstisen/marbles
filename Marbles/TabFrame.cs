@@ -169,12 +169,8 @@ internal sealed class TabFrame
 
             var key = Console.ReadKey(true);
             Tools.HideCursor();
-            // The terminal window has changed size
-            if (Init.AutoSize && Init.ApplyAutoSize())
-            {
-                full = true;
-                continue;
-            }
+            // The terminal window has changed size: all is drawn again, and the key is still used
+            if (Init.AutoSize && Init.ApplyAutoSize()) full = true;
 
             if (key.Key == ConsoleKey.Tab && !page.CapturesKeys)
             {
@@ -247,7 +243,8 @@ internal sealed class TabFrame
         // The keys of the page
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHint);
-        Console.Write(" " + Tools.TruncateString(page.Keys, Init.LineWidth - 2, false));
+        // Whole hints are left out where they do not fit (a translated line can be longer)
+        Console.Write(" " + Tools.FitLine(page.Keys, 1));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 

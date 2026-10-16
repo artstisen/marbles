@@ -233,10 +233,10 @@ public class LangTests : IDisposable
     }
 
     [Fact]
-    public void F_WithABrokenTranslation_ShowsTheEnglishText()
+    public void F_WithATextThatIsNotInTheFile_FormatsTheEnglish()
     {
         Lang.Set("da");
-        // A format that is not in the file is used as it is
+        // A format that is not in the file is used as it is (a broken translation: see LangFolderTests)
         Assert.Equal("a 1 b", Lang.F("a {0} b", 1));
     }
 
