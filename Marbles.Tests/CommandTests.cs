@@ -40,8 +40,8 @@ public class CommandTests
     public void Tab_WithNothingTyped_GoesThroughAllTheCommands()
     {
         var names = Commands.Names(CommandContext.Search);
-        Assert.Equal(new[] { "close", "favorite", "find", "goto", "help", "info", "jump", "quit" }, names);
-        Assert.Equal(string.Join(" ", names) + "  close", Tabs(CommandContext.Search, "", names.Count + 2));
+        Assert.Equal(new[] { "book", "close", "favorite", "find", "goto", "help", "info", "jump", "quit" }, names);
+        Assert.Equal(string.Join(" ", names) + "  book", Tabs(CommandContext.Search, "", names.Count + 2));
     }
 
     [Fact]
@@ -191,8 +191,10 @@ public class CommandTests
     [Fact]
     public void TheTables_HaveTheCommandsOfTheEditor()
     {
-        // (":s/old/new/" is found by its first letter, and ":diff" by a pattern, as it can have "-w")
-        AssertSame(CommandContext.Editor, Compared(Method("Editor/EditorEngine.cs", "ExecuteCommand")), "s", "diff");
+        // (":s/old/new/" is found by its first letter, and ":diff" and ":book" by a pattern, as they can have something
+        // after them)
+        AssertSame(CommandContext.Editor, Compared(Method("Editor/EditorEngine.cs", "ExecuteCommand")), "s", "diff",
+            "book");
     }
 
     [Fact]

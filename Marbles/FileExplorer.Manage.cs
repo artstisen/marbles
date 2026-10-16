@@ -72,6 +72,10 @@ internal static partial class FileExplorer
             case "ju":
                 Jump.Open();
                 break;
+            case "book":
+                // ":book 3": jump to bookmark 3
+                Jump.ToBookmark(argument);
+                break;
             case "peek":
                 PeekSelected();
                 break;

@@ -601,20 +601,12 @@ public class TextArea
             case EditorRequest.Jump:
                 Tools.HideCursor();
                 // Leaving the text asks about changes that are not saved
-                Jump.Open(() =>
-                {
-                    var leave = !_engine.IsModified ||
-                                Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn, string.Empty, false)
-                                    switch
-                                    {
-                                        1 => Save(),
-                                        2 => true,
-                                        _ => false
-                                    };
-                    // A file is opened where the cursor is the next time, as when it is closed
-                    if (leave && _saveMode == SaveAsFile) FileExplorer.KeepCaretOfCurrentFile(this);
-                    return leave;
-                });
+                Jump.Open(LeaveForJump);
+                RedrawAll();
+                break;
+            case EditorRequest.JumpToBookmark:
+                Tools.HideCursor();
+                Jump.ToBookmark(_engine.BookArgument, LeaveForJump);
                 RedrawAll();
                 break;
             case EditorRequest.Rename:
@@ -882,6 +874,21 @@ public class TextArea
         }
 
         Completions.Refresh();
+    }
+
+    // Before a jump leaves the text: changes that are not saved are asked about (false: stay)
+    private bool LeaveForJump()
+    {
+        var leave = !_engine.IsModified ||
+                    Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn, string.Empty, false) switch
+                    {
+                        1 => Save(),
+                        2 => true,
+                        _ => false
+                    };
+        // A file is opened where the cursor is the next time, as when it is closed
+        if (leave && _saveMode == SaveAsFile) FileExplorer.KeepCaretOfCurrentFile(this);
+        return leave;
     }
 
     // ":rename" and ":title": a file gets another name (the changes that are not saved stay so, and are saved to

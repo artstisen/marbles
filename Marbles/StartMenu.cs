@@ -220,6 +220,10 @@ internal static class StartMenu
             case "ju":
                 Marbles.Jump.Open();
                 break;
+            case "book":
+                // ":book 3": jump to bookmark 3
+                Marbles.Jump.ToBookmark(CommandLine.Argument(command));
+                break;
             case "help":
             case "h":
                 // The keys of the start page, without going to the Help tab

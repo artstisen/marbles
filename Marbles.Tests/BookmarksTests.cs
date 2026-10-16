@@ -98,6 +98,19 @@ public class BookmarksTests : IDisposable
     }
 
     [Fact]
+    public void BookInTheEditor_AsksForTheJump_WithTheNumber()
+    {
+        var editor = new EditorEngine("text", 60, 10, false);
+        Assert.Equal(EditorRequest.JumpToBookmark, editor.Type(":book 3<CR>"));
+        Assert.Equal("3", editor.BookArgument);
+        // Alone: the Bookmarks tab of the Jump menu
+        Assert.Equal(EditorRequest.JumpToBookmark, editor.Type(":book<CR>"));
+        Assert.Equal(string.Empty, editor.BookArgument);
+        // ":bookmark" is another command
+        Assert.Equal(EditorRequest.Bookmark, editor.Type(":bookmark<CR>"));
+    }
+
+    [Fact]
     public void TheJumpMenu_HasTabsWithTheListsOfTheFileBrowserAsSubTabs()
     {
         var tabs = JumpMenu.Tabs(StartMenu.OnlyMode.None);

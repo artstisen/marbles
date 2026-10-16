@@ -269,7 +269,7 @@ internal static class Actions
         if (RunCommonCommand(command)) return;
         // Only some commands have something after them (":new Title", ":scheme Name")
         if (CommandLine.Argument(command).Length > 0 && command != "size auto" &&
-            CommandLine.Name(command) is not ("new" or "language" or "scheme" or "logo"))
+            CommandLine.Name(command) is not ("new" or "language" or "scheme" or "logo" or "book"))
         {
             CommandLine.ShowUnknown(command);
             Menu.DrawTopMenu(false, true, false);
@@ -294,6 +294,11 @@ internal static class Actions
             case "jump":
             case "ju":
                 Jump.Open();
+                Menu.DrawTopMenu(false, true, false);
+                break;
+            case "book":
+                // ":book 3": jump to bookmark 3
+                Jump.ToBookmark(CommandLine.Argument(command));
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "config":
@@ -513,6 +518,10 @@ internal static class Actions
             case "ju":
                 // The list is shown again afterwards
                 Jump.Open();
+                break;
+            case "book":
+                // ":book 3": jump to bookmark 3 (the list is shown again afterwards)
+                Jump.ToBookmark(CommandLine.Argument(command));
                 break;
             case "readonly":
             case "ro":

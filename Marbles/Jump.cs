@@ -337,6 +337,61 @@ internal static class Jump
         return FileOperations.SamePath(Path.GetFullPath(open), target.FullPath);
     }
 
+    /// <summary>
+    /// ":book 3": jump to bookmark 3 (its number on the Bookmarks tab of the Jump menu). ":book" alone shows the
+    /// Jump menu on the Bookmarks tab. A number that is not a bookmark is told about in a box. Returns when nothing
+    /// was jumped to, or the place was opened on top of the page (which must then be drawn again)
+    /// </summary>
+    /// <param name="argument">What follows ":book"</param>
+    /// <param name="beforeLeaving">Asked before the page is left (the editor asks about changes that are not saved);
+    /// false stays</param>
+    internal static void ToBookmark(string argument, Func<bool>? beforeLeaving = null)
+    {
+        argument = argument.Trim();
+        if (argument.Length == 0)
+        {
+            JumpMenu.ShowNextOn(JumpMenu.Tab.Bookmarks);
+            Open(beforeLeaving);
+            return;
+        }
+
+        Bookmarks.Load();
+        ChoiceBox.Forget();
+        if (!int.TryParse(argument, out var number) || number < 1 || number > Bookmarks.Items.Count)
+        {
+            ChoiceBox.Message(Lang.T("Bookmarks"), Bookmarks.Items.Count == 0
+                ? DialogText.BookmarksEmpty
+                : Lang.F("No bookmark {0} (the bookmarks have 1 to {1})", argument, Bookmarks.Items.Count),
+                DialogText.BookNumbersNote);
+            return;
+        }
+
+        var target = Bookmarks.Items[number - 1].Target;
+        if (!JumpMenu.Usable(target))
+        {
+            ChoiceBox.Message(Lang.T("Bookmarks"), DialogText.BookNotInThisMode, target.Name);
+            return;
+        }
+
+        if (!target.Exists)
+        {
+            ChoiceBox.Message(Lang.T("Bookmarks"), DialogText.FileNotFound, target.FullPath);
+            return;
+        }
+
+        if (OpensInPlace(target))
+        {
+            Remember(target);
+            OpenInPlace(target.Target);
+            return;
+        }
+
+        if (beforeLeaving != null && !beforeLeaving()) return;
+        Remember(target);
+        Pending = target;
+        Navigation.Wait();
+    }
+
     // Keep a jump in the jump history
     private static void Remember(JumpTarget target)
     {

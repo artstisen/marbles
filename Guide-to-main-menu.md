@@ -52,6 +52,8 @@ Bookmarks are places you keep to jump to: a file, a directory, a page of Marbles
 - `D` Remove the bookmark (the place itself stays), and `u` puts it back
 - `C` Clear the bookmarks (you are asked first)
 
+**Jumping with a command:** each bookmark has a number, shown at its right on the Bookmarks tab (`:book 1`, `:book 2` ...): it is its place in the list, so moving a bookmark changes its number. `:book 3` jumps to bookmark 3 from anywhere the Jump menu can be opened with `:jump`: the start page, the main menu and the lists of a data file, the file browser (with its favorites, history, hotlist and search results) and the editor (which asks about changes that are not saved first, as a jump does). `:book` alone opens the Jump menu on the Bookmarks tab. A number that is not a bookmark is told about in a box, with the numbers there are.
+
 The bookmarks are kept in `bookmarks.txt` in the data directory, one on each line: the kind (`file`, `dir`, `page` or `data`), a tab character, the place, and the name you gave it (if any) after another tab character, so the file can also be edited by hand. At most 100. A file or directory that is renamed or moved in the file browser (or renamed with `:rename` in the editor) keeps its bookmark, and one that is gone is shown dimmed with _(missing)_.
 
 Where a jump goes:

@@ -96,6 +96,17 @@ internal static class JumpMenu
     // runs; it is not saved)
     private static Tab _lastTab = Tab.Bookmarks;
 
+    /// <summary>
+    /// Open the menu on a list the next time it is shown (":book" alone: the bookmarks)
+    /// </summary>
+    internal static void ShowNextOn(Tab tab)
+    {
+        _lastTab = tab;
+    }
+
+    // ":book 3" on a row of the Bookmarks tab: its number in the whole list (also when a filter shows some)
+    private static string BookCommand(Row row) => ":book " + (BookmarkIndex(row) + 1); // English: a command
+
     private const int MarkWidth = 4; // "FILE", "DIR", "PAGE", "DATA"
     private const int TimeWidth = 10; // "09:41" today, else "2026-10-12"
 
@@ -127,7 +138,7 @@ internal static class JumpMenu
     };
 
     // The places a mode that is not used leads to are left out
-    private static bool Usable(JumpTarget target) => target.Kind switch
+    internal static bool Usable(JumpTarget target) => target.Kind switch
     {
         JumpKind.File or JumpKind.Directory => StartMenu.Only != StartMenu.OnlyMode.Notes,
         JumpKind.DataFile => StartMenu.Only != StartMenu.OnlyMode.Editor,
@@ -507,10 +518,11 @@ internal static class JumpMenu
             else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(name);
 
-            // The kind, and when
+            // The kind, and when (a bookmark: the command that jumps to it)
             Tools.SetCursorEx(first + line, left + width - MarkWidth - TimeWidth - 2);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(Mark(row.Target).PadRight(MarkWidth) + "  " + When(row.Time).PadLeft(TimeWidth));
+            var last = tabs[tab] == Tab.Bookmarks ? BookCommand(row) : When(row.Time);
+            Console.Write(Mark(row.Target).PadRight(MarkWidth) + "  " + last.PadLeft(TimeWidth));
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

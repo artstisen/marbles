@@ -104,6 +104,13 @@ internal static partial class FileExplorer
                     continue;
                 }
 
+                if (command != null && CommandLine.Name(command) == "book")
+                {
+                    // ":book 3": jump to bookmark 3
+                    Jump.ToBookmark(CommandLine.Argument(command));
+                    continue;
+                }
+
                 // A name can follow ":rename"
                 if (command != null && CommandLine.Name(command) == "rename") command = "rename";
 

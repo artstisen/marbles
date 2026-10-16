@@ -57,6 +57,7 @@ internal enum EditorRequest
     Diff, // ":diff": compare the text with the file on disk (or the saved entry)
     WriteCopy, // ":w name": save the text as a new file (a comparison)
     Bookmark, // ":bookmark": keep the file as a bookmark of the Jump menu
+    JumpToBookmark, // ":book 3": jump to bookmark 3 (BookArgument)
     StringMemory // ":reglist": show the strings of the string memory, to pick one to insert
 }
 
@@ -906,6 +907,15 @@ internal sealed partial class EditorEngine
         if (diff.Success)
         {
             RequestDiff(diff.Groups[1].Success);
+            return;
+        }
+
+        // ":book 3": jump to bookmark 3 (":book": the Bookmarks tab of the Jump menu)
+        var book = Regex.Match(command, "^book(?: +(.*))?$");
+        if (book.Success)
+        {
+            BookArgument = book.Groups[1].Value.Trim();
+            if (!SingleLine) _request = EditorRequest.JumpToBookmark;
             return;
         }
 
