@@ -670,11 +670,11 @@ internal static class DialogText
     public const string CommandPrompt = "COMMAND:"; // Shown in front of a command being typed
 
     // Editor status line
-    public const string EditorModeNormal = "-- NORMAL --";
-    public const string EditorModeInsert = "-- INSERT --";
-    public const string EditorModeVisual = "-- VISUAL --";
-    public const string EditorModeVisualLine = "-- V-LINE --";
-    public const string EditorModeVisualBlock = "-- V-BLOCK --";
+    public const string EditorModeNormal = "NORMAL";
+    public const string EditorModeInsert = "INSERT";
+    public const string EditorModeVisual = "VISUAL";
+    public const string EditorModeVisualLine = "V-LINE";
+    public const string EditorModeVisualBlock = "V-BLOCK";
     public const string EditorMemory = "mem";
     public static string EditorSaved => Lang.T("Saved");
     public static string EditorNoChanges => Lang.T("No changes to save");

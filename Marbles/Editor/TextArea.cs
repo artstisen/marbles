@@ -1773,9 +1773,12 @@ public class TextArea
                 break;
         }
 
+        // The mode is highlighted, with a blank space on each side inside the highlight (" NORMAL ")
+        if (label.Length > 0) label = " " + label + " ";
+
         if (text.Length == 0 && _engine.Message.Length > 0)
         {
-            // A message follows the blank space after the mode ("-- NORMAL -- Saved ---"). An error is
+            // A message follows the blank space after the mode (" NORMAL  Saved ---"). An error is
             // highlighted, with a blank space on each side inside the highlight
             text = (_engine.MessageIsError ? " " : string.Empty) + _engine.Message + " ";
         }

@@ -211,7 +211,7 @@ public class LangTests : IDisposable
         Assert.Equal("Not a text of Marbles", Lang.T("Not a text of Marbles"));
         Assert.Contains("3", Lang.F("{0} fewer lines", 3));
         // The commands and the names of the modes do not change
-        Assert.Equal("-- NORMAL --", DialogText.EditorModeNormal);
+        Assert.Equal("NORMAL", DialogText.EditorModeNormal);
         Assert.Equal("COMMAND:", DialogText.CommandPrompt);
         // An unknown language: English
         Assert.False(Lang.Set("xx"));

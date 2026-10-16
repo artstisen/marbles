@@ -256,7 +256,7 @@ internal static class LogoEditor
             // The mode and where the cursor is (the names of the modes are as in the text editor)
             Tools.SetCursorEx(_gridTop + LogoArt.Rows + 2, area.Left + 1);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
-            var mode = _visual ? "-- VISUAL --" : "-- NORMAL --"; // English
+            var mode = _visual ? DialogText.EditorModeVisual : DialogText.EditorModeNormal;
             Console.Write(mode);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             var position = "  " + Lang.F("Row {0}, column {1}", _row + 1, _column + 1);
@@ -886,7 +886,7 @@ internal static class LogoEditor
             // The mode and where the cursor is (the names of the modes are as in the text editor)
             Tools.SetCursorEx(_gridTop + LogoArt.Rows + 2, area.Left + 1);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
-            var mode = _replace ? "-- REPLACE --" : "-- NORMAL --"; // English
+            var mode = _replace ? "REPLACE" : DialogText.EditorModeNormal; // English: the name of a mode
             Console.Write(mode);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             var position = "  " + Lang.F("Row {0}, column {1}", _row + 1, _column + 1);

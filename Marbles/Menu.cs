@@ -817,7 +817,7 @@ internal static class Menu
     internal static void WriteNameInTopBar(bool displayDataFileName)
     {
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
-        WriteCenterText("-- " + DialogText.ApplicationName + " --");
+        WriteCenterText(DialogText.ApplicationName);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         if (displayDataFileName)
         {
