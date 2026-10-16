@@ -431,7 +431,12 @@ internal static class Menu
         // In the color of text in frames and boxes
         using var frameText = ConsoleColors.FrameTextScope();
 
-        var choices = new[] { Lang.T("Logout"), DialogText.StartSelectMode, DialogText.Exit };
+        // The order is the one of the switch in Actions (the Options of the main menu)
+        var choices = new[]
+        {
+            DialogText.StartJump, DialogText.HelpSectionFiles, DialogText.StartConfiguration, Lang.T("Logout"),
+            DialogText.Exit
+        };
         var inner = Math.Max(TextMetrics.WidthOf(DialogText.CaptionsOptions) + 4,
             choices.Max(c => TextMetrics.WidthOf(c)) + 12);
         var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);

@@ -60,18 +60,27 @@ internal static class Actions
             }
             else if (_c.Key == ConsoleKey.Escape)
             {
-                // Log out, go to the Select mode page or exit
+                // The Options of the data file: the Jump menu, the file browser, Configuration, log out or exit
                 ClearSearchQuery();
                 switch (Menu.LeaveChoice())
                 {
                     case 0:
-                        Tools.LoginRoutine(true);
+                        Jump.Open();
+                        Menu.DrawTopMenu(false, true, false);
                         break;
                     case 1:
-                        StartMenu.Open();
-                        Tools.LoginRoutine(true);
+                        // As :browse
+                        BrowseFiles();
+                        Menu.DrawTopMenu(false, true, false);
                         break;
                     case 2:
+                        // As :config (logs out, unless staying logged in)
+                        OpenConfiguration();
+                        break;
+                    case 3:
+                        Tools.LoginRoutine(true);
+                        break;
+                    case 4:
                         // The box was the question
                         Tools.ExitApplication();
                         break;
@@ -229,6 +238,20 @@ internal static class Actions
         }
     }
 
+    // More configurations: the Configuration tab of the Select mode page (logs out, unless staying logged in: then
+    // the main menu comes back)
+    private static void OpenConfiguration()
+    {
+        if (DataSession.Keep)
+        {
+            DataSession.ShowStartPage(0);
+            return;
+        }
+
+        StartMenu.Open(0);
+        Tools.LoginRoutine(true);
+    }
+
     // Open the file browser. Opening a file there logs out of the data file (unless staying logged in), and the
     // login page is shown when the browser is closed. If no file is opened the caller redraws its screen
     private static void BrowseFiles()
@@ -274,16 +297,7 @@ internal static class Actions
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "config":
-                // More configurations: the Configuration tab of the Select mode page (logs out, unless staying
-                // logged in: then the main menu comes back)
-                if (DataSession.Keep)
-                {
-                    DataSession.ShowStartPage(0);
-                    break;
-                }
-
-                StartMenu.Open(0);
-                Tools.LoginRoutine(true);
+                OpenConfiguration();
                 break;
             case "guide":
                 QuickGuide.Show();

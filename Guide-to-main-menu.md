@@ -49,13 +49,13 @@ When you jump from the editor and the text has changes that are not saved, you a
 The jumps are kept in the file `jump.txt` in the data directory, one line for each place (at most 100): the time, a tab character, the kind (`file`, `dir`, `page` or `data`), a tab character and the place (the path of a file or directory, the name of a page such as `config/editor`, or the path of a data file in the data directory such as `notes/work.mbls`). Like the file history it is not encrypted, and it holds no titles or text of notes.
 
 ## Main menu
-The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** and **Marbles**, each with its keys and commands. The tab shown is highlighted (in the colors of the tabs, set in the [color schemes](#color-schemes)). _MENU_ is shown at the top left, and the name of the data file at the top right, above a dividing line. The keys of the page are shown at the bottom.
+The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** and **Marbles**, each with its keys and commands. The tab shown is highlighted (in the colors of the tabs, set in the [color schemes](#color-schemes)). _DATA FILE MENU_ is shown at the top left, and the name of the data file at the top right, above a dividing line. The keys of the page are shown at the bottom.
 
 - Each item can be used with its key or command, or selected and opened: `j` `k` (or `Down`/`Up`) select an item, and `Enter`, `l` (or `Right`) or `Space` opens the selected item. For the settings that are on or off (`[x]`), `Space` and `Enter` turn them on or off. The keys and commands of all the tabs can be used whichever tab is shown
 - `j` on the last item of a tab goes on to the first item of the next tab (and back to Notes after Marbles). `k` on the first item goes back to the last item of the previous tab
 - `gg` (or `Home`) selects the first item of Notes, and `G` (or `End`) the last item of Marbles
 - `Tab` goes to the next tab, and `Shift+Tab` the other way. After a command, the tab it is on is shown
-- `Esc` shows a small box with three choices: **1 Logout**, **2 Select mode** (log out and go to the [Select mode](Guide-to-login-menu.md#select-mode) page) and **3 Exit** (close Marbles, without asking again). Select with `j` `k` (`gg` `G`: the first/last) or the number and press `Enter`, or `Esc` to close the box
+- `Esc` shows the **Options** of the data file, a small box with five choices: **1 Jump menu** (the [Jump menu](#jump-menu)), **2 File browser** (as `:browse`), **3 Configuration** (the Configuration tab of the start page, as `:config`: it logs out, unless you stay logged into the data file), **4 Logout** and **5 Exit** (close Marbles, without asking again). Select with `j` `k` (`gg` `G`: the first/last) or the number and press `Enter`, or `Esc` to close the box
 - `h` (or `Left`) shows the previous tab, and `1` to `4` select a tab
 - `?` shows the keys of the main menu (a section of the help of its own)
 

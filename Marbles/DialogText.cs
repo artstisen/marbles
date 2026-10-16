@@ -45,8 +45,9 @@ internal static class DialogText
     public static string CaptionsOptions => Lang.T("Options");
     public static string CaptionsMoreOptions => Lang.T("More options");
     public static string CaptionsColorScheme => Lang.T("Color schemes");
-    public static string CaptionsMenu => Lang.T("Menu");
-    public static string LeaveKeys => Lang.T("j/k 1-3 Select | Enter Open | Esc Back");
+    // The main menu of a data file (shown in capitals at the top left)
+    public static string CaptionsMenu => Lang.T("Data File Menu");
+    public static string LeaveKeys => Lang.T("j/k 1-5 Select | Enter Open | Esc Back");
     public static string MenuKeys => Lang.T("j/k Select | l/Enter Open | Tab/h Next/Previous tab | ? Help | X Logout");
     // The keys of a list of entries (All, Top 20, Favorites, Session history, Search)
     public static string ListKeys => Lang.T("Enter Open | h/l Page | gg/G First/Last | ? Help | Esc Back");
