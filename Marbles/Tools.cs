@@ -1415,7 +1415,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("h", Lang.T("The previous tab"), false));
             _shortcutList.Add(new Shortcut("1-4", Lang.T("Notes, Data file, Settings, Marbles"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("The first/last item"), false));
-            _shortcutList.Add(new Shortcut("Esc", Lang.T("Options: Jump, Files, Configuration, Logout, Exit"), false));
+            _shortcutList.Add(new Shortcut("Esc O F S X Q", Lang.T("Options: Jump, Files, Configuration, Logout, Exit"), false));
             _shortcutList.Add(new Shortcut("N S / A T F M", Lang.T("The keys of the items (shown in the tabs)"), false));
             _shortcutList.Add(new Shortcut("?", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (commands are shown in the menus)"), false));

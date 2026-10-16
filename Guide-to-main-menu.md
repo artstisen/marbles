@@ -55,7 +55,7 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 - `j` on the last item of a tab goes on to the first item of the next tab (and back to Notes after Marbles). `k` on the first item goes back to the last item of the previous tab
 - `gg` (or `Home`) selects the first item of Notes, and `G` (or `End`) the last item of Marbles
 - `Tab` goes to the next tab, and `Shift+Tab` the other way. After a command, the tab it is on is shown
-- `Esc` shows the **Options** of the data file, a small box with five choices: **1 Jump menu** (the [Jump menu](#jump-menu)), **2 File browser** (as `:browse`), **3 Configuration** (the Configuration tab of the start page, as `:config`: it logs out, unless you stay logged into the data file), **4 Logout** and **5 Exit** (close Marbles, without asking again). Select with `j` `k` (`gg` `G`: the first/last) or the number and press `Enter`, or `Esc` to close the box
+- `Esc` shows the **Options** of the data file, a small box with five choices: **1 `O` Jump menu** (the [Jump menu](#jump-menu)), **2 `F` File browser** (as `:browse`), **3 `S` Configuration** (the Configuration tab of the start page, as `:config`: it logs out, unless you stay logged into the data file), **4 `X` Logout** and **5 `Q` Exit** (close Marbles, without asking again). The key of a choice opens it at once (the same keys as on the start page and in the options of the login page, in all languages). Or select with `j` `k` (`gg` `G`: the first/last) or the number and press `Enter`. `Esc` closes the box
 - `h` (or `Left`) shows the previous tab, and `1` to `4` select a tab
 - `?` shows the keys of the main menu (a section of the help of its own)
 

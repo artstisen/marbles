@@ -437,6 +437,9 @@ internal static class Menu
             DialogText.StartJump, DialogText.HelpSectionFiles, DialogText.StartConfiguration, Lang.T("Logout"),
             DialogText.Exit
         };
+        // The keys that open a choice at once, the same in all languages and as on the start page and in the
+        // options of the login page: O the Jump menu (as Ctrl+O), F files, S Configuration, X Logout, Q Exit
+        var keys = new[] { ConsoleKey.O, ConsoleKey.F, ConsoleKey.S, ConsoleKey.X, ConsoleKey.Q };
         var inner = Math.Max(TextMetrics.WidthOf(DialogText.CaptionsOptions) + 4,
             choices.Max(c => TextMetrics.WidthOf(c)) + 12);
         var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
@@ -450,7 +453,10 @@ internal static class Menu
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            var text = row >= 1 && row <= choices.Length ? "   " + row + " .... " + choices[row - 1] : string.Empty;
+            // The number, the key, and the choice
+            var text = row >= 1 && row <= choices.Length
+                ? "   " + row + " " + keys[row - 1] + " .... " + choices[row - 1]
+                : string.Empty;
             Console.Write(text + new string(' ', Math.Max(0, inner - TextMetrics.WidthOf(text))));
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
@@ -481,7 +487,10 @@ internal static class Menu
             Tools.SetCursorEx(Init.LineCount - 1, 0);
             var key = Console.ReadKey(true);
             var navigation = Keyboard.ToNavigationKey(key).Key;
-            if (key.Key is ConsoleKey.Escape or ConsoleKey.Q || navigation == ConsoleKey.LeftArrow) return -1;
+            // The key of a choice opens it at once
+            var direct = Array.IndexOf(keys, key.Key);
+            if (direct >= 0 && (key.Modifiers & (ConsoleModifiers.Control | ConsoleModifiers.Alt)) == 0) return direct;
+            if (key.Key is ConsoleKey.Escape || navigation == ConsoleKey.LeftArrow) return -1;
             if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar || navigation == ConsoleKey.RightArrow) return selected;
             if (navigation == ConsoleKey.DownArrow) selected = (selected + 1) % choices.Length;
             if (navigation == ConsoleKey.UpArrow) selected = (selected + choices.Length - 1) % choices.Length;
