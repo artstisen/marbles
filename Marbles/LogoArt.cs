@@ -255,13 +255,13 @@ internal sealed class LogoArt
     // left, a stream coming down past the hut, and birds in the sky: a logo with a color for each of its cells
     private static LogoArt Adventure => Parse(string.Join("\n",
         @"       /\          ^             ~~     v          ^    ^",
-        @"      /^^\  /\    /^\   ^    ___|_____     v      /^\  /^\  ^",
+        @"      /^^\  /\    /^\   ^    ___|_____.    v      /^\  /^\  ^",
         @"     /    \/  \  /^^^\ /^\  /__________\  .~~~~  /^^^\/^^^\/^\",
-        @"____/__________\___|____|____|[#]__|'||_~~~~~~~~~~_|____|___|__",
+        @"_.__/__:.______\___|_.._|____|[#] =|'||_~~~~~~~~~~_|_:._|_._|__",
         "cells=.......FF..........A.............78.....8..........A....A",
-        "cells=......7FF7..77....2A2...A....444844444.....8......2A2..2A2..A",
+        "cells=......7FF7..77....2A2...A....4448444444....8......2A2..2A2..A",
         "cells=.....7....77..7..2AAA2.2A2..CCCCCCCCCCCC..BBBB9..2AAA22AAA22A2",
-        "cells=2228722222222227822622226222266E6226666299B99B99B92622226222622"), AdventureName);
+        "cells=2228722222222227822622226222266E6266666299B99B99B92622226222622"), AdventureName);
 
     // An 80's computer with a prompt on its screen and its keyboard, on a table with pencils in a jar, a cup of
     // coffee with steam rising from it, and a notepad: a logo with a color for each of its cells
