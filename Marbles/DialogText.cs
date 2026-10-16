@@ -576,6 +576,7 @@ internal static class DialogText
     public static string HotlistMoving => Lang.T("Moving: j/k, then Esc");
     public static string HotlistMoveFiltered => Lang.T("Remove the filter (Esc) to move");
     public static string HotlistNoDirectory => Lang.T("Go to a directory first");
+    public static string NotLoggedIn => Lang.T("Not logged into a data file");
     public static string HotlistRename => Lang.T("Name in the hotlist");
     public static string HotlistRenameNote => Lang.T("The directory keeps its name (empty: its name is shown)");
     public static string HotlistCleared => Lang.T("The hotlist is cleared");

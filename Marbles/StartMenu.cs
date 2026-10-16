@@ -307,6 +307,7 @@ internal static class StartMenu
         StartNotes,
         StartEditor,
         StartFavorites, // Shown below StartEditor when it is chosen
+        StayLoggedIn,
         Monochrome,
         Language,
         ColorScheme,
@@ -341,6 +342,7 @@ internal static class StartMenu
         if (Only != OnlyMode.Editor) settings.Add(Setting.StartNotes);
         if (Only != OnlyMode.Notes) settings.Add(Setting.StartEditor);
         if (EffectiveMode == StartMode.Editor) settings.Add(Setting.StartFavorites);
+        if (Only != OnlyMode.Editor) settings.Add(Setting.StayLoggedIn);
         settings.Add(Setting.EditorOnly);
         settings.Add(Setting.NotesOnly);
         settings.Add(Setting.Language);
@@ -381,6 +383,7 @@ internal static class StartMenu
             Setting.StartNotes => Check(Mode == StartMode.Notes) + DialogText.StartConfigNotes,
             Setting.StartEditor => Check(Mode == StartMode.Editor) + DialogText.StartConfigEditor,
             Setting.StartFavorites => indent + Check(StartInFavorites) + Lang.T("Open the favorites list first"),
+            Setting.StayLoggedIn => Check(DataSession.StayLoggedIn) + Lang.T("Stay logged into data file (Session)"),
             Setting.Monochrome => Check(ConsoleColors.Monochrome) + DialogText.ConfigMonochrome,
             Setting.Language => indent + DialogText.ConfigLanguage + Lang.CurrentName,
             Setting.ColorScheme => indent + Lang.F("Color scheme: {0} (Enter: Select/Edit)",
@@ -426,7 +429,7 @@ internal static class StartMenu
         return setting switch
         {
             Setting.StartSelect or Setting.StartNotes or Setting.StartEditor or Setting.StartFavorites
-                or Setting.EditorOnly or Setting.NotesOnly or Setting.Language => 0,
+                or Setting.StayLoggedIn or Setting.EditorOnly or Setting.NotesOnly or Setting.Language => 0,
             Setting.AutoSize or Setting.Size or Setting.Monochrome or Setting.ColorScheme or Setting.Logo
                 or Setting.LogoAnimation => 1,
             Setting.LineNumbers or Setting.WordWrap or Setting.ScrollOff or Setting.Clipboard
@@ -901,6 +904,9 @@ internal static class StartMenu
                 break;
             case Setting.StartFavorites:
                 StartInFavorites = !StartInFavorites;
+                break;
+            case Setting.StayLoggedIn:
+                DataSession.StayLoggedIn = !DataSession.StayLoggedIn;
                 break;
             case Setting.Monochrome:
                 ConsoleColors.Monochrome = !ConsoleColors.Monochrome;

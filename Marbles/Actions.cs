@@ -229,8 +229,8 @@ internal static class Actions
         }
     }
 
-    // Open the file browser. Opening a file there logs out of the data file, and the login page is shown
-    // when the browser is closed. If no file is opened the caller redraws its screen
+    // Open the file browser. Opening a file there logs out of the data file (unless staying logged in), and the
+    // login page is shown when the browser is closed. If no file is opened the caller redraws its screen
     private static void BrowseFiles()
     {
         FileExplorer.Run();
@@ -274,7 +274,14 @@ internal static class Actions
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "config":
-                // More configurations: the Configuration tab of the Select mode page (logs out)
+                // More configurations: the Configuration tab of the Select mode page (logs out, unless staying
+                // logged in: then the main menu comes back)
+                if (DataSession.Keep)
+                {
+                    DataSession.ShowStartPage(0);
+                    break;
+                }
+
                 StartMenu.Open(0);
                 Tools.LoginRoutine(true);
                 break;
@@ -806,7 +813,7 @@ internal static class Actions
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
         Console.Write(" " + DialogText.FileColon + " " +
                       Tools.TruncateString(FileExplorer.CurrentFileName, Init.LineWidth - 40, true) + " ");
-        if (FileExplorer.SessionEnded)
+        if (FileExplorer.FromDataFile)
         {
             // Coming from the encrypted notes of a data file: a reminder that this file is not
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);

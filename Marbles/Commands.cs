@@ -59,7 +59,7 @@ internal static class Commands
             " readonly" + Common,
             "q h ro ju" + CommonShort),
         [CommandContext.Files] = new Table(
-            "quit close exit home data help jump peek diff cd new info mkdir rename copy duplicate move delete favorite favorites history hotlist hotadd refresh panes match path name find",
+            "quit close exit home data help jump peek diff cd new info mkdir rename copy duplicate move delete favorite favorites history hotlist hotadd refresh logout panes match path name find",
             "q h fav favs hist hot ju"),
         [CommandContext.FilePicker] = new Table(
             "quit close home data help cd",

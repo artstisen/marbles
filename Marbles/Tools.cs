@@ -1372,6 +1372,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("The pages General, Layout, Editor and System"), false));
             _shortcutList.Add(new Shortcut("j k 1-9", Lang.T("Select a setting (or the number of its row)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Startup"), Lang.T("Text Editor can start in the favorites list"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Stay logged in"), Lang.T("Files and pages keep the data file open"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Text Editor only"), Lang.T("No Note Management, data files are not opened"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Note Management only: no Text Editor in Mode"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("One at a time, to run one Marbles of each"), false));
@@ -1501,6 +1502,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q :q", Lang.T("Close the file browser"), false));
             _shortcutList.Add(new Shortcut(":exit", Lang.T("Exit Marbles (asks first)"), false));
+            _shortcutList.Add(new Shortcut(":logout", Lang.T("Log out of the data file (staying logged in)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Text files"), Lang.T("Opened in the editor. They are NOT encrypted"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Saving"), Lang.T("As UTF-8, with the line endings of the file"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Not UTF-8"), Lang.T("Can be converted (replace file or save copy)"), false));

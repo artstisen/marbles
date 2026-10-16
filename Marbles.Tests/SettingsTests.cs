@@ -221,7 +221,7 @@ backup=
         Assert.Equal("Marbles", settings["logo"]);
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(35, settings.Count);
+        Assert.Equal(36, settings.Count);
         Assert.Equal("none", settings["onlymode"]);
         Assert.Equal("fast", settings["logoanim"]);
         Assert.Equal("true", settings["wrap"]);
@@ -243,6 +243,7 @@ backup=
         Assert.Equal("false", settings["linenumbers"]);
         Assert.Equal("true", settings["browsedual"]);
         Assert.Equal("false", settings["autocomplete"]);
+        Assert.Equal("false", settings["stayloggedin"]);
         Assert.Equal("1", settings["browsepane"]);
         Assert.Equal(string.Empty, settings["browsesel1"]);
         Assert.Equal(string.Empty, settings["browsesel2"]);

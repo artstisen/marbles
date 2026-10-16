@@ -329,6 +329,14 @@ internal static class Jump
         Navigation.Wait();
     }
 
+    // A jump to the data file that is logged in to
+    private static bool IsOpenDataFile(JumpTarget target)
+    {
+        if (!DataSession.IsLoggedIn) return false;
+        var open = Path.Combine(FileIo.GetDataDirectoryName(), FileIo.GetSubFolder(), FileIo.GetFileName());
+        return FileOperations.SamePath(Path.GetFullPath(open), target.FullPath);
+    }
+
     // Keep a jump in the jump history
     private static void Remember(JumpTarget target)
     {
@@ -379,8 +387,14 @@ internal static class Jump
         var target = Pending;
         Pending = null;
         if (target == null) return;
-        // A data file that is logged in to is logged out of
-        if (Mode.CurrentMode != Mode.SelectedMode.Login)
+        // A data file that is logged in to is logged out of, unless staying logged in (and not going to another
+        // data file). Staying: the data file is open in the main menu's mode while the place is shown
+        var keep = DataSession.Keep && !(target.Kind == JumpKind.DataFile && !IsOpenDataFile(target));
+        if (keep)
+        {
+            Mode.SetMode(Mode.SelectedMode.Manage);
+        }
+        else if (Mode.CurrentMode != Mode.SelectedMode.Login || DataSession.IsLoggedIn)
         {
             Tools.RemovePrivileges(true);
             Mode.SetMode(Mode.SelectedMode.Login);
@@ -395,15 +409,19 @@ internal static class Jump
                 if (!target.Exists)
                 {
                     NotFound(target);
+                    if (keep) DataSession.ReturnToMainMenu();
                     StartMenu.Open();
                     break;
                 }
 
                 // The file browser, in the directory of the file (which is opened in the editor), or in the
-                // directory. Closing it shows the Select mode page, as when it is closed there
+                // directory. Closing it shows the Select mode page, as when it is closed there (staying logged in:
+                // the main menu of the data file)
                 if (target.Kind == JumpKind.File) FileExplorer.RunAtFile(target.FullPath);
                 else FileExplorer.RunAtDirectory(target.FullPath);
-                if (!FileExplorer.DataFileSelected) StartMenu.Open();
+                if (FileExplorer.DataFileSelected) break;
+                if (DataSession.Keep) DataSession.ReturnToMainMenu();
+                StartMenu.Open();
                 break;
             case JumpKind.DataFile:
                 if (!target.Exists)
@@ -411,6 +429,9 @@ internal static class Jump
                     NotFound(target);
                     break;
                 }
+
+                // The data file that is open (staying logged in): its main menu
+                if (keep) DataSession.ReturnToMainMenu();
 
                 // The data file is selected on the login page
                 var relative = target.Target.Replace('\\', '/');
@@ -421,7 +442,14 @@ internal static class Jump
                 FileBrowser.ResolveSubFolderIndex();
                 break;
             default:
-                // A page of the Configuration tab of the Select mode page
+                // A page of the Configuration tab of the Select mode page (staying logged in: the main menu of the
+                // data file comes back afterwards)
+                if (keep)
+                {
+                    DataSession.ShowStartPage(JumpPages.ConfigurationPage(target.Target));
+                    break;
+                }
+
                 StartMenu.Open(JumpPages.ConfigurationPage(target.Target));
                 break;
         }

@@ -27,6 +27,7 @@ The settings are on four pages, so they can be changed in one place without logg
 - **Start in Text Editor (file browser)**: Go directly to the file browser
   - **Open the favorites list first** (shown when starting in the Text Editor): Start in the [favorites](#favorites) of the file browser. Closing the list shows the file browser. Saved as `startfavorites` in the settings file
   - The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to showing the choices
+- **Stay logged into data file (Session)**: Off from the start. Normally, going from your notes to something else logs you out of the data file: opening a text file in the file browser, or a jump to a file, a directory or a page of Configuration. The notes are cleared from memory and the password is asked for again. With this on, the data file stays open until you log out yourself (Logout in the main menu, `:logout` in the file browser), choose another data file, or exit Marbles: text files are edited, the file browser and the pages of Configuration are used, and the main menu of the data file comes back afterwards without the password. The string memory is kept too, so text yanked in a note can be put in a text file (and the other way round). The notes are in memory, decrypted, while you work on files, so anyone at your computer can open them: use it on a computer only you use. Saved as `stayloggedin` in the settings file. Not shown with _Text Editor only_
 - **Text Editor only** and **Note Management only**: Use this Marbles for one of the two modes only. They are for running two copies of Marbles in separate directories, one as a text editor and one for notes. Only one of them can be set (setting one clears the other, and setting it again turns it off)
   - _Text Editor only_: _Note Management_ is not shown in the Mode tab, and the file browser does not open data files (`.mbls`): it says so on its bottom line
   - _Note Management only_: _Text Editor/File Management_ is not shown in the Mode tab
@@ -129,7 +130,7 @@ In a pane that is narrow, as when the window is 80 columns wide, the type column
 
 The browser starts in the Marbles data directory and remembers the directories of both panes, the file or directory selected in each, the pane that had the focus and whether one or two panes were shown (`browsedir1`, `browsedir2`, `browsesel1`, `browsesel2`, `browsepane` and `browsedual` in the settings file). They are saved however the browser is left (closed, a jump to another page, or exiting Marbles), and also when a file is opened in the editor. The selection is remembered by name: if the file is gone, the first row is selected.
 
-The file browser can also be opened with the command `:browse` when you are logged in to a data file. You can look around and close the browser again without anything else happening, but opening a file logs you out of the data file, and the login page is shown when you close the browser.
+The file browser can also be opened with the command `:browse` when you are logged in to a data file. You can look around and close the browser again without anything else happening, but opening a file logs you out of the data file, and the login page is shown when you close the browser. With **Stay logged into data file (Session)** on (Configuration, General), the data file stays open: closing the browser shows its main menu again, and `:logout` in the browser logs out of it.
 
 - `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down
 - `l` or `Enter` Open the selected directory or file. A file is opened in the editor where the cursor was when you closed it the last time (see [Where the cursor was](#where-the-cursor-was))
@@ -152,6 +153,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `?` Help
 - `Esc`, `Q` or `:q` Close the file browser
 - `:exit` Exit Marbles (asks first)
+- `:logout` Log out of the data file, when you stay logged into it (see **Stay logged into data file (Session)** under [Configuration](#configuration)). The login page is shown when the browser is closed
 
 A text file is opened in the [editor](Guide-to-editor.md), where `:w` saves it and `:q` returns to the browser. Files are saved as UTF-8 with the line endings they had. Files larger than 10 MB and files that are not text are not opened.
 

@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -65,6 +65,11 @@ class Encryptor
     {
         return Tools.IsValid(_key) && key == _key;
     }
+
+    /// <summary>
+    /// A password is in use (a data file is logged in to)
+    /// </summary>
+    internal static bool HasKey => Tools.IsValid(_key);
 
     internal static void RemoveKey()
     {

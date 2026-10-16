@@ -159,9 +159,15 @@ internal static partial class FileExplorer
     internal static bool SessionEnded { get; private set; }
 
     /// <summary>
+    /// The text file being edited comes from a data file that was logged in to (or still is): the editor tells that
+    /// it is not encrypted
+    /// </summary>
+    internal static bool FromDataFile => SessionEnded || DataSession.IsLoggedIn;
+
+    /// <summary>
     /// True if the last run of the file browser was closed by selecting a data file (to log in to)
     /// </summary>
-    internal static bool DataFileSelected { get; private set; }
+    internal static bool DataFileSelected { get; set; }
 
     // Opening a file from the browser ends the session of the data file that is logged in to (if any),
     // just like logging out before opening the browser from the login page
@@ -744,7 +750,10 @@ internal static partial class FileExplorer
     {
         // The places of the browser are saved before the editor is opened, should Marbles not be closed as usual
         if (_browsing) RememberPanes();
-        EndSession();
+        // Staying logged in: the data file stays open (the mode it was in comes back when the editor is closed)
+        var keep = DataSession.Keep;
+        var modeBefore = Mode.CurrentMode;
+        if (!keep) EndSession();
         _file = file;
         EventLog.Add(DialogText.LogFile + "Open: " + file.Path);
         AddToHistory(file.Path);
@@ -784,7 +793,8 @@ internal static partial class FileExplorer
         }
         finally
         {
-            Mode.SetMode(Mode.SelectedMode.Login);
+            // (logged out in the editor: the login page)
+            Mode.SetMode(keep && DataSession.IsLoggedIn ? modeBefore : Mode.SelectedMode.Login);
             _lastEditedPath = _file?.Path ?? file.Path;
             _file = null;
         }

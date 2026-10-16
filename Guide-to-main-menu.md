@@ -44,7 +44,7 @@ Where a jump goes:
 - **A data file** is selected on the login page
 - **Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Help and About** open on top of the page you jumped from; closing them returns there
 
-When you jump from the editor and the text has changes that are not saved, you are asked whether to save them first (`Esc` stays in the editor). A jump to a file, directory, Configuration page or data file from a data file you are logged in to logs you out of it first. With _Text Editor only_ the Data tab is not shown, and with _Note Management only_ the Files, Favorites and Hotlist tabs are not.
+When you jump from the editor and the text has changes that are not saved, you are asked whether to save them first (`Esc` stays in the editor). A jump to a file, directory, Configuration page or data file from a data file you are logged in to logs you out of it first. With **Stay logged into data file (Session)** on (Configuration, General) you stay logged in: only a jump to another data file logs you out, and the main menu of the data file comes back when you close the file browser or the Configuration pages. With _Text Editor only_ the Data tab is not shown, and with _Note Management only_ the Files, Favorites and Hotlist tabs are not.
 
 The jumps are kept in the file `jump.txt` in the data directory, one line for each place (at most 100): the time, a tab character, the kind (`file`, `dir`, `page` or `data`), a tab character and the place (the path of a file or directory, the name of a page such as `config/editor`, or the path of a data file in the data directory such as `notes/work.mbls`). Like the file history it is not encrypted, and it holds no titles or text of notes.
 

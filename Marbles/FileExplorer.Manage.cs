@@ -118,6 +118,21 @@ internal static partial class FileExplorer
             case "hotadd":
                 AddToHotlist();
                 break;
+            case "logout":
+                // Staying logged in: end the session of the data file (the browser stays)
+                if (DataSession.IsLoggedIn)
+                {
+                    var dataFile = FileIo.GetFileName();
+                    DataSession.LogOut();
+                    SessionEnded = true;
+                    _message = Lang.F("Logged out of {0}", dataFile);
+                }
+                else
+                {
+                    _message = DialogText.NotLoggedIn;
+                }
+
+                break;
             case "refresh":
                 // As R: read the directories again, keeping the selection
                 LoadItems(ActivePane.Items.Count > 0 ? ActivePane.Items[ActivePane.Index].Name : null);
