@@ -1691,6 +1691,19 @@ internal static class Actions
         _searchQuery = "";
     }
 
+    /// <summary>
+    /// Forget the lists of the data file that is logged out of (the search, the list to go back to and its
+    /// place in it), so they are not shown, or gone back to, in the next data file
+    /// </summary>
+    internal static void ClearAtLogout()
+    {
+        ClearSearchQuery();
+        Mode.SetRecallMode(Mode.RecallMode.None);
+        ResetLastSelectedIndex();
+        _foundEntries.Clear();
+        _resultPages.Clear();
+    }
+
 
     private static string _searchQuery = string.Empty;
 
@@ -2430,6 +2443,10 @@ internal static class Actions
             TransferCurrentEntryToLastSelected();
         }
 
+        // The list can have fewer pages than when it was left (entries deleted, or more rows on the screen)
+        if (_resultPages.Count == 0) return;
+
+        _lastSelectedPage = Math.Clamp(_lastSelectedPage, 0, _resultPages.Count - 1);
         DisplayResultPages(_lastSelectedPage, true);
         if (_resultPages[_lastSelectedPage].Count > 0)
         {

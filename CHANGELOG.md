@@ -1,6 +1,17 @@
 # Changes
 
 ## v1.5.3
+- **Fixes from a review of the code**:
+  - Moving the data file from the login page to a directory with a data file of the same name never replaces that file any more: the move stops after the message (before, answering No to the question that followed went on with the move and replaced it).
+  - The color list no longer stops Marbles with an error when the name of a color that cannot be picked is long in the language used (Polish, Spanish, Finnish): the box is as wide as its longest name.
+  - `Tab` and `Shift+Tab` while typing a password in `:password` or for a new data file no longer switch to another data file (which logged you out).
+  - A search pattern that takes too long (as `(a|aa)+$`) is stopped, and is not highlighted: before, the highlighting tried again at every redraw, which made the editor very slow.
+  - Going back to a list of entries no longer stops Marbles with an error when the list has fewer pages than when it was left (after logging into a smaller data file, or with more rows on the screen). The list, the search and the place in it are forgotten when you log out.
+  - An unexpected error no longer logs you out: it is told about, and you continue from the Data File Menu (your notes are saved after each change). On the login page it starts over, as before. Only the kind of error is written to the log.
+  - **Backup**: a backup that cannot be written no longer turns backup off: you are told once, and it is written again when the directory is back. A data file in a subfolder is backed up in the same subfolder of the backup directory (data files with the same name in different subfolders no longer replace each other's backup). The backup directory must be outside the data directory, so a backup is never written on top of a data file.
+  - **Settings**: when `settings.ini` cannot be read at startup (held by another program), it is no longer replaced by the default settings: Marbles uses the defaults, and before the file is written again a copy of it is kept as `settings.ini.bad`. A setting with digits of another script is ignored instead of making the reading fail. The message shown when the settings cannot be saved tells why.
+  - **Password**: changing the password tells it worked only when the data file was saved with the new one; else "The data file could not be saved: the password is not changed".
+  - `publish.ps1` empties the folder of each version before publishing it, so no files are left from earlier versions. It stops, without deleting anything, when one of them has a `data` folder (data files and settings), and stops at an unknown version name.
 - **`:name` and `:path`** also work in the favorites, the file history and the hotlist of the file browser: `:name` copies the name shown (a name given in the hotlist, the name of a folder of favorites), `:path` the full path, to the clipboard as set and to the string memory.
 - **Logos**: a fifth built-in logo, **Terminal sessions**: an 80's computer with a green `C:\>` prompt on its screen and its keyboard, on a wooden table with pencils in a jar, a steaming cup of coffee and a notepad, in many colors.
 - **A calmer look**: the name at the top of the pages is "Marbles" (no dashes), the line written when Marbles closes is "Marbles exit", and the mode at the bottom of the editor is " NORMAL ", " INSERT ", " VISUAL " ... (no dashes, a blank space on each side in its highlight); the logo editor shows its modes the same way.

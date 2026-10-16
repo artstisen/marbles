@@ -11,7 +11,7 @@ internal static class ColorPicker
     internal const int Count = 16;
 
     private const int BoxTop = 3; // The tab of the title is on the row above
-    private const int BoxWidth = 24; // Between the borders
+    private const int MinBoxWidth = 24; // Between the borders, at least
 
     /// <summary>
     /// The name of a color: "Dark Blue"
@@ -47,8 +47,18 @@ internal static class ColorPicker
         var selected = current == null ? 0 : (int)current.Value + first;
         bool CanSelect(int row) => row < first || isAllowed == null || isAllowed((ConsoleColor)(row - first));
 
+        // The box is as wide as the longest name (in brackets when it cannot be picked), and stays on the page
+        var longest = TextMetrics.WidthOf(DialogText.ColorDefault);
+        for (var color = 0; color < Count; color++)
+        {
+            longest = Math.Max(longest, TextMetrics.WidthOf(Name((ConsoleColor)color)) + 2);
+        }
+
+        var boxWidth = Math.Min(Math.Max(MinBoxWidth, 8 + longest), Init.LineWidth - 2);
+        left = Math.Max(0, Math.Min(left, Init.LineWidth - boxWidth - 2));
+
         Tools.HideCursor();
-        ChoiceBox.DrawTitleTab(BoxTop - 1, left, BoxWidth, caption);
+        ChoiceBox.DrawTitleTab(BoxTop - 1, left, boxWidth, caption);
         for (var row = 0; row < rows; row++)
         {
             Tools.SetCursorEx(BoxTop + 1 + row, left);
@@ -92,15 +102,16 @@ internal static class ColorPicker
                 }
             }
 
+            name = TextMetrics.StartPart(name, boxWidth - 8);
             Console.Write(name);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(new string(' ', BoxWidth - 8 - name.Length));
+            Console.Write(new string(' ', Math.Max(0, boxWidth - 8 - TextMetrics.WidthOf(name))));
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
             Console.Write('|');
         }
 
         Tools.SetCursorEx(BoxTop + rows + 1, left);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', BoxWidth) + AsciiStyles.GetBottomCorner());
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', boxWidth) + AsciiStyles.GetBottomCorner());
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
 
         while (true)

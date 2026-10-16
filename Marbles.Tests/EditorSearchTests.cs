@@ -47,6 +47,20 @@ public class EditorSearchTests
     }
 
     [Fact]
+    public void Search_ThatTakesTooLong_IsStopped_AndNotHighlighted()
+    {
+        // A pattern that backtracks without end on a line it does not match
+        var editor = Editor("x\n" + new string('a', 40) + "!");
+        editor.Type(@"/(a|aa)+$<CR>");
+        Assert.True(editor.MessageIsError);
+        Assert.Equal("Search took too long", editor.Message);
+        Assert.Equal(new TextPos(0, 0), editor.Cursor);
+        // Highlighting would take as long on every redraw
+        Assert.False(editor.IsSearchHighlighted);
+        Assert.Empty(editor.SearchMatches(1));
+    }
+
+    [Fact]
     public void Star_SearchesForWholeWords()
     {
         var editor = Editor("cat concat cat");

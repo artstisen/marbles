@@ -699,7 +699,9 @@ internal static class DialogText
     public static string ErrorMovingFile => Lang.T("Unable to move file. Action aborted.");
     public static string ErrorFileAlreadyExist => Lang.T("A file with the same name already exists in the target location");
     public static string SelectTargetDirectory => Lang.T("Please select a valid target directory...");
-    public static string StatusUnableToSaveBackup => Lang.T("Error: Unable to save backup (path invalid). Backup disabled.");
+    public static string PasswordNotChanged =>
+        Lang.T("The data file could not be saved: the password is not changed");
+    public static string StatusUnableToSaveBackup => Lang.T("Error: Unable to save the backup (the backup directory cannot be reached)");
     public static string ErrorBufferSize => Lang.T("Attention: Unable to use specified output dimensions. Reverting to default.");
     public static string ErrorClientSize => Lang.T("Current terminal dimensions are unsupported.");
     public static string ErrorUnsupportedAction => Lang.T("Action unsupported");

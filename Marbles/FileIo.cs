@@ -344,20 +344,26 @@ internal static class FileIo
 
     #region Save entries
 
-    private static string _tempSaveStatus = string.Empty;
+    /// <summary>
+    /// What happened when the entries were saved: Saved is true when the data file was written (else Error tells
+    /// why); BackupError tells why the backup copy could not be written (empty when it was, or is not used)
+    /// </summary>
+    internal readonly record struct SaveResult(bool Saved, string Error, string BackupError);
 
-    internal static string SaveEntries()
+    internal static SaveResult SaveEntries()
     {
         var encrypted = Encryptor.EncryptData(GetEntriesAsXml(Entries.GetEntries()).ToString());
         // Never touch the data file if the encryption failed
         if (encrypted == null)
         {
-            return DialogText.StatusUnableToSave;
+            return new SaveResult(false, DialogText.StatusUnableToSave, string.Empty);
         }
 
-        _tempSaveStatus = WriteFile(encrypted);
-        _tempSaveStatus += WriteBackupFile(encrypted);
-        return _tempSaveStatus;
+        var error = WriteFile(encrypted);
+        // The backup is only written when the data file was
+        return error.Length > 0
+            ? new SaveResult(false, error, string.Empty)
+            : new SaveResult(true, string.Empty, WriteBackupFile(encrypted));
     }
 
     #endregion
@@ -377,8 +383,8 @@ internal static class FileIo
     /// The dates of entries written with the day first by an early version ("17-11-2021 12:21:46") are turned
     /// around ("2021-11-17 12:21:46"), so the entries sort by their dates.
     /// </summary>
-    /// <returns>DialogText.Success or an error message</returns>
-    internal static string ConvertLegacyFile()
+    /// <returns>What happened when the file was saved (not saved when the copy could not be made)</returns>
+    internal static SaveResult ConvertLegacyFile()
     {
         LegacyCopyFileName = string.Empty;
         try
@@ -397,7 +403,7 @@ internal static class FileIo
         catch (Exception e)
         {
             // Without the copy the original is left untouched
-            return e.Message;
+            return new SaveResult(false, e.Message, string.Empty);
         }
 
         var corrected = CorrectTimestamps(Entries.GetEntries());
@@ -570,7 +576,7 @@ internal static class FileIo
             if (CheckCurrentDirectory())
             {
                 WriteAllBytesSafe(GetCurrentFolderAndFileName(), content);
-                return DialogText.Success;
+                return string.Empty;
             }
             else
             {
@@ -864,16 +870,16 @@ internal static class FileIo
         try
         {
             DirectoryCheckErrorMessage = "";
-            // Check directory
-            if (!string.IsNullOrEmpty(path) && Path.Combine(path, _fileName) != GetAbsolutePath() &&
-                Directory.Exists(path))
+            // The backup directory must exist, and be outside the data directory: there a backup copy could be
+            // written on top of another data file (or the data file itself)
+            if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
             {
-                return true;
+                var backup = Path.GetFullPath(path);
+                var data = Path.GetFullPath(DataDirectory);
+                return !FileOperations.SamePath(backup, data) && !FileOperations.IsInside(backup, data);
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
         catch (Exception e)
         {
@@ -886,6 +892,7 @@ internal static class FileIo
     {
         _saveBackup = enabled;
         _backupPath = path;
+        _backupFailureTold = false;
         if (saveSettings)
         {
             SaveSettings();
@@ -909,11 +916,13 @@ internal static class FileIo
         }
     }
 
-    private static string GetBackupFolderAndFileName()
+    // The backup copy of the current data file: in the same subfolder of the backup directory as the data file is
+    // in the data directory, so data files with the same name in different subfolders get backups of their own
+    private static string BackupFileName(string backupPath)
     {
-        return
-            Path.Combine(_backupPath,
-                _fileName); // Will insert the correct path separator char according to OS/platform (like using the Path.DirectorySeparatorChar)
+        return Tools.IsValid(_currentSubFolder)
+            ? Path.Combine(backupPath, _currentSubFolder, _fileName)
+            : Path.Combine(backupPath, _fileName);
     }
 
     internal static string GetBackupPathForDisplay(bool verboseOutput)
@@ -953,22 +962,44 @@ internal static class FileIo
 
         try
         {
+            // The backup stays on when it cannot be written (a drive that is not there right now): the next
+            // save tries again
             if (CheckBackupDirectory(_backupPath))
             {
-                WriteAllBytesSafe(GetBackupFolderAndFileName(), content);
+                var backupFile = BackupFileName(_backupPath);
+                Directory.CreateDirectory(Path.GetDirectoryName(backupFile)!);
+                WriteAllBytesSafe(backupFile, content);
+                _backupFailureTold = false;
                 return string.Empty;
             }
             else
             {
-                SetBackup(false, string.Empty, true); // Disable backup
-                return DialogText.StatusUnableToSaveBackup;
+                return BackupFailure(DialogText.StatusUnableToSaveBackup);
             }
         }
         catch (Exception e)
         {
-            SetBackup(false, string.Empty, true); // Disable backup
-            return e.Message;
+            return BackupFailure(Lang.F("Error: Unable to save the backup: {0}", e.Message));
         }
+    }
+
+    /// <summary>
+    /// A backup that cannot be written is told about again (at a new login)
+    /// </summary>
+    internal static void ResetBackupFailureNotice()
+    {
+        _backupFailureTold = false;
+    }
+
+    // True when it has been told that the backup could not be written: not again until a backup is written
+    private static bool _backupFailureTold;
+
+    // The message of a backup that could not be written: told once, until a backup is written again
+    private static string BackupFailure(string message)
+    {
+        if (_backupFailureTold) return string.Empty;
+        _backupFailureTold = true;
+        return message;
     }
 
     #endregion
@@ -1083,12 +1114,21 @@ internal static class FileIo
         _tempSettings += "spelllang=" + SpellChecker.Languages + Entries.NewLineChar;
 
         // Write to file
-        if (WriteSettingsFile(_tempSettings) != DialogText.Success)
+        var status = WriteSettingsFile(_tempSettings);
+        if (status != DialogText.Success)
         {
-            Menu.StatusMessage(LoadSettingsErrorMessage, true, true, true, DialogText.CaptionsSettings, string.Empty,
-                false);
+            Menu.StatusMessage(status, true, true, true, DialogText.CaptionsSettings, string.Empty, false);
         }
     }
+
+    /// <summary>
+    /// The extension of the copy kept of a settings file that could not be read ("settings.ini.bad")
+    /// </summary>
+    internal const string UnreadSettingsExtension = ".bad";
+
+    // True when the settings file could not be read at startup: before it is written for the first time, a copy of
+    // it is kept (settings.ini.bad), so the settings in it are not lost
+    private static bool _keepUnreadSettings;
 
     internal static string WriteSettingsFile(string content)
     {
@@ -1096,7 +1136,15 @@ internal static class FileIo
         {
             if (CheckDataDirectory())
             {
-                WriteAllBytesSafe(GetSettingsFolderAndFileName(), new UTF8Encoding(false).GetBytes(content));
+                var path = GetSettingsFolderAndFileName();
+                if (_keepUnreadSettings)
+                {
+                    // Not written at all when the copy cannot be made
+                    if (File.Exists(path)) File.Copy(path, path + UnreadSettingsExtension, true);
+                    _keepUnreadSettings = false;
+                }
+
+                WriteAllBytesSafe(path, new UTF8Encoding(false).GetBytes(content));
                 return DialogText.Success;
             }
             else
@@ -1121,6 +1169,7 @@ internal static class FileIo
     /// <returns>False if the settings file could not be read</returns>
     internal static bool LoadSettings()
     {
+        _keepUnreadSettings = false;
         if (CheckDataDirectory())
         {
             try
@@ -1129,6 +1178,7 @@ internal static class FileIo
                 if (content == DialogText.ErrorReadingFile)
                 {
                     LoadSettingsErrorMessage = content;
+                    _keepUnreadSettings = true;
                     return false;
                 }
 
@@ -1142,6 +1192,7 @@ internal static class FileIo
             catch (Exception e)
             {
                 LoadSettingsErrorMessage = e.Message;
+                _keepUnreadSettings = true;
                 return false;
             }
         }

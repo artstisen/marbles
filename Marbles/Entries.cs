@@ -582,27 +582,37 @@ internal static class Entries
     }
 
 
-    private static string _saveStatus = string.Empty;
 
-    internal static void SaveEntriesToFile()
+    /// <summary>
+    /// Save the entries to the data file (and the backup), and tell about an error
+    /// </summary>
+    /// <returns>True if the data file was written (also when only the backup failed)</returns>
+    internal static bool SaveEntriesToFile()
     {
         // "Saving..." on the bottom line: the page stays (a message can follow on top of it)
         Tools.HideCursor();
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Console.Write(" " + DialogText.Saving);
-        _saveStatus = DialogText.Saving;
-        _saveStatus = FileIo.SaveEntries();
-        // Block flow on write errors
-        if (_saveStatus != DialogText.Success)
-        {
-            // If the "success" string spills into a backup issue, remove it
-            if (_saveStatus.Contains(DialogText.Success))
-            {
-                _saveStatus = _saveStatus.Replace(DialogText.Success, "");
-            }
+        var result = FileIo.SaveEntries();
+        ShowSaveErrors(result);
+        return result.Saved;
+    }
 
-            Menu.StatusMessage(_saveStatus, true, true, true, DialogText.CaptionsBackup, string.Empty, false);
+    /// <summary>
+    /// Tell that the data file or its backup could not be saved (nothing when all went well)
+    /// </summary>
+    internal static void ShowSaveErrors(FileIo.SaveResult result)
+    {
+        // Block flow on write errors
+        if (!result.Saved)
+        {
+            Menu.StatusMessage(result.Error, true, true, true, DialogText.Save, string.Empty, false);
+            Tools.ClearScreen();
+        }
+        else if (result.BackupError.Length > 0)
+        {
+            Menu.StatusMessage(result.BackupError, true, true, true, DialogText.CaptionsBackup, string.Empty, false);
             Tools.ClearScreen();
         }
     }

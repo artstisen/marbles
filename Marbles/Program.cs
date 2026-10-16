@@ -100,7 +100,7 @@ class Program
             {
                 try
                 {
-                    Tools.FatalError(ex.Message);
+                    Tools.FatalError(ex);
                 }
                 catch (NavigationException)
                 {

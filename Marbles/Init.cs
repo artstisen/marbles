@@ -291,8 +291,9 @@ internal static class Init
         {
             Log(DialogText.InitFailed, true);
             Log(DialogText.InitLoadingSettingsError, true);
-            Log("(reverting to default)", true);
-            FileIo.SaveSettings(); // Save a fresh settings file
+            // The settings file is not written now: when a setting is changed, a copy of it is kept first
+            // (settings.ini.bad)
+            Log("(using the default settings)", true);
             Keyboard.AwaitAnyKey();
         }
         else

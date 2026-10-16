@@ -164,7 +164,8 @@ internal static class Tools
 
     public static bool IsNumeric(string s)
     {
-        return Regex.IsMatch(s, @"^\d+$");
+        // Only 0-9: \d also matches the digits of other scripts, which Convert.ToInt32 cannot read
+        return Regex.IsMatch(s, "^[0-9]+$");
     }
 
 
@@ -290,7 +291,7 @@ internal static class Tools
             }
             else if (key == ConsoleKey.Enter)
             {
-                if (FileActions.IsLockedForMove())
+                if (enableShortcuts && FileActions.IsLockedForMove())
                 {
                     FileActions.MoveCurrentDataFile();
                     LoginRoutine(true);
@@ -300,7 +301,7 @@ internal static class Tools
                     _exitLoop = true;
                 }
             }
-            else if (key == ConsoleKey.Tab && _keyInfo.Modifiers == ConsoleModifiers.Shift)
+            else if (enableShortcuts && key == ConsoleKey.Tab && _keyInfo.Modifiers == ConsoleModifiers.Shift)
             {
                 if (!FileActions.IsLockedForMove())
                 {
@@ -316,7 +317,7 @@ internal static class Tools
                     FileBrowser.SelectPreviousDataFile();
                 }
             }
-            else if (enableShortcuts && key == ConsoleKey.RightArrow || key == ConsoleKey.Tab)
+            else if (enableShortcuts && (key == ConsoleKey.RightArrow || key == ConsoleKey.Tab))
             {
                 if (!FileActions.IsLockedForMove())
                 {
@@ -761,9 +762,31 @@ internal static class Tools
         Menu.DrawTopMenu(true, true, false);
     }
 
-    internal static void FatalError(string errorMsg)
+    /// <summary>
+    /// An error that nothing else caught: it is told about, and Marbles goes on from the Data File Menu, still
+    /// logged in (the notes are saved after each change). Not logged in, or when that fails too, it starts over.
+    /// On the login page (logging in, merging, a new password) the password can be set before the notes in memory
+    /// are those of the data file: it always starts over there, so no notes are saved into another data file
+    /// </summary>
+    internal static void FatalError(Exception error)
     {
-        ChoiceBox.Message(DialogText.CaptionsKeyError, DialogText.ErrorUnsupportedAction, errorMsg);
+        // The kind of error only: its text can have a title or a path in it
+        Init.Log("Error: " + error.GetType().Name, false);
+        ChoiceBox.Message(DialogText.CaptionsKeyError, DialogText.ErrorUnsupportedAction, error.Message);
+        if (Encryptor.HasKey && Mode.CurrentMode != Mode.SelectedMode.Login)
+        {
+            try
+            {
+                Mode.SetMode(Mode.SelectedMode.Manage);
+                Menu.DrawTopMenu(true, true, false);
+                return;
+            }
+            catch (Exception again) when (again is not NavigationException)
+            {
+                Init.Log("Error: " + again.GetType().Name, false);
+            }
+        }
+
         // Start over
         ColdRestart();
     }
@@ -1087,7 +1110,8 @@ internal static class Tools
         Entries.ClearTempRankedEntries();
         Entries.ClearSessionEntryIdList();
         Encryptor.RemoveKey();
-        Actions.ClearSearchQuery();
+        Actions.ClearAtLogout();
+        FileIo.ResetBackupFailureNotice();
     }
 
 
@@ -1136,9 +1160,11 @@ internal static class Tools
     // Save a data file from an older version in the current file format (the entries are already loaded)
     private static void ConvertLegacyDataFile()
     {
-        var status = FileIo.ConvertLegacyFile();
-        if (status == DialogText.Success)
+        var result = FileIo.ConvertLegacyFile();
+        if (result.Saved)
         {
+            // Converted: a backup that could not be written is told about first
+            Entries.ShowSaveErrors(result);
             Init.Log("Converted: " + FileIo.GetFileName() + " (copy: " + FileIo.LegacyCopyFileName + ")", false);
             Menu.StatusMessage(DialogText.LegacyFileConverted, true, true, true, DialogText.CaptionsLogin,
                 DialogText.LegacyFileCopyColon + FileIo.LegacyCopyFileName, false);
@@ -1146,7 +1172,7 @@ internal static class Tools
         else
         {
             Init.Log("Convert FAILED: " + FileIo.GetFileName(), false);
-            Menu.StatusMessage(status, true, true, true, DialogText.CaptionsLogin,
+            Menu.StatusMessage(result.Error, true, true, true, DialogText.CaptionsLogin,
                 DialogText.LegacyFileNotConverted, false);
         }
     }
@@ -1189,7 +1215,9 @@ internal static class Tools
         }
         else
         {
-            // Submit new password
+            // Submit new password (on a reset, the current one just typed is kept for going back, if the file
+            // cannot be saved with the new one)
+            var oldKey = _tempResetPassword;
             Encryptor.SetKey(_newPass);
             // A new calendar gets its entries
             if (!isPasswordReset && FileActions.CurrentFileType == FileActions.FileType.Calendar)
@@ -1201,13 +1229,24 @@ internal static class Tools
             // Return to normal filetype
             FileActions.CurrentFileType = FileActions.FileType.Normal;
             // Save data file
-            Entries.SaveEntriesToFile();
-            Menu.StatusMessage(DialogText.PasswordCreated, true, true, true, DialogText.CaptionsPassword, string.Empty,
-                false);
+            var saved = Entries.SaveEntriesToFile();
             // Clear locals
             _pass = string.Empty;
             _newPass = string.Empty;
             _newPassRepeat = string.Empty;
+            _tempResetPassword = string.Empty;
+            if (saved)
+            {
+                Menu.StatusMessage(DialogText.PasswordCreated, true, true, true, DialogText.CaptionsPassword,
+                    string.Empty, false);
+            }
+            else if (isPasswordReset)
+            {
+                // The file on disk still has the old password: so does the session
+                Encryptor.SetKey(oldKey);
+                Menu.StatusMessage(DialogText.PasswordNotChanged, true, true, true, DialogText.CaptionsPassword,
+                    string.Empty, false);
+            }
             Mode.SetMode(Mode.SelectedMode.Login);
             Menu.DrawTopMenu(true, true, false);
         }

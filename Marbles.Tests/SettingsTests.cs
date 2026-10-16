@@ -72,6 +72,35 @@ backup=
     }
 
     [Fact]
+    public void ASettingsFileThatCannotBeRead_IsKeptAsACopy_BeforeItIsWritten()
+    {
+        File.WriteAllText(SettingsFile, LegacySettings);
+        // Held open by another program (a sync client) while Marbles starts
+        using (new FileStream(SettingsFile, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            Assert.False(FileIo.LoadSettings());
+        }
+
+        Assert.Equal(DialogText.Success, FileIo.WriteSettingsFile("linewidth=90"));
+        Assert.Equal(LegacySettings, File.ReadAllText(SettingsFile + FileIo.UnreadSettingsExtension));
+        Assert.Equal("linewidth=90", File.ReadAllText(SettingsFile));
+        // Only the first time: the copy is not replaced by the settings written since
+        Assert.Equal(DialogText.Success, FileIo.WriteSettingsFile("linewidth=95"));
+        Assert.Equal(LegacySettings, File.ReadAllText(SettingsFile + FileIo.UnreadSettingsExtension));
+    }
+
+    [Fact]
+    public void ANumberInOtherDigits_IsNotASetting()
+    {
+        // Arabic-Indic digits are digits to \d, but not to Convert.ToInt32
+        File.WriteAllText(SettingsFile, "[SETTINGS]\nlinewidth=٨٠\nlinecount=30\n");
+        Assert.True(FileIo.LoadSettings());
+        Assert.Equal(30, Init.LineCount);
+        Assert.False(Tools.IsNumeric("٨٠"));
+        Assert.True(Tools.IsNumeric("80"));
+    }
+
+    [Fact]
     public void SettingsFromEarlierVersions_AreLoaded()
     {
         File.WriteAllText(SettingsFile, LegacySettings);

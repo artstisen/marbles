@@ -246,7 +246,7 @@ public class FileIoTests : IDisposable
         Login(Password);
         Entries.NewEntry("Title æøå", "Line 1\nLine 2 ]]> <tag> & 日本語");
         Entries.NewEntry("Second", string.Empty);
-        Assert.Equal(DialogText.Success, FileIo.SaveEntries());
+        Assert.True(FileIo.SaveEntries().Saved);
         Assert.False(File.Exists(DataFile + ".tmp"));
 
         Login(Password);
@@ -290,7 +290,7 @@ public class FileIoTests : IDisposable
         var before = File.ReadAllBytes(DataFile);
 
         Encryptor.RemoveKey();
-        Assert.Equal(DialogText.StatusUnableToSave, FileIo.SaveEntries());
+        Assert.Equal(DialogText.StatusUnableToSave, FileIo.SaveEntries().Error);
         Assert.Equal(before, File.ReadAllBytes(DataFile));
     }
 
@@ -314,7 +314,7 @@ public class FileIoTests : IDisposable
         var load = FileIo.LoadEntries();
         Assert.True(load.Success);
         Assert.True(load.IsLegacyFormat);
-        Assert.Equal(DialogText.Success, FileIo.ConvertLegacyFile());
+        Assert.True(FileIo.ConvertLegacyFile().Saved);
 
         // The original is kept as a copy and the data file is now in the current format
         Assert.Equal("data.mbls.legacy", FileIo.LegacyCopyFileName);
@@ -364,7 +364,7 @@ public class FileIoTests : IDisposable
         Login(Password);
         Assert.True(FileIo.LoadEntries().IsLegacyFormat);
         Assert.Equal("17-11-2021 12:21:46", Entries.GetEntries()[0].DateCreated);
-        Assert.Equal(DialogText.Success, FileIo.ConvertLegacyFile());
+        Assert.True(FileIo.ConvertLegacyFile().Saved);
 
         // The converted file has the dates turned around, and the others as they were
         Login(Password);
@@ -386,7 +386,7 @@ public class FileIoTests : IDisposable
         var load = FileIo.LoadEntries();
         Assert.True(load.Success);
         Assert.True(load.IsLegacyFormat);
-        Assert.Equal(DialogText.Success, FileIo.ConvertLegacyFile());
+        Assert.True(FileIo.ConvertLegacyFile().Saved);
         Assert.Equal("earlier copy", File.ReadAllText(DataFile + ".legacy"));
         Assert.NotEqual("data.mbls.legacy", FileIo.LegacyCopyFileName);
         Assert.True(File.Exists(Path.Combine(_workDirectory, "data", FileIo.LegacyCopyFileName)));
@@ -408,7 +408,7 @@ public class FileIoTests : IDisposable
     {
         Login(Password);
         Entries.NewEntry("Title\u0001\u000B", "Form\ffeed, escape\u001b, tab\t, emoji \U0001F600, lone \uD83D surrogate");
-        Assert.Equal(DialogText.Success, FileIo.SaveEntries());
+        Assert.True(FileIo.SaveEntries().Saved);
 
         Login(Password);
         Assert.True(FileIo.LoadEntries().Success);
@@ -470,11 +470,104 @@ public class FileIoTests : IDisposable
         Assert.False(Encryptor.IsValidPasswordLength(new string('x', 129)));
         Login(passphrase);
         Entries.NewEntry("Title", "Text");
-        Assert.Equal(DialogText.Success, FileIo.SaveEntries());
+        Assert.True(FileIo.SaveEntries().Saved);
         Login(passphrase[..^1]);
         Assert.False(FileIo.LoadEntries().Success);
         Login(passphrase);
         Assert.True(FileIo.LoadEntries().Success);
+    }
+
+    [Fact]
+    public void Backup_OfADataFileInASubfolder_IsInTheSameSubfolder()
+    {
+        Directory.CreateDirectory(Path.Combine(_workDirectory, "data", "sub"));
+        var backup = Path.Combine(_workDirectory, "backup");
+        Directory.CreateDirectory(backup);
+        FileIo.SetSubFolder("sub");
+        FileIo.SetBackup(true, backup, false);
+        Login(Password);
+        Entries.NewEntry("Title", "Text");
+
+        var result = FileIo.SaveEntries();
+        Assert.True(result.Saved);
+        Assert.Equal(string.Empty, result.BackupError);
+        // A data file with the same name in another folder keeps a backup of its own
+        Assert.True(File.Exists(Path.Combine(backup, "sub", "data.mbls")));
+        Assert.False(File.Exists(Path.Combine(backup, "data.mbls")));
+    }
+
+    [Fact]
+    public void Backup_ThatCannotBeWritten_IsToldAbout_AndStaysOn()
+    {
+        FileIo.SetBackup(true, Path.Combine(_workDirectory, "not-there"), false);
+        Login(Password);
+        Entries.NewEntry("Title", "Text");
+
+        var result = FileIo.SaveEntries();
+        Assert.True(result.Saved);
+        Assert.Equal(DialogText.StatusUnableToSaveBackup, result.BackupError);
+        Assert.True(FileIo.BackupEnabled());
+        // Told once: not at every save
+        Assert.Equal(string.Empty, FileIo.SaveEntries().BackupError);
+        // The next save tries again, and writes it when the directory is there
+        Directory.CreateDirectory(Path.Combine(_workDirectory, "not-there"));
+        Assert.Equal(string.Empty, FileIo.SaveEntries().BackupError);
+        Assert.True(File.Exists(Path.Combine(_workDirectory, "not-there", "data.mbls")));
+        // After a backup that worked, a failure is told again
+        Directory.Delete(Path.Combine(_workDirectory, "not-there"), true);
+        Assert.Equal(DialogText.StatusUnableToSaveBackup, FileIo.SaveEntries().BackupError);
+    }
+
+    [Fact]
+    public void Backup_InASubfolderOfTheDataDirectory_IsNotWritten()
+    {
+        // data/A/data.mbls is another data file: a backup of data/data.mbls in data/A would replace it
+        var folder = Path.Combine(_workDirectory, "data", "A");
+        Directory.CreateDirectory(folder);
+        File.WriteAllText(Path.Combine(folder, "data.mbls"), "another data file");
+        FileIo.SetBackup(true, folder, false);
+        Login(Password);
+        Entries.NewEntry("Title", "Text");
+
+        Assert.False(FileIo.CheckBackupDirectory(folder));
+        Assert.Equal(DialogText.StatusUnableToSaveBackup, FileIo.SaveEntries().BackupError);
+        Assert.Equal("another data file", File.ReadAllText(Path.Combine(folder, "data.mbls")));
+    }
+
+    [Fact]
+    public void Backup_InTheDataDirectory_NeverReplacesADataFile()
+    {
+        // data/data.mbls is another data file; the one in use is data/sub/data.mbls, backed up to "data"
+        var data = Path.Combine(_workDirectory, "data");
+        File.WriteAllText(DataFile, "another data file");
+        Directory.CreateDirectory(Path.Combine(data, "sub"));
+        FileIo.SetSubFolder("sub");
+        FileIo.SetBackup(true, data, false);
+        Login(Password);
+        Entries.NewEntry("Title", "Text");
+
+        // The backup would be the data file itself: it is not written
+        Assert.False(FileIo.CheckBackupDirectory(data));
+        var result = FileIo.SaveEntries();
+        Assert.True(result.Saved);
+        Assert.Equal(DialogText.StatusUnableToSaveBackup, result.BackupError);
+        Assert.Equal("another data file", File.ReadAllText(DataFile));
+        Login(Password);
+        Assert.True(FileIo.LoadEntries().Success);
+        Assert.Equal(1, Entries.GetEntriesCount());
+    }
+
+    [Fact]
+    public void Save_ThatFails_IsNotSaved_AndWritesNoBackup()
+    {
+        var backup = Path.Combine(_workDirectory, "backup");
+        Directory.CreateDirectory(backup);
+        FileIo.SetBackup(true, backup, false);
+        Encryptor.RemoveKey();
+        var result = FileIo.SaveEntries();
+        Assert.False(result.Saved);
+        Assert.Equal(DialogText.StatusUnableToSave, result.Error);
+        Assert.False(File.Exists(Path.Combine(backup, "data.mbls")));
     }
 }
 

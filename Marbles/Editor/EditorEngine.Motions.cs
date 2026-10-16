@@ -357,7 +357,7 @@ internal sealed partial class EditorEngine
                 while (n-- > 0)
                 {
                     if (FindNext(pos, forward, out pos)) continue;
-                    SetError(Lang.T("Pattern not found: ") + _lastSearch);
+                    if (!_searchTimedOut) SetError(Lang.T("Pattern not found: ") + _lastSearch);
                     return false;
                 }
 

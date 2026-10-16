@@ -110,13 +110,13 @@ public static class FileActions
             {
                 Menu.StatusMessage(DialogText.DataFileExists, true, true, true, DialogText.NewFile, string.Empty,
                     false);
-                NewDataFile(type);
+                return NewDataFile(type);
             }
         }
         else
         {
             Menu.StatusMessage(problem, true, true, true, DialogText.NewFile, string.Empty, false);
-            NewDataFile(type);
+            return NewDataFile(type);
         }
 
         return true;
@@ -179,21 +179,21 @@ public static class FileActions
                     {
                         Menu.StatusMessage(DialogText.ErrorUnableToCompleteRequest, true, true, true,
                             DialogText.RenameFile, string.Empty, false);
-                        RenameCurrentDataFile();
+                        return RenameCurrentDataFile();
                     }
                 }
                 else
                 {
                     Menu.StatusMessage(DialogText.DataFileExists, true, true, true, DialogText.RenameFile,
                         string.Empty, false);
-                    RenameCurrentDataFile();
+                    return RenameCurrentDataFile();
                 }
             }
             else
             {
                 Menu.StatusMessage(problem, true, true, true, DialogText.RenameFile, string.Empty,
                     false);
-                RenameCurrentDataFile();
+                return RenameCurrentDataFile();
             }
         }
 
@@ -388,14 +388,14 @@ public static class FileActions
                 // Check that another file with the same name does not exist (ToLower())
                 if (File.Exists(targetPathAndFileName))
                 {
-                    // Inform that the file wasn't copied and return to start
+                    // Inform that the file wasn't copied: another directory can be picked (still locked for move)
                     Menu.StatusMessage(DialogText.ErrorFileAlreadyExist, true, true, true,
                         DialogText.MoveFile, string.Empty, false);
-                    MoveCurrentDataFile();
+                    return;
                 }
 
-                // Copy the file
-                File.Copy(currentPathAndFileName, targetPathAndFileName, true);
+                // Copy the file (never over another file: one made since the check above stops the move)
+                File.Copy(currentPathAndFileName, targetPathAndFileName, false);
                 // If the new copy exists...
                 if (File.Exists(targetPathAndFileName))
                 {
@@ -414,6 +414,7 @@ public static class FileActions
                     Menu.StatusMessage(DialogText.ErrorMovingFile, true, true, true,
                         DialogText.MoveFile, string.Empty, false);
                     MoveCurrentDataFile();
+                    return;
                 }
             }
             catch (Exception e) when (e is not NavigationException)
@@ -421,6 +422,7 @@ public static class FileActions
                 Menu.StatusMessage(DialogText.ErrorUnableToCompleteRequest, true, true, true,
                     DialogText.MoveFile, string.Empty, false);
                 MoveCurrentDataFile();
+                return;
             }
         }
     }

@@ -1622,23 +1622,30 @@ internal sealed partial class EditorEngine
     #region Search and replace
 
     private static readonly TimeSpan SearchTimeout = TimeSpan.FromSeconds(2);
+
+    // Highlighting runs on every line shown, at every redraw: a pattern that is slow there turns it off quickly
+    private static readonly TimeSpan HighlightTimeout = TimeSpan.FromMilliseconds(100);
     private Regex? _searchRegex;
+    private Regex? _highlightRegex;
+
+    // True when the last search was stopped because it took too long (it is not "not found")
+    private bool _searchTimedOut;
 
     /// <summary>
     /// Create the regular expression for a search pattern. Like Vim's "smartcase" the search ignores case
     /// unless the pattern has uppercase letters. A pattern that is not a valid expression is searched for as text.
     /// </summary>
-    private static Regex CreateRegex(string pattern, bool? ignoreCase = null)
+    private static Regex CreateRegex(string pattern, bool? ignoreCase = null, TimeSpan? timeout = null)
     {
         var options = RegexOptions.CultureInvariant;
         if (ignoreCase ?? !pattern.Any(char.IsUpper)) options |= RegexOptions.IgnoreCase;
         try
         {
-            return new Regex(pattern, options, SearchTimeout);
+            return new Regex(pattern, options, timeout ?? SearchTimeout);
         }
         catch (ArgumentException)
         {
-            return new Regex(Regex.Escape(pattern), options, SearchTimeout);
+            return new Regex(Regex.Escape(pattern), options, timeout ?? SearchTimeout);
         }
     }
 
@@ -1646,6 +1653,7 @@ internal sealed partial class EditorEngine
     {
         _lastSearch = pattern;
         _searchRegex = CreateRegex(pattern);
+        _highlightRegex = CreateRegex(pattern, null, HighlightTimeout);
     }
 
     private void StartSearch(string pattern, bool forward)
@@ -1659,7 +1667,7 @@ internal sealed partial class EditorEngine
         {
             Cursor = found;
         }
-        else
+        else if (!_searchTimedOut)
         {
             SetError(Lang.T("Pattern not found: ") + pattern);
         }
@@ -1671,6 +1679,7 @@ internal sealed partial class EditorEngine
     private bool FindNext(TextPos from, bool forward, out TextPos found)
     {
         found = from;
+        _searchTimedOut = false;
         if (_searchRegex == null) return false;
         var count = Buffer.LineCount;
         try
@@ -1712,6 +1721,9 @@ internal sealed partial class EditorEngine
         }
         catch (RegexMatchTimeoutException)
         {
+            // Not highlighted either: that would take as long at every redraw
+            _searchTimedOut = true;
+            HighlightSearch = false;
             SetError(Lang.T("Search took too long"));
         }
 
@@ -1723,15 +1735,17 @@ internal sealed partial class EditorEngine
     /// </summary>
     internal IEnumerable<(int Start, int End)> SearchMatches(int line)
     {
-        if (!HighlightSearch || _searchRegex == null) yield break;
+        if (!HighlightSearch || _highlightRegex == null) yield break;
         MatchCollection matches;
         try
         {
-            matches = _searchRegex.Matches(Buffer[line]);
+            matches = _highlightRegex.Matches(Buffer[line]);
             _ = matches.Count; // The matches are found here, so a timeout is caught
         }
         catch (RegexMatchTimeoutException)
         {
+            // Too slow to be shown on every line at every redraw: the highlighting is turned off (n still works)
+            HighlightSearch = false;
             yield break;
         }
 
