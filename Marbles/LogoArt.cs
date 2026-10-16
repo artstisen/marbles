@@ -5,7 +5,7 @@ namespace Marbles;
 /// <summary>
 /// A logo of the start and login pages: 4 rows of 63 characters, each row in a color of its own or in the color
 /// of the logo (of the color scheme). The built-in logos are "Marbles" (the one used from the start),
-/// "Reflections", "Adventure" and "Islands"; the ones made by the user are kept as files
+/// "Reflections", "Adventure", "Islands" and "Terminal sessions"; the ones made by the user are kept as files
 /// (Logos): the 4 rows, and a line "colors=" with the color of each row ("default" for the color of the logo).
 /// A cell can have a color of its own, which is used instead of the color of its row: these are 4 lines "cells="
 /// after the others, with a character for each cell (the number of the color as a hex digit, "." for none).
@@ -19,11 +19,13 @@ internal sealed class LogoArt
     private const string ReflectionsName = "Reflections";
     private const string IslandsName = "Islands";
     private const string AdventureName = "Adventure";
+    private const string TerminalName = "Terminal sessions";
 
     /// <summary>
     /// The names of the built-in logos, in the order they are listed
     /// </summary>
-    internal static readonly IReadOnlyList<string> BuiltInNames = new[] { BuiltInName, ReflectionsName, AdventureName, IslandsName };
+    internal static readonly IReadOnlyList<string> BuiltInNames =
+        new[] { BuiltInName, ReflectionsName, AdventureName, IslandsName, TerminalName };
 
     internal string Name { get; set; } = BuiltInName;
 
@@ -218,6 +220,7 @@ internal sealed class LogoArt
         if (name.Equals(BuiltInName, StringComparison.OrdinalIgnoreCase)) return BuiltIn;
         if (name.Equals(ReflectionsName, StringComparison.OrdinalIgnoreCase)) return Reflections;
         if (name.Equals(IslandsName, StringComparison.OrdinalIgnoreCase)) return Islands;
+        if (name.Equals(TerminalName, StringComparison.OrdinalIgnoreCase)) return Terminal;
         return name.Equals(AdventureName, StringComparison.OrdinalIgnoreCase) ? Adventure : null;
     }
 
@@ -259,6 +262,18 @@ internal sealed class LogoArt
         "cells=......7FF7..77....2A2...A....444844444.....8......2A2..2A2..A",
         "cells=.....7....77..7..2AAA2.2A2..CCCCCCCCCCCC..BBBB9..2AAA22AAA22A2",
         "cells=2228722222222227822622226222266E6226666299B99B99B92622226222622"), AdventureName);
+
+    // An 80's computer with a prompt on its screen and its keyboard, on a table with pencils in a jar, a cup of
+    // coffee with steam rising from it, and a notepad: a logo with a color for each of its cells
+    private static LogoArt Terminal => Parse(string.Join("\n",
+        @" \ | /   .-----------------.       (  )",
+        @"  \|/    | C:\>marbles_    |        ) (      .--------.",
+        @" |===|   |_[____]_______o__|      |~~~~|)    |~~~~~~  |",
+        @"=|___|===[_:::::::::::::::_]======\____/=====|________|========",
+        "cells=.E.C.A...7777777777777777777.......8..8",
+        "cells=..ECA....7.AAAAAAAAAAAF....7........7.7......FFFFFFFFFF",
+        "cells=.99999...778888887777777C777......F6666FF....F333333..F",
+        "cells=6999996668777777777777777778666666FFFFFF66666FFFFFFFFFF66666666"), TerminalName);
 }
 
 /// <summary>

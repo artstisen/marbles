@@ -150,11 +150,12 @@ public class LogoTests : IDisposable
     [Fact]
     public void LogosOfYourOwn_AreFiles()
     {
-        Assert.Equal(new[] { "Marbles", "Reflections", "Adventure", "Islands" }, Logos.AllNames());
+        Assert.Equal(new[] { "Marbles", "Reflections", "Adventure", "Islands", "Terminal sessions" }, Logos.AllNames());
         var mine = new LogoArt("My logo", new[] { "Hello" });
         Assert.Equal(DialogText.Success, Logos.Save(mine));
         Assert.True(File.Exists(Path.Combine(_directory, "My logo.txt")));
-        Assert.Equal(new[] { "Marbles", "Reflections", "Adventure", "Islands", "My logo" }, Logos.AllNames());
+        Assert.Equal(new[] { "Marbles", "Reflections", "Adventure", "Islands", "Terminal sessions", "My logo" },
+            Logos.AllNames());
         Assert.Equal("Hello".PadRight(63), Logos.Load("my logo")!.Row(0));
         Assert.Equal(DialogText.Success, Logos.Delete("My logo"));
         Assert.Null(Logos.Load("My logo"));
@@ -204,6 +205,31 @@ public class LogoTests : IDisposable
         Assert.NotEqual(DialogText.Success, Logos.Save(islands));
         Assert.NotEqual(DialogText.Success, Logos.Delete("Reflections"));
         Assert.NotEqual(DialogText.Success, Logos.Rename("Islands", "Mine"));
+    }
+
+    [Fact]
+    public void TerminalSessions_IsAComputerOnATable_WithAColorForEachCell()
+    {
+        var logo = Logos.Load("Terminal sessions")!;
+        Assert.Equal("Terminal sessions", logo.Name);
+        Assert.Equal("Terminal sessions", LogoArt.BuiltInNames[4]);
+        // The prompt on the screen is green, the cursor white, the power light red, and the table (the bottom row)
+        // is wood all the way across
+        var prompt = logo.Row(1).IndexOf("C:\\>", StringComparison.Ordinal);
+        Assert.Equal(ConsoleColor.Green, logo.ColorAt(1, prompt));
+        Assert.Equal(ConsoleColor.White, logo.ColorAt(1, logo.Row(1).IndexOf('_')));
+        Assert.Equal(ConsoleColor.Red, logo.ColorAt(2, logo.Row(2).IndexOf('o')));
+        Assert.Equal(LogoArt.Width, logo.Row(3).TrimEnd().Length);
+        Assert.Equal(ConsoleColor.DarkYellow, logo.ColorAt(3, 0));
+        Assert.Equal(ConsoleColor.DarkYellow, logo.ColorAt(3, LogoArt.Width - 1));
+        // Every character can be seen: it has a color of its own
+        for (var row = 0; row < LogoArt.Rows; row++)
+        {
+            for (var column = 0; column < LogoArt.Width; column++)
+            {
+                if (logo[row, column] != ' ') Assert.NotNull(logo.CellColor(row, column));
+            }
+        }
     }
 
     [Fact]
