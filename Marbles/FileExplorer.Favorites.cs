@@ -214,6 +214,19 @@ internal static partial class FileExplorer
                     case "rename":
                         RenameFavoriteFolder(selected, CommandLine.LastArgument);
                         break;
+                    case "name":
+                        // The name shown: of the file or directory, or of the folder
+                        if (selected < 0) break;
+                        _favoriteMessage = CopyOfList(FileFavorites.Items[selected].IsFolder
+                            ? FileFavorites.Items[selected].Name
+                            : FavoriteName(FileFavorites.Items[selected].Path));
+                        break;
+                    case "path":
+                        if (selected < 0) break;
+                        _favoriteMessage = FileFavorites.Items[selected].IsFolder
+                            ? DialogText.FavoriteFolderNoPath
+                            : CopyOfList(FileFavorites.Items[selected].Path);
+                        break;
                     case "goto":
                         if (selected < 0 || FileFavorites.Items[selected].IsFolder) break;
                         path = FileFavorites.Items[selected].Path;

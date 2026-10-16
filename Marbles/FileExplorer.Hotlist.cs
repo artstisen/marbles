@@ -145,6 +145,13 @@ internal static partial class FileExplorer
                     case "move":
                         StartHotlistMove(selected);
                         break;
+                    case "name":
+                        // The name shown: the one given, or the name of the directory
+                        if (selected >= 0) _hotlistMessage = CopyOfList(DirectoryHotlist.Items[selected].Shown);
+                        break;
+                    case "path":
+                        if (selected >= 0) _hotlistMessage = CopyOfList(DirectoryHotlist.Items[selected].Path);
+                        break;
                     case "rename":
                         RenameHotlistEntry(selected, CommandLine.LastArgument);
                         break;

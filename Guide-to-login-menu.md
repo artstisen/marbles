@@ -266,6 +266,7 @@ The file history lists the files you have opened in the editor from the file bro
 - `I` or `:info` Show information about the file
 - `D` or `:remove` Take the file out of the history (the file itself stays)
 - `X` or `:clear` Clear the file history. You are asked first, in a box on top of the list
+- `:name` Copy the name of the file, `:path` its full path, as in the file browser: to the system clipboard and/or the paste bin, as set, and to the string memory (so `p` in the editor puts it in)
 - `/text` Only show the files whose path contains "text". `Esc` shows all again
 - `?` Help, `:` the command line
 - `Esc`, `Q`, `O`, `h` or `-` Back to the file browser
@@ -284,6 +285,7 @@ The directory hotlist keeps directories you want to go back to. `B` (or `:hotadd
 - `X` or `:rename name` The name the directory is shown with in the hotlist (and the Jump menu), such as "Project docs" for a deep path. Without a name you are asked for it. The directory itself keeps its name; an empty name shows its own name again
 - `D` or `:remove` Take the directory out of the hotlist (the directory itself stays). `u` or `:undo` puts it back
 - `:clear` Clear the hotlist. You are asked first
+- `:name` Copy the name the directory is shown with (the name you gave it, or its own), `:path` its full path, as in the file browser (also to the string memory, for `p` in the editor)
 - `/text` Only show the directories whose path contains "text". `Esc` shows all again
 - `?` Help, `:` the command line
 - `Esc`, `Q`, `W`, `h` or `-` Back to the file browser

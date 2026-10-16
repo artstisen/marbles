@@ -65,13 +65,13 @@ internal static class Commands
             "quit close home data help cd",
             "q h"),
         [CommandContext.Favorites] = new Table(
-            "quit close help jump book color info remove move top bottom undo folder expand collapse rename goto",
+            "quit close help jump book color info remove move top bottom undo folder expand collapse rename goto path name",
             "q h u ju"),
         [CommandContext.History] = new Table(
-            "quit close help jump book info goto favorite remove clear",
+            "quit close help jump book info goto favorite remove clear path name",
             "q h fav ju"),
         [CommandContext.Hotlist] = new Table(
-            "quit close help jump book info remove undo top bottom move rename clear",
+            "quit close help jump book info remove undo top bottom move rename clear path name",
             "q h u ju"),
         [CommandContext.Search] = new Table(
             "quit close help jump book find info goto favorite",

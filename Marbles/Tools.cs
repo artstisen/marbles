@@ -1547,6 +1547,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Into a folder"), Lang.T("M, or move the favorite onto the folder"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Out of a folder"), Lang.T("Move it past the first or last in it"), false));
             _shortcutList.Add(new Shortcut("C :color", Lang.T("Pick the text color of the favorite"), false));
+            _shortcutList.Add(new Shortcut(":path :name", Lang.T("Copy the path/the name shown (also p in the editor)"), false));
             _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
             _shortcutList.Add(new Shortcut("P D :remove", Lang.T("Remove the favorite or folder (files stay)"), false));
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
@@ -1564,6 +1565,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
             _shortcutList.Add(new Shortcut("D :remove", Lang.T("Take the file out of the history (it stays)"), false));
             _shortcutList.Add(new Shortcut("X :clear", Lang.T("Clear the file history (asks first)"), false));
+            _shortcutList.Add(new Shortcut(":path :name", Lang.T("Copy the path/the name shown (also p in the editor)"), false));
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q O h -", Lang.T("Back to the file browser"), false));
@@ -1581,6 +1583,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("D :remove", Lang.T("Take it out of the hotlist (the directory stays)"), false));
             _shortcutList.Add(new Shortcut("u :undo", Lang.T("Put back what was removed last"), false));
             _shortcutList.Add(new Shortcut(":clear", Lang.T("Clear the hotlist (asks first)"), false));
+            _shortcutList.Add(new Shortcut(":path :name", Lang.T("Copy the path/the name shown (also p in the editor)"), false));
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("Esc Q W h -", Lang.T("Back to the file browser"), false));

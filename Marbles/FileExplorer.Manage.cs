@@ -799,6 +799,10 @@ internal static partial class FileExplorer
         _message = message;
     }
 
+    // ":name" and ":path" on the lists (favorites, history, hotlist): the text to the string memory and to the
+    // clipboard as set, and the message that tells where it went
+    private static string CopyOfList(string text) => text.Length == 0 ? string.Empty : SystemClipboard.CopyWithMemory(text).Message;
+
     // ":match": the other pane shows the directory of the pane with the focus (the focus stays)
     private static void MatchPanes()
     {

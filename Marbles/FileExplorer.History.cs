@@ -75,6 +75,16 @@ internal static partial class FileExplorer
                     case "goto":
                         if (ShowHistoryInBrowser(selected)) return KeyResult.Handled;
                         break;
+                    case "name":
+                        if (selected >= 0)
+                        {
+                            _historyMessage = CopyOfList(System.IO.Path.GetFileName(FileHistory.Items[selected].Path));
+                        }
+
+                        break;
+                    case "path":
+                        if (selected >= 0) _historyMessage = CopyOfList(FileHistory.Items[selected].Path);
+                        break;
                     case "fav":
                     case "favorite":
                         ToggleHistoryFavorite(selected);
