@@ -370,6 +370,19 @@ public class EditorTests
     }
 
     [Fact]
+    public void PutWithACount_ThatWouldBeTooMuch_IsRefused()
+    {
+        // 1000 characters 99999 times: about 100 million characters
+        var editor = Editor(new string('x', 999));
+        editor.Type("yy99999p");
+        Assert.True(editor.MessageIsError);
+        Assert.Equal(new string('x', 999), editor.GetText());
+        // A count that fits still works
+        editor.Type("3p");
+        Assert.Equal(4, editor.GetText().Split('\n').Length);
+    }
+
+    [Fact]
     public void YankAndPutText()
     {
         var editor = Editor("one two");
@@ -683,6 +696,97 @@ public class EditorTests
         Assert.Equal(5, editor.GetCursorIndex());
         editor.SetCursorIndex(1000);
         Assert.Equal(new TextPos(2, 4), editor.Cursor);
+    }
+
+    [Fact]
+    public void Emoji_TheCursorAndWordMotionsNeverStopInsideOne()
+    {
+        // gj from column 2 onto a line where column 2 is the second half of 😀: on its first half
+        var editor = Editor("abc\na😀b");
+        editor.Type("llgj");
+        Assert.Equal(new TextPos(1, 1), editor.Cursor);
+        editor.Type("x");
+        Assert.Equal("abc\nab", editor.GetText());
+
+        // ❤️ is a symbol and a variation selector: w goes over both, and dw takes both
+        editor = Editor("a ❤️ b");
+        editor.Type("w");
+        Assert.Equal(new TextPos(0, 2), editor.Cursor);
+        editor.Type("w");
+        Assert.Equal(new TextPos(0, 5), editor.Cursor);
+        editor.Type("0wdw");
+        Assert.Equal("a b", editor.GetText());
+    }
+
+    [Fact]
+    public void Emoji_IsFoundAndReplacedWithF_T_AndR()
+    {
+        // The console gives 😀 as two keys (its surrogate halves): the commands take both
+        var editor = Editor("ab😀cd😀e");
+        editor.Type("f😀");
+        Assert.Equal(new TextPos(0, 2), editor.Cursor);
+        editor.Type(";");
+        Assert.Equal(new TextPos(0, 6), editor.Cursor);
+        editor.Type("0t😀");
+        Assert.Equal(new TextPos(0, 1), editor.Cursor);
+        editor.Type("0r🎉");
+        Assert.Equal("🎉b😀cd😀e", editor.GetText());
+        editor.Type("$F😀");
+        Assert.Equal(new TextPos(0, 7), editor.Cursor);
+    }
+
+    [Fact]
+    public void Emoji_ReplacingABlock_KeepsItsWidth()
+    {
+        // Three columns: one emoji (two columns) and a blank space
+        var editor = Editor("abcd\nefgh");
+        editor.Type("lQjllr😀");
+        Assert.Equal("a😀 \ne😀 ", editor.GetText());
+        Assert.Equal(4, TextMetrics.WidthOf(editor.GetText().Split('\n')[0]));
+    }
+
+    [Fact]
+    public void WordMotions_GoOverACharacterWrittenWithACombiningAccent()
+    {
+        // "e" and a combining accent: one character, in the middle of a word
+        var editor = Editor("café au lait");
+        editor.Type("w");
+        Assert.Equal(new TextPos(0, 6), editor.Cursor);
+        editor.Type("b");
+        Assert.Equal(new TextPos(0, 0), editor.Cursor);
+    }
+
+    [Fact]
+    public void TextCutToFitTheScreen_HasNoControlCharacters()
+    {
+        Assert.Equal(" [31mname", Tools.TruncateString("\u001b[31mname", 40, true));
+        Assert.DoesNotContain(Tools.TruncateString("a\u001b[2J" + new string('b', 50), 20, true), char.IsControl);
+        Assert.Equal("... [0m.txt", TextMetrics.KeepEnd("/home/\u001b[0m.txt", 11));
+    }
+
+    [Fact]
+    public void Emoji_SymbolsShownAsEmoji_AreTwoColumnsWide()
+    {
+        foreach (var symbol in new[] { "✅", "❌", "⭐", "⚡", "☕", "⌚", "🟢", "1️⃣", "❤️" })
+        {
+            Assert.Equal(2, TextMetrics.WidthOf(symbol));
+        }
+
+        // Text symbols stay one column
+        foreach (var symbol in new[] { "✓", "→", "★", "❤", "1", "é" })
+        {
+            Assert.Equal(1, TextMetrics.WidthOf(symbol));
+        }
+    }
+
+    [Fact]
+    public void ControlCharacters_AreNotWrittenToTheTerminal()
+    {
+        // An escape code in a file name or a yanked line would change the colors or move the cursor
+        Assert.Equal(" [31mred ", TextMetrics.Printable("\u001b[31mred\r"));
+        Assert.DoesNotContain(TextMetrics.Printable("a\u001b[2Jb\rc\u0007"), c => char.IsControl(c));
+        Assert.Equal("a b", TextMetrics.Printable("a\tb"));
+        Assert.Equal("plain æøå 日本", TextMetrics.Printable("plain æøå 日本"));
     }
 
     [Fact]

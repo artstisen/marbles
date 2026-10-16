@@ -221,7 +221,7 @@ internal sealed partial class EditorEngine
     }
 
     // "r": replace each character of the block (a wide character with as many as the cells it takes)
-    private void ReplaceBlock(char replacement)
+    private void ReplaceBlock(string replacement)
     {
         var (first, last, left, right) = BlockBounds();
         Mode = EditorMode.Normal;
@@ -232,7 +232,11 @@ internal sealed partial class EditorEngine
             if (start >= end) continue;
             var cells = TextMetrics.WidthOfRange(Buffer[line], start, end);
             Delete(new TextPos(line, start), new TextPos(line, end));
-            Insert(new TextPos(line, start), new string(replacement, Math.Max(1, cells)));
+            // As many as fill the same columns (a wide character fills two)
+            var width = Math.Max(1, TextMetrics.WidthOf(replacement));
+            var copies = Math.Max(1, cells / width);
+            var rest = Math.Max(0, cells - copies * width);
+            Insert(new TextPos(line, start), string.Concat(Enumerable.Repeat(replacement, copies)) + new string(' ', rest));
         }
 
         Cursor = new TextPos(first, BlockRange(first, left, int.MaxValue).Start);

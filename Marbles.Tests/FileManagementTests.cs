@@ -247,6 +247,85 @@ public class FileManagementTests : IDisposable
         Assert.False(File.Exists(other + ".tmp"));
     }
 
+    [Fact]
+    public void SavingAFile_LeavesAFileWithItsNameAndTmp_AndKeepsItsPermissions()
+    {
+        // A file of the user's named as a temporary file could be
+        var file = MakeFile("old text", "report.md");
+        var users = MakeFile("the user's own file", "report.md.tmp");
+        if (OperatingSystem.IsWindows())
+        {
+            File.SetAttributes(file, File.GetAttributes(file) | FileAttributes.Hidden);
+        }
+        else
+        {
+            File.SetUnixFileMode(file, File.GetUnixFileMode(file) | UnixFileMode.UserExecute);
+        }
+
+        FileIo.WriteAllBytesSafe(file, "new text"u8.ToArray());
+        Assert.Equal("new text", File.ReadAllText(file));
+        Assert.Equal("the user's own file", File.ReadAllText(users));
+        // Nothing is left behind
+        Assert.Equal(2, Directory.GetFiles(Path.GetDirectoryName(file)!, "report.md*").Length);
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.True(File.GetAttributes(file).HasFlag(FileAttributes.Hidden));
+        }
+        else
+        {
+            Assert.True(File.GetUnixFileMode(file).HasFlag(UnixFileMode.UserExecute));
+        }
+    }
+
+    [Fact]
+    public void MovingADirectoryWithAnOpenFile_OnTheSameDrive_IsNotCopied()
+    {
+        var file = MakeFile("text", "project", "open.txt");
+        MakeFile("more", "project", "other.txt");
+        Directory.CreateDirectory(In("target"));
+        string result;
+        // Open as an editor has it: others can read it, not delete it
+        using (new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.Read))
+        {
+            result = FileOperations.Move(In("project"), In("target"), out _);
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            // Windows cannot move it while the file is open: it stays as it was, and nothing is copied
+            Assert.NotEqual(DialogText.Success, result);
+            Assert.True(File.Exists(In("project", "open.txt")));
+            Assert.True(File.Exists(In("project", "other.txt")));
+            Assert.False(Directory.Exists(In("target", "project")));
+        }
+        else
+        {
+            // Linux and macOS move it all the same
+            Assert.Equal(DialogText.Success, result);
+            Assert.True(File.Exists(In("target", "project", "open.txt")));
+        }
+    }
+
+    [Fact]
+    public void SavingALink_WritesTheFileItPointsTo_AndTheLinkStays()
+    {
+        var target = MakeFile("old text", "real.txt");
+        var link = In("link.txt");
+        try
+        {
+            File.CreateSymbolicLink(link, target);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return; // Links cannot be made here (Windows without Developer Mode)
+        }
+
+        FileIo.WriteAllBytesSafe(link, "new text"u8.ToArray());
+        Assert.Equal("new text", File.ReadAllText(target));
+        Assert.NotNull(new FileInfo(link).LinkTarget);
+        Assert.Equal("new text", File.ReadAllText(link));
+    }
+
     #endregion
 
     #region Favorites

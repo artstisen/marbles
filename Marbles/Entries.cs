@@ -363,11 +363,20 @@ internal static class Entries
         return _newEntry;
     }
 
-    public static void AddEntryToEntries(Entry e)
+    /// <summary>
+    /// Add a copy of an entry
+    /// </summary>
+    /// <param name="e">The entry</param>
+    /// <param name="newIdIfTaken">True to give the copy an ID of its own when an entry with its ID is there already
+    /// (an entry transferred into the data file it came from, or twice): entries with the same ID would be changed
+    /// and deleted together</param>
+    public static void AddEntryToEntries(Entry e, bool newIdIfTaken = false)
     {
+        var id = e.Id;
+        while (newIdIfTaken && EntryExists(id)) id = new Entry(string.Empty, string.Empty).Id;
         _newEntry = new Entry(string.Empty, string.Empty)
         {
-            Id = e.Id,
+            Id = id,
             DateCreated = e.DateCreated,
             DateChanged = e.DateChanged,
             Title = e.Title,
@@ -594,6 +603,15 @@ internal static class Entries
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Console.Write(" " + DialogText.Saving);
+        // Saved by another window since it was loaded here: its changes are only replaced when asked to
+        if (FileIo.ChangedElsewhere() &&
+            ChoiceBox.Pick(DialogText.Save, DialogText.ChangedInAnotherWindow, DialogText.ChangedInAnotherWindowNote,
+                new[] { DialogText.SaveAnyway, DialogText.DoNotSave }, new[] { "S", "N" }, 1, true) != 0)
+        {
+            Tools.ClearScreen();
+            return false;
+        }
+
         var result = FileIo.SaveEntries();
         ShowSaveErrors(result);
         return result.Saved;
@@ -779,7 +797,7 @@ internal static class Entries
             {
                 foreach (var e in _transferEntry)
                 {
-                    AddEntryToEntries(e);
+                    AddEntryToEntries(e, true);
                 }
 
                 SaveEntriesToFile();

@@ -191,11 +191,16 @@ internal class MergeTool
                             Tools.CursorReturn();
                             Tools.CursorDown(1);
                             Console.Write(" " + DialogText.NameColon + " ");
-                            // Enter file name
-                            Tools.ShowCursor();
-                            _selectedFileName = Console.ReadLine()!;
-                            Tools.HideCursor();
-                            _selectedFileName = Tools.TruncateString(_selectedFileName, 32, false);
+                            // Enter file name (Esc: back to the choice of merge or export)
+                            var typedName = Tools.ReadLineOrEscape(32);
+                            if (typedName == null)
+                            {
+                                Tools.RemovePrivileges(false);
+                                MergeExport();
+                                return;
+                            }
+
+                            _selectedFileName = typedName;
                             // Check file name
                             if (Tools.IsValidFileName(_selectedFileName))
                             {
@@ -391,11 +396,16 @@ internal class MergeTool
                     Tools.CursorReturn();
                     Tools.CursorDown(1);
                     Console.Write(" " + DialogText.NameColon + " ");
-                    // Enter file name
-                    Tools.ShowCursor();
-                    _selectedFileName = Console.ReadLine()!;
-                    Tools.HideCursor();
-                    _selectedFileName = Tools.TruncateString(_selectedFileName, 32, false);
+                    // Enter file name (Esc: back to the choice of merge or export)
+                    var typedName = Tools.ReadLineOrEscape(32);
+                    if (typedName == null)
+                    {
+                        Tools.RemovePrivileges(false);
+                        MergeExport();
+                        return;
+                    }
+
+                    _selectedFileName = typedName;
                     // Check file name
                     if (Tools.IsValidFileName(_selectedFileName))
                     {
@@ -433,6 +443,7 @@ internal class MergeTool
                             catch (Exception e) when (e is not NavigationException)
                             {
                                 WriteStepAlert(e.Message);
+                                Tools.RemovePrivileges(false);
                             }
                         }
                         else

@@ -206,7 +206,7 @@ internal static class PickListBox
             Tools.SetCursorEx(_listTop + row, _left + 1);
             var i = scroll + row;
             var text = i < view.Count
-                ? "     " + Tools.TruncateString(rows[view[i]], _inner - 8, true)
+                ? "     " + TextMetrics.Printable(Tools.TruncateString(rows[view[i]], _inner - 8, true))
                 : i == 0 && filter.Length > 0
                     ? "     " + DialogText.PickListNoMatch
                     : string.Empty;
@@ -244,7 +244,7 @@ internal static class PickListBox
         {
             Tools.SetCursorEx(_previewTop + row, _left + 1);
             var line = row < lines.Length
-                ? "  " + Tools.TruncateString(lines[row].Replace("\t", "    "), _inner - 4, true)
+                ? "  " + TextMetrics.Printable(Tools.TruncateString(lines[row].Replace("\t", "    "), _inner - 4, true))
                 : string.Empty;
             if (row == _previewRows - 1 && lines.Length > _previewRows) line = "  ...";
             Console.Write(line + new string(' ', Math.Max(0, _inner - TextMetrics.WidthOf(line))));

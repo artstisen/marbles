@@ -1276,8 +1276,12 @@ public class TextArea
         }
         else
         {
-            // Save entry
-            Actions.SaveContentDuringEdit(this);
+            // Save entry: when the data file was not saved, the text stays unsaved (":q" warns about it)
+            if (!Actions.SaveContentDuringEdit(this))
+            {
+                _engine.SetMessage(DialogText.ChangesNotSaved, true);
+                return false;
+            }
         }
 
         _engine.MarkSaved();

@@ -553,6 +553,12 @@ internal sealed partial class EditorEngine
     private void ClampCursor()
     {
         var pos = Buffer.Clamp(Cursor);
+        // On the first char of a character made of more than one (an emoji), never inside it
+        if (pos.Col > 0 && pos.Col < Buffer.LineLength(pos.Line))
+        {
+            pos = pos with { Col = TextMetrics.ElementStart(Buffer[pos.Line], pos.Col) };
+        }
+
         // Outside Insert mode the cursor is always on a character (if the line has any)
         if (Mode != EditorMode.Insert && pos.Col > 0 && pos.Col >= Buffer.LineLength(pos.Line))
         {

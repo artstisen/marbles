@@ -784,7 +784,8 @@ internal static class Menu
     {
         if (Entries.CurrentEntryExists() && Entries.CurrentEntry.Title.Length > 0)
         {
-            _tempTitleLabel = Tools.TruncateString(Entries.CurrentEntry.Title, Tools.GetTitlePreviewWidth(), true);
+            _tempTitleLabel = TextMetrics.Printable(
+                Tools.TruncateString(Entries.CurrentEntry.Title, Tools.GetTitlePreviewWidth(), true));
             Console.Write(" " + DialogText.TitleColon + " ");
             Console.Write(_tempTitleLabel);
         }

@@ -65,10 +65,10 @@ internal static class TextMetrics
     internal static int Width(string s, int index, int length)
     {
         var c = s[index];
+        // An emoji variation selector makes the element wide (also "1" + selector + keycap: 1️⃣)
+        if (length > 1 && s.AsSpan(index, length).Contains('️')) return 2;
         if (c < FirstCombiningChar) return 1; // Control characters are displayed as a blank space
         if (!Rune.TryGetRuneAt(s, index, out var rune)) return 1;
-        // An emoji variation selector makes the element wide
-        if (length > 1 && s.AsSpan(index, length).Contains('️')) return 2;
         return RuneWidth(rune);
     }
 
@@ -99,9 +99,10 @@ internal static class TextMetrics
     /// </summary>
     internal static string KeepEnd(string s, int cells)
     {
-        if (WidthOf(s) <= cells) return s;
+        // For the screen: control characters are blank spaces
+        if (WidthOf(s) <= cells) return Printable(s);
         var dots = cells > 3 ? "..." : string.Empty;
-        return dots + EndPart(s, cells - dots.Length);
+        return dots + Printable(EndPart(s, cells - dots.Length));
     }
 
     /// <summary>
@@ -142,6 +143,17 @@ internal static class TextMetrics
         return s[start..];
     }
 
+    // The symbols below U+3000 that are shown as emoji, two columns wide (East Asian Width W): ⌚ ⏰ ☕ ⚡ ✅ ❌ ⭐ ...
+    private static bool IsWideSymbol(int value)
+    {
+        return value is 0x231A or 0x231B or 0x2329 or 0x232A or >= 0x23E9 and <= 0x23EC or 0x23F0 or 0x23F3
+            or 0x25FD or 0x25FE or 0x2614 or 0x2615 or >= 0x2648 and <= 0x2653 or 0x267F or 0x2693 or 0x26A1
+            or 0x26AA or 0x26AB or 0x26BD or 0x26BE or 0x26C4 or 0x26C5 or 0x26CE or 0x26D4 or 0x26EA or 0x26F2
+            or 0x26F3 or 0x26F5 or 0x26FA or 0x26FD or 0x2705 or 0x270A or 0x270B or 0x2728 or 0x274C or 0x274E
+            or >= 0x2753 and <= 0x2755 or 0x2757 or >= 0x2795 and <= 0x2797 or 0x27B0 or 0x27BF or 0x2B1B
+            or 0x2B1C or 0x2B50 or 0x2B55;
+    }
+
     private static int RuneWidth(Rune rune)
     {
         var value = rune.Value;
@@ -158,8 +170,15 @@ internal static class TextMetrics
             value is >= 0xFE30 and <= 0xFE4F || // CJK compatibility forms
             value is >= 0xFF00 and <= 0xFF60 || // Fullwidth forms
             value is >= 0xFFE0 and <= 0xFFE6 ||
+            IsWideSymbol(value) || // Symbols shown as emoji
+            value is >= 0x16FE0 and <= 0x18CFF || // Tangut, Khitan
+            value is >= 0x1B000 and <= 0x1B2FF || // Kana supplement and extensions
+            value is 0x1F004 or 0x1F0CF or 0x1F18E || // Mahjong, joker, AB button
+            value is >= 0x1F191 and <= 0x1F19A || // Squared CL ... VS
+            value is >= 0x1F200 and <= 0x1F2FF || // Enclosed ideographs
             value is >= 0x1F300 and <= 0x1F64F || // Emoji
             value is >= 0x1F680 and <= 0x1F6FF ||
+            value is >= 0x1F7E0 and <= 0x1F7F0 || // Colored circles and squares
             value is >= 0x1F900 and <= 0x1FAFF ||
             value is >= 0x20000 and <= 0x3FFFD) // CJK extensions
         {
@@ -168,6 +187,12 @@ internal static class TextMetrics
 
         return 1;
     }
+
+    /// <summary>
+    /// The text to write to the terminal (control characters are shown as blank spaces): a text that comes from
+    /// outside (a file name, text yanked from a file) must never send its own escape codes to the terminal
+    /// </summary>
+    internal static string Printable(string s) => Printable(s, 0, s.Length);
 
     /// <summary>
     /// The text to write to the terminal for a part of a line (control characters are shown as blank spaces)

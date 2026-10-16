@@ -218,7 +218,9 @@ internal static class JumpMenu
     /// </summary>
     internal static string ShortName(string name, int width)
     {
-        // Counted in terminal cells: a wide character takes two, and none is split
+        // Counted in terminal cells: a wide character takes two, and none is split. For the screen: control
+        // characters are blank spaces
+        name = TextMetrics.Printable(name);
         if (TextMetrics.WidthOf(name) <= width) return name;
         if (width <= 3) return TextMetrics.StartPart(name, Math.Max(0, width));
         var end = (width - 3) / 2;

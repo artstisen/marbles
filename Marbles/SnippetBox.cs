@@ -401,7 +401,7 @@ internal static class SnippetBox
             if (i < view.Count)
             {
                 var title = Snippets.Items[view[i]].Title;
-                text = "     " + Tools.TruncateString(title.Length == 0 ? "-" : title, _inner - 8, true);
+                text = "     " + TextMetrics.Printable(Tools.TruncateString(title.Length == 0 ? "-" : title, _inner - 8, true));
             }
             else if (i == 0)
             {
@@ -448,7 +448,7 @@ internal static class SnippetBox
         {
             Tools.SetCursorEx(_previewTop + row, _left + 1);
             var line = row < lines.Length
-                ? "  " + Tools.TruncateString(lines[row].Replace("\t", "    "), _inner - 4, true)
+                ? "  " + TextMetrics.Printable(Tools.TruncateString(lines[row].Replace("\t", "    "), _inner - 4, true))
                 : string.Empty;
             // The rows of a long snippet that are not shown
             if (row == _previewRows - 1 && lines.Length > _previewRows) line = "  ...";

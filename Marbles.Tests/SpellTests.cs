@@ -397,6 +397,21 @@ public class SpellTests : IDisposable
     }
 
     [Fact]
+    public void Checker_AWordWithATypographicApostrophe_IsAdded()
+    {
+        var checker = Checker();
+        Assert.False(checker.IsCorrect("O’Brien"));
+        Assert.Equal(DialogText.Success, checker.AddWord("O’Brien"));
+        Assert.True(checker.IsCorrect("O’Brien"));
+        Assert.True(checker.IsCorrect("O'Brien"));
+        Assert.Equal("O'Brien\n", File.ReadAllText(Path.Combine(_directory, "xx.utf-8.add")));
+
+        // A word list written by hand with it
+        File.AppendAllText(Path.Combine(_directory, "xx.utf-8.add"), "Ann’s\n");
+        Assert.True(Checker().IsCorrect("Ann’s"));
+    }
+
+    [Fact]
     public void Checker_WordListOfNeovim()
     {
         File.WriteAllText(Path.Combine(_directory, "xx.utf-8.add"), "# comment\ngood\nhello/!\nother/=\n");

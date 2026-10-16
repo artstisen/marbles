@@ -1,5 +1,7 @@
-namespace Marbles.Tests;
+﻿namespace Marbles.Tests;
 
+// The names of the colors are translated: not while other tests change the language
+[Collection("Static state")]
 public class PinColorTests
 {
     [Fact]

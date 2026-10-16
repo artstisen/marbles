@@ -6,15 +6,19 @@ namespace Marbles;
 
 internal static class Tools
 {
+    /// <summary>
+    /// A text cut to a length, for the screen: control characters (as an escape code in a file name) are blank
+    /// spaces, so they are never sent to the terminal
+    /// </summary>
     public static string TruncateString(string s, int length, bool dots)
     {
         if (!IsValid(s)) return string.Empty;
         if (s.Length >= length)
         {
-            return dots ? string.Concat(s.AsSpan(0, (length - 3)), "...") : s[..length];
+            s = dots ? string.Concat(s.AsSpan(0, (length - 3)), "...") : s[..length];
         }
 
-        return s;
+        return TextMetrics.Printable(s);
     }
 
 
@@ -457,7 +461,16 @@ internal static class Tools
         {
             // Merge files
             MergeTool merge = new MergeTool();
-            merge.MergeExport();
+            try
+            {
+                merge.MergeExport();
+            }
+            finally
+            {
+                // However the tool is left: the notes it decrypted and their password are not kept
+                RemovePrivileges(false);
+            }
+
             LoginRoutine(true);
         }
         else if (choice == "F")
@@ -524,6 +537,46 @@ internal static class Tools
         textArea.ClearUndoRedoCache();
         Mode.SetMode(mode);
         return textArea.SaveWasInvoked;
+    }
+
+    /// <summary>
+    /// Read a line typed at the cursor (as Console.ReadLine), which Esc cancels
+    /// </summary>
+    /// <param name="maxLength">The most characters that can be typed</param>
+    /// <returns>The text, or null if canceled</returns>
+    internal static string? ReadLineOrEscape(int maxLength)
+    {
+        var text = string.Empty;
+        ShowCursor();
+        try
+        {
+            while (true)
+            {
+                var key = Console.ReadKey(intercept: true);
+                if (key.Key == ConsoleKey.Escape) return null;
+                if (key.Key == ConsoleKey.Enter) return text;
+                if (key.Key == ConsoleKey.Backspace)
+                {
+                    if (text.Length == 0) continue;
+                    var length = TextMetrics.PreviousElementLength(text, text.Length);
+                    var cells = TextMetrics.WidthOf(text[^length..]);
+                    text = text[..^length];
+                    SetCursorEx(Console.CursorTop, Math.Max(0, Console.CursorLeft - cells));
+                    Console.Write(new string(' ', cells));
+                    SetCursorEx(Console.CursorTop, Math.Max(0, Console.CursorLeft - cells));
+                }
+                else if (!char.IsControl(key.KeyChar) &&
+                         text.Length + (char.IsHighSurrogate(key.KeyChar) ? 2 : 1) <= maxLength)
+                {
+                    text += key.KeyChar;
+                    Console.Write(key.KeyChar);
+                }
+            }
+        }
+        finally
+        {
+            HideCursor();
+        }
     }
 
     internal static string ReadMaskedSimple(bool enableCancelCommand)
@@ -918,7 +971,7 @@ internal static class Tools
                 Menu.WriteMenuItem(DialogText.PaginationLeftRight,
                     DialogText.ExtSelectDataFile + " --> ", false);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                Console.Write(" " + TruncateString(FileIo.GetFileName(), 35, true) + " ");
+                Console.Write(" " + TextMetrics.Printable(TruncateString(FileIo.GetFileName(), 35, true)) + " ");
                 // Write file size
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
                 Console.Write(" " + Lang.T("Move") + " ");
@@ -934,7 +987,7 @@ internal static class Tools
                 {
                     // Write file name
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                    Console.Write(" " + TruncateString(FileIo.GetFileName(), 35, true) + " ");
+                    Console.Write(" " + TextMetrics.Printable(TruncateString(FileIo.GetFileName(), 35, true)) + " ");
                     // Write file size
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                     Console.Write(" (" + FileIo.GetFileSize(false) + ")");
@@ -1112,6 +1165,7 @@ internal static class Tools
         Encryptor.RemoveKey();
         Actions.ClearAtLogout();
         FileIo.ResetBackupFailureNotice();
+        FileIo.ForgetKnownVersion();
     }
 
 

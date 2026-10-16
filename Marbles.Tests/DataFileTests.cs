@@ -558,6 +558,52 @@ public class FileIoTests : IDisposable
     }
 
     [Fact]
+    public void ADataFileSavedInAnotherWindow_IsFound()
+    {
+        // A new data file has nothing to replace
+        Login(Password);
+        Entries.NewEntry("Title", "Text");
+        Assert.False(FileIo.ChangedElsewhere());
+        Assert.True(FileIo.SaveEntries().Saved);
+        Assert.False(FileIo.ChangedElsewhere());
+
+        // Loaded here, then saved in another window (with another entry)
+        Login(Password);
+        Assert.True(FileIo.LoadEntries().Success);
+        Assert.False(FileIo.ChangedElsewhere());
+        var here = File.ReadAllBytes(DataFile);
+        Entries.NewEntry("Other window", "Text");
+        Assert.True(FileIo.SaveEntries().Saved);
+        File.WriteAllBytes(DataFile, here); // As loaded here...
+        File.WriteAllBytes(DataFile, File.ReadAllBytes(DataFile).Concat(new byte[] { 0 }).ToArray()); // ...changed
+        Assert.True(FileIo.ChangedElsewhere());
+
+        // Saving here (when asked to) makes this the version known
+        Assert.True(FileIo.SaveEntries().Saved);
+        Assert.False(FileIo.ChangedElsewhere());
+        // Logged out: nothing is known
+        File.SetLastWriteTimeUtc(DataFile, DateTime.UtcNow.AddMinutes(1));
+        FileIo.ForgetKnownVersion();
+        Assert.False(FileIo.ChangedElsewhere());
+    }
+
+    [Fact]
+    public void AnEntryAddedWhereItsIdIsTaken_GetsAnIdOfItsOwn()
+    {
+        // As a transfer completed into the data file it came from: the copy is an entry of its own
+        Entries.NewEntry("Title", "Text");
+        var original = Entries.GetEntries()[0];
+        Entries.AddEntryToEntries(original, true);
+        Assert.Equal(2, Entries.GetEntriesCount());
+        Assert.NotEqual(Entries.GetEntries()[0].Id, Entries.GetEntries()[1].Id);
+        Assert.Equal("Title", Entries.GetEntries()[1].Title);
+        // Where the ID is free, it is kept
+        Entries.ClearAllEntries(false);
+        Entries.AddEntryToEntries(original, true);
+        Assert.Equal(original.Id, Entries.GetEntries()[0].Id);
+    }
+
+    [Fact]
     public void Save_ThatFails_IsNotSaved_AndWritesNoBackup()
     {
         var backup = Path.Combine(_workDirectory, "backup");

@@ -190,7 +190,8 @@ internal sealed class SpellChecker
                 var line = rawLine.Trim();
                 if (line.Length == 0 || line[0] == '#') continue;
                 var slash = line.IndexOf('/');
-                var word = slash < 0 ? line : line.Substring(0, slash);
+                // As the words checked: with the plain apostrophe
+                var word = Normalize(slash < 0 ? line : line.Substring(0, slash));
                 if (word.Length == 0) continue;
                 if (slash >= 0 && line.Substring(slash).Contains('!'))
                 {
@@ -214,7 +215,8 @@ internal sealed class SpellChecker
     /// <returns>DialogText.Success or an error message</returns>
     internal string AddWord(string word)
     {
-        word = word.Trim();
+        // Kept with the plain apostrophe, as the words checked ("O’Brien" is "O'Brien")
+        word = Normalize(word.Trim());
         if (word.Length == 0 || word.Any(char.IsWhiteSpace) || word.Contains('/')) return DialogText.SpellNoWord;
         if (_addedWords.Contains(word)) return DialogText.Success;
         try

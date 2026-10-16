@@ -15,7 +15,7 @@ internal sealed partial class EditorEngine
     private readonly record struct Motion(TextPos Target, bool Linewise = false, bool Inclusive = false);
 
     private char _lastFindCommand; // The last of the "f", "F", "t" and "T" commands used
-    private char _lastFindChar;
+    private string _lastFindChar = string.Empty; // One character: two chars for an emoji
 
     #region Basic movement
 
@@ -70,10 +70,21 @@ internal sealed partial class EditorEngine
 
     #region Words
 
-    // 0 = blank space, 1 = word character, 2 = other characters (punctuation)
+    // 0 = blank space, 1 = word character, 2 = other characters (punctuation). The chars of a character made of
+    // more than one (an emoji with a variation selector, a letter with an accent) all have the class of the first,
+    // so a word motion never stops inside it
     private static int CharClass(string line, int col, bool bigWord)
     {
         var c = line[col];
+        // Looking back for the start of the character only for a char that can continue one: this is done for
+        // each char a word motion passes, and on a long line without ASCII the start can be far back
+        if (col > 0 && (char.IsLowSurrogate(c) || c is >= '\uFE00' and <= '\uFE0F' or '\u200D' ||
+                        char.GetUnicodeCategory(c) is UnicodeCategory.NonSpacingMark
+                            or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.EnclosingMark))
+        {
+            c = line[TextMetrics.ElementStart(line, col)];
+        }
+
         if (char.IsWhiteSpace(c)) return 0;
         if (bigWord) return 1;
         if (char.IsLetterOrDigit(c) || c == '_' || char.IsSurrogate(c)) return 1;
@@ -190,9 +201,10 @@ internal sealed partial class EditorEngine
     }
 
     // The "f", "F", "t" and "T" commands: find a character on the line
-    private bool FindChar(char command, char target, int count, bool repeated, out Motion motion)
+    private bool FindChar(char command, string target, int count, bool repeated, out Motion motion)
     {
         motion = default;
+        if (target.Length == 0) return false;
         var line = CurrentLine;
         var forward = command is 'f' or 't';
         var col = Cursor.Col;
@@ -203,13 +215,26 @@ internal sealed partial class EditorEngine
             int found;
             if (forward)
             {
-                var start = col + 1 + (skipAdjacent && col + 1 < line.Length && line[col + 1] == target ? 1 : 0);
-                found = start <= line.Length ? line.IndexOf(target, Math.Min(start, line.Length)) : -1;
+                // After the character under the cursor (all of it, when it is more than one char)
+                var start = col < line.Length ? col + TextMetrics.ElementLength(line, col) : col + 1;
+                if (skipAdjacent && start < line.Length &&
+                    string.CompareOrdinal(line, start, target, 0, target.Length) == 0)
+                {
+                    start += target.Length;
+                }
+
+                found = start <= line.Length ? line.IndexOf(target, start, StringComparison.Ordinal) : -1;
             }
             else
             {
-                var start = col - 1 - (skipAdjacent && col - 1 >= 0 && line[col - 1] == target ? 1 : 0);
-                found = start >= 0 ? line.LastIndexOf(target, start) : -1;
+                var start = col - 1;
+                if (skipAdjacent && col - target.Length >= 0 &&
+                    string.CompareOrdinal(line, col - target.Length, target, 0, target.Length) == 0)
+                {
+                    start -= target.Length;
+                }
+
+                found = start >= 0 ? line.LastIndexOf(target, start, StringComparison.Ordinal) : -1;
             }
 
             if (found < 0) return false;

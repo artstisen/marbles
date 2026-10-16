@@ -307,9 +307,12 @@ internal static class FileOperations
                 {
                     Directory.Move(source, target);
                 }
-                catch (IOException) when (!IsLink(source) && !Directory.Exists(target))
+                catch (IOException e) when (!IsLink(source) && !Directory.Exists(target) &&
+                                            IsOtherDrive(e, source, targetDirectory))
                 {
-                    // To another drive: copy the directory, and remove the original when all of it is copied
+                    // To another drive: copy the directory, and remove the original when all of it is copied.
+                    // Only then: a directory that cannot be moved for another reason (a file in it is open) is
+                    // left as it is, and the error is told
                     var result = Copy(source, targetDirectory, out _, progress);
                     if (result != DialogText.Success) return result;
                     Directory.Delete(source, true);
@@ -323,6 +326,16 @@ internal static class FileOperations
 
         newPath = target;
         return DialogText.Success;
+    }
+
+    // A directory move that failed because the target is on another drive: Windows checks the drives first (or
+    // tells ERROR_NOT_SAME_DEVICE), Linux and macOS tell EXDEV (18)
+    private static bool IsOtherDrive(IOException error, string source, string targetDirectory)
+    {
+        if (!OperatingSystem.IsWindows()) return error.HResult == 18 || (error.HResult & 0xFFFF) == 18;
+        const int notSameDevice = unchecked((int)0x80070011);
+        return error.HResult == notSameDevice || !string.Equals(Path.GetPathRoot(Path.GetFullPath(source)),
+            Path.GetPathRoot(Path.GetFullPath(targetDirectory)), StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

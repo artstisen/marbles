@@ -277,9 +277,49 @@ internal static class FileIo
 
     private static LoadStatus _loadStatus = new();
 
+    // The data file as it was when its entries were loaded, or last saved (its path, time and size): when it has
+    // changed since then, another window (or program) has saved it
+    private static (string Path, DateTime Time, long Length)? _knownVersion;
+
+    private static (string Path, DateTime Time, long Length)? CurrentVersion()
+    {
+        try
+        {
+            var info = new FileInfo(LinkedFile(GetCurrentFolderAndFileName()));
+            return info.Exists ? (info.FullName, info.LastWriteTimeUtc, info.Length) : null;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// True if the data file was saved by another window (or program) since its entries were loaded here, or last
+    /// saved here: saving would replace those changes. A data file that is not there (a new one) has not changed
+    /// </summary>
+    internal static bool ChangedElsewhere()
+    {
+        var current = CurrentVersion();
+        // Another path (the data file renamed or moved since): nothing is known about it
+        if (current == null || _knownVersion == null ||
+            !FileOperations.SamePath(current.Value.Path, _knownVersion.Value.Path)) return false;
+        return current.Value.Time != _knownVersion.Value.Time || current.Value.Length != _knownVersion.Value.Length;
+    }
+
+    /// <summary>
+    /// Forget the data file that was loaded (at logout)
+    /// </summary>
+    internal static void ForgetKnownVersion()
+    {
+        _knownVersion = null;
+    }
+
     internal static LoadStatus LoadEntries()
     {
         _loadStatus = new LoadStatus();
+        // Before reading: a save made by another window while reading is found at the next save here
+        var version = CurrentVersion();
         var fileContent = ReadFile(out var readStatus);
         if (fileContent != null)
         {
@@ -313,6 +353,7 @@ internal static class FileIo
                 _loadStatus.ProcessString = "";
                 // Set entries
                 Entries.SetAllEntries(_loadStatus.LoadedEntries);
+                _knownVersion = version;
                 return _loadStatus;
             }
             else
@@ -509,32 +550,55 @@ internal static class FileIo
     /// <summary>
     /// Write the content to a temporary file and then replace the target file with it,
     /// so an interrupted save can never leave a half written data file behind.
-    /// The file keeps the time it was created (where the system has one that can be set).
+    /// The file keeps the time it was created (where the system has one that can be set), its permissions (Linux,
+    /// macOS) or attributes (Windows). A link is followed: the file it points to is written, and the link stays.
     /// </summary>
     internal static void WriteAllBytesSafe(string path, byte[] content)
     {
-        var tempPath = path + TempFileNameExtension;
-        // The file that replaces the target is a new file: remember when the target was created
+        path = LinkedFile(path);
+        // A name of its own (in the same directory, so the file is replaced in one step): never a file of the user
+        var tempPath = path + "." + Guid.NewGuid().ToString("N")[..8] + TempFileNameExtension;
+        // The file that replaces the target is a new file: remember when the target was created, and its permissions
         DateTime? created = null;
+        UnixFileMode? mode = null;
+        FileAttributes? attributes = null;
         try
         {
-            if (File.Exists(path)) created = File.GetCreationTimeUtc(path);
+            if (File.Exists(path))
+            {
+                created = File.GetCreationTimeUtc(path);
+                if (OperatingSystem.IsWindows())
+                {
+                    // Read-only stays on the target, so the replacing fails as it should
+                    attributes = File.GetAttributes(path) & (FileAttributes.Hidden | FileAttributes.System);
+                }
+                else
+                {
+                    mode = File.GetUnixFileMode(path);
+                }
+            }
         }
         catch
         {
-            // Saving matters more than the time
+            // Saving matters more than the time and permissions
         }
 
         try
         {
-            using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            var options = new FileStreamOptions
+            {
+                Mode = FileMode.CreateNew, Access = FileAccess.Write, Share = FileShare.None
+            };
+            if (mode is { } createMode && !OperatingSystem.IsWindows()) options.UnixCreateMode = createMode;
+            using (var stream = new FileStream(tempPath, options))
             {
                 stream.Write(content, 0, content.Length);
                 stream.Flush(true); // Make sure the content is on the disk before replacing the target file
             }
 
+            // (The umask can have taken permissions away when it was created)
+            if (mode is { } unixMode && !OperatingSystem.IsWindows()) File.SetUnixFileMode(tempPath, unixMode);
             File.Move(tempPath, path, true);
-            RestoreCreationTime(path, created);
         }
         catch
         {
@@ -548,6 +612,34 @@ internal static class FileIo
             }
 
             throw;
+        }
+
+        // The file is saved: the attributes and the time are kept where they can be
+        try
+        {
+            if (attributes is { } kept && kept != 0) File.SetAttributes(path, File.GetAttributes(path) | kept);
+        }
+        catch
+        {
+            // Saving matters more than the attributes
+        }
+
+        RestoreCreationTime(path, created);
+    }
+
+    // The file a link points to (through all links), or the path itself when it is not a link (or the link is broken)
+    private static string LinkedFile(string path)
+    {
+        try
+        {
+            var info = new FileInfo(path);
+            if (info.LinkTarget == null) return path;
+            var target = info.ResolveLinkTarget(true);
+            return target is { Exists: true } ? target.FullName : path;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return path;
         }
     }
 
@@ -576,6 +668,7 @@ internal static class FileIo
             if (CheckCurrentDirectory())
             {
                 WriteAllBytesSafe(GetCurrentFolderAndFileName(), content);
+                _knownVersion = CurrentVersion();
                 return string.Empty;
             }
             else

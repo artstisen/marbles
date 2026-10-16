@@ -106,7 +106,7 @@ Press `Esc` to show the options in a box. Select one with `j` `k` (or the arrow 
 - `X` Rename the selected data file
 - `C` Create a copy of the selected data file
 - `D` Delete the selected data file
-- `M` Merge two data files into a new, or export a data file as XML (the exported file is not encrypted)
+- `M` Merge two data files into a new, or export a data file as XML (the exported file is not encrypted). `Esc` while typing the name of the new file goes back to the choice of merge or export; the notes that were read, and their passwords, are cleared when you leave
 - `I` Show information about the data file in a box (name, type, size, dates, path and backup directory). Any key closes it
 - `R` Refresh the login page
 - `U` Show the quick guide

@@ -36,7 +36,7 @@ In Insert mode: `Tab` inserts 4 blank spaces (or completes a word, see [Completi
 - `gg` `G` Top/End of the text
 - `5G` or `:5` Go to line 5
 - `{` `}` Previous/Next blank line
-- `f.` `t.` To/Before the next `.` on the line (`F` `T`: backwards), repeated with `;` and `,`
+- `f.` `t.` To/Before the next `.` on the line (`F` `T`: backwards), repeated with `;` and `,`. Also with an emoji: `f😀`
 - `PgUp` `PgDn` One page up/down, `CTRL+U` `CTRL+D` Half a page up/down
 - `gm` `gM` Half the width of the screen to the right/left on the line
 - `zt` `zz` `zb` Scroll the row of the cursor to the top/center/bottom
@@ -52,7 +52,7 @@ A number before a movement or command repeats it: `5j` moves 5 rows down and `3w
   - `yiw` `yip` `dip` Yank the word/yank the paragraph/delete the paragraph (see the text objects below)
   - `yy` `dd` `cc` Yank/Delete/Change the line (`3dd`: 3 lines)
 - `D` `C` `Y` Delete/Change to the end of the line, Yank the line
-- `p` `P` Paste after/before the cursor
+- `p` `P` Paste after/before the cursor. With a count (`3p`) it is pasted that many times; more than 10 million characters at once is refused
 - `J` Join the line with the next
 - `>>` `<<` Indent/Unindent the line
 - `~` Switch the case of the character, `gUU` `guu` Line to UPPERCASE/lowercase, `gUw` `guw` Word to UPPERCASE/lowercase
@@ -228,6 +228,9 @@ Marbles
 - Each line of a list is a word, or `word = text`: the word is what you type, and the text what it is completed to. A word alone is completed to itself (a list of words you use often)
 - In the text, `$0` marks where the cursor goes, `\n` starts a new line and `\\` is a `\`
 - Blank lines are not used, and neither is the text above the first title
+
+## Emoji and wide characters
+An emoji, a character with an accent written as two (`é`) or a flag is one character to the editor: the cursor is never inside it, `x` deletes all of it, and `w` `b` `e` go over it as one (also ❤️ ✔️ ⚠️, made of a symbol and a variation selector). Characters that terminals show two columns wide take two columns here too: Chinese, Japanese and Korean, emoji, and the symbols shown as emoji (✅ ❌ ⭐ ⚡ ☕ 1️⃣). `r`, `f` and `t` work with an emoji as with any character. (Some terminals on Linux show a symbol with a variation selector one column wide; the cursor can then be one column off on that line.)
 
 ## Long lines
 Lines wider than the editor are wrapped onto the next rows (at a blank space when possible). With wrapping turned off, each line is one row, and the view scrolls sideways to follow the cursor. A `<` at the left side or a `>` at the right side tells that the line goes on there.

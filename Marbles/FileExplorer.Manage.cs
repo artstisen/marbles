@@ -189,11 +189,17 @@ internal static partial class FileExplorer
     private static string? Protection(Item item)
     {
         var dataDirectory = System.IO.Path.GetFullPath(FileIo.GetDataDirectoryName());
+        // The data file that is logged in to
+        var loggedIn = Mode.CurrentMode != Mode.SelectedMode.Login && DataSession.IsLoggedIn
+            ? System.IO.Path.Combine(FileIo.GetDataAndSubFolder(), FileIo.GetFileName())
+            : null;
         if (item.IsDirectory)
         {
-            // The data directory, and the directories it is in
+            // The data directory, the directories it is in, and the directory of the data file logged in to (and
+            // those it is in): the data file would be gone when the notes are saved
             return FileOperations.SamePath(item.Path, dataDirectory) ||
-                   FileOperations.IsInside(dataDirectory, item.Path)
+                   FileOperations.IsInside(dataDirectory, item.Path) ||
+                   (loggedIn != null && FileOperations.IsInside(System.IO.Path.GetFullPath(loggedIn), item.Path))
                 ? DialogText.FileUsedByMarbles
                 : null;
         }
@@ -205,10 +211,7 @@ internal static partial class FileExplorer
             return DialogText.FileUsedByMarbles;
         }
 
-        // The data file that is logged in to
-        if (Mode.CurrentMode != Mode.SelectedMode.Login &&
-            FileOperations.SamePath(item.Path,
-                System.IO.Path.Combine(FileIo.GetDataAndSubFolder(), FileIo.GetFileName())))
+        if (loggedIn != null && FileOperations.SamePath(item.Path, loggedIn))
         {
             return DialogText.FileUsedByMarbles;
         }

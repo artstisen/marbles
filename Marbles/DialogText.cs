@@ -699,6 +699,12 @@ internal static class DialogText
     public static string ErrorMovingFile => Lang.T("Unable to move file. Action aborted.");
     public static string ErrorFileAlreadyExist => Lang.T("A file with the same name already exists in the target location");
     public static string SelectTargetDirectory => Lang.T("Please select a valid target directory...");
+    public static string ChangedInAnotherWindow =>
+        Lang.T("The data file was changed in another window since you logged in");
+    public static string ChangedInAnotherWindowNote =>
+        Lang.T("Do not save: log out and in again to see those changes");
+    public static string SaveAnyway => Lang.T("Save anyway (replaces those changes)");
+    public static string DoNotSave => Lang.T("Do not save");
     public static string PasswordNotChanged =>
         Lang.T("The data file could not be saved: the password is not changed");
     public static string StatusUnableToSaveBackup => Lang.T("Error: Unable to save the backup (the backup directory cannot be reached)");

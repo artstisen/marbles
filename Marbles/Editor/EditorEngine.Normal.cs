@@ -39,7 +39,12 @@ internal sealed partial class EditorEngine
         _opCount = string.Empty;
         _operator = NoKey;
         _prefix = NoKey;
+        _pendingHigh = NoKey;
     }
+
+    // The first half of a character outside the Basic Multilingual Plane (an emoji), typed after f, F, t, T or r:
+    // the console gives it as two keys, and the command takes both
+    private char _pendingHigh = NoKey;
 
     private static string OperatorName(char op)
     {
@@ -127,6 +132,26 @@ internal sealed partial class EditorEngine
         {
             var prefix = _prefix;
             _prefix = NoKey;
+            if (prefix is 'f' or 'F' or 't' or 'T' or 'r' && IsText(key))
+            {
+                if (_pendingHigh == NoKey && char.IsHighSurrogate(cmd))
+                {
+                    // Wait for the second half
+                    _prefix = prefix;
+                    _pendingHigh = cmd;
+                    return;
+                }
+
+                if (_pendingHigh != NoKey)
+                {
+                    var high = _pendingHigh;
+                    _pendingHigh = NoKey;
+                    // A half without the other is not a character: nothing is done
+                    if (char.IsLowSurrogate(cmd)) HandlePrefixed(prefix, cmd, true, new string(new[] { high, cmd }));
+                    return;
+                }
+            }
+
             HandlePrefixed(prefix, cmd, IsText(key));
             return;
         }
@@ -216,8 +241,10 @@ internal sealed partial class EditorEngine
         ResetPending();
     }
 
-    private void HandlePrefixed(char prefix, char cmd, bool isText)
+    // typed: the character typed after f, F, t, T or r, when it is two chars (an emoji)
+    private void HandlePrefixed(char prefix, char cmd, bool isText, string? typed = null)
     {
+        typed ??= cmd.ToString();
         var last = Buffer.LineCount - 1;
         switch (prefix)
         {
@@ -242,8 +269,8 @@ internal sealed partial class EditorEngine
                 if (isText)
                 {
                     _lastFindCommand = prefix;
-                    _lastFindChar = cmd;
-                    if (FindChar(prefix, cmd, TakeCount() ?? 1, false, out var motion))
+                    _lastFindChar = typed;
+                    if (FindChar(prefix, typed, TakeCount() ?? 1, false, out var motion))
                     {
                         RunMotion(motion);
                         return;
@@ -254,11 +281,11 @@ internal sealed partial class EditorEngine
             case 'r':
                 if (isText && Mode == EditorMode.VisualBlock)
                 {
-                    ReplaceBlock(cmd);
+                    ReplaceBlock(typed);
                 }
                 else if (isText)
                 {
-                    ReplaceChars(cmd, TakeCount() ?? 1);
+                    ReplaceChars(typed, TakeCount() ?? 1);
                 }
 
                 break;
@@ -1200,7 +1227,7 @@ internal sealed partial class EditorEngine
     }
 
     // The "r" command: replace characters with another
-    private void ReplaceChars(char replacement, int count)
+    private void ReplaceChars(string replacement, int count)
     {
         var line = CurrentLine;
         var col = Cursor.Col;
@@ -1214,7 +1241,7 @@ internal sealed partial class EditorEngine
         if (replaced < count) return; // Not enough characters on the line
         var to = Cursor with { Col = col };
         Delete(Cursor, to);
-        Cursor = Left(Insert(Cursor, new string(replacement, count)), 1);
+        Cursor = Left(Insert(Cursor, string.Concat(Enumerable.Repeat(replacement, count))), 1);
     }
 
     // The "J" command: join lines, with a single blank space between them
@@ -1340,11 +1367,20 @@ internal sealed partial class EditorEngine
         return text;
     }
 
+    // The most characters "p" and "P" put in at once (the register times the count): more would take the memory
+    private const long MaxPutLength = 10_000_000;
+
     // The "p" and "P" commands: insert the register after or before the cursor
     private void Put(bool after, int count)
     {
         var text = GetRegister(out var linewise);
         if (text.Length == 0) return;
+        if ((long)text.Length * count > MaxPutLength)
+        {
+            SetError(Lang.T("Too much text to put in at once (use a smaller count)"));
+            return;
+        }
+
         if (RegisterIsBlock(text))
         {
             PutBlock(after, count);

@@ -948,9 +948,10 @@ internal static class Actions
     }
 
     internal static bool LatestEntryWasEdited;
-    internal static void SaveContentDuringEdit(TextArea textArea)
+    /// <returns>False if the data file was not saved (not to replace changes from another window, or an error)</returns>
+    internal static bool SaveContentDuringEdit(TextArea textArea)
     {
-        if (!DocumentInfo.HasChanged) return;
+        if (!DocumentInfo.HasChanged) return true;
         SaveBackup();
         // Fetch data from editor
         _tempText = textArea.GetText();
@@ -959,7 +960,7 @@ internal static class Actions
         Entries.CurrentEntry.Text = _tempText;
         Entries.CurrentEntry.CursorIndex = textArea.GetCursorIndex();
         Entries.UpdateEntry(Entries.CurrentEntry, true);
-        Entries.SaveEntriesToFile();
+        return Entries.SaveEntriesToFile();
     }
 
 
@@ -2295,8 +2296,8 @@ internal static class Actions
                 }
 
                 // Get title and date
-                _tempTruncatedTitle =
-                    Tools.TruncateString(_resultPages[page][j].Title, Tools.GetTitleListWidth(), true);
+                _tempTruncatedTitle = TextMetrics.Printable(
+                    Tools.TruncateString(_resultPages[page][j].Title, Tools.GetTitleListWidth(), true));
                 if (Mode.CurrentSearchMode == Mode.SearchMode.ListAll)
                 {
                     // Match the dates used for the sorting

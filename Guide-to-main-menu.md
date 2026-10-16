@@ -16,6 +16,8 @@ The same keys are used everywhere in Marbles:
 - `:logout` (or `X`) Close the data file and return to the [login page](Guide-to-login-menu.md)
 - `Esc` Return/Cancel
 
+The notes are saved in the data file after each change. When the same data file is open in two windows (or programs) and the other one has saved it since you logged in, you are asked before saving: **Save anyway** replaces the changes made there; **Do not save** keeps them (log out and in again to see them; the change made here is not saved).
+
 ## Jump menu
 The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`), from the main menu, the lists of entries, the file browser (with its favorites, history and search results) and the editor, and from the options of the login page (`Esc`, `O`), and it is a choice of the Mode tab of the start page (`3`, or `Ctrl+O` there too). It is a box on top of the page with five tabs, one of them with sub-tabs:
 
@@ -93,7 +95,7 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 **Data file**
 - `I` **File info**: Information about the data file in a box on top of the menu (the same box as `I` in the file browser): name, type, size, the number of entries, when it was created and last changed, the full path, and the backup directory. Any key closes it.
 - `:import` **Import text file**: Import a text file as a new entry. The file is selected in the file browser, and the entry gets the name of the file as its title.
-- `:transfer` **Transfer**: Collect entries for transfer to another data file, protected by a key. The questions, the key and the messages are shown in boxes on top of the page.
+- `:transfer` **Transfer**: Collect entries for transfer to another data file, protected by a key. The questions, the key and the messages are shown in boxes on top of the page. The collection stays after it is completed, so it can be completed in more data files; an entry completed into a data file where an entry with its ID is already (the file it came from) gets an ID of its own.
 - `:backup` **Backup**: Turn backup on or off. When on, a copy of the data file is saved in another directory every time it is saved. The directory is selected in the file browser: go to it and press `S`. It must be outside the data directory, so a backup is never written on top of a data file. A data file in a subfolder of the data directory is backed up in the same subfolder of the backup directory, so data files with the same name in different subfolders have backups of their own. When the backup cannot be written (a drive that is not plugged in), you are told so once, and the backup stays on: it is written again at the first save after the directory is back.
 - `:password` **Reset password**: Change the password of the data file. It is not possible to recover your notes if you forget your password.
 - `:` **Command line**: Type a command. "COMMAND:" is shown on the bottom line while typing.
