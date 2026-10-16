@@ -242,13 +242,13 @@ internal sealed class LogoArt
     // Two islands with palms, one of sand and one of grass, and the sun over the water between them: a logo with
     // a color for each of its cells
     private static LogoArt Islands => Parse(string.Join("\n",
-        @" . ,-\|/-,          .      .\.|./.      .      .(\|/), ,-\|/-,",
-        @"   '  |  '   .  _,       --~= 0 =~--    _.     '' |' : '  |  '",
-        @"    __|_o___.--'. :-.      '/'|'\'  _.-'.;'-.___o_|_;_.___|_",
-        @"~~~/..;...;..;...;...\~~~~~~~~~~~~~/,,,;,,,,,;,,,;,,,;,,,,,\~~~",
-        "cells=.B.222AAAA..........B......66EEE66......B......AAAAA22.AAAA222",
-        "cells=...2..6..A...B..EE......666EE6E6EE666...AA.....AA662.2.A..6..2",
-        "cells=....E66E6EEE6EE6E.EEE......66EEE66..AAAAAA2A2AAACA622AAAAA62",
+        @"   ,-\|/-,                  \ | /              .(\|/), ,-\|/-,",
+        @"   '  |  '      _,        -~~ O ~~-     _.     '' |' : '  |  '",
+        @"    __|_o___.--'. '-.       / | \   _.-'.;'-.___o_|_;_.___|_",
+        @"~~~/..:......:.......\~~~~~~~~~~~~~/,,,;,,,,,;,,,,,,,;,,,,,\~~~",
+        "cells=...222AAAA..................6.6.6..............AAAAA22.AAAA222",
+        "cells=...2..6..A......EE......6E66E.E.E6666...AA.....AA662.2.A..6..2",
+        "cells=....E66E6EEE6EE6E.EEE.......6.6.6...AAAAAA2A2AAACA622AAAAA62",
         "cells=B996EE6EEEEEE6EEEEEEEE99B99B9EEE9B9AAAA2AAAAA2AAAAAAA2AAAAA2B99"), IslandsName);
 
     // A hut in the forest with smoke from its chimney and a lit window, a mountain with snow on its top to the
