@@ -1,7 +1,7 @@
 # Changes
 
 ## v1.5.3
-- **Logos**: the Adventure logo has a path by the hut, a mailbox at its door and stones along the ground.
+- **Logos**: a new version of the Adventure logo, with more details along the ground and by the hut.
 - **Fixes from a review of the code**:
   - Moving the data file from the login page to a directory with a data file of the same name never replaces that file any more: the move stops after the message (before, answering No to the question that followed went on with the move and replaced it).
   - The color list no longer stops Marbles with an error when the name of a color that cannot be picked is long in the language used (Polish, Spanish, Finnish): the box is as wide as its longest name.
