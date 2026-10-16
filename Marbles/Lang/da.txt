@@ -1564,7 +1564,7 @@ da: "Kommandoer"
 en: "A word with a colon in front is a command: press : and type the word, then Enter (Esc cancels). Commands can be given on most pages. The menus and the help show them."
 da: "Et ord med kolon foran er en kommando: tast : og skriv ordet, og derefter Enter (Esc annullerer). Kommandoer kan gives på de fleste sider. Menuerne og hjælpen viser dem."
 en: "Completes the command you are typing. Press it again for the next command that starts the same."
-da: "Fuldender den kommando, du skriver. Tryk igen for den næste kommando, der begynder ens."
+da: "Fuldender den kommando, du skriver. Tast igen for den næste kommando, der begynder ens."
 en: "There is much more. Press ? on any page, or type :help in the editor, to see the keys that can be used there."
 da: "Der er meget mere. Tast ? på enhver side, eller skriv :help i editoren, for at se de taster, der kan bruges der."
 
