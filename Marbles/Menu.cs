@@ -440,8 +440,10 @@ internal static class Menu
         // The keys that open a choice at once, the same in all languages and as on the start page and in the
         // options of the login page: O the Jump menu (as Ctrl+O), F files, S Configuration, X Logout, Q Exit
         var keys = new[] { ConsoleKey.O, ConsoleKey.F, ConsoleKey.S, ConsoleKey.X, ConsoleKey.Q };
+        // Room for "   1 O .... " in front of the longest choice, and three blank spaces after it
+        const int textStart = 12;
         var inner = Math.Max(TextMetrics.WidthOf(DialogText.CaptionsOptions) + 4,
-            choices.Max(c => TextMetrics.WidthOf(c)) + 12);
+            choices.Max(c => TextMetrics.WidthOf(c)) + textStart + 3);
         var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
         var top = MenuTabRow + 6;
         // The box, on top of the menu, with the tab of its title above it
