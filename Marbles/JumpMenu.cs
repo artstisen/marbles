@@ -461,10 +461,18 @@ internal static class JumpMenu
             : string.Empty;
         if (note.Length > 0 && room > 10)
         {
-            ConsoleColors.SetColors(_message.Length > 0
-                ? ConsoleColors.ColorPreset.AttentionInverted
-                : ConsoleColors.ColorPreset.Divider);
-            Console.Write("  " + Tools.TruncateString(note, room, true));
+            if (_message.Length > 0)
+            {
+                // A message: highlighted, with a blank space on each side in the highlight
+                Console.Write(" ");
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+                Console.Write(" " + Tools.TruncateString(note, room - 2, true) + " ");
+            }
+            else
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                Console.Write("  " + Tools.TruncateString(note, room, true));
+            }
         }
 
         // The places
