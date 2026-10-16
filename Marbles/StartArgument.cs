@@ -75,7 +75,7 @@ internal static class StartArgument
 
     // The path of a data file in the data directory as the login page knows it ("work.mbls", "notes/work.mbls"), or
     // null if it is not in the data directory or a directory in it
-    private static string? DataFileInDataDirectory(string path)
+    internal static string? DataFileInDataDirectory(string path)
     {
         var data = System.IO.Path.GetFullPath(FileIo.GetDataDirectoryName());
         if (!FileOperations.IsInside(path, data)) return null;

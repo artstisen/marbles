@@ -1,23 +1,82 @@
 ﻿namespace Marbles;
 
 /// <summary>
-/// The Jump menu: a box on top of the page with the tabs Jumps (the jump history), Files (the files opened from
-/// the file browser), Favorites, Hotlist (the directory hotlist), Pages (pages of Marbles) and Data (data files). A place is picked with the
+/// The Jump menu: a box on top of the page with the tabs Bookmarks (places kept with B or ":bookmark"), Recent (the
+/// jump history), File browser (with its lists History, Favorites and Hotlist as sub-tabs), Marbles (the pages of
+/// Marbles) and Data files. Tab and Shift+Tab go from tab to tab, h and l through all the lists in a row (the
+/// sub-tabs too); B bookmarks the selected place, and the Bookmarks tab has keys to arrange, rename and remove them. A place is picked with the
 /// selection arrow (j/k, gg/G) and Enter; h/l go from tab to tab, "/" filters the list of the tab, I shows
 /// information about the selected place and D takes a place out of the jump history. Only names are shown, not
 /// paths. With one mode only (see StartMenu.Only) the tabs of the other mode are left out
 /// </summary>
 internal static class JumpMenu
 {
-    private enum Tab
+    // The lists, in the order h and l go through them
+    internal enum Tab
     {
-        Jumps,
-        Files,
+        Bookmarks,
+        Jumps, // Recent: the jump history
+        History, // The file history of the file browser
         Favorites,
         Hotlist,
-        Configuration,
+        Configuration, // The pages of Marbles
         DataFiles
     }
+
+    // The tabs at the top: each has one list, or (the file browser) several as sub-tabs
+    internal enum Group
+    {
+        Bookmarks,
+        Recent,
+        FileBrowser,
+        Marbles,
+        DataFiles
+    }
+
+    internal static Group GroupOf(Tab tab) => tab switch
+    {
+        Tab.Bookmarks => Group.Bookmarks,
+        Tab.Jumps => Group.Recent,
+        Tab.History or Tab.Favorites or Tab.Hotlist => Group.FileBrowser,
+        Tab.Configuration => Group.Marbles,
+        _ => Group.DataFiles
+    };
+
+    /// <summary>
+    /// Tab and Shift+Tab: the first list of the next (or the previous) tab at the top, going round
+    /// </summary>
+    internal static int NextGroup(IReadOnlyList<Tab> tabs, int tab, bool back)
+    {
+        var groups = tabs.Select(GroupOf).Distinct().ToList();
+        var next = groups[TabLayout.Next(groups.IndexOf(GroupOf(tabs[tab])), groups.Count, back)];
+        return tabs.ToList().FindIndex(list => GroupOf(list) == next);
+    }
+
+    // In the language in use
+    private static string GroupName(Group group) => group switch
+    {
+        Group.Bookmarks => Lang.T("Bookmarks"),
+        Group.Recent => Lang.T("Recent"),
+        Group.FileBrowser => DialogText.HelpSectionFiles,
+        Group.Marbles => DialogText.ApplicationName,
+        _ => Lang.T("Data files")
+    };
+
+    // The short name of a tab, used when the names do not all fit in a row (a long language)
+    private static string ShortGroupName(Group group) => group switch
+    {
+        Group.FileBrowser => DialogText.CaptionsFiles,
+        Group.DataFiles => Lang.T("Data"),
+        _ => GroupName(group)
+    };
+
+    // The cells a row of tabs takes (as TabLayout.SubTabStarts places them)
+    private static int TabRowWidth(IEnumerable<string> names) => names.Sum(name => TextMetrics.WidthOf(name) + 4);
+
+    // The bookmarks: j k move the selected one while this is on (v)
+    private static bool _moving;
+    private static (int Index, Bookmarks.Entry Entry)? _removed; // For undo
+    private static string _message = string.Empty;
 
     // A place in the list of a tab, and when it was jumped to or opened (DateTime.MinValue: not known). A file or
     // directory that is a favorite with a color of its own is shown in it
@@ -33,39 +92,38 @@ internal static class JumpMenu
             : null;
     }
 
-    // The tab the menu was on when it was closed: it is shown again the next time it is opened (while Marbles
+    // The list the menu was on when it was closed: it is shown again the next time it is opened (while Marbles
     // runs; it is not saved)
-    private static Tab _lastTab = Tab.Jumps;
+    private static Tab _lastTab = Tab.Bookmarks;
 
     private const int MarkWidth = 4; // "FILE", "DIR", "PAGE", "DATA"
     private const int TimeWidth = 10; // "09:41" today, else "2026-10-12"
 
-    // The tabs that are shown
-    private static List<Tab> Tabs()
+    /// <summary>
+    /// The lists that are shown: with one mode only (see StartMenu.Only) the lists of the other mode are left out
+    /// </summary>
+    internal static List<Tab> Tabs(StartMenu.OnlyMode only)
     {
-        var tabs = new List<Tab> { Tab.Jumps };
-        if (StartMenu.Only != StartMenu.OnlyMode.Notes)
+        var tabs = new List<Tab> { Tab.Bookmarks, Tab.Jumps };
+        if (only != StartMenu.OnlyMode.Notes)
         {
-            tabs.Add(Tab.Files);
+            tabs.Add(Tab.History);
             tabs.Add(Tab.Favorites);
             tabs.Add(Tab.Hotlist);
         }
 
         tabs.Add(Tab.Configuration);
-        if (StartMenu.Only != StartMenu.OnlyMode.Editor) tabs.Add(Tab.DataFiles);
+        if (only != StartMenu.OnlyMode.Editor) tabs.Add(Tab.DataFiles);
         return tabs;
     }
 
-    // In the language in use
+    // The name of a sub-tab, in the language in use
     private static string TabName(Tab tab) => tab switch
     {
-        Tab.Jumps => Lang.T("Jumps"),
-        Tab.Files => DialogText.CaptionsFiles,
+        Tab.History => Lang.T("History"),
         Tab.Favorites => Lang.T("Favorites"),
         Tab.Hotlist => DialogText.CaptionsHotlist,
-        // Short, so six tabs fit in all languages
-        Tab.Configuration => Lang.T("Pages"),
-        _ => Lang.T("Data")
+        _ => GroupName(GroupOf(tab))
     };
 
     // The places a mode that is not used leads to are left out
@@ -81,11 +139,16 @@ internal static class JumpMenu
     {
         switch (tab)
         {
+            case Tab.Bookmarks:
+                Bookmarks.Load();
+                return Bookmarks.Items.Where(entry => Usable(entry.Target)).Select(entry =>
+                    new Row(entry.Target, DateTime.MinValue) { Label = entry.Name.Length > 0 ? entry.Name : null })
+                    .ToList();
             case Tab.Jumps:
                 JumpHistory.Load();
                 return JumpHistory.Items.Where(entry => Usable(entry.Target))
                     .Select(entry => new Row(entry.Target, entry.Jumped)).ToList();
-            case Tab.Files:
+            case Tab.History:
                 FileHistory.Load();
                 return FileHistory.Items.Select(entry => new Row(new JumpTarget(JumpKind.File, entry.Path), entry.Opened))
                     .ToList();
@@ -175,13 +238,15 @@ internal static class JumpMenu
     {
         // In the color of text in frames and boxes
         using var frameText = ConsoleColors.FrameTextScope();
-        var tabs = Tabs();
+        var tabs = Tabs(StartMenu.Only);
         // The favorites, for the colors of the names
         FileFavorites.Load();
         var filters = new Dictionary<Tab, string>();
         var tab = Math.Max(0, tabs.IndexOf(_lastTab));
         var selected = 0;
         var scroll = 0;
+        _moving = false;
+        _message = string.Empty;
         while (true)
         {
             var current = tabs[tab];
@@ -191,9 +256,35 @@ internal static class JumpMenu
                 row.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
             selected = Math.Clamp(selected, 0, Math.Max(0, rows.Count - 1));
             var visible = Draw(tabs, tab, filter, rows, selected, ref scroll);
+            _message = _moving ? DialogText.HotlistMoving : string.Empty;
             var key = Console.ReadKey(true);
             var navigation = Keyboard.ToNavigationKey(key).Key;
+            if (_moving)
+            {
+                // Moving the selected bookmark: j k move it, and Esc, Enter or v end it
+                if (navigation is ConsoleKey.DownArrow or ConsoleKey.UpArrow && rows.Count > 0)
+                {
+                    selected = MoveBookmark(rows[selected], selected + (navigation == ConsoleKey.DownArrow ? 1 : -1));
+                }
+                else if (key.Key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.V)
+                {
+                    _moving = false;
+                    _message = string.Empty;
+                }
+
+                continue;
+            }
+
             if (Jump.IsKey(key)) return null;
+            if (key.Key == ConsoleKey.Tab)
+            {
+                // The next (Shift: the previous) tab at the top
+                tab = NextGroup(tabs, tab, (key.Modifiers & ConsoleModifiers.Shift) != 0);
+                selected = 0;
+                scroll = 0;
+                continue;
+            }
+
             if (key.Key is ConsoleKey.Escape || key.KeyChar is 'q' or 'Q')
             {
                 // Esc takes the filter away before it closes the menu
@@ -254,8 +345,53 @@ internal static class JumpMenu
                 case 'I':
                     if (rows.Count > 0) ShowInfo(current, rows[selected]);
                     break;
+                case 'b':
+                case 'B':
+                    // Keep the selected place as a bookmark
+                    if (rows.Count == 0) break;
+                    _message = Bookmarks.AddWithMessage(rows[selected].Target);
+                    break;
+                case 'v':
+                case 'V':
+                    if (current != Tab.Bookmarks || rows.Count == 0) break;
+                    if (filter.Length > 0)
+                    {
+                        _message = DialogText.HotlistMoveFiltered;
+                        break;
+                    }
+
+                    _moving = true;
+                    _message = DialogText.HotlistMoving;
+                    break;
+                case 't':
+                case 'T':
+                case 'e':
+                case 'E':
+                    // The selected bookmark first or last
+                    if (current != Tab.Bookmarks || rows.Count == 0) break;
+                    var place = MoveBookmark(rows[selected], key.KeyChar is 't' or 'T' ? 0 : int.MaxValue);
+                    if (filter.Length == 0) selected = place;
+                    break;
+                case 'x':
+                case 'X':
+                    if (current == Tab.Bookmarks && rows.Count > 0) RenameBookmark(rows[selected]);
+                    break;
+                case 'u':
+                case 'U':
+                    if (current == Tab.Bookmarks) UndoBookmarkRemove();
+                    break;
+                case 'c':
+                case 'C':
+                    if (current == Tab.Bookmarks) ClearBookmarks();
+                    break;
                 case 'd':
                 case 'D':
+                    if (current == Tab.Bookmarks && rows.Count > 0)
+                    {
+                        RemoveBookmark(rows[selected]);
+                        break;
+                    }
+
                     // A place is taken out of the jump history
                     if (current != Tab.Jumps || rows.Count == 0) break;
                     JumpHistory.Load();
@@ -289,26 +425,23 @@ internal static class JumpMenu
         var height = Math.Max(8, Init.LineCount - 5);
         var (top, left, width, _) = ChoiceBox.DrawFrame(DialogText.CaptionsJump, inner, height);
 
-        // The tabs, in a row as the sub-tabs of a frame with tabs, with the keys that change them at the end
-        var names = tabs.Select(TabName).ToList();
-        var starts = TabLayout.SubTabStarts(names);
-        for (var i = 0; i < names.Count; i++)
-        {
-            Tools.SetCursorEx(top + 1, left + 2 + starts[i] - 1);
-            if (i == tab) ConsoleColors.SetTabColors();
-            else ConsoleColors.SetColors(ConsoleColors.ColorPreset.OtherTabs);
-            Console.Write(" " + names[i] + " ");
-        }
-
-        const string tabKeys = "h/l"; // English: the keys
+        // The tabs at the top, and below them the lists of the tab shown (its sub-tabs), each row with the keys that
+        // change it at the end
+        var group = GroupOf(tabs[tab]);
+        var groups = tabs.Select(GroupOf).Distinct().ToList();
+        // The names of the tabs, or their short names if they do not fit next to the keys
+        var groupNames = groups.Select(GroupName).ToList();
+        if (TabRowWidth(groupNames) > width - 7) groupNames = groups.Select(ShortGroupName).ToList();
+        DrawTabRow(top + 1, left, width, groupNames, groups.IndexOf(group), "Tab"); // English
+        var lists = tabs.Where(list => GroupOf(list) == group).ToList();
+        DrawTabRow(top + 2, left, width, lists.Count > 1 ? lists.Select(TabName).ToList() : new List<string>(),
+            lists.IndexOf(tabs[tab]), "h/l"); // English: the keys
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabFrame);
-        Tools.SetCursorEx(top + 1, left + width - tabKeys.Length - 1);
-        Console.Write(tabKeys);
-        Tools.SetCursorEx(top + 2, left + 2);
+        Tools.SetCursorEx(top + 3, left + 2);
         Console.Write(new string('-', Math.Max(0, width - 2)));
 
         // The filter
-        Tools.SetCursorEx(top + 3, left + 3);
+        Tools.SetCursorEx(top + 4, left + 3);
         if (filter.Length == 0)
         {
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
@@ -320,16 +453,22 @@ internal static class JumpMenu
             Console.Write(Tools.TruncateString(Lang.F("Filter: {0}", filter), width - 4, true));
         }
 
-        // The jump history only holds the jumps made in the menu (not the files and pages opened in other ways)
+        // A message (a bookmark added ...), or what the list is
         var room = left + width - 1 - Console.CursorLeft - 2;
-        if (tabs[tab] == Tab.Jumps && room > 10)
+        var note = _message.Length > 0 ? _message
+            : tabs[tab] == Tab.Jumps ? Lang.T("Only jumps made in this menu, the latest first")
+            : tabs[tab] == Tab.Bookmarks && rows.Count == 0 && filter.Length == 0 ? DialogText.BookmarksEmpty
+            : string.Empty;
+        if (note.Length > 0 && room > 10)
         {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write("  " + Tools.TruncateString(Lang.T("Only jumps made in this menu, the latest first"), room, true));
+            ConsoleColors.SetColors(_message.Length > 0
+                ? ConsoleColors.ColorPreset.AttentionInverted
+                : ConsoleColors.ColorPreset.Divider);
+            Console.Write("  " + Tools.TruncateString(note, room, true));
         }
 
         // The places
-        var first = top + 5;
+        var first = top + 6;
         var visible = Math.Max(1, top + height - first + 1);
         scroll = Math.Clamp(scroll, Math.Max(0, selected - visible + 1), selected);
         var nameWidth = Math.Max(10, width - 4 - MarkWidth - TimeWidth - 4);
@@ -347,7 +486,7 @@ internal static class JumpMenu
             Tools.SetCursorEx(first + line, left + 1);
             if (index == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
             else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(index == selected ? "->" : "  ");
+            Console.Write(index == selected ? (_moving ? "<>" : "->") : "  ");
 
             // The name, in the color of a favorite that has one (a place that is not there any more is dimmed and
             // marked)
@@ -367,8 +506,98 @@ internal static class JumpMenu
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        ChoiceBox.WriteHints(DialogText.JumpKeys);
+        ChoiceBox.WriteHints(tabs[tab] == Tab.Bookmarks ? DialogText.JumpBookmarkKeys : DialogText.JumpKeys);
         return visible;
+    }
+
+    // A row of tabs (the names, the one shown highlighted) with the keys that change them at its end
+    private static void DrawTabRow(int row, int left, int width, List<string> names, int shown, string keys)
+    {
+        var starts = TabLayout.SubTabStarts(names);
+        for (var i = 0; i < names.Count; i++)
+        {
+            Tools.SetCursorEx(row, left + 2 + starts[i] - 1);
+            if (i == shown) ConsoleColors.SetTabColors();
+            else ConsoleColors.SetColors(ConsoleColors.ColorPreset.OtherTabs);
+            Console.Write(" " + names[i] + " ");
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabFrame);
+        Tools.SetCursorEx(row, left + width - keys.Length - 1);
+        Console.Write(keys);
+    }
+
+    // The number of a bookmark in the whole list (a row can be in a filtered list)
+    private static int BookmarkIndex(Row row) =>
+        Bookmarks.Items.ToList().FindIndex(entry => entry.Target.SameAs(row.Target));
+
+    // Move a bookmark to a place in the list, and save it. Returns where it is now
+    private static int MoveBookmark(Row row, int to)
+    {
+        var index = BookmarkIndex(row);
+        if (index < 0) return 0;
+        var place = Bookmarks.Move(index, to);
+        SaveBookmarks();
+        return place;
+    }
+
+    // X: the name the bookmark is shown with (empty: the name of the place)
+    private static void RenameBookmark(Row row)
+    {
+        var index = BookmarkIndex(row);
+        if (index < 0) return;
+        ChoiceBox.Forget();
+        var name = ChoiceBox.AskText(DialogText.BookmarkRename, DialogText.BookmarkRenameNote, DialogText.NameColon,
+            Bookmarks.Items[index].Shown);
+        if (name == null) return;
+        Bookmarks.Rename(index, name);
+        SaveBookmarks();
+    }
+
+    // D: take the bookmark out of the list (u puts it back)
+    private static void RemoveBookmark(Row row)
+    {
+        var index = BookmarkIndex(row);
+        if (index < 0) return;
+        var entry = Bookmarks.Items[index];
+        Bookmarks.RemoveAt(index);
+        _removed = (index, entry);
+        SaveBookmarks();
+        _message = Lang.F("Removed from the bookmarks: {0} (u puts it back)", entry.Shown);
+    }
+
+    private static void UndoBookmarkRemove()
+    {
+        if (_removed is not { } removed) return;
+        _removed = null;
+        Bookmarks.Load();
+        Bookmarks.Insert(removed.Index, removed.Entry);
+        SaveBookmarks();
+        _message = Lang.F("Back in the bookmarks: {0}", removed.Entry.Shown);
+    }
+
+    // C: empty the list, after asking
+    private static void ClearBookmarks()
+    {
+        Bookmarks.Load();
+        if (Bookmarks.Items.Count == 0) return;
+        ChoiceBox.Forget();
+        if (!ChoiceBox.Confirm(Lang.T("Bookmarks"),
+                Lang.F("Remove all {0} bookmarks?", Bookmarks.Items.Count), DialogText.BookmarksClearNote, true))
+        {
+            return;
+        }
+
+        Bookmarks.Clear();
+        _removed = null;
+        SaveBookmarks();
+        _message = DialogText.BookmarksCleared;
+    }
+
+    private static void SaveBookmarks()
+    {
+        var status = Bookmarks.Save();
+        if (status != DialogText.Success) _message = status;
     }
 
     // Information about a place: its name, kind and path, whether it is there, and when it was jumped to or opened

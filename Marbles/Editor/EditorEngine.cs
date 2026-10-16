@@ -56,6 +56,7 @@ internal enum EditorRequest
     CompletionsEdit, // ":complete edit": open the file of the completions
     Diff, // ":diff": compare the text with the file on disk (or the saved entry)
     WriteCopy, // ":w name": save the text as a new file (a comparison)
+    Bookmark, // ":bookmark": keep the file as a bookmark of the Jump menu
     StringMemory // ":reglist": show the strings of the string memory, to pick one to insert
 }
 
@@ -1198,6 +1199,9 @@ internal sealed partial class EditorEngine
                 break;
             case "path":
                 if (!SingleLine) _request = EditorRequest.CopyPath;
+                break;
+            case "bookmark":
+                if (!SingleLine) _request = EditorRequest.Bookmark;
                 break;
             case "snip":
                 SnippetText = string.Empty;

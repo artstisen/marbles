@@ -17,24 +17,42 @@ The same keys are used everywhere in Marbles:
 - `Esc` Return/Cancel
 
 ## Jump menu
-The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`), from the main menu, the lists of entries, the file browser (with its favorites, history and search results) and the editor, and from the options of the login page (`Esc`, `O`), and it is a choice of the Mode tab of the start page (`3`, or `Ctrl+O` there too). It is a box on top of the page with six tabs:
+The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`), from the main menu, the lists of entries, the file browser (with its favorites, history and search results) and the editor, and from the options of the login page (`Esc`, `O`), and it is a choice of the Mode tab of the start page (`3`, or `Ctrl+O` there too). It is a box on top of the page with five tabs, one of them with sub-tabs:
 
-- **Jumps**: the places you have jumped to with the menu, the latest first, with the time (today) or the date of the jump. Only jumps made in the menu are kept, not files and pages opened in other ways (the tab says so next to the filter)
-- **Files**: the files opened from the file browser (the file history), with when they were opened
-- **Favorites**: the files and directories of your favorites. A favorite with a color of its own is shown in it, on every tab
-- **Hotlist**: the directories of the [directory hotlist](Guide-to-login-menu.md#directory-hotlist) of the file browser, in its order and with the names they are shown with there
-- **Pages**: the pages of the Configuration tab (General, Layout, Editor, System), Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Help and About
-- **Data**: the data files in the data directory and the directories in it
+- **Bookmarks**: the places you have kept as bookmarks (see [Bookmarks](#bookmarks) below)
+- **Recent**: the places you have jumped to with the menu, the latest first, with the time (today) or the date of the jump. Only jumps made in the menu are kept, not files and pages opened in other ways (the tab says so next to the filter)
+- **File browser**, with the lists of the [file browser](Guide-to-login-menu.md#file-browser) as sub-tabs:
+  - **History**: the files opened from the file browser, with when they were opened
+  - **Favorites**: the files and directories of the favorites of the file browser (not the favorite notes of a data file). A favorite with a color of its own is shown in it, on every tab
+  - **Hotlist**: the directories of the [directory hotlist](Guide-to-login-menu.md#directory-hotlist), in its order and with the names they are shown with there
+- **Marbles**: the pages of Marbles: the Configuration tab (General, Layout, Editor, System), Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Help and About
+- **Data files**: the data files in the data directory and the directories in it
+
+In a language where the names of the tabs do not fit in a row, _File browser_ and _Data files_ are shown shorter (as _Files_ and _Data_).
 
 Only names are shown, not paths: a long name is shortened with `...` in the middle, so its start and its extension are seen. At the right of each place is its kind: `FILE`, `DIR`, `PAGE` or `DATA`. A place that is gone (a file deleted or moved) is shown dimmed with _(missing)_.
 
 - `j` `k` (or `Down`/`Up`, `gg` `G`, `PgUp` `PgDn`) Select a place
-- `h` `l` (or `Left`/`Right`) The tab before/after
+- `h` `l` (or `Left`/`Right`) The list before/after: through all the lists in a row, the sub-tabs of the file browser too
+- `Tab` `Shift+Tab` The next/previous tab (on the file browser: its first list)
 - `/` Filter the places of the tab: only the ones with the text in their names are shown. `Esc` shows all again
 - `Enter` Jump to the selected place
+- `B` Bookmark the selected place (on any list)
 - `I` Information about the place: its name, kind and full path, whether it is there, and when it was jumped to or opened
 - `D` Take the place out of the jump history (on the Jumps tab)
 - `Esc` (or `Q`, `Ctrl+O`) Close the menu; `?` shows its keys. The menu opens on the tab it was on the last time (while Marbles runs), so jumping between files from the Files or Favorites tab goes on there
+
+### Bookmarks
+Bookmarks are places you keep to jump to: a file, a directory, a page of Marbles or a data file. `B` on any list of the Jump menu adds the selected place, and `:bookmark` in the editor adds the file being edited (in the file browser: the selected file or directory, on `..` the directory shown). A note of a data file is not bookmarked by itself: bookmark its data file. A place is bookmarked once, and at the end of the list. On the Bookmarks tab:
+
+- `Enter` Jump to the bookmark
+- `v` Move the selected bookmark: `j` `k` move it, and `Esc` (or `Enter`, `v`) ends the moving. Not while a filter shows only some of them
+- `T` `E` Move it to the top/end
+- `X` The name the bookmark is shown with, such as _Budget_ for `…/2026/oekonomi/budget-final-v3.md` (the place keeps its own name; an empty name shows it again)
+- `D` Remove the bookmark (the place itself stays), and `u` puts it back
+- `C` Clear the bookmarks (you are asked first)
+
+The bookmarks are kept in `bookmarks.txt` in the data directory, one on each line: the kind (`file`, `dir`, `page` or `data`), a tab character, the place, and the name you gave it (if any) after another tab character, so the file can also be edited by hand. At most 100. A file or directory that is renamed or moved in the file browser (or renamed with `:rename` in the editor) keeps its bookmark, and one that is gone is shown dimmed with _(missing)_.
 
 Where a jump goes:
 

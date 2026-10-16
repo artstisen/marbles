@@ -142,7 +142,7 @@ internal static class JumpHistory
 
     internal static string FilePath => FilePathOverride ?? Path.Combine(FileIo.GetDataDirectoryName(), FileName);
 
-    private static string KindName(JumpKind kind) => kind switch
+    internal static string KindName(JumpKind kind) => kind switch
     {
         JumpKind.Directory => "dir",
         JumpKind.Page => "page",
@@ -150,7 +150,7 @@ internal static class JumpHistory
         _ => "file"
     };
 
-    private static JumpKind? ParseKind(string name) => name.Trim().ToLowerInvariant() switch
+    internal static JumpKind? ParseKind(string name) => name.Trim().ToLowerInvariant() switch
     {
         "file" => JumpKind.File,
         "dir" => JumpKind.Directory,

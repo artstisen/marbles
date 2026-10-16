@@ -577,6 +577,19 @@ public class TextArea
             case EditorRequest.Diff:
                 CompareWithSaved();
                 break;
+            case EditorRequest.Bookmark:
+                // The file being edited (a note is in its data file: that one is bookmarked in the Jump menu)
+                if (_saveMode == SaveAsFile && FileExplorer.CurrentFilePath.Length > 0)
+                {
+                    _engine.ShowMessage(Bookmarks.AddWithMessage(
+                        new JumpTarget(JumpKind.File, FileExplorer.CurrentFilePath)), false);
+                }
+                else
+                {
+                    _engine.ShowMessage(DialogText.BookmarkNoteNotKept, true);
+                }
+
+                break;
             case EditorRequest.WriteCopy:
                 _engine.ShowMessage(DialogText.WriteCopyNotHere, true);
                 break;

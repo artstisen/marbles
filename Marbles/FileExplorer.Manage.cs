@@ -118,6 +118,9 @@ internal static partial class FileExplorer
             case "hotadd":
                 AddToHotlist();
                 break;
+            case "bookmark":
+                BookmarkSelected();
+                break;
             case "logout":
                 // Staying logged in: end the session of the data file (the browser stays)
                 if (DataSession.IsLoggedIn)
@@ -355,8 +358,9 @@ internal static partial class FileExplorer
             done++;
             source.Marks.Remove(item.Path);
             if (isMove && FileFavorites.PathChanged(item.Path, path)) favoritesChanged = true;
-            // A directory moved: the hotlist follows it
+            // A directory moved: the hotlist follows it (and the bookmarks follow what is moved)
             if (isMove && item.IsDirectory) HotlistPathChanged(item.Path, path);
+            if (isMove) Bookmarks.Follow(item.Path, path);
         }
 
         string message;
@@ -478,6 +482,7 @@ internal static partial class FileExplorer
             JumpHistory.Load();
             if (JumpHistory.PathChanged(item.Path, path)) JumpHistory.Save();
             if (item.IsDirectory) HotlistPathChanged(item.Path, path);
+            Bookmarks.Follow(item.Path, path);
         }
     }
 
@@ -734,6 +739,35 @@ internal static partial class FileExplorer
         }
 
         return string.Empty;
+    }
+
+    // ":bookmark": the selected file or directory as a bookmark of the Jump menu (on "..": the directory shown). A data
+    // file in the data directory is kept as a data file (a jump to it selects it on the login page)
+    private static void BookmarkSelected()
+    {
+        var item = SelectedItem();
+        var path = item?.Path ?? ActivePane.Directory;
+        if (path.Length == 0)
+        {
+            _message = DialogText.HotlistNoDirectory;
+            return;
+        }
+
+        JumpTarget target;
+        if (item == null || item.IsDirectory)
+        {
+            target = new JumpTarget(JumpKind.Directory, path);
+        }
+        else if (IsDataFile(item) && StartArgument.DataFileInDataDirectory(path) is { } inData)
+        {
+            target = new JumpTarget(JumpKind.DataFile, inData);
+        }
+        else
+        {
+            target = new JumpTarget(JumpKind.File, path);
+        }
+
+        _message = Bookmarks.AddWithMessage(target);
     }
 
     // ":name": the name of the selected file or directory to the clipboard (on "..": of the directory shown, and

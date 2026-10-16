@@ -520,7 +520,15 @@ internal static class DialogText
     public static string CaptionsJump => Lang.T("Jump");
     public static string CaptionsJumpInfo => Lang.T("Jump info");
     public static string HelpSectionJump => Lang.T("Jump menu");
-    public static string JumpKeys => Lang.T("j/k Select | Enter Jump | h/l Tab | / Filter | I Info | D Remove | Esc Close");
+    public static string JumpBookmarkKeys =>
+        Lang.T("Enter Jump | v Move | T/E Top/End | X Rename | D Remove | u Undo | C Clear");
+    public static string BookmarksEmpty => Lang.T("No bookmarks yet: B on a list, or :bookmark");
+    public static string BookmarkRename => Lang.T("Name of the bookmark");
+    public static string BookmarkRenameNote => Lang.T("The place keeps its name (empty: its name is shown)");
+    public static string BookmarksClearNote => Lang.T("The places themselves stay.");
+    public static string BookmarksCleared => Lang.T("The bookmarks are cleared");
+    public static string BookmarkNoteNotKept => Lang.T("A note is not bookmarked: B on its data file in the Jump menu");
+    public static string JumpKeys => Lang.T("j/k Select | Enter Jump | B Bookmark | / Filter | I Info | Esc Close");
     public static string CaptionsReadOnly => Lang.T("Read only");
     public static string EntryIsReadOnly => Lang.T("The entry is read only");
     public static string EntryReadOnlyNote => Lang.T("It is not renamed, reverted or deleted. :readonly in the list turns it off.");

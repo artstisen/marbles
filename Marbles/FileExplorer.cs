@@ -849,6 +849,7 @@ internal static partial class FileExplorer
         if (FileHistory.PathChanged(oldPath, newPath)) FileHistory.Save();
         JumpHistory.Load();
         if (JumpHistory.PathChanged(oldPath, newPath)) JumpHistory.Save();
+        Bookmarks.Follow(oldPath, newPath);
     }
 
     // Where the cursor was in a file when it was closed: kept in the favorites first, then in the history
