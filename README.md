@@ -1,5 +1,11 @@
 # Marbles
-A lightweight cross-platform text mode application for taking notes with encryption in any terminal application on Windows, Linux and macOS.
+A lightweight, cross-platform Vim-style modal text editor for taking encrypted notes in any terminal program on Windows, Linux, and macOS.
+
+Marbles includes an orthodox file manager and a text editor with syntax highlighting, code completion, spell checking, code snippet support, search/replace, comparison (diff), etc., and can be used as a fully-featured text editing and file management tool. 
+
+## Aim 
+The aim of the project is to keep it lean and unbloated. The combination of being able to store encrypted data while also having a capable file editor or file organization tool is the foundation of the project. I've included functionality that I would normally have added via lightweight, functional plugins in Neovim, without disrupting the classic terminal aesthetic, where the TUI is rendered in pure ASCII and doesn't require special fonts, etc.
+
 
 ![Marbles animation](marbles.gif)
 
@@ -7,15 +13,14 @@ A lightweight cross-platform text mode application for taking notes with encrypt
 ## About Marbles
 Marbles provides a simple interface for creating, editing, searching, copying, arranging, importing, exporting and deleting notes. Notes are stored as a searchable collection of entries contained in a single encrypted file for easy portability. Multiple files can be created and managed from within the program itself. Marbles will handle large text documents and data files with thousands of notes.
 
-Marbles also works as a text editor: when it starts you select between your encrypted notes and a file browser for editing ordinary text files (.txt, .md, .html ...) with the same editor. It can be set to start directly in either. The file browser can also manage files and directories (create, rename, copy, move, delete) and keeps a list of your favorite files.
+Marbles also works as a text editor: when it starts you select between your encrypted notes and a file browser for editing ordinary text/code files (.txt, .md, .html, .json, .cs...) with the same editor. It can be set to start directly in either. The file browser can also manage files and directories (create, rename, copy, move, delete) and keeps a list of your favorite files, file history and directory hotlist width file diff.
 
 Marbles is operated in the style of Vim: the editor has Normal, Insert and Visual modes, and the menus and lists use the same keys for moving around (`h` `j` `k` `l`), searching (`/`), help (`?`) and commands (`:`).
 
-> Check out my latest project: **Easy file encryption for Neovim** [https://github.com/artstisen/marbles.nvim](https://github.com/artstisen/marbles.nvim)
 
 ## Specifications
 - Supported platforms: Windows, Linux and macOS
-- Requirements: .NET 10 runtime
+- Requirements: .NET 10 runtime (available as self-contained single file executables, with the .NET runtime included)
 - Application type: Text mode
 - Box drawing: ASCII
 - Console I/O encoding: UTF-8
@@ -25,6 +30,7 @@ Marbles is operated in the style of Vim: the editor has Normal, Insert and Visua
 - Software license: MIT
 
 ## Tools used
+- Code editor: Marbles
 - Programming language: C# 14
 - Framework: .NET 10
 
