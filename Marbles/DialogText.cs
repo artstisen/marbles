@@ -347,6 +347,7 @@ internal static class DialogText
     public static string QuickGuide => Lang.T("Quick guide");
     public static string StartJump => Lang.T("Jump menu");
     public static string QuickGuideKeys => Lang.T("| h/l Page | j/k Line | ? All keys | Esc Close");
+    public static string GuideKeys => Lang.T("| h/l Page | j/k Line | ? Keys | Esc Close");
     public static string StartConfigSelect => Lang.T("Show choices on startup");
     public static string StartConfigNotes => Lang.T("Start in Note Management");
     public static string StartConfigEditor => Lang.T("Start in Text Editor (file browser)");

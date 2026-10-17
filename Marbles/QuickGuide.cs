@@ -3,10 +3,56 @@
 /// <summary>
 /// The quick guide: a short introduction to Marbles for a new user, shown on a page of its own.
 /// It tells what the two parts of Marbles are for, how to move around, and how the modes of the editor work.
-/// It is kept short on purpose: the help ("?") has all the keys.
+/// It is kept short on purpose: the help ("?") has all the keys. The short guides of the Help tab (the Jump menu,
+/// the file browser, the text editor and Note Management) are shown the same way (QuickGuide.Guides.cs).
 /// </summary>
-internal static class QuickGuide
+internal static partial class QuickGuide
 {
+    /// <summary>
+    /// The guides, in the order of the Help tab
+    /// </summary>
+    internal enum Guide
+    {
+        Quick,
+        Jump,
+        Files,
+        Editor,
+        Notes
+    }
+
+    internal static readonly Guide[] All = { Guide.Quick, Guide.Jump, Guide.Files, Guide.Editor, Guide.Notes };
+
+    /// <summary>
+    /// The name of a guide, in the language in use
+    /// </summary>
+    internal static string Title(Guide guide) => guide switch
+    {
+        Guide.Jump => Lang.T("Jump menu guide"),
+        Guide.Files => Lang.T("File browser guide"),
+        Guide.Editor => Lang.T("Text editor guide"),
+        Guide.Notes => Lang.T("Note Management guide"),
+        _ => DialogText.QuickGuide
+    };
+
+    // The help shown with "?" in a guide: the keys of the part it is about (the quick guide: all of them)
+    private static Tools.HelpTopic HelpOf(Guide guide) => guide switch
+    {
+        Guide.Jump => Tools.HelpTopic.Jump,
+        Guide.Files => Tools.HelpTopic.Files,
+        Guide.Editor => Tools.HelpTopic.Editor,
+        Guide.Notes => Tools.HelpTopic.MainMenu,
+        _ => Tools.HelpTopic.All
+    };
+
+    private static List<(Kind Kind, string Key, string Text)> Paragraphs(Guide guide) => guide switch
+    {
+        Guide.Jump => JumpGuide(),
+        Guide.Files => FilesGuide(),
+        Guide.Editor => EditorGuide(),
+        Guide.Notes => NotesGuide(),
+        _ => Paragraphs()
+    };
+
     private enum Kind
     {
         Title,
@@ -15,8 +61,10 @@ internal static class QuickGuide
         Text
     }
 
+    // The keys of the items take at least KeyWidth columns: more when a key (a name in another language) is
+    // longer, up to MaxKeyWidth
     private const int KeyWidth = 16;
-    private const int ItemIndent = 3 + KeyWidth + 1; // Where the text of an item starts
+    private const int MaxKeyWidth = 24;
 
     // The guide in the language in use: each item is one paragraph, wrapped to the width of the window.
     // The keys and the names of the editor modes are the same in all languages
@@ -67,18 +115,24 @@ internal static class QuickGuide
     };
 
     /// <summary>
-    /// The lines of the guide, with the paragraphs wrapped to a width
+    /// The lines of the guide, with the paragraphs wrapped to a width. The key of an item is padded to the width of
+    /// the keys of the guide, so the texts of the items start in the same column
     /// </summary>
-    internal static List<(int Kind, string Key, string Text)> Lines(int width)
+    internal static List<(int Kind, string Key, string Text)> Lines(int width, Guide guide = Guide.Quick)
     {
+        var paragraphs = Paragraphs(guide);
+        var keyWidth = Math.Clamp(paragraphs.Where(p => p.Kind == Kind.Item).Max(p => TextMetrics.WidthOf(p.Key)),
+            KeyWidth, MaxKeyWidth);
         var lines = new List<(int Kind, string Key, string Text)>();
-        foreach (var (kind, key, text) in Paragraphs())
+        foreach (var (kind, key, text) in paragraphs)
         {
-            var indent = kind == Kind.Item ? ItemIndent : 1;
+            // Where the text of an item starts
+            var indent = kind == Kind.Item ? 3 + keyWidth + 1 : 1;
             var parts = TextMetrics.Wrap(text, Math.Max(20, width - indent - 1));
             for (var i = 0; i < parts.Count; i++)
             {
-                lines.Add(((int)kind, i == 0 ? key : string.Empty, parts[i]));
+                var shownKey = kind == Kind.Item ? (i == 0 ? key : string.Empty).PadRight(keyWidth) : string.Empty;
+                lines.Add(((int)kind, shownKey, parts[i]));
             }
         }
 
@@ -88,7 +142,7 @@ internal static class QuickGuide
     /// <summary>
     /// Show the guide until it is closed. The page that was shown must be drawn again afterwards
     /// </summary>
-    internal static void Show()
+    internal static void Show(Guide guide = Guide.Quick)
     {
         var top = 0;
         Tools.HideCursor();
@@ -96,7 +150,7 @@ internal static class QuickGuide
         {
             Init.ApplyAutoSize();
             var pageSize = Math.Max(1, Init.LineCount - 1);
-            var lines = Lines(Init.LineWidth);
+            var lines = Lines(Init.LineWidth, guide);
             var maxTop = Math.Max(0, lines.Count - pageSize);
             top = Math.Clamp(top, 0, maxTop);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -110,15 +164,16 @@ internal static class QuickGuide
             var page = top >= maxTop ? pages : top / pageSize + 1;
             Tools.SetCursorEx(Init.LineCount - 1, 0);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHint);
-            Console.Write(Tools.FitLine(" " + Lang.F("Page {0} of {1}", page, pages) + " " + DialogText.QuickGuideKeys, 0));
+            Console.Write(Tools.FitLine(" " + Lang.F("Page {0} of {1}", page, pages) + " " +
+                                         (guide == Guide.Quick ? DialogText.QuickGuideKeys : DialogText.GuideKeys), 0));
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
 
             var key = Console.ReadKey(true);
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) break;
             if (key.KeyChar == '?')
             {
-                // All the keys
-                Tools.WriteEditorHelp(false);
+                // All the keys (a guide of a part: the keys of that part)
+                Tools.WriteEditorHelp(false, HelpOf(guide));
             }
             else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
             {
@@ -166,7 +221,7 @@ internal static class QuickGuide
                 break;
             case Kind.Item:
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Accent);
-                Console.Write("   " + line.Key.PadRight(KeyWidth));
+                Console.Write("   " + line.Key);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Console.Write(" " + line.Text);
                 break;

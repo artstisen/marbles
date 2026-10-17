@@ -79,7 +79,9 @@ The command names are the same in all languages, and the names of the main menu 
 
 ### Help
 - `1` **Help**: All the keys and commands of Marbles, as `:help` (`?` on a page shows the keys of that page)
-- `2` **About**: General information about Marbles, and its license on the next page. `Esc` closes it
+- `2` **Quick guide**: The short introduction to Marbles, as `U` on the Mode tab
+- `3` **Jump menu guide**, `4` **File browser guide**, `5` **Text editor guide**, `6` **Note Management guide**: A short guide to each part: what it is for and its most used keys. They are shown as the quick guide: `h`/`l` page, `j`/`k` line, `Esc` closes, and `?` shows all the keys of that part
+- `7` **About**: General information about Marbles, and its license on the next page. `Esc` closes it
 
 Select with `j`/`k` or the number and press `Enter`. `Esc` goes back to the Mode tab.
 

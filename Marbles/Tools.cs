@@ -1496,7 +1496,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Layout"), Lang.T("Classic ASCII corners: + instead of . and '"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("View log"), Lang.T("/text only shows lines containing \"text\""), false));
             _shortcutList.Add(new Shortcut("  " + FileIo.SettingsFileName, Lang.T("Edit the settings file (saved: Marbles restarts)"), false));
-            _shortcutList.Add(new Shortcut("  " + Lang.T("Help"), Lang.T("The tab Help: all the keys, and About Marbles"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Help"), Lang.T("The tab Help: all the keys, guides and About"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogin, true));
             _shortcutList.Add(new Shortcut("Enter", Lang.T("Log in with the password typed"), false));
             _shortcutList.Add(new Shortcut("Left Right Tab", Lang.T("Select a data file"), false));

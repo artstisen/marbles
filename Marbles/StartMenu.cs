@@ -698,14 +698,15 @@ internal static class StartMenu
     }
 
     /// <summary>
-    /// The Help tab: the help (all the keys) and the about page
+    /// The Help tab: the help (all the keys), the quick guide, the short guides and the about page
     /// </summary>
     private sealed class HelpPage : ITabPage
     {
         private int _selected;
 
         // In the language in use
-        private static string[] Choices => new[] { Lang.T("Help"), Lang.T("About") };
+        private static string[] Choices =>
+            new[] { Lang.T("Help") }.Concat(QuickGuide.All.Select(QuickGuide.Title)).Append(Lang.T("About")).ToArray();
 
         public string Title => Lang.T("Help");
         public string Keys => DialogText.StartHelpKeys;
@@ -743,6 +744,10 @@ internal static class StartMenu
                 {
                     // As ":help": all the keys
                     Tools.WriteEditorHelp(false);
+                }
+                else if (_selected <= QuickGuide.All.Length)
+                {
+                    QuickGuide.Show(QuickGuide.All[_selected - 1]);
                 }
                 else
                 {
