@@ -8,7 +8,7 @@
 - **`:jmp`** opens the Jump menu, as `:jump` and `:ju`, everywhere they do.
 - **Moving items in lists works the same everywhere** (the favorites of a data file, the favorites and the hotlist of the file browser, the bookmarks of the Jump menu): `V` starts moving the selected item (`Tab` no longer does), `j` `k` move it, and `Esc`, `Enter` or `V` end it. The item is marked `<>` and highlighted, and the bottom line says "Moving: j/k, then Esc". The key hints show `V Move` in all four lists (the favorites of a data file now show it too), and the pinned entry being moved keeps its `[ PINNED ]` tag.
 - **The calendar is removed**: a new data file is no longer made as a calendar (`N` on the login page asks for the name at once), and `:cal` in the editor is gone. Data files made as calendars before are normal data files, and open as before.
-- **Logos**: new versions of the Adventure logo (more details along the ground and by the hut) and the Islands logo (a new sky and sun).
+- **Logos**: new versions of the Adventure logo (more details along the ground and by the hut), the Islands logo (a new sky and sun) and the Terminal sessions logo.
 - **Fixes from a review of the code**:
   - Moving the data file from the login page to a directory with a data file of the same name never replaces that file any more: the move stops after the message (before, answering No to the question that followed went on with the move and replaced it).
   - The color list no longer stops Marbles with an error when the name of a color that cannot be picked is long in the language used (Polish, Spanish, Finnish): the box is as wide as its longest name.

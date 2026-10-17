@@ -263,17 +263,17 @@ internal sealed class LogoArt
         "cells=.....7....77..7..2AAA2.2A2..CCCCCCCCCCCC..BBBB9..2AAA22AAA22A2",
         "cells=2228722222222227822622226222266E6266666299B99B99B92622226222622"), AdventureName);
 
-    // An 80's computer with a prompt on its screen and its keyboard, on a table with pencils in a jar, a cup of
-    // coffee with steam rising from it, and a notepad: a logo with a color for each of its cells
+    // "Terminal sessions": an 80's computer on a wooden table, with pencils in a jar and a steaming cup of coffee: a
+    // logo with a color for each of its cells
     private static LogoArt Terminal => Parse(string.Join("\n",
-        @" \ | /   .-----------------.       (  )",
-        @"  \|/    | C:\>marbles_    |        ) (      .--------.",
-        @" |===|   |_[____]_______o__|      |~~~~|)    |~~~~~~  |",
-        @"=|___|===[_:::::::::::::::_]======\____/=====|________|========",
-        "cells=.E.C.A...7777777777777777777.......8..8",
-        "cells=..ECA....7.AAAAAAAAAAAF....7........7.7......FFFFFFFFFF",
-        "cells=.99999...778888887777777C777......F6666FF....F333333..F",
-        "cells=6999996668777777777777777778666666FFFFFF66666FFFFFFFFFF66666666"), TerminalName);
+        @" \ | /   ||_              ||       (  )         _____",
+        @"  \|/    ||_______________||        ) (      .-| ..O |.",
+        @" |===|   |_________________|      |~~~~|]    | |_____||",
+        @"=|___|===[_[--==--]________]======\____/=====|________|========",
+        "cells=.E.C.A...78A7777777777777787.......8..8.........BBBBB",
+        "cells=..ECA....7888888888888888887........7.7......FFBF888F3F",
+        "cells=.99999...788888888888888C887......F6666FF....F3B333333F",
+        "cells=699999666777A777777777777777666666FFFFFF66666FFFFFFFFFF66666666"), TerminalName);
 }
 
 /// <summary>
