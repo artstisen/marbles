@@ -82,7 +82,7 @@ internal static class Commands
             "log restart reset quit exit",
             "notes browse ju jmp h guide snip comp q"),
         [CommandContext.Jump] = new Table(
-            "quit close help info folder expand collapse rename color remove move top bottom undo clearbook",
+            "quit close help info folder expand collapse rename color remove move top bottom undo clearbook path name",
             "q h u"),
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +

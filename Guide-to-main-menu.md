@@ -43,6 +43,7 @@ Only names are shown, not paths: a long name is shortened with `...` in the midd
 - `I` Information about the place: its name, kind and full path, whether it is there, and when it was jumped to or opened
 - `D` Take the place out of the jump history (on the Jumps tab)
 - `:` A command (see the Bookmarks tab below)
+- `:path` Copy the full path of the selected file, directory or data file, and `:name` its name (the name of the file or directory itself, also when a bookmark or a directory of the hotlist is shown with a name of its own), as in the file browser: to the system clipboard and/or the paste bin, as set, and to the string memory (so `p` in the editor puts it in). On every tab; a page of Marbles and a folder of bookmarks have neither
 - `Esc` (or `Q`, `Ctrl+O`) Close the menu; `?` shows its keys. The menu opens on the tab it was on the last time (while Marbles runs), so jumping between files from the Files or Favorites tab goes on there
 
 ### Bookmarks

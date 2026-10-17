@@ -927,6 +927,24 @@ internal static class JumpMenu
         _message = Lang.F("Back in the bookmarks: {0}", entry.Shown);
     }
 
+    // ":path" and ":name": the full path of the place, or the name of the file or directory itself, to the clipboard
+    // as set and to the string memory (as in the file browser). A page of Marbles and a folder of bookmarks have
+    // neither
+    private static void CopyPathOrName(Row row, bool path)
+    {
+        var target = row.Target;
+        if (row.IsFolder || target.Kind is not (JumpKind.File or JumpKind.Directory or JumpKind.DataFile))
+        {
+            _message = Lang.T("A page of Marbles or a folder has no path or file name");
+            return;
+        }
+
+        var full = target.FullPath;
+        var text = path ? full : Path.GetFileName(Path.TrimEndingDirectorySeparator(full));
+        if (text.Length == 0) text = full;
+        _message = SystemClipboard.CopyWithMemory(text).Message;
+    }
+
     // ":clearbook": empty the list, after asking
     private static void ClearBookmarks()
     {
@@ -976,6 +994,13 @@ internal static class JumpMenu
         if (command is "info")
         {
             if (rows.Count > 0 && !rows[selected].IsFolder) ShowInfo(current, rows[selected]);
+            return false;
+        }
+
+        if (command is "path" or "name")
+        {
+            // On every tab: the full path, or the name of the file or directory itself (not a name given to it)
+            if (rows.Count > 0) CopyPathOrName(rows[selected], command == "path");
             return false;
         }
 

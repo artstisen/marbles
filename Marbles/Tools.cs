@@ -1720,6 +1720,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":expand :collapse", Lang.T("Bookmarks: open/close all the folders"), false));
             _shortcutList.Add(new Shortcut("u :clearbook", Lang.T("Bookmarks: put back the removed/clear (asks first)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("A command (on the Bookmarks tab)"), false));
+            _shortcutList.Add(new Shortcut(":path :name", Lang.T("Copy the path/the name of the file (all tabs)"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
             _shortcutList.Add(new Shortcut("  :book 3", Lang.T("The number is shown at the right of the bookmark"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionClipboard, true));
