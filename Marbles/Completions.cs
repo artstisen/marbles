@@ -189,7 +189,6 @@ internal static class Completions
         "=== All text\n" + // English
         "lorem = Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
         "todo = TODO: $0\n" +
-        "Marbles\n" +
         "JavaScript\n";
 
     /// <summary>
