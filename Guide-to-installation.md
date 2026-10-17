@@ -1,20 +1,41 @@
 # Installing and running Marbles
-Marbles is distributed as a framework-dependent application and does not include the .NET runtime. This means that .NET (a free open source cross-platform framework) must be installed on your system before you can run Marbles.
+Marbles comes in two kinds of builds, so pick the one that suits you:
+
+- **A single file for your platform** (recommended): the .NET runtime is built into the file, so nothing else has to be installed. It is about 35-40 MB
+- **The portable version**: a small version (about 1 MB) that runs on every platform, but needs the .NET 10 runtime to be installed (see [Install .NET](#install-net) below)
+
+## Download and run Marbles
+Download the latest Marbles zip file for your platform from the [releases page](https://github.com/artstisen/marbles/releases), and unzip it into a directory of your choosing. Keep the folder _lang_ next to the program: it holds the languages other than English, Danish and German.
+
+| Platform | Build |
+|---|---|
+| Windows (most PCs) | win-x64 |
+| Windows on ARM | win-arm64 |
+| Linux (most PCs) | linux-x64 |
+| Linux on 64-bit ARM (Raspberry Pi with a 64-bit system) | linux-arm64 |
+| Linux on 32-bit ARM (Raspberry Pi with a 32-bit system) | linux-arm |
+| macOS on Apple silicon (M1 and later) | osx-arm64 |
+| macOS on Intel | osx-x64 |
+| Any platform, with .NET 10 installed | portable |
+
+### The single file
+Open your favorite terminal, go to the Marbles directory and start the program:
+
+- **Windows**: type ```Marbles.exe``` (or ```.\Marbles.exe``` in PowerShell)
+- **Linux and macOS**: make the file executable once with ```chmod +x Marbles```, then type ```./Marbles``` (Linux and macOS are case sensitive). On macOS the program is not signed: if macOS refuses to open it, allow it once with ```xattr -d com.apple.quarantine Marbles```
+
+### The portable version
+Unzip _Marbles.dll_, _Marbles.deps.json_, _Marbles.runtimeconfig.json_ and the folder _lang_ into the same directory. Open your favorite terminal, go to the Marbles directory and type ```dotnet Marbles.dll``` (Linux and macOS are case sensitive).
 
 ## Install .NET
-Ensure that you have the .NET 10 runtime installed on your system. If not you can get it here:
+Only the portable version needs this. Ensure that you have the .NET 10 runtime installed on your system. If not you can get it here:
 
 - [Install .NET on Windows](https://learn.microsoft.com/en-us/dotnet/core/install/windows)
 - [Install .NET on Linux](https://learn.microsoft.com/en-us/dotnet/core/install/linux)
 - [Install .NET on macOS](https://learn.microsoft.com/en-us/dotnet/core/install/macos)
 - [Download the .NET Runtime 10.0](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 
-## Download and run Marbles
-
-   1. Download the latest Marbles zip file from the [releases page](https://github.com/artstisen/marbles/releases).
-   2. Unzip _Marbles.dll_ and _Marbles.runtimeconfig.json_ into a directory of your choosing.
-   3. Open your favorite terminal, navigate to the Marbles directory and type ```dotnet Marbles.dll``` (Linux and macOS are case sensitive)
-
+## Good to know
 You can create an alias like "_mbls_" to run Marbles with less typing. See [this guide](Guide-to-windows-terminal-crt.md) for more information.
 
 Marbles keeps your notes and settings in a directory named "data", next to the Marbles program, so the same notes and settings are used wherever Marbles is started from. If the directory you start Marbles in has a directory "data" of its own, that one is used instead (as earlier versions did, which used the directory they were started in). If the program directory cannot be written to (a program installed for all users), the data directory is "Marbles/data" in your application data (`~/.local/share` on Linux, `AppData\Local` on Windows). The languages other than English, Danish and German are files in the folder "lang" next to the program (see [Language files](#language-files)). To use spell checking in the editor, place spell files in a directory named "spell" next to it (see the [guide to the editor](Guide-to-editor.md#spell-checking)). Marbles needs a terminal window of at least 80 columns and 23 rows.
