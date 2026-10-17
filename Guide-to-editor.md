@@ -199,6 +199,38 @@ justify-content: center;
 - Blank lines at the end of a snippet are not part of it. A line of a snippet that starts with `===` is written with a `\` in front of it (`\===`)
 - The text above the first title is not used (the file starts with a short explanation)
 
+## Macros
+A macro is what you do in the editor, recorded so it can be done again: in the same text, or in another file.
+
+- `:record` Start recording. `REC` is shown on the bottom line while you record. Everything you do in the editor is recorded: moving, typing, deleting, searching, commands
+- `Esc` in NORMAL mode, when it would close the editor (and `:q`, `:wq`, `ZZ`), stops recording instead and asks what to do: **Resume recording** (go on), **Stop and save** (you are asked for a name), or **Stop and discard**. (`Esc` that leaves INSERT mode, or takes away a selection or the highlight of a search, works as usual and is recorded)
+- `:play name` Play the macro named _name_; `:play name 3` plays it three times. `Tab` after `:play ` completes the names of the macros. All that a macro does is undone as one step with `u`
+- `:macro` The macros in a list, with the text of the selected one below it: `Enter` plays it, `/` filters the list. `:macro name` plays it, as `:play name`
+
+A macro works on the text being edited only: it cannot save, close or leave the text, and what would do that (`:w`, `:q`, `Ctrl+O` ...) stops the macro with a message telling the line. So does a line that is not understood, a search that finds nothing, and a macro that plays itself (or plays macros more than eight deep). What opens a box (the snippets, the string memory, find-and-replace, spelling suggestions) is not recorded: you are told so on the bottom line. Words are not completed while recording (what `Tab` would complete to depends on the lists), and a macro cannot add a word to your word list (`zg`). A name of a macro cannot end with a number (`:play copy 2` plays _copy_ twice).
+
+In a note of a data file, you are warned before recording starts: the macro is a plain text file, so what you type while recording is saved unencrypted.
+
+**The macro files:** each macro is a file in the folder `macros` of the data directory, named after the macro (`Bullet list.macro`). It can be opened in the file browser and edited like any text file. The lines are written so they can be read and changed by hand, one step on each line (the words stay English in all languages, as the commands of the editor):
+
+```
+# Macro: Bullet list
+line start
+insert "- "
+down
+```
+
+- `insert "text"`, `append "text"`, `insert at line start "text"`, `append at line end "text"`, `new line below "text"`, `new line above "text"`: type a text (as `i`, `a`, `I`, `A`, `o`, `O`). In the text, `\n` is a new line (Enter), `\t` the Tab key (blank spaces, as Tab inserts), `\"` a quote and `\\` a `\`
+- `left`, `right`, `up`, `down`, `word left`, `word right`, `word end`, with a count or not (`down 3`); `line start`, `line end`, `first character`, `top`, `bottom`, `go to line 12`
+- `delete character`, `delete word`, `delete line` (with a count or not), `delete to line end`, `copy line`, `paste`, `paste before`, `join lines`, `undo`, `redo`
+- `find "text"`, `find back "text"`, `find next`, `find previous`
+- `command s/old/new/g`: a command of the editor, as typed after `:`
+- `play other 2`: another macro (twice)
+- `keys ciwnew<Esc>`: keys as typed, for what has no name of its own: `<Esc>`, `<CR>` (Enter), `<BS>`, `<Tab>`, `<Del>`, `<Up>` `<Down>` `<Left>` `<Right>`, `<Home>` `<End>`, `<C-r>` (Ctrl+R), `<Space>`, `<lt>` for `<`
+- `#` starts a comment; empty lines are left out
+
+A macro file is colored, and with completing on (`:complete`), the words of the steps are completed while you type, as other completions (`Tab`).
+
 ## Completing words
 With completing turned on, the word you type in Insert mode is looked up in lists of words, and what it can be completed to is shown on the line above the text (where the mode is shown otherwise), for notes and text files alike. Nothing is guessed from the text, and the text is not changed until you use a completion. It is off from the start: turn it on with `:complete`, or with **Complete words while typing** on the Editor page of Configuration (the setting `autocomplete`).
 

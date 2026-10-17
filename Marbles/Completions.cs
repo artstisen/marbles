@@ -331,6 +331,18 @@ internal static class Completions
     {
         var found = new List<Item>();
         if (typed.Length < MinWordLength) return found;
+        if (syntax == SyntaxType.Macro)
+        {
+            // The steps of a macro (MacroLanguage), before the lists of the file
+            foreach (var (word, text) in MacroLanguage.Words())
+            {
+                if (!word.StartsWith(typed, StringComparison.OrdinalIgnoreCase) ||
+                    word.Equals(typed, StringComparison.OrdinalIgnoreCase)) continue;
+                found.Add(new Item(word, text, SyntaxType.Macro));
+                if (found.Count == MaxSuggestions) return found;
+            }
+        }
+
         foreach (var pass in new[] { true, false })
         {
             foreach (var item in List)

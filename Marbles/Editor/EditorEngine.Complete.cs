@@ -81,7 +81,8 @@ internal sealed partial class EditorEngine
     private void UpdateCompletions(ConsoleKeyInfo key)
     {
         ClearCompletions();
-        if (!AutoComplete || SingleLine || ReadOnly || _blockInsert != null || Mode != EditorMode.Insert) return;
+        if (!AutoComplete || SingleLine || ReadOnly || _blockInsert != null || Mode != EditorMode.Insert ||
+            IsPlayingMacro || IsRecording) return;
         if (!IsText(key) && key.Key != ConsoleKey.Backspace) return;
         var line = CurrentLine;
         var syntax = Syntax != SyntaxType.None ? Syntax : CompletionSyntax;

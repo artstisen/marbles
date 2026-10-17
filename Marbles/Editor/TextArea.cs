@@ -206,8 +206,13 @@ public class TextArea
             ScrollOffLines = ScrollOffLines,
             ScrollOff = ScrollOff && !_singleLine && !readOnly ? ScrollOffLines : 0,
             // Words are completed while typing, as set (not in a peek or a line of a dialog)
-            AutoComplete = Completions.Enabled && !_singleLine && !readOnly && peek == null
+            AutoComplete = Completions.Enabled && !_singleLine && !readOnly && peek == null,
+            // The macros played with ":play name" are read from their files
+            MacroLoader = MacroFiles.Load
         };
+        // Tab after ":play " and ":macro " completes the names of the macros
+        CommandCompletion.Arguments["play"] = MacroFiles.Names;
+        CommandCompletion.Arguments["macro"] = MacroFiles.Names;
         if (_engine.AutoComplete) Completions.Refresh();
         // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON) are colored, unless that is turned off
         var fileType = peek != null ? peek.Syntax
@@ -388,6 +393,11 @@ public class TextArea
                 else if (request != EditorRequest.None)
                 {
                     HandleRequest(request);
+                    if (_engine.IsRecording && request is EditorRequest.Snippets or EditorRequest.PasteBinRead
+                            or EditorRequest.ReplaceDialog or EditorRequest.StringMemory or EditorRequest.SpellSuggest)
+                    {
+                        _engine.ShowMessage(Lang.T("Not recorded in the macro"), true);
+                    }
                     _engine.ReportReadOnly();
                 }
 
@@ -540,6 +550,23 @@ public class TextArea
                 if (result.Action == SnippetBox.Action.Edit) OpenSnippets(result.Line);
                 break;
             }
+            case EditorRequest.MacroRecord:
+                // A warning in a note of a data file: what is typed is saved unencrypted
+                Tools.HideCursor();
+                MacroBoxes.StartRecording(_engine, _saveMode == SaveAsEntry);
+                RedrawAll();
+                break;
+            case EditorRequest.MacroStop:
+                Tools.HideCursor();
+                MacroBoxes.Stop(_engine);
+                RedrawAll();
+                break;
+            case EditorRequest.MacroList:
+                Tools.HideCursor();
+                DrawStatusLine();
+                MacroBoxes.Pick(_engine);
+                RedrawAll();
+                break;
             case EditorRequest.StringMemory:
             {
                 // The newest first, the current one selected
@@ -1788,6 +1815,8 @@ public class TextArea
         var column = TextMetrics.WidthOfRange(_engine.Buffer[cursor.Line], 0, cursor.Col) + 1;
         var right = " ";
         if (_engine.PendingKeys.Length > 0) right += _engine.PendingKeys + " | ";
+        // A macro is being recorded (English, as the names of the modes)
+        if (_engine.IsRecording) right += "REC | ";
         if (Tools.HasLineMemory()) right += DialogText.EditorMemory + " " + Tools.GetLineMemoryPosition() + " | ";
         if (_engine.IsSpellOn) right += DialogText.SpellStatus + " " + _engine.SpellLanguages + " | ";
         // A text file: its type and encoding

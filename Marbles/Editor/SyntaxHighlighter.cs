@@ -12,7 +12,8 @@ internal enum SyntaxType
     JavaScript,
     Json,
     Xml,
-    Diff // A comparison (":diff"), and .diff and .patch files
+    Diff, // A comparison (":diff"), and .diff and .patch files
+    Macro // A macro of the editor (.macro files, see MacroLanguage)
 }
 
 /// <summary>
@@ -46,6 +47,7 @@ internal static class SyntaxHighlighter
             ".xml" or ".xsd" or ".xsl" or ".xslt" or ".svg" or ".xaml" or ".rss" or ".atom" or ".plist"
                 or ".csproj" or ".props" or ".targets" or ".resx" => SyntaxType.Xml,
             ".diff" or ".patch" => SyntaxType.Diff,
+            ".macro" => SyntaxType.Macro,
             _ => SyntaxType.None
         };
     }
@@ -64,6 +66,7 @@ internal static class SyntaxHighlighter
             "json" => SyntaxType.Json,
             "xml" => SyntaxType.Xml,
             "diff" or "patch" => SyntaxType.Diff,
+            "macro" => SyntaxType.Macro,
             _ => SyntaxType.None
         };
     }
@@ -79,6 +82,7 @@ internal static class SyntaxHighlighter
             SyntaxType.Json => "JSON",
             SyntaxType.Xml => "XML",
             SyntaxType.Diff => "Diff",
+            SyntaxType.Macro => "Macro",
             _ => string.Empty
         };
     }
@@ -122,6 +126,9 @@ internal static class SyntaxHighlighter
                 break;
             case SyntaxType.Diff:
                 nextState = ScanDiff(line, state, styles);
+                break;
+            case SyntaxType.Macro:
+                MacroLanguage.Scan(line, styles);
                 break;
         }
 

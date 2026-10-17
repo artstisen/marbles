@@ -258,6 +258,36 @@ internal sealed class TextBuffer
 
     internal bool IsStepOpen => _openStep != null;
 
+    // While a group is open (a macro plays) the steps are kept as usual, so an undo in it undoes one step; when the
+    // group ends, the steps made in it are merged into one
+    private int _groupDepth;
+    private int _groupStart; // The number of steps there were when the group started
+
+    /// <summary>
+    /// Start a group of edits that is undone as one step (all that a macro does)
+    /// </summary>
+    internal void BeginGroup(TextPos cursor)
+    {
+        if (_groupDepth++ > 0) return;
+        EndStep(cursor);
+        _groupStart = _undo.Count;
+    }
+
+    /// <summary>
+    /// End the group: the steps made in it become one
+    /// </summary>
+    internal void EndGroup(TextPos cursor)
+    {
+        if (_groupDepth == 0 || --_groupDepth > 0) return;
+        EndStep(cursor);
+        var count = _undo.Count - _groupStart;
+        if (count < 2) return;
+        var merged = new UndoStep { CursorBefore = _undo[_groupStart].CursorBefore, CursorAfter = _undo[^1].CursorAfter };
+        foreach (var step in _undo.Skip(_groupStart)) merged.Edits.AddRange(step.Edits);
+        _undo.RemoveRange(_groupStart, count);
+        _undo.Add(merged);
+    }
+
     /// <summary>
     /// Start collecting edits to be undone as one (does nothing if a step is already open)
     /// </summary>
@@ -290,6 +320,7 @@ internal sealed class TextBuffer
         // The oldest step is forgotten, and with it the way back to the state before it
         if (_savedStep == null || _savedStep == _undo[0]) _savedStateLost = true;
         _undo.RemoveAt(0);
+        if (_groupDepth > 0 && _groupStart > 0) _groupStart--;
     }
 
     private void Record(Edit edit)
@@ -317,6 +348,8 @@ internal sealed class TextBuffer
         EndStep(End);
         cursor = default;
         if (_undo.Count == 0) return false;
+        // An undo in a group (a macro) can go back past where it started: the group starts there now
+        if (_groupDepth > 0 && _undo.Count <= _groupStart) _groupStart = _undo.Count - 1;
         var step = _undo[^1];
         _undo.RemoveAt(_undo.Count - 1);
         for (var i = step.Edits.Count - 1; i >= 0; i--)

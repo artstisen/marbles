@@ -113,8 +113,8 @@ internal sealed partial class EditorEngine
             }
             else
             {
-                // Nothing to leave or cancel: close the editor (as ":q")
-                _request = EditorRequest.Quit;
+                // Nothing to leave or cancel: close the editor (as ":q"). While a macro is recorded: ask about it
+                _request = IsRecording && !IsPlayingMacro ? EditorRequest.MacroStop : EditorRequest.Quit;
             }
 
             return;

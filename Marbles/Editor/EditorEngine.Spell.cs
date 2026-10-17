@@ -207,6 +207,12 @@ internal sealed partial class EditorEngine
     /// </summary>
     internal void AddSpellWord()
     {
+        if (IsPlayingMacro)
+        {
+            SetError(Lang.T("Words are not added to the word list by a macro"));
+            return;
+        }
+
         if (!RequireSpell()) return;
         var word = SpellWord();
         if (word.Length == 0)

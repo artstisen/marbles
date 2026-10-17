@@ -12,7 +12,8 @@ public class EntrySyntaxTests
         // Another syntax replaces it, None removes it
         Assert.Equal("fp3Ex", EntrySyntax.Set("fp3Em", SyntaxType.Xml));
         Assert.Equal("fp3E", EntrySyntax.Set("fp3Ex", SyntaxType.None));
-        foreach (var type in Enum.GetValues<SyntaxType>().Where(type => type != SyntaxType.None))
+        // (a macro is a file of its own, not a note)
+        foreach (var type in Enum.GetValues<SyntaxType>().Where(type => type is not (SyntaxType.None or SyntaxType.Macro)))
         {
             Assert.Equal(type, EntrySyntax.Get(EntrySyntax.Set("f", type)));
             Assert.NotEmpty(EntrySyntax.ShortName(type));

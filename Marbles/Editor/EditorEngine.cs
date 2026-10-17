@@ -57,7 +57,10 @@ internal enum EditorRequest
     WriteCopy, // ":w name": save the text as a new file (a comparison)
     Bookmark, // ":bookmark": keep the file as a bookmark of the Jump menu
     JumpToBookmark, // ":book 3": jump to bookmark 3 (BookArgument)
-    StringMemory // ":reglist": show the strings of the string memory, to pick one to insert
+    StringMemory, // ":reglist": show the strings of the string memory, to pick one to insert
+    MacroRecord, // ":record": start recording a macro (the host warns first in a note of a data file)
+    MacroStop, // The Esc that would close the editor, while recording: ask whether to stop, save or go on
+    MacroList // ":macro": show the macros, to pick one to play
 }
 
 /// <summary>
@@ -425,12 +428,15 @@ internal sealed partial class EditorEngine
             _recordedKeys.Add(key);
         }
 
+        RecordMacroKey(key, startsCommand);
+
         // Ctrl+O: the Jump menu (INSERT mode is left first, as with Esc)
         if (!SingleLine && IsControl(key, ConsoleKey.O) && Mode is EditorMode.Normal or EditorMode.Insert)
         {
             if (Mode == EditorMode.Insert) HandleInsert(new ConsoleKeyInfo('\u001b', ConsoleKey.Escape, false, false, false));
             Buffer.EndStep(Cursor);
             _request = EditorRequest.Jump;
+            RecordMacroCommandDone(true);
             ClampCursor();
             EnsureCursorVisible();
             return _request;
@@ -438,6 +444,7 @@ internal sealed partial class EditorEngine
 
         // The selection is remembered when Visual mode is left, for "gv"
         var selectionBefore = IsVisual ? CurrentSelection() : null;
+        var insertKey = Mode == EditorMode.Insert;
         switch (Mode)
         {
             case EditorMode.Insert:
@@ -496,6 +503,14 @@ internal sealed partial class EditorEngine
             ReportReadOnly();
         }
 
+        // While recording, :q, :wq and ZZ ask about the macro first (as Esc does)
+        if (IsRecording && !IsPlayingMacro &&
+            _request is EditorRequest.Quit or EditorRequest.ForceQuit or EditorRequest.SaveAndQuit)
+        {
+            _request = EditorRequest.MacroStop;
+        }
+
+        RecordMacroCommandDone(insertKey);
         ClampCursor();
         if (!_keepDesiredCell) _desiredCell = -1;
         EnsureCursorVisible();
@@ -894,7 +909,7 @@ internal sealed partial class EditorEngine
     {
         if (command.Length == 0) return;
         // Logged by name only: the text of the document (as in a replace command) is not
-        if (!SingleLine) EventLog.AddCommand(DialogText.LogEditorCommand, command);
+        if (!SingleLine && !IsPlayingMacro) EventLog.AddCommand(DialogText.LogEditorCommand, command);
         // The range of a selection ("'<,'>", given when ":" is pressed in a Visual mode)
         var fromSelection = command.StartsWith("'<,'>", StringComparison.Ordinal) &&
                             _commandSelectionMode != EditorMode.Normal;
@@ -912,6 +927,22 @@ internal sealed partial class EditorEngine
         if (diff.Success)
         {
             RequestDiff(diff.Groups[1].Success);
+            return;
+        }
+
+        // ":play name 3" (or ":macro name 3"): play a macro, a number of times. ":macro" alone: the list of macros
+        var play = Regex.Match(command, @"^(play|macro)(?: +(.+?))?(?: +(\d+))?$");
+        if (play.Success && !SingleLine)
+        {
+            if (!play.Groups[2].Success)
+            {
+                if (play.Groups[1].Value == "macro") _request = EditorRequest.MacroList;
+                else SetError(Lang.T("Type the name of the macro: :play name"));
+                return;
+            }
+
+            var times = !play.Groups[3].Success ? 1 : int.TryParse(play.Groups[3].Value, out var count) ? count : 1000;
+            PlayMacro(play.Groups[2].Value.Trim(), Math.Clamp(times, 1, 1000));
             return;
         }
 
@@ -1171,6 +1202,9 @@ internal sealed partial class EditorEngine
             case "reg":
             case "registers":
                 ShowRegister();
+                break;
+            case "record":
+                if (!SingleLine) _request = EditorRequest.MacroRecord;
                 break;
             case "reglist":
                 if (!Tools.HasLineMemory()) Message = Lang.T("String memory is empty");

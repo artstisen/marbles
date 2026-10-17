@@ -87,7 +87,7 @@ internal static class Commands
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
-            "trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete diff scrolloff info jump book bookmark yankall rename title",
+            "record play macro trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete diff scrolloff info jump book bookmark yankall rename title",
             "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw reg sn ju jmp")
     };
 
@@ -181,9 +181,26 @@ internal sealed class CommandCompletion
         return _shown;
     }
 
-    // Find the commands that start with what is typed
+    /// <summary>
+    /// What follows a command, by the name of the command: the words Tab completes to (":play " and the names of the
+    /// macros). Set by the host
+    /// </summary>
+    internal static Dictionary<string, Func<IEnumerable<string>>> Arguments { get; } = new(StringComparer.Ordinal);
+
+    // Find the commands that start with what is typed (or what follows a command, see Arguments)
     private bool Start(string text)
     {
+        var space = text.IndexOf(' ');
+        if (space > 0 && Arguments.TryGetValue(text[..space], out var words))
+        {
+            _before = text[..(space + 1)];
+            _typed = text[(space + 1)..];
+            if (_typed.Contains(' ')) return false;
+            _matches = words().Where(word => word.StartsWith(_typed, StringComparison.OrdinalIgnoreCase) &&
+                                             !string.Equals(word, _typed, StringComparison.OrdinalIgnoreCase)).ToList();
+            return _matches.Count > 0;
+        }
+
         // Only the name of a command is completed, not what follows it
         if (text.Contains(' ')) return false;
         var start = text.Length;
