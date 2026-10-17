@@ -48,7 +48,7 @@ Only names are shown, not paths: a long name is shortened with `...` in the midd
 Bookmarks are places you keep to jump to: a file, a directory, a page of Marbles or a data file. `B` on any list of the Jump menu adds the selected place, and `:bookmark` in the editor adds the file being edited (in the file browser: the selected file or directory, on `..` the directory shown). A note of a data file is not bookmarked by itself: bookmark its data file. A place is bookmarked once, and at the end of the list. On the Bookmarks tab:
 
 - `Enter` Jump to the bookmark
-- `v` Move the selected bookmark: `j` `k` move it, and `Esc` (or `Enter`, `v`) ends the moving. Not while a filter shows only some of them
+- `V` Move the selected bookmark: it is marked `<>` and highlighted, `j` `k` move it, and `Esc` (or `Enter`, `V`) ends the moving. Not while a filter shows only some of them
 - `T` `E` Move it to the top/end
 - `X` The name the bookmark is shown with, such as _Budget_ for `…/2026/oekonomi/budget-final-v3.md` (the place keeps its own name; an empty name shows it again)
 - `D` Remove the bookmark (the place itself stays), and `u` puts it back
@@ -212,7 +212,7 @@ Search results, Top 20, Favorites, Session history and List all are shown as lis
 - `1`-`9` and `0` Open entry 1-10 directly. `:12` opens entry 12
 - `P` Add the selected entry to (or remove it from) the favorites, or pin it to the top of the favorites list. On a pinned entry, `P` asks whether to remove it from the favorites, or only unpin it (`U`): it then stays a favorite, below the pinned entries
 - `Tab` Change the sorting
-- `Tab` or `V` In the favorites list: move the selected pinned entry. The entry is highlighted and follows `j` `k` up and down among the pinned entries (also to the next page) until you press `Esc` or `Enter`. The order is saved as you go
+- `V` In the favorites list: move the selected pinned entry. The entry is marked `<>` and highlighted, and follows `j` `k` up and down among the pinned entries (also to the next page) until you press `Esc` (or `Enter`, `V`). The order is saved as you go
 - `T` or `:title` Change the title of the selected entry, in a box on top of the list. The list is shown again afterwards
 - `:delete` Delete the selected entry. You are asked once; a deleted entry can be brought back with `:undelete` in the main menu
 - `I` or `:info` Info about the selected entry: when it was created and last changed, the number of words, characters and lines, and its syntax colors (set with `:syntax` in the editor), in a box on top of the list. Any key closes it

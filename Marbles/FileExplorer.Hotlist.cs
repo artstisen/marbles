@@ -10,7 +10,7 @@ internal static partial class FileExplorer
     private static int _hotlistTop;
     private static string _hotlistFilter = string.Empty;
     private static string _hotlistMessage = string.Empty;
-    private static bool _hotlistMoving; // Tab or v: j k move the selected directory
+    private static bool _hotlistMoving; // V: j k move the selected directory
     private static (int Index, DirectoryHotlist.Entry Entry)? _hotlistRemoved; // For undo
 
     // B: add the directory shown in the pane with the focus (whatever is selected in it)
@@ -71,19 +71,18 @@ internal static partial class FileExplorer
             var navigation = Keyboard.ToNavigationKey(key).Key;
             if (_hotlistMoving)
             {
-                // Moving the selected directory: j k move it, and Esc, Enter, Tab or v end it
+                // Moving the selected directory: j k move it, and Esc, Enter or V end it
                 if (navigation is ConsoleKey.DownArrow or ConsoleKey.UpArrow && selected >= 0)
                 {
                     _hotlistIndex = DirectoryHotlist.Move(selected,
                         selected + (navigation == ConsoleKey.DownArrow ? 1 : -1));
                     SaveHotlist();
                 }
-                else if (key.Key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.Tab or ConsoleKey.V)
+                else if (key.Key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.V)
                 {
                     _hotlistMoving = false;
                 }
 
-                if (_hotlistMoving) _hotlistMessage = DialogText.HotlistMoving;
                 continue;
             }
 
@@ -233,7 +232,7 @@ internal static partial class FileExplorer
             {
                 if (GoToHotlistDirectory(selected)) return KeyResult.Handled;
             }
-            else if (key.Key is ConsoleKey.Tab or ConsoleKey.V)
+            else if (key.Key == ConsoleKey.V)
             {
                 StartHotlistMove(selected);
             }
@@ -319,7 +318,6 @@ internal static partial class FileExplorer
         }
 
         _hotlistMoving = true;
-        _hotlistMessage = DialogText.HotlistMoving;
     }
 
     // T and E: the selected directory first or last in the list
@@ -462,7 +460,10 @@ internal static partial class FileExplorer
             var exists = Directory.Exists(path);
             DrawHotlistPointer(index, index == _hotlistIndex);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            // The directory that is moved is highlighted (as in the favorites)
+            if (_hotlistMoving && index == _hotlistIndex) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
             Console.Write(" " + Tools.TruncateString(entry.Shown, nameWidth + 1, true));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
 
             // The path (the end of a long path is shown)
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
@@ -520,6 +521,11 @@ internal static partial class FileExplorer
         {
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
             Console.Write(" " + Tools.TruncateString(_hotlistMessage, Init.LineWidth - 4, true) + " ");
+        }
+        else if (_hotlistMoving)
+        {
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            Console.Write(" " + DialogText.Moving + " ");
         }
         else
         {

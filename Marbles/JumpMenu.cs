@@ -269,7 +269,7 @@ internal static class JumpMenu
                 row.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
             selected = Math.Clamp(selected, 0, Math.Max(0, rows.Count - 1));
             var visible = Draw(tabs, tab, filter, rows, selected, ref scroll);
-            _message = _moving ? DialogText.HotlistMoving : string.Empty;
+            _message = _moving ? DialogText.Moving : string.Empty;
             var key = Console.ReadKey(true);
             var navigation = Keyboard.ToNavigationKey(key).Key;
             if (_moving)
@@ -381,7 +381,7 @@ internal static class JumpMenu
                     }
 
                     _moving = true;
-                    _message = DialogText.HotlistMoving;
+                    _message = DialogText.Moving;
                     break;
                 case 't':
                 case 'T':
@@ -523,7 +523,14 @@ internal static class JumpMenu
             var name = exists ? row.Name : row.Name + " " + DialogText.FavoriteMissing;
             name = ShortName(name, nameWidth);
             Tools.SetCursorEx(first + line, left + 4);
-            if (!exists) ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            // The bookmark that is moved is highlighted, from the blank space before it (as in the other lists)
+            if (_moving && index == selected)
+            {
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+                Tools.SetCursorEx(first + line, left + 3);
+                Console.Write(" ");
+            }
+            else if (!exists) ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             else if (row.Color is { } color) ConsoleColors.SetTextColor(color);
             else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(name);

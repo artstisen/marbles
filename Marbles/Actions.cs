@@ -1594,6 +1594,11 @@ internal static class Actions
     // and follows j/k until Esc is pressed (like moving selected lines in the editor)
     private static bool _movingPinned;
 
+    /// <summary>
+    /// A pinned entry is being moved: the selection pointer is "<>"
+    /// </summary>
+    internal static bool MovingPinned => _movingPinned;
+
     private static void StartMovingPinned(int pageNumber)
     {
         if (!ValidateNumericSelectionInput(pageNumber, _resultIndex)) return;
@@ -1618,7 +1623,8 @@ internal static class Actions
     private static void HandleMovePinnedKey(int pageNumber)
     {
         var key = Keyboard.ToNavigationKey(_c).Key;
-        if (key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.Tab or ConsoleKey.V or ConsoleKey.Q)
+        // Ended as in all the lists where items are moved: Esc, Enter or V
+        if (key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.V)
         {
             _movingPinned = false;
         }
@@ -2255,7 +2261,12 @@ internal static class Actions
             WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
             Tools.SetCursorEx(Init.LineCount - 1, 0);
             // (while a pinned entry is moved, the keys for moving it are shown instead)
-            if (!_movingPinned) Menu.WriteKeyHints(DialogText.ListKeys);
+            if (!_movingPinned)
+            {
+                Menu.WriteKeyHints(Mode.CurrentSearchMode == Mode.SearchMode.Favorites
+                    ? DialogText.FavoritesListKeys
+                    : DialogText.ListKeys);
+            }
             Tools.SetCursorEx(ListFirstRow, 0);
 
             // Draw content
@@ -2364,8 +2375,7 @@ internal static class Actions
                 {
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
                     Console.Write(" ");
-                    if (moving) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                    Console.Write("[" + new string(' ', 4) + (moving ? "MOVING" : "PINNED") + new string(' ', 4) + "]");
+                    Console.Write("[" + new string(' ', 4) + "PINNED" + new string(' ', 4) + "]");
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 }
                 else
@@ -2409,7 +2419,7 @@ internal static class Actions
                 // The keys for moving the entry on the bottom line
                 Tools.SetCursorEx(Init.LineCount - 1, 0);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                Console.Write(" " + DialogText.MovePinnedKeys + " ");
+                Console.Write(" " + DialogText.Moving + " ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             }
 
@@ -2628,8 +2638,7 @@ internal static class Actions
             DefaultListSortOption();
             FindAll(0, string.Empty, false, false);
         }
-        else if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites &&
-                 _c.Key is ConsoleKey.Tab or ConsoleKey.V)
+        else if (Mode.CurrentRecallMode == Mode.RecallMode.Favorites && _c.Key == ConsoleKey.V)
         {
             // Move a pinned entry
             StartMovingPinned(pageNumber);

@@ -708,7 +708,8 @@ internal static class Menu
         {
             Tools.CursorReturn();
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
-            Console.Write("->");
+            // "<>" while the entry is moved (as in all the lists where items are moved)
+            Console.Write(Actions.MovingPinned ? "<>" : "->");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Tools.CursorReturn();
         }

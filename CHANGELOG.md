@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Moving items in lists works the same everywhere** (the favorites of a data file, the favorites and the hotlist of the file browser, the bookmarks of the Jump menu): `V` starts moving the selected item (`Tab` no longer does), `j` `k` move it, and `Esc`, `Enter` or `V` end it. The item is marked `<>` and highlighted, and the bottom line says "Moving: j/k, then Esc". The key hints show `V Move` in all four lists (the favorites of a data file now show it too), and the pinned entry being moved keeps its `[ PINNED ]` tag.
 - **The calendar is removed**: a new data file is no longer made as a calendar (`N` on the login page asks for the name at once), and `:cal` in the editor is gone. Data files made as calendars before are normal data files, and open as before.
 - **Logos**: new versions of the Adventure logo (more details along the ground and by the hut) and the Islands logo (a new sky and sun).
 - **Fixes from a review of the code**:

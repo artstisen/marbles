@@ -51,6 +51,7 @@ internal static class DialogText
     public static string MenuKeys => Lang.T("j/k Select | l/Enter Open | Tab/h Next/Previous tab | ? Help | X Logout");
     // The keys of a list of entries (All, Top 20, Favorites, Session history, Search)
     public static string ListKeys => Lang.T("Enter Open | h/l Page | gg/G First/Last | ? Help | Esc Back");
+    public static string FavoritesListKeys => Lang.T("Enter Open | V Move | h/l Page | ? Help | Esc Back");
     public static string HelpSectionMainMenu => Lang.T("Main menu");
     public static string SchemeEditorKeys => Lang.T("j/k Select | Enter Pick | T Text | E Reset | S Save | h/l Page | Esc Close");
     public static string SchemePreviewKeys => Lang.T("Tab Schemes | S Save | ? Help | Esc Close");
@@ -82,7 +83,6 @@ internal static class DialogText
     public static string CaptionsRestore => Lang.T("Restore");
     public static string CaptionsStringMemory => Lang.T("String memory");
     public static string CaptionsRanking => Lang.T("Move pinned");
-    public static string MovePinnedKeys => Lang.T("MOVE | j/k Move the entry up/down | Esc Done");
     public static string CaptionsColorize => Lang.T("Set color");
     public static string PinColorCaption => Lang.T("Pinned color");
     public static string ColorDefault => Lang.T("[Default]");
@@ -516,7 +516,7 @@ internal static class DialogText
     public static string CaptionsJumpInfo => Lang.T("Jump info");
     public static string HelpSectionJump => Lang.T("Jump menu");
     public static string JumpBookmarkKeys =>
-        Lang.T("Enter Jump | v Move | T/E Top/End | X Rename | D Remove | u Undo | C Clear");
+        Lang.T("Enter Jump | V Move | T/E Top/End | X Rename | D Remove | u Undo | C Clear");
     public static string BookNumbersNote => Lang.T("The numbers are on the Bookmarks tab of the Jump menu.");
     public static string BookNotInThisMode => Lang.T("This bookmark is not used in this mode of Marbles");
     public static string BookmarksEmpty => Lang.T("No bookmarks yet: B on a list, or :bookmark");
@@ -578,8 +578,9 @@ internal static class DialogText
     public static string HelpSectionHotlist => Lang.T("Directory hotlist");
     public static string CaptionsHotlist => Lang.T("Hotlist");
     public static string HotlistEmpty => Lang.T("No directories yet: B in the file browser adds the one shown");
-    public static string HotlistKeys => Lang.T("Enter Go | Tab Move | T Top | E End | D Remove | / Filter | Esc Close");
-    public static string HotlistMoving => Lang.T("Moving: j/k, then Esc");
+    public static string HotlistKeys => Lang.T("Enter Go | V Move | T Top | E End | D Remove | / Filter | Esc Close");
+    // Shown while an item of a list is moved (the favorites, the hotlist, the bookmarks)
+    public static string Moving => Lang.T("Moving: j/k, then Esc");
     public static string HotlistMoveFiltered => Lang.T("Remove the filter (Esc) to move");
     public static string HotlistNoDirectory => Lang.T("Go to a directory first");
     public static string NotLoggedIn => Lang.T("Not logged into a data file");

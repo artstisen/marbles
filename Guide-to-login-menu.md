@@ -228,7 +228,7 @@ In the list of favorites:
 - `j` `k` Select, `gg` `G` First/Last
 - `l` or `Enter` Open the file in the editor (closing the editor returns to the list). A directory: go to it in the browser
 - `B` or `:goto` Show the file in the browser: its directory is opened with the file selected, where it can be renamed, copied, moved or deleted
-- `Tab` or `v` Move the selected favorite or folder: it is highlighted and follows `j` `k` up and down the list until you press `Esc`
+- `V` Move the selected favorite or folder: it is marked `<>` and highlighted, and follows `j` `k` up and down the list until you press `Esc` (or `Enter`, `V`)
 - `C` or `:color` Pick a text color for the favorite from the list of 16 colors
 - `P`, `D` or `:remove` Remove it from the favorites (the file itself stays where it is)
 - `u` or `:undo` Put back the favorite, or the folder with its favorites, that was removed last
@@ -244,7 +244,7 @@ In the list of favorites:
 - `:expand` Open all the folders, `:collapse` Close all the folders
 - **Several at once:** Mark the favorites with `Space` (it marks or unmarks the selected favorite and goes to the next; a marked favorite has a `+` in front, and the number of marked is shown at the bottom right). Then press `M` and pick where they go from the list: one of your folders, _New folder..._ (you are asked for its name, and it is placed where the first of the favorites is) or _(No folder)_. Without marks, `M` moves the selected favorite. With marks, `D` removes all the marked favorites (you are asked first), and `u` puts them back. `Esc` clears the marks
 - **To the top or the end:** `T` (or `:top`) moves the marked favorites to the top of the list, and `E` (or `:bottom`) to the end, in the order they have. Without marks it moves the selected favorite, or the selected folder with its favorites. A favorite in a folder goes to the top or the end of its folder (`M` moves it out of the folder)
-- **Into a folder:** Move a favorite (`Tab` or `V`, then `j` `k`) onto the folder. Moving down onto a folder puts it first in the folder, moving up from below puts it last. A closed folder opens
+- **Into a folder:** Move a favorite (`V`, then `j` `k`) onto the folder. Moving down onto a folder puts it first in the folder, moving up from below puts it last. A closed folder opens
 - **Out of a folder:** Move the favorite on, past the first or the last favorite in the folder
 - A folder is moved like a favorite. It is closed first, and moves with its favorites past the favorite or folder next to it
 - `X` or `:rename name` Rename the folder
@@ -279,7 +279,7 @@ The directory hotlist keeps directories you want to go back to. `B` (or `:hotadd
 - `W` or `:hotlist` (or `:hot`) in the file browser: Show the hotlist. Each row has the name of the directory (or the name you gave it), and its path after it. The hotlist is also a tab of the [Jump menu](Guide-to-main-menu.md#jump-menu)
 - `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down
 - `l` or `Enter` Go to the directory, in the pane with the focus (the hotlist closes)
-- `Tab` or `v` (or `:move`) Move the directory in the list: `j` `k` move it, and `Esc` (or `Enter`, `Tab`, `v`) ends the moving. Not while a filter shows only some of the list
+- `V` (or `:move`) Move the directory in the list: it is marked `<>` and highlighted, `j` `k` move it, and `Esc` (or `Enter`, `V`) ends the moving. Not while a filter shows only some of the list
 - `T` or `:top` Move the directory to the top, `E` or `:bottom` to the end
 - `I` or `:info` Show information about the directory
 - `X` or `:rename name` The name the directory is shown with in the hotlist (and the Jump menu), such as "Project docs" for a deep path. Without a name you are asked for it. The directory itself keeps its name; an empty name shows its own name again

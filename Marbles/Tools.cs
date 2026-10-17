@@ -1561,7 +1561,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":export", Lang.T("Export the text as a text file"), false));
             _shortcutList.Add(new Shortcut(":import", Lang.T("Import a text file as a new entry"), false));
             _shortcutList.Add(new Shortcut(":clipboard", Lang.T("The clipboard settings"), false));
-            _shortcutList.Add(new Shortcut("Tab v", Lang.T("Favorites: Move the pinned entry (j k, then Esc)"), false));
+            _shortcutList.Add(new Shortcut("V", Lang.T("Favorites: Move the pinned entry (j k, then Esc)"), false));
             _shortcutList.Add(new Shortcut("C :color", Lang.T("Favorites: Pick the color of the pinned entry"), false));
             _shortcutList.Add(new Shortcut("A F M", Lang.T("All, Favorites, Session history"), false));
             _shortcutList.Add(new Shortcut("S /", Lang.T("Search"), false));
@@ -1640,7 +1640,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file (a directory: go to it)"), false));
             _shortcutList.Add(new Shortcut("B :goto", Lang.T("Show the file in the file browser"), false));
-            _shortcutList.Add(new Shortcut("Tab v", Lang.T("Move the favorite or folder (j k, then Esc)"), false));
+            _shortcutList.Add(new Shortcut("V", Lang.T("Move the favorite or folder (j k, then Esc)"), false));
             _shortcutList.Add(new Shortcut("A :folder name", Lang.T("New folder (a group of favorites)"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("On a folder: Open/Close it"), false));
             _shortcutList.Add(new Shortcut(":expand", Lang.T("Open all the folders"), false));
@@ -1683,7 +1683,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Go to the directory (in the pane with the focus)"), false));
-            _shortcutList.Add(new Shortcut("Tab v :move", Lang.T("Move the directory (j k, then Esc)"), false));
+            _shortcutList.Add(new Shortcut("V :move", Lang.T("Move the directory (j k, then Esc)"), false));
             _shortcutList.Add(new Shortcut("T :top", Lang.T("Move the directory to the top"), false));
             _shortcutList.Add(new Shortcut("E :bottom", Lang.T("Move the directory to the end"), false));
             _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
@@ -1710,7 +1710,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc Q", Lang.T("Close the Jump menu"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Recent"), Lang.T("The places jumped to, the latest first (jump.txt)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Bookmarks"), Lang.T("Places kept with B, or :bookmark in the editor"), false));
-            _shortcutList.Add(new Shortcut("v j k Esc", Lang.T("Bookmarks: move the selected one"), false));
+            _shortcutList.Add(new Shortcut("V j k Esc", Lang.T("Bookmarks: move the selected one"), false));
             _shortcutList.Add(new Shortcut("T E", Lang.T("Bookmarks: move it to the top/end"), false));
             _shortcutList.Add(new Shortcut("X", Lang.T("Bookmarks: the name shown (the place keeps its own)"), false));
             _shortcutList.Add(new Shortcut("u C", Lang.T("Bookmarks: put back the removed/clear (asks first)"), false));

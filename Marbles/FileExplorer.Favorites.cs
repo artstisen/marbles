@@ -140,8 +140,7 @@ internal static partial class FileExplorer
                         SaveFavoriteList();
                     }
                 }
-                else if (key.Key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.Tab or ConsoleKey.V
-                         or ConsoleKey.Q)
+                else if (key.Key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.V)
                 {
                     _favoriteMoving = false;
                 }
@@ -339,7 +338,7 @@ internal static partial class FileExplorer
                 path = FileFavorites.Items[selected].Path;
                 return FavoriteAction.GoTo;
             }
-            else if (key.Key is ConsoleKey.Tab or ConsoleKey.V)
+            else if (key.Key == ConsoleKey.V)
             {
                 if (_favoriteFilter.Length > 0)
                 {
@@ -836,7 +835,7 @@ internal static partial class FileExplorer
         ConsoleColors.SetColors(selected
             ? ConsoleColors.ColorPreset.SelectorInverted
             : ConsoleColors.ColorPreset.Normal);
-        Console.Write(selected ? "->" : "  ");
+        Console.Write(selected ? (_favoriteMoving ? "<>" : "->") : "  ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
@@ -862,7 +861,7 @@ internal static partial class FileExplorer
         else if (_favoriteMoving)
         {
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-            Console.Write(" " + DialogText.MovePinnedKeys + " ");
+            Console.Write(" " + DialogText.Moving + " ");
         }
         else if (_favoriteMarks.Count > 0)
         {
