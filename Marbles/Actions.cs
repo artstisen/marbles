@@ -1491,6 +1491,33 @@ internal static class Actions
     }
 
 
+    /// <summary>
+    /// ":favorite" in the editor: the note being edited a favorite of the data file, or not (a pinned note is no longer
+    /// pinned either, and loses its color). Saved at once, as in the list
+    /// </summary>
+    /// <returns>The message that tells what was done</returns>
+    internal static string ToggleCurrentEntryFavorite()
+    {
+        var entry = Entries.CurrentEntry;
+        string message;
+        if (IsFavorite(entry))
+        {
+            Entries.RemovePinnedRanking(entry);
+            RemoveOptionsTag(entry, Entries.FavoritesTag.ToString());
+            RemoveOptionsTag(entry, Entries.PinnedTag.ToString());
+            entry.Options = PinColors.Set(entry.Options, null);
+            message = DialogText.FavoriteRemoved;
+        }
+        else
+        {
+            SetOptionsTag(entry, Entries.FavoritesTag.ToString());
+            message = DialogText.FavoriteAdded;
+        }
+
+        Entries.UpdateEntry(entry, false);
+        return Entries.SaveEntriesToFile() ? message : DialogText.StatusUnableToSave;
+    }
+
     private static void ToggleFavorite()
     {
         if (Entries.CurrentEntryExists() && !IsFavorite(Entries.CurrentEntry))

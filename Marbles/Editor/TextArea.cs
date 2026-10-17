@@ -616,6 +616,32 @@ public class TextArea
                 }
 
                 break;
+            case EditorRequest.Favorite:
+                // A file: in or out of the favorites of the file browser. A note: of the favorites of its data file
+                if (_saveMode == SaveAsFile && FileExplorer.CurrentFilePath.Length > 0)
+                {
+                    FileFavorites.Load();
+                    var added = FileFavorites.Toggle(FileExplorer.CurrentFilePath);
+                    var status = FileFavorites.Save();
+                    if (status == DialogText.Success)
+                    {
+                        _engine.ShowMessage(added ? DialogText.FavoriteAdded : DialogText.FavoriteRemoved, false);
+                    }
+                    else
+                    {
+                        _engine.ShowMessage(status, true);
+                    }
+                }
+                else if (_saveMode == SaveAsEntry && Entries.CurrentEntryExists())
+                {
+                    _engine.ShowMessage(Actions.ToggleCurrentEntryFavorite(), false);
+                }
+                else
+                {
+                    _engine.ShowMessage(Lang.T("Only a file or a note can be a favorite"), true);
+                }
+
+                break;
             case EditorRequest.WriteCopy:
                 _engine.ShowMessage(DialogText.WriteCopyNotHere, true);
                 break;

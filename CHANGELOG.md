@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Editor: `:favorite`** (or `:fav`) makes the file being edited a favorite of the file browser, or takes it out of the favorites, as `P` there. In a note, it makes the note a favorite of its data file (or not).
 - **Jump menu: `:path` and `:name`** copy the full path of the selected file, directory or data file, or its own name (not a name given to a bookmark or a directory of the hotlist), on every tab, as in the file browser.
 - **About**: the copyright tells the years Marbles has been made in, 2022-2026, as the license does.
 - **Macros in the editor**: `:record` records what you do (`REC` on the bottom line); the `Esc` that would close the editor stops recording and asks: resume, stop and save (with a name), or stop and discard. `:play name` (`:play name 3`) plays a macro, as one step for `u`, and `:macro` shows them in a list to pick one. Each macro is a file in the folder `macros` of the data directory (`name.macro`), written as steps that can be read and edited by hand (`line start`, `insert "- "`, `down 3`, `command s/a/b/`, `keys ...`), colored, and with its words completed while typing. A macro works on the current text only: saving, closing or leaving stops it. Recording in a note of a data file warns first that what is typed is saved unencrypted. `Tab` completes the names of the macros after `:play `.

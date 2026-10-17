@@ -60,7 +60,8 @@ internal enum EditorRequest
     StringMemory, // ":reglist": show the strings of the string memory, to pick one to insert
     MacroRecord, // ":record": start recording a macro (the host warns first in a note of a data file)
     MacroStop, // The Esc that would close the editor, while recording: ask whether to stop, save or go on
-    MacroList // ":macro": show the macros, to pick one to play
+    MacroList, // ":macro": show the macros, to pick one to play
+    Favorite // ":favorite": the file a favorite of the file browser, or the note a favorite of its data file (or not)
 }
 
 /// <summary>
@@ -1248,6 +1249,10 @@ internal sealed partial class EditorEngine
                 break;
             case "bookmark":
                 if (!SingleLine) _request = EditorRequest.Bookmark;
+                break;
+            case "fav":
+            case "favorite":
+                if (!SingleLine) _request = EditorRequest.Favorite;
                 break;
             case "snip":
                 SnippetText = string.Empty;

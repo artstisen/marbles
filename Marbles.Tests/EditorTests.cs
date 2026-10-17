@@ -625,6 +625,8 @@ public class EditorTests
     [Theory]
     [InlineData(":w<CR>", nameof(EditorRequest.Save))]
     [InlineData(":q<CR>", nameof(EditorRequest.Quit))]
+    [InlineData(":favorite<CR>", nameof(EditorRequest.Favorite))]
+    [InlineData(":fav<CR>", nameof(EditorRequest.Favorite))]
     [InlineData(":q!<CR>", nameof(EditorRequest.ForceQuit))]
     [InlineData(":wq<CR>", nameof(EditorRequest.SaveAndQuit))]
     [InlineData(":x<CR>", nameof(EditorRequest.SaveAndQuit))]

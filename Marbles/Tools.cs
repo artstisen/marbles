@@ -1933,6 +1933,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":number :nu", Lang.T("Line numbers on/off"), false));
             _shortcutList.Add(new Shortcut(":yankall", Lang.T("Yank all the text (as gg V G y; the clipboard as y)"), false));
             _shortcutList.Add(new Shortcut(":bookmark", Lang.T("Bookmark the file being edited (Jump menu)"), false));
+            _shortcutList.Add(new Shortcut(":favorite :fav", Lang.T("Add/remove the file (or the note) as a favorite"), false));
             _shortcutList.Add(new Shortcut(":diff :diff -w", Lang.T("Compare with the saved text (-w: not blank space)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Comparison"), Lang.T("n N ]c [c: the next/previous change"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Enter: open at the line, Esc: close"), false));
