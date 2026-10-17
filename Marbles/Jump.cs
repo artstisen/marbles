@@ -376,16 +376,18 @@ internal static class Jump
 
         Bookmarks.Load();
         ChoiceBox.Forget();
-        if (!int.TryParse(argument, out var number) || number < 1 || number > Bookmarks.Items.Count)
+        // The bookmarks are numbered without the folders (also those in a closed folder)
+        var places = Bookmarks.Places;
+        if (!int.TryParse(argument, out var number) || number < 1 || number > places.Count)
         {
-            ChoiceBox.Message(Lang.T("Bookmarks"), Bookmarks.Items.Count == 0
+            ChoiceBox.Message(Lang.T("Bookmarks"), places.Count == 0
                 ? DialogText.BookmarksEmpty
-                : Lang.F("No bookmark {0} (the bookmarks have 1 to {1})", argument, Bookmarks.Items.Count),
+                : Lang.F("No bookmark {0} (the bookmarks have 1 to {1})", argument, places.Count),
                 DialogText.BookNumbersNote);
             return;
         }
 
-        var target = Bookmarks.Items[number - 1].Target;
+        var target = places[number - 1].Target;
         if (!JumpMenu.Usable(target))
         {
             ChoiceBox.Message(Lang.T("Bookmarks"), DialogText.BookNotInThisMode, target.Name);

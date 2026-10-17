@@ -1,4 +1,4 @@
-namespace Marbles.Tests;
+﻿namespace Marbles.Tests;
 
 [Collection("Static state")]
 public class SyntaxTests

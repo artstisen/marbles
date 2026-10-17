@@ -183,6 +183,13 @@ public class CommandTests
     }
 
     [Fact]
+    public void TheTables_HaveTheCommandsOfTheJumpMenu()
+    {
+        AssertSame(CommandContext.Jump, Compared(Part("JumpMenu.cs", "var command = CommandLine.Read(",
+            "// (the end of the commands)")));
+    }
+
+    [Fact]
     public void TheTables_HaveTheCommandsOfTheStartPage()
     {
         AssertSame(CommandContext.Start, Compared(Method("StartMenu.cs", "RunCommand")));

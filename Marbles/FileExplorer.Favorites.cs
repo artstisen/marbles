@@ -151,7 +151,7 @@ internal static partial class FileExplorer
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read(CommandContext.Favorites);
-                if (command is "jump" or "ju")
+                if (command is "jump" or "ju" or "jmp")
                 {
                     // The Jump menu
                     Jump.Open();
@@ -561,8 +561,9 @@ internal static partial class FileExplorer
         SaveFavoriteList();
     }
 
-    // A list of choices in a box on top of the page. Returns the number of the one picked, or -1
-    private static int PickFromList(string caption, List<string> choices, int selected)
+    // A list of choices in a box on top of the page (also the folders of the bookmarks, in the Jump menu). Returns the
+    // number of the one picked, or -1
+    internal static int PickFromList(string caption, List<string> choices, int selected)
     {
         const int top = 3; // The tab of the title is on the row above
         var rows = Math.Min(choices.Count, Init.LineCount - 6);

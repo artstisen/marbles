@@ -1697,7 +1697,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Esc Q W h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.F("At most {0} directories, kept in hotlist.txt", DirectoryHotlist.MaxCount), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionJump, true));
-            _shortcutList.Add(new Shortcut(":jump :ju Ctrl+O", Lang.T("Open the Jump menu (from most places)"), false));
+            _shortcutList.Add(new Shortcut(":jump :ju :jmp", Lang.T("Open the Jump menu (from most places)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+O", Lang.T("Open the Jump menu (from most places)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tabs"), Lang.T("Bookmarks, Recent, File browser, Marbles, Data files"), false));
             _shortcutList.Add(new Shortcut("  " + DialogText.CaptionsFiles, Lang.T("Its lists: History, Favorites, Hotlist"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select a place"), false));
@@ -1713,7 +1714,12 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("V j k Esc", Lang.T("Bookmarks: move the selected one"), false));
             _shortcutList.Add(new Shortcut("T E", Lang.T("Bookmarks: move it to the top/end"), false));
             _shortcutList.Add(new Shortcut("X", Lang.T("Bookmarks: the name shown (the place keeps its own)"), false));
-            _shortcutList.Add(new Shortcut("u C", Lang.T("Bookmarks: put back the removed/clear (asks first)"), false));
+            _shortcutList.Add(new Shortcut("C :color", Lang.T("Bookmarks: text color (used before a favorite's)"), false));
+            _shortcutList.Add(new Shortcut("A :folder", Lang.T("Bookmarks: new folder (Enter opens/closes it)"), false));
+            _shortcutList.Add(new Shortcut("Space M", Lang.T("Bookmarks: mark several/move them to a folder"), false));
+            _shortcutList.Add(new Shortcut(":expand :collapse", Lang.T("Bookmarks: open/close all the folders"), false));
+            _shortcutList.Add(new Shortcut("u :clearbook", Lang.T("Bookmarks: put back the removed/clear (asks first)"), false));
+            _shortcutList.Add(new Shortcut(":", Lang.T("A command (on the Bookmarks tab)"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
             _shortcutList.Add(new Shortcut("  :book 3", Lang.T("The number is shown at the right of the bookmark"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionClipboard, true));

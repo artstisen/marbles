@@ -218,6 +218,7 @@ internal static class StartMenu
                 break;
             case "jump":
             case "ju":
+            case "jmp":
                 Marbles.Jump.Open();
                 break;
             case "book":

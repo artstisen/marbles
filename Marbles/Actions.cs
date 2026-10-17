@@ -293,6 +293,7 @@ internal static class Actions
                 break;
             case "jump":
             case "ju":
+            case "jmp":
                 Jump.Open();
                 Menu.DrawTopMenu(false, true, false);
                 break;
@@ -516,6 +517,7 @@ internal static class Actions
                 break;
             case "jump":
             case "ju":
+            case "jmp":
                 // The list is shown again afterwards
                 Jump.Open();
                 break;

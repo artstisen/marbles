@@ -14,7 +14,8 @@ internal enum CommandContext
     Hotlist, // The directory hotlist of the file browser
     Search, // The files found by a search in the file browser
     Editor,
-    Start // The start page (Select mode): its tabs Mode, Configuration and Help
+    Start, // The start page (Select mode): its tabs Mode, Configuration and Help
+    Jump // The Jump menu (the commands work on its Bookmarks tab)
 }
 
 /// <summary>
@@ -53,38 +54,41 @@ internal static class Commands
         [CommandContext.Menu] = new Table(
             "quit help about guide jump book new browse number import transfer undelete backup defaults scheme " +
             "bw size password restart language clipboard logo config" + Common,
-            "q h nu ju" + CommonShort),
+            "q h nu ju jmp" + CommonShort),
         [CommandContext.List] = new Table(
             "quit close help jump book browse new title delete color transfer size duplicate revert export import info clipboard" +
             " readonly" + Common,
-            "q h ro ju" + CommonShort),
+            "q h ro ju jmp" + CommonShort),
         [CommandContext.Files] = new Table(
             "quit close exit home data help jump book peek diff cd new info mkdir rename copy duplicate move delete favorite favorites history hotlist hotadd bookmark refresh logout panes match path name find",
-            "q h fav favs hist hot ju"),
+            "q h fav favs hist hot ju jmp"),
         [CommandContext.FilePicker] = new Table(
             "quit close home data help cd",
             "q h"),
         [CommandContext.Favorites] = new Table(
             "quit close help jump book color info remove move top bottom undo folder expand collapse rename goto path name",
-            "q h u ju"),
+            "q h u ju jmp"),
         [CommandContext.History] = new Table(
             "quit close help jump book info goto favorite remove clear path name",
-            "q h fav ju"),
+            "q h fav ju jmp"),
         [CommandContext.Hotlist] = new Table(
             "quit close help jump book info remove undo top bottom move rename clear path name",
-            "q h u ju"),
+            "q h u ju jmp"),
         [CommandContext.Search] = new Table(
             "quit close help jump book find info goto favorite",
-            "q h fav ju"),
+            "q h fav ju jmp"),
         [CommandContext.Start] = new Table(
             "note file mode config general layout editor system jump book help about quick scheme logo snippet completions clipboard " +
             "log restart reset quit exit",
-            "notes browse ju h guide snip comp q"),
+            "notes browse ju jmp h guide snip comp q"),
+        [CommandContext.Jump] = new Table(
+            "quit close help info folder expand collapse rename color remove move top bottom undo clearbook",
+            "q h u"),
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
             "trim clear registers reglist regclear putall vsel vline block ol ul dup duplicate pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete diff scrolloff info jump book bookmark yankall rename title",
-            "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw reg sn ju")
+            "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw reg sn ju jmp")
     };
 
     /// <summary>

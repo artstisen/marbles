@@ -137,7 +137,7 @@ internal static partial class FileExplorer
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read(CommandContext.Search);
-                if (command is "jump" or "ju")
+                if (command is "jump" or "ju" or "jmp")
                 {
                     // The Jump menu
                     Jump.Open();

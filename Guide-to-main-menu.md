@@ -8,7 +8,7 @@ The same keys are used everywhere in Marbles:
 - `/` Search
 - `?` Help: the list of keys. The help is shown in pages (`h` `l` previous/next page, `j` `k` one line) and can be searched: `/text` goes to the first line containing "text", and `n` `N` to the next/previous. The help shows the keys of the page you are on (start page, login page, menus and lists, file browser, favorites or editor); press `?` in the help to see all keys, and `?` again to return to the keys of the page
 - `:browse` Open the [file browser](Guide-to-login-menu.md#file-browser) to edit text files. Opening a file logs out of the data file
-- `Ctrl+O` or `:jump` (`:ju`) Open the [Jump menu](#jump-menu), to go straight to a file, a page of Marbles or a data file
+- `Ctrl+O` or `:jump` (`:ju`, `:jmp`) Open the [Jump menu](#jump-menu), to go straight to a file, a page of Marbles or a data file
 - `:` Command line: type a command and press `Enter`. The commands are shown in the menus
 - `Tab` on the command line completes the command you are typing: `:und` and `Tab` gives `:undelete`. Press `Tab` again for the next command that starts the same (`Shift+Tab` for the previous); after the last one, what you typed is shown again. With nothing typed, `Tab` goes through all the commands that can be used on the page. Only the name of the command is completed, not what follows it (a title, a number), and the short forms (`:q`, `:h`) are not shown. This works on every command line: in the menus, lists, file browser and editor, each with its own commands
 - `:q` Close/Return. In the main menu: Exit Marbles
@@ -19,7 +19,7 @@ The same keys are used everywhere in Marbles:
 The notes are saved in the data file after each change. When the same data file is open in two windows (or programs) and the other one has saved it since you logged in, you are asked before saving: **Save anyway** replaces the changes made there; **Do not save** keeps them (log out and in again to see them; the change made here is not saved).
 
 ## Jump menu
-The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`), from the main menu, the lists of entries, the file browser (with its favorites, history and search results) and the editor, and from the options of the login page (`Esc`, `O`), and it is a choice of the Mode tab of the start page (`3`, or `Ctrl+O` there too). It is a box on top of the page with five tabs, one of them with sub-tabs:
+The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`, `:jmp`), from the main menu, the lists of entries, the file browser (with its favorites, history and search results) and the editor, and from the options of the login page (`Esc`, `O`), and it is a choice of the Mode tab of the start page (`3`, or `Ctrl+O` there too). It is a box on top of the page with five tabs, one of them with sub-tabs:
 
 - **Bookmarks**: the places you have kept as bookmarks (see [Bookmarks](#bookmarks) below)
 - **Recent**: the places you have jumped to with the menu, the latest first, with the time (today) or the date of the jump. Only jumps made in the menu are kept, not files and pages opened in other ways (the tab says so next to the filter)
@@ -32,7 +32,7 @@ The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+
 
 In a language where the names of the tabs do not fit in a row, _File browser_ and _Data files_ are shown shorter (as _Files_ and _Data_).
 
-Only names are shown, not paths: a long name is shortened with `...` in the middle, so its start and its extension are seen. At the right of each place is its kind: `FILE`, `DIR`, `PAGE` or `DATA`. A place that is gone (a file deleted or moved) is shown dimmed with _(missing)_.
+Only names are shown, not paths: a long name is shortened with `...` in the middle, so its start and its extension are seen. The columns are named above the list (below the filter): **Name**, **Type** (the kind of place: `FILE`, `DIR`, `PAGE` or `DATA`) and, on the Bookmarks tab, **Command** (the command that jumps to the bookmark), or **When** on Recent and History. A place that is gone (a file deleted or moved) is shown dimmed with _(missing)_.
 
 - `j` `k` (or `Down`/`Up`, `gg` `G`, `PgUp` `PgDn`) Select a place
 - `h` `l` (or `Left`/`Right`) The list before/after: through all the lists in a row, the sub-tabs of the file browser too
@@ -42,21 +42,33 @@ Only names are shown, not paths: a long name is shortened with `...` in the midd
 - `B` Bookmark the selected place (on any list)
 - `I` Information about the place: its name, kind and full path, whether it is there, and when it was jumped to or opened
 - `D` Take the place out of the jump history (on the Jumps tab)
+- `:` A command (see the Bookmarks tab below)
 - `Esc` (or `Q`, `Ctrl+O`) Close the menu; `?` shows its keys. The menu opens on the tab it was on the last time (while Marbles runs), so jumping between files from the Files or Favorites tab goes on there
 
 ### Bookmarks
 Bookmarks are places you keep to jump to: a file, a directory, a page of Marbles or a data file. `B` on any list of the Jump menu adds the selected place, and `:bookmark` in the editor adds the file being edited (in the file browser: the selected file or directory, on `..` the directory shown). A note of a data file is not bookmarked by itself: bookmark its data file. A place is bookmarked once, and at the end of the list. On the Bookmarks tab:
 
-- `Enter` Jump to the bookmark
-- `V` Move the selected bookmark: it is marked `<>` and highlighted, `j` `k` move it, and `Esc` (or `Enter`, `V`) ends the moving. Not while a filter shows only some of them
-- `T` `E` Move it to the top/end
-- `X` The name the bookmark is shown with, such as _Budget_ for `…/2026/oekonomi/budget-final-v3.md` (the place keeps its own name; an empty name shows it again)
-- `D` Remove the bookmark (the place itself stays), and `u` puts it back
-- `C` Clear the bookmarks (you are asked first)
+- `Enter` Jump to the bookmark (on a folder: open or close it)
+- `V` Move the selected bookmark or folder: it is marked `<>` and highlighted, `j` `k` move it, and `Esc` (or `Enter`, `V`) ends the moving. Not while a filter shows only some of them
+- `T` `E` (or `:top`, `:bottom`) Move it to the top/end (a bookmark in a folder: of the folder)
+- `X` (or `:rename name`) The name the bookmark is shown with, such as _Budget_ for `…/2026/oekonomi/budget-final-v3.md` (the place keeps its own name; an empty name shows it again). On a folder: its name
+- `C` (or `:color`) Pick a text color for the bookmark or folder from the list of 16 colors. The color of a bookmark is used before the color the place has as a favorite of the file browser
+- `D` (or `:remove`) Remove the bookmark (the place itself stays), and `u` (or `:undo`) puts it back
+- `:clearbook` Clear the bookmarks (you are asked first)
 
-**Jumping with a command:** each bookmark has a number, shown at its right on the Bookmarks tab (`:book 1`, `:book 2` ...): it is its place in the list, so moving a bookmark changes its number. `:book 3` jumps to bookmark 3 from anywhere the Jump menu can be opened with `:jump`: the start page, the main menu and the lists of a data file, the file browser (with its favorites, history, hotlist and search results) and the editor (which asks about changes that are not saved first, as a jump does). `:book` alone opens the Jump menu on the Bookmarks tab. A number that is not a bookmark is told about in a box, with the numbers there are.
+**Folders:** Bookmarks can be grouped in folders, as the favorites of the file browser, with the same keys. A folder only exists in the list.
 
-The bookmarks are kept in `bookmarks.txt` in the data directory, one on each line: the kind (`file`, `dir`, `page` or `data`), a tab character, the place, and the name you gave it (if any) after another tab character, so the file can also be edited by hand. At most 100. A file or directory that is renamed or moved in the file browser (or renamed with `:rename` in the editor) keeps its bookmark, and one that is gone is shown dimmed with _(missing)_.
+- `A` or `:folder name` Create a folder in front of the selected bookmark. It is shown as `[-] Name (3)` when open and `[+] Name (3)` when closed, with the number of bookmarks in it; the bookmarks of an open folder are shown below it, two spaces in
+- `Enter` on a folder: Open or close it. `:expand` opens all the folders, `:collapse` closes them
+- **Into and out of a folder:** move a bookmark (`V`, then `j` `k`) onto a folder to put it in, and on past the first or last bookmark of the folder to take it out. A folder moves with its bookmarks
+- **Several at once:** mark bookmarks with `Space` (a marked bookmark has a `+` in front); `M` (or `:move`) moves the marked bookmarks (or the selected one) to a folder picked from a list (or a new folder, or out of the folders), `T` `E` to the top or the end, and `D` removes them. `Esc` takes the marks away
+- `D` on a folder: Remove it with its bookmarks (you are asked first if there are bookmarks in it); `u` puts it back
+
+While the list is filtered with `/text`, the bookmarks found are shown without the folders, and nothing can be moved.
+
+**Jumping with a command:** each bookmark has a number, shown at its right on the Bookmarks tab (`:book 1`, `:book 2` ...): it is its place among the bookmarks of the list (the folders are not counted, and the bookmarks in a closed folder are), so moving a bookmark changes its number, and opening or closing a folder does not. `:book 3` jumps to bookmark 3 from anywhere the Jump menu can be opened with `:jump`: the start page, the main menu and the lists of a data file, the file browser (with its favorites, history, hotlist and search results) and the editor (which asks about changes that are not saved first, as a jump does). `:book` alone opens the Jump menu on the Bookmarks tab. A number that is not a bookmark is told about in a box, with the numbers there are.
+
+The bookmarks are kept in `bookmarks.txt` in the data directory, one on each line: the kind (`file`, `dir`, `page` or `data`), a tab character, the place, and after other tab characters the name you gave it and its color (if any), so the file can also be edited by hand. A folder has its name in brackets (`[Work]`), its color and `collapsed` if it is closed, and the bookmarks in it are the lines after it that start with a blank space. At most 100 bookmarks (the folders are not counted). A file or directory that is renamed or moved in the file browser (or renamed with `:rename` in the editor) keeps its bookmark, and one that is gone is shown dimmed with _(missing)_.
 
 Where a jump goes:
 

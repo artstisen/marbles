@@ -16,19 +16,21 @@ internal static class FileFavorites
     internal const string FileName = "favorites.txt";
     private const string CollapsedMark = "collapsed";
 
-    internal sealed class Favorite
+    internal sealed class Favorite : IFolderItem
     {
         internal string Path = string.Empty;
         internal ConsoleColor? Color;
-        internal bool IsFolder;
+        public bool IsFolder { get; init; }
         internal string Name = string.Empty; // The name of a folder
-        internal bool Collapsed; // A folder that is closed: the favorites in it are not shown
-        internal bool InFolder; // A favorite in the folder above it in the list
+        public bool Collapsed { get; set; } // A folder that is closed: the favorites in it are not shown
+        public bool InFolder { get; set; } // A favorite in the folder above it in the list
         internal int Line; // Where the cursor was when the file was closed in the editor (from 1; 0: not known)
         internal int Column;
     }
 
-    private static readonly List<Favorite> List = new();
+    // The list, with its folders (moving, removing and putting back are done by it)
+    private static readonly FolderList<Favorite> Folders = new();
+    private static List<Favorite> List => Folders.Items;
 
     /// <summary>
     /// The favorites and folders in the order set by the user. The favorites of a folder follow it
@@ -62,7 +64,7 @@ internal static class FileFavorites
     internal static void Parse(string text)
     {
         List.Clear();
-        _removed = null;
+        Folders.ForgetRemoved();
         var hasFolder = false;
         foreach (var rawLine in text.Split('\n'))
         {
@@ -206,67 +208,19 @@ internal static class FileFavorites
     /// <summary>
     /// Remove a favorite, or a folder with the favorites in it
     /// </summary>
-    internal static void RemoveAt(int index)
-    {
-        if (index < 0 || index >= List.Count) return;
-        var count = FolderEnd(index) - index + 1;
-        // Kept so that it can be put back
-        _removed = new List<(int, List<Favorite>)> { (index, List.GetRange(index, count)) };
-        List.RemoveRange(index, count);
-    }
+    internal static void RemoveAt(int index) => Folders.RemoveAt(index);
 
     /// <summary>
     /// Remove several favorites (folders are not removed this way)
     /// </summary>
     /// <returns>The number removed</returns>
-    internal static int RemoveMany(ICollection<Favorite> items)
-    {
-        var removed = new List<(int, List<Favorite>)>();
-        for (var i = 0; i < List.Count; i++)
-        {
-            if (!List[i].IsFolder && items.Contains(List[i])) removed.Add((i, new List<Favorite> { List[i] }));
-        }
-
-        if (removed.Count == 0) return 0;
-        List.RemoveAll(item => !item.IsFolder && items.Contains(item));
-        _removed = removed;
-        return removed.Count;
-    }
-
-    // What was removed last, with the places it had in the list: a favorite, a folder with its favorites,
-    // or several favorites
-    private static List<(int Index, List<Favorite> Items)>? _removed;
+    internal static int RemoveMany(ICollection<Favorite> items) => Folders.RemoveMany(items);
 
     /// <summary>
-    /// Put back what was removed last, where it was
+    /// Put back what was removed last, where it was (a favorite that is a favorite again is not)
     /// </summary>
     /// <returns>The place in the list of the first that was put back, or -1 if there is nothing to put back</returns>
-    internal static int UndoRemove()
-    {
-        if (_removed == null) return -1;
-        var first = -1;
-        // From the top, so that each gets the place it had
-        foreach (var (place, removed) in _removed)
-        {
-            var items = removed.Where(item => item.IsFolder || !Contains(item.Path)).ToList();
-            if (items.Count == 0) continue;
-            var index = Math.Min(place, List.Count);
-            // Not into the middle of a folder that it was not in
-            if (!items[0].InFolder) index = index < List.Count ? FolderStart(index) : index;
-            // A favorite that was in a folder goes back into it only if the folder is still there
-            if (items[0].InFolder && (index == 0 || !(List[index - 1].IsFolder || List[index - 1].InFolder)))
-            {
-                items[0].InFolder = false;
-                index = index < List.Count ? FolderStart(index) : index;
-            }
-
-            List.InsertRange(index, items);
-            if (first < 0) first = index;
-        }
-
-        _removed = null;
-        return first;
-    }
+    internal static int UndoRemove() => Folders.UndoRemove(item => !Contains(item.Path));
 
     /// <summary>
     /// Move favorites into a folder (last in it, in the order they have in the list), or out of their folders
@@ -274,62 +228,15 @@ internal static class FileFavorites
     /// <param name="items">The favorites</param>
     /// <param name="folder">The folder, or null to place them last in the list, outside the folders</param>
     /// <returns>The place in the list of the first of them, or -1 if nothing was moved</returns>
-    internal static int MoveToFolder(ICollection<Favorite> items, Favorite? folder)
-    {
-        if (folder != null && (!folder.IsFolder || !List.Contains(folder))) return -1;
-        var moving = List.Where(item => !item.IsFolder && items.Contains(item)).ToList();
-        if (moving.Count == 0) return -1;
-        List.RemoveAll(item => moving.Contains(item));
-        var index = List.Count;
-        if (folder != null)
-        {
-            index = FolderEnd(List.IndexOf(folder)) + 1;
-            // Opened, so that what was moved into it can be seen
-            folder.Collapsed = false;
-        }
-
-        foreach (var item in moving) item.InFolder = folder != null;
-        List.InsertRange(index, moving);
-        return index;
-    }
+    internal static int MoveToFolder(ICollection<Favorite> items, Favorite? folder) =>
+        Folders.MoveToFolder(items, folder);
 
     /// <summary>
     /// Move favorites (or folders, with the favorites in them) to the top or the end: a favorite in a folder to
     /// the top or the end of its folder, the others to the top or the end of the list. Their order is kept
     /// </summary>
     /// <returns>The number moved</returns>
-    internal static int MoveToEnd(ICollection<Favorite> items, bool top)
-    {
-        var moving = List.Where(items.Contains).ToList();
-        // By where they are: the folder they are in (null: the list)
-        var groups = moving.GroupBy(item => item.InFolder ? List[FolderStart(List.IndexOf(item))] : null).ToList();
-        foreach (var group in groups)
-        {
-            var blocks = new List<Favorite>();
-            foreach (var item in group)
-            {
-                var index = List.IndexOf(item);
-                var count = item.IsFolder ? FolderEnd(index) - index + 1 : 1;
-                blocks.AddRange(List.GetRange(index, count));
-                List.RemoveRange(index, count);
-            }
-
-            int at;
-            if (group.Key == null)
-            {
-                at = top ? 0 : List.Count;
-            }
-            else
-            {
-                var folder = List.IndexOf(group.Key);
-                at = top ? folder + 1 : FolderEnd(folder) + 1;
-            }
-
-            List.InsertRange(at, blocks);
-        }
-
-        return moving.Count;
-    }
+    internal static int MoveToEnd(ICollection<Favorite> items, bool top) => Folders.MoveToEnd(items, top);
 
     internal static void SetColor(int index, ConsoleColor? color)
     {
@@ -354,9 +261,7 @@ internal static class FileFavorites
     internal static int AddFolder(string name, int before)
     {
         if (!IsValidFolderName(name)) return -1;
-        var index = before < 0 || before >= List.Count ? List.Count : FolderStart(before);
-        List.Insert(index, new Favorite { IsFolder = true, Name = name.Trim() });
-        return index;
+        return Folders.AddFolder(new Favorite { IsFolder = true, Name = name.Trim() }, before);
     }
 
     internal static bool RenameFolder(int index, string name)
@@ -370,50 +275,17 @@ internal static class FileFavorites
     /// Open or close all the folders
     /// </summary>
     /// <returns>The number of folders in the list</returns>
-    internal static int SetAllCollapsed(bool collapsed)
-    {
-        var folders = 0;
-        foreach (var item in List)
-        {
-            if (!item.IsFolder) continue;
-            item.Collapsed = collapsed;
-            folders++;
-        }
-
-        return folders;
-    }
+    internal static int SetAllCollapsed(bool collapsed) => Folders.SetAllCollapsed(collapsed);
 
     /// <summary>
     /// The folder a favorite is in (the item itself if it is not in a folder)
     /// </summary>
-    internal static int FolderOf(int index)
-    {
-        return index >= 0 && index < List.Count ? FolderStart(index) : index;
-    }
+    internal static int FolderOf(int index) => Folders.FolderOf(index);
 
     /// <summary>
     /// The number of favorites in a folder
     /// </summary>
-    internal static int FolderCount(int index)
-    {
-        return index >= 0 && index < List.Count && List[index].IsFolder ? FolderEnd(index) - index : 0;
-    }
-
-    // The last item of a folder (the folder itself if it is empty, or the item if it is not a folder)
-    private static int FolderEnd(int index)
-    {
-        if (!List[index].IsFolder) return index;
-        var end = index;
-        while (end + 1 < List.Count && List[end + 1].InFolder) end++;
-        return end;
-    }
-
-    // Where the folder of an item starts (the item itself if it is not in a folder)
-    private static int FolderStart(int index)
-    {
-        while (index > 0 && List[index].InFolder) index--;
-        return index;
-    }
+    internal static int FolderCount(int index) => Folders.FolderCount(index);
 
     #endregion
 
@@ -424,97 +296,7 @@ internal static class FileFavorites
     /// folder next to it.
     /// </summary>
     /// <returns>False if it is at the end of the list</returns>
-    internal static bool Move(int index, bool up)
-    {
-        if (index < 0 || index >= List.Count) return false;
-        var item = List[index];
-        if (item.IsFolder)
-        {
-            item.Collapsed = true;
-            var end = FolderEnd(index);
-            var count = end - index + 1;
-            int target;
-            if (up)
-            {
-                if (index == 0) return false;
-                target = FolderStart(index - 1);
-            }
-            else
-            {
-                if (end == List.Count - 1) return false;
-                // After the favorite or folder that follows
-                target = FolderEnd(end + 1) + 1 - count;
-            }
-
-            var block = List.GetRange(index, count);
-            List.RemoveRange(index, count);
-            List.InsertRange(target, block);
-            return true;
-        }
-
-        if (up)
-        {
-            if (index == 0) return false;
-            var previous = List[index - 1];
-            if (item.InFolder)
-            {
-                if (previous.IsFolder)
-                {
-                    // The first of the folder: out of it, above it
-                    Swap(index - 1, index);
-                    item.InFolder = false;
-                }
-                else
-                {
-                    Swap(index - 1, index);
-                }
-            }
-            else if (previous.IsFolder || previous.InFolder)
-            {
-                // Into the folder above, as the last in it
-                item.InFolder = true;
-                List[FolderStart(index - 1)].Collapsed = false;
-            }
-            else
-            {
-                Swap(index - 1, index);
-            }
-
-            return true;
-        }
-
-        if (item.InFolder)
-        {
-            if (index + 1 < List.Count && List[index + 1].InFolder)
-            {
-                Swap(index, index + 1);
-            }
-            else
-            {
-                // The last of the folder: out of it, below it
-                item.InFolder = false;
-            }
-
-            return true;
-        }
-
-        if (index + 1 >= List.Count) return false;
-        var next = List[index + 1];
-        Swap(index, index + 1);
-        if (next.IsFolder)
-        {
-            // Into the folder below, as the first in it
-            item.InFolder = true;
-            next.Collapsed = false;
-        }
-
-        return true;
-    }
-
-    private static void Swap(int a, int b)
-    {
-        (List[a], List[b]) = (List[b], List[a]);
-    }
+    internal static bool Move(int index, bool up) => Folders.Move(index, up);
 
     /// <summary>
     /// A file or directory was renamed or moved: the favorites follow (also the ones inside a directory)

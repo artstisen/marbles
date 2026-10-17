@@ -63,18 +63,75 @@ public class BookmarksTests : IDisposable
     public void Bookmarks_AreMoved_Renamed_RemovedAndPutBack()
     {
         foreach (var name in new[] { "a", "b", "c" }) Bookmarks.Add(FileAt(name));
-        Assert.Equal(2, Bookmarks.Move(0, int.MaxValue));
+        Bookmarks.MoveToEnd(new[] { Bookmarks.Items[0] }, false);
         Assert.Equal(new[] { "b", "c", "a" }, Bookmarks.Items.Select(entry => entry.Shown));
-        Assert.Equal(0, Bookmarks.Move(2, 0));
+        Bookmarks.MoveToEnd(new[] { Bookmarks.Items[2] }, true);
+        Assert.True(Bookmarks.Move(2, true));
+        Assert.True(Bookmarks.Move(1, false));
+        Assert.Equal(new[] { "a", "b", "c" }, Bookmarks.Items.Select(entry => entry.Shown));
         Bookmarks.Rename(1, "  Mine\there ");
         Assert.Equal("Mine here", Bookmarks.Items[1].Shown);
         // An empty name, or the name of the place, shows its own name again
         Bookmarks.Rename(1, string.Empty);
         Assert.Equal("b", Bookmarks.Items[1].Shown);
-        var removed = Bookmarks.Items[1];
         Bookmarks.RemoveAt(1);
-        Bookmarks.Insert(1, removed);
+        Assert.Equal(new[] { "a", "c" }, Bookmarks.Items.Select(entry => entry.Shown));
+        Assert.Equal(1, Bookmarks.UndoRemove());
         Assert.Equal(new[] { "a", "b", "c" }, Bookmarks.Items.Select(entry => entry.Shown));
+    }
+
+    [Fact]
+    public void Folders_AreSavedWithColors_AndTheBookmarksAreNumberedWithoutThem()
+    {
+        foreach (var name in new[] { "a", "b", "c" }) Bookmarks.Add(FileAt(name));
+        // A folder in front of b, and b moved down into it, then the folder closed
+        Assert.Equal(1, Bookmarks.AddFolder("Work", 1));
+        Bookmarks.MoveToFolder(Bookmarks.Places.Where(entry => entry.Shown != "a").ToList(), Bookmarks.Items[1]);
+        Bookmarks.SetColor(0, ConsoleColor.Red);
+        Bookmarks.SetColor(1, ConsoleColor.Green);
+        Bookmarks.Items[1].Collapsed = true;
+
+        // The bookmarks are numbered 1, 2, 3 in the order of the list: the folder is not counted, and the bookmarks
+        // in the closed folder are
+        Assert.Equal(new[] { "a", "b", "c" }, Bookmarks.Places.Select(entry => entry.Shown).OrderBy(name => name));
+        Assert.Equal(1, Bookmarks.NumberOf(Bookmarks.Places[0]));
+        Assert.Equal(3, Bookmarks.Places.Count);
+        Assert.Equal(0, Bookmarks.NumberOf(Bookmarks.Items[1]));
+
+        // Saved and read again as it was
+        var text = Bookmarks.Serialize();
+        Assert.Contains("[Work]\tGreen\tcollapsed\n", text);
+        Assert.Contains("\tRed\n", text);
+        Assert.Equal(DialogText.Success, Bookmarks.Save());
+        var before = Bookmarks.Items.Select(entry => (entry.Shown, entry.IsFolder, entry.InFolder, entry.Color)).ToList();
+        Bookmarks.Clear();
+        Bookmarks.Load();
+        Assert.Equal(before, Bookmarks.Items.Select(entry => (entry.Shown, entry.IsFolder, entry.InFolder, entry.Color)));
+        Assert.True(Bookmarks.Items[1].Collapsed);
+        Assert.Equal(2, Bookmarks.FolderCount(1));
+
+        // A folder is removed with its bookmarks, and put back with them
+        Bookmarks.RemoveAt(1);
+        Assert.Single(Bookmarks.Places);
+        Bookmarks.UndoRemove();
+        Assert.Equal(3, Bookmarks.Places.Count);
+        Assert.True(Bookmarks.Items[2].InFolder);
+    }
+
+    [Fact]
+    public void AFolderName_CannotHaveBrackets_AndBookmarksFromBefore_AreRead()
+    {
+        Assert.Equal(-1, Bookmarks.AddFolder("[x]", 0));
+        Assert.Equal(-1, Bookmarks.AddFolder("  ", 0));
+        // A file written before there were colors and folders
+        Bookmarks.Parse("file\t" + In("a.md") + "\npage\thelp\tHelp me\n");
+        Assert.Equal(new[] { "a.md", "Help me" }, Bookmarks.Items.Select(entry => entry.Shown));
+        Assert.All(Bookmarks.Items, entry => Assert.Null(entry.Color));
+        // The folders do not count towards the most bookmarks there can be
+        Bookmarks.Clear();
+        Bookmarks.AddFolder("F", 0);
+        for (var i = 0; i < Bookmarks.MaxCount; i++) Assert.Equal(Bookmarks.AddResult.Added, Bookmarks.Add(FileAt(i + ".md")));
+        Assert.Equal(Bookmarks.AddResult.Full, Bookmarks.Add(FileAt("one more.md")));
     }
 
     [Fact]

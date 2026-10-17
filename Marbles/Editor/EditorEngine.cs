@@ -1200,6 +1200,7 @@ internal sealed partial class EditorEngine
                 break;
             case "jump":
             case "ju":
+            case "jmp":
                 if (!SingleLine) _request = EditorRequest.Jump;
                 break;
             case "rename":

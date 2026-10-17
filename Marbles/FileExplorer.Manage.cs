@@ -70,6 +70,7 @@ internal static partial class FileExplorer
         {
             case "jump":
             case "ju":
+            case "jmp":
                 Jump.Open();
                 break;
             case "book":

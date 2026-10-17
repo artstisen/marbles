@@ -69,7 +69,7 @@ On every tab of the start page (Mode, the pages of Configuration, Help), `:` ope
 
 - `:note` (or `:notes`) The login page, as _Note Management_ on the Mode tab; `:file` (or `:browse`) The file browser, as _Text Editor/File Management_. With _Text Editor only_ or _Note Management only_, the mode that is not used is refused
 - `:mode` The Mode tab; `:config` (or `:general`), `:layout`, `:editor` and `:system` The pages of the Configuration tab (`:editor` is the Editor page of Configuration, not the text editor)
-- `:jump` (or `:ju`) The [Jump menu](Guide-to-main-menu.md#jump-menu)
+- `:jump` (or `:ju`, `:jmp`) The [Jump menu](Guide-to-main-menu.md#jump-menu)
 - `:help` (or `:h`) The help of the start page, as `?`; `:about` The about page; `:quick` (or `:guide`) The quick guide
 - `:scheme` The color schemes; `:logo` The logos; `:snippet` (or `:snip`) The snippet editor; `:completions` (or `:comp`) The completions editor; `:clipboard` The clipboard settings; `:log` The log
 - `:restart` Restart Marbles (asks first); `:reset` Reset all settings (asks first, as on the System page); `:quit`, `:exit` (or `:q`) Exit Marbles (asks first)

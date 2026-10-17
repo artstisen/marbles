@@ -1,4 +1,4 @@
-namespace Marbles;
+﻿namespace Marbles;
 
 /// <summary>
 /// Thrown when a new screen has been drawn and is waiting for input. It ends whatever led to the screen
