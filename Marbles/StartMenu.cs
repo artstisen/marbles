@@ -320,6 +320,7 @@ internal static class StartMenu
         Size,
         Logo,
         LogoAnimation,
+        Corners,
         LineNumbers,
         WordWrap,
         ScrollOff,
@@ -358,6 +359,7 @@ internal static class StartMenu
         if (!ConsoleColors.Monochrome) settings.Add(Setting.ColorScheme);
         settings.Add(Setting.Logo);
         settings.Add(Setting.LogoAnimation);
+        settings.Add(Setting.Corners);
         // Editor
         settings.Add(Setting.LineNumbers);
         settings.Add(Setting.WordWrap);
@@ -395,6 +397,7 @@ internal static class StartMenu
                 ColorSchemes.DisplayName(ConsoleColors.Current.Name)),
             Setting.Logo => indent + Lang.F("Logo: {0} (Enter: Select/Edit)", Marbles.Logo.Current.Name),
             Setting.LogoAnimation => indent + Lang.F("Logo animation: {0}", AnimationName(Marbles.Logo.Animation)),
+            Setting.Corners => Check(AsciiStyles.GetAsciiStyle() == 1) + Lang.T("Corners of boxes and tabs as +"),
             Setting.AutoSize => Check(Init.AutoSize) + DialogText.ConfigAutoSize,
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
@@ -436,7 +439,7 @@ internal static class StartMenu
             Setting.StartSelect or Setting.StartNotes or Setting.StartEditor or Setting.StartFavorites
                 or Setting.StayLoggedIn or Setting.EditorOnly or Setting.NotesOnly or Setting.Language => 0,
             Setting.AutoSize or Setting.Size or Setting.Monochrome or Setting.ColorScheme or Setting.Logo
-                or Setting.LogoAnimation => 1,
+                or Setting.LogoAnimation or Setting.Corners => 1,
             Setting.LineNumbers or Setting.WordWrap or Setting.ScrollOff or Setting.Clipboard
                 or Setting.SyntaxColors or Setting.Spell or Setting.Snippets or Setting.AutoComplete
                 or Setting.Completions => 2,
@@ -915,6 +918,10 @@ internal static class StartMenu
                 break;
             case Setting.Monochrome:
                 ConsoleColors.Monochrome = !ConsoleColors.Monochrome;
+                break;
+            case Setting.Corners:
+                // The corners are looked up each time a box or a tab is drawn
+                AsciiStyles.SetAsciiStyle(AsciiStyles.GetAsciiStyle() == 1 ? 0 : 1);
                 break;
             case Setting.Language:
                 Lang.Set(Lang.Next(next));

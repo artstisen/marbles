@@ -1493,6 +1493,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Color scheme"), Lang.T("Enter: pick from a list (or edit the colors)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Language"), Lang.T("Enter: pick from a list"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Layout"), Lang.T("Logo animation: Slow, Fast, Very fast or Off"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Layout"), Lang.T("Corners as +: boxes and tabs with + instead of . '"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("View log"), Lang.T("/text only shows lines containing \"text\""), false));
             _shortcutList.Add(new Shortcut("  " + FileIo.SettingsFileName, Lang.T("Edit the settings file (saved: Marbles restarts)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Help"), Lang.T("The tab Help: all the keys, and About Marbles"), false));

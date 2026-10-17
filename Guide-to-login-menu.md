@@ -43,6 +43,7 @@ The settings are on four pages, so they can be changed in one place without logg
 - **Color scheme**: The color scheme in use. `Enter` opens the [color schemes](Guide-to-main-menu.md#color-schemes), where a scheme is selected, and the colors are edited and saved as a scheme of your own (not shown when _Black and white_ is on)
 - **Logo**: The logo in use. `Enter` opens the [logos](Guide-to-main-menu.md#logos), where a logo is selected, or drawn and saved as one of your own (4 rows of 63 characters)
 - **Logo animation**: How fast the logo is swept in from the left when you arrive at the login page: _Slow_, _Fast_ (the default), _Very fast_ or _Off_. `Enter` shows them in a box to pick from. Saved as `logoanim` (`slow`, `fast`, `veryfast` or `off`) in the settings file
+- **Corners of boxes and tabs as +**: Draw the corners of boxes, dialogs and tabs with `+` instead of `.` (top) and `'` (bottom). It is seen at once. Saved as `asciistyle` (`1` for `+`, `0` for `.` and `'`) in the settings file
 
 **Editor**
 

@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Configuration** (Layout): **Corners of boxes and tabs as +** draws the corners of boxes, dialogs and tabs with `+` instead of `.` and `'`. Setting `asciistyle` (`1` or `0`).
 - **Editor: `:favorite`** (or `:fav`) makes the file being edited a favorite of the file browser, or takes it out of the favorites, as `P` there. In a note, it makes the note a favorite of its data file (or not).
 - **Jump menu: `:path` and `:name`** copy the full path of the selected file, directory or data file, or its own name (not a name given to a bookmark or a directory of the hotlist), on every tab, as in the file browser.
 - **About**: the copyright tells the years Marbles has been made in, 2022-2026, as the license does.
