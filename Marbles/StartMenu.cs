@@ -397,7 +397,7 @@ internal static class StartMenu
                 ColorSchemes.DisplayName(ConsoleColors.Current.Name)),
             Setting.Logo => indent + Lang.F("Logo: {0} (Enter: Select/Edit)", Marbles.Logo.Current.Name),
             Setting.LogoAnimation => indent + Lang.F("Logo animation: {0}", AnimationName(Marbles.Logo.Animation)),
-            Setting.Corners => Check(AsciiStyles.GetAsciiStyle() == 1) + Lang.T("Corners of boxes and tabs as +"),
+            Setting.Corners => Check(AsciiStyles.GetAsciiStyle() == 1) + Lang.T("Classic ASCII corners"),
             Setting.AutoSize => Check(Init.AutoSize) + DialogText.ConfigAutoSize,
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
