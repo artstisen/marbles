@@ -631,7 +631,6 @@ public class EditorTests
     [InlineData("ZZ", nameof(EditorRequest.SaveAndQuit))]
     [InlineData("ZQ", nameof(EditorRequest.ForceQuit))]
     [InlineData(":help<CR>", nameof(EditorRequest.Help))]
-    [InlineData(":cal<CR>", nameof(EditorRequest.InsertCalendar))]
     [InlineData(":clear<CR>", nameof(EditorRequest.ClearAll))]
     [InlineData(":w<Esc>", nameof(EditorRequest.None))]
     [InlineData("<Esc>", nameof(EditorRequest.Quit))] // Esc in Normal mode closes the editor

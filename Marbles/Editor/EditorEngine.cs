@@ -27,7 +27,6 @@ internal enum EditorRequest
     Accept, // Single line editor: Enter was pressed
     Cancel, // Single line editor: Esc was pressed
     Help,
-    InsertCalendar,
     ClearAll,
     ClearRegisters,
     SpellSuggest, // Show suggestions for the word at the cursor
@@ -1136,10 +1135,6 @@ internal sealed partial class EditorEngine
             case "pw":
             case "password":
                 InsertAtCursor(new PasswordGenerator().GeneratePassword());
-                break;
-            case "cal":
-            case "calendar":
-                _request = EditorRequest.InsertCalendar;
                 break;
             case "trim":
                 TrimLines();

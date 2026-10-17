@@ -237,8 +237,6 @@ internal static class DialogText
     public static string FavoriteChoicePin => Lang.T("No, pin it (at the top of the favorites)");
     public static string FavoriteChoiceUnpin => Lang.T("No, unpin it (keep it as a favorite)");
     // The kinds of new data files, and merge or export
-    public static string NewFileStandard => Lang.T("Standard data file (default)");
-    public static string NewFileCalendar => Lang.T("Calendar");
     public static string MergeChoice => Lang.T("Merge two data files into a new one");
     public static string ExportChoice => Lang.T("Export a data file to a new one");
     public static string RemoveFavoriteYn => Lang.T("Remove from favorites?");
@@ -251,7 +249,6 @@ internal static class DialogText
     public static string ImportYnNote => Lang.T("The file is selected in the file browser.");
     public static string ExportedTo => Lang.T("Saved as ");
     public static string SelectOption => Lang.T("Select option...");
-    public static string SelectFileOption => Lang.T("Select file preset");
     public static string SelectTransferOption => Lang.T("Select transfer option");
     public static string CanNotBeUndone => Lang.T("This action can not be undone!");
     public static string FileMoveInstructions => Lang.T("Move file: Select target directory and press Enter...");
@@ -496,7 +493,6 @@ internal static class DialogText
     public static string SnippetsNotHere => Lang.T("Not while the settings are edited");
     public static string SnippetSwitchNote => Lang.T("The file of snippets is opened, and this text again when it is closed.");
     public static string MatchNeedsTwoPanes => Lang.T("Only with two panes (T shows them)");
-    public static string PickNumberKeys => Lang.T("h/l Change | Enter OK | Esc Cancel");
     public static string TypeNameAndPressEnter => Lang.T("Type the name and press Enter");
     public static string ChoiceYes => Lang.T("Yes");
     public static string ChoiceNo => Lang.T("No");

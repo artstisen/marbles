@@ -91,10 +91,7 @@ internal static class Lang
     internal static readonly string[] Names =
     {
         "Black", "Dark Blue", "Dark Green", "Dark Cyan", "Dark Red", "Dark Magenta", "Dark Yellow", "Gray",
-        "Dark Gray", "Blue", "Green", "Cyan", "Red", "Magenta", "Yellow", "White",
-        "January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
-        "November", "December",
-        "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
+        "Dark Gray", "Blue", "Green", "Cyan", "Red", "Magenta", "Yellow", "White"
     };
 
     private static Dictionary<string, string> _texts = new(StringComparer.Ordinal);

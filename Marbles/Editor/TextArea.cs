@@ -380,8 +380,7 @@ public class TextArea
                     continue;
                 }
 
-                if (_engine.ReadOnly && request is EditorRequest.InsertCalendar or EditorRequest.ClearAll
-                        or EditorRequest.PasteBinRead or EditorRequest.Snippets or EditorRequest.StringMemory)
+                if (_engine.ReadOnly && request is EditorRequest.ClearAll or EditorRequest.PasteBinRead or EditorRequest.Snippets or EditorRequest.StringMemory)
                 {
                     // Read only: what would only insert or clear text is not opened
                     _engine.SetMessage(DialogText.EditorReadOnly, true);
@@ -623,11 +622,6 @@ public class TextArea
                 Tools.HideCursor();
                 ClipboardPage.Show();
                 _engine.ClipboardEveryYank = SystemClipboard.EveryYank;
-                RedrawAll();
-                break;
-            case EditorRequest.InsertCalendar:
-                Tools.HideCursor();
-                _engine.InsertAtCursor(IsoDateTime.ConfigureCalendar());
                 RedrawAll();
                 break;
             case EditorRequest.ClearAll:

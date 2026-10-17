@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **The calendar is removed**: a new data file is no longer made as a calendar (`N` on the login page asks for the name at once), and `:cal` in the editor is gone. Data files made as calendars before are normal data files, and open as before.
 - **Logos**: new versions of the Adventure logo (more details along the ground and by the hut) and the Islands logo (a new sky and sun).
 - **Fixes from a review of the code**:
   - Moving the data file from the login page to a directory with a data file of the same name never replaces that file any more: the move stops after the message (before, answering No to the question that followed went on with the move and replaced it).

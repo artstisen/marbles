@@ -44,49 +44,26 @@ public static class FileActions
 
     #region New file
 
-    // Calendar related
+    // A data file made at the first start (it gets the welcome text), or one made by the user
     internal enum FileType
     {
         Normal,
-        NormalUserCreate,
-        Calendar
+        NormalUserCreate
     }
 
     internal static FileType CurrentFileType { get; set; }
 
     internal static bool NewDataFilePrompt()
     {
-        var selection = ChoiceBox.Pick(DialogText.NewFile, DialogText.SelectFileOption, string.Empty,
-            new[] { DialogText.NewFileStandard, DialogText.NewFileCalendar, DialogText.ChoiceCancel },
-            new[] { "A", "B", "Esc" }, 0, false);
-        switch (selection)
-        {
-            case 0:
-                return NewDataFile(FileType.NormalUserCreate);
-            case 1:
-                return NewDataFile(FileType.Calendar);
-            case 2:
-                return false;
-            default:
-                return false;
-        }
+        return NewDataFile(FileType.NormalUserCreate);
     }
 
     private static bool NewDataFile(FileType type)
     {
         CurrentFileType = type;
-        var title = string.Empty;
-        // Calendar related
-        if (CurrentFileType == FileType.Calendar)
-        {
-            // Ask for year
-            if (!IsoDateTime.SelectYear()) return false;
-            title = Lang.T("Calendar") + "-" + IsoDateTime.CalendarYear;
-        }
-
         // The name in a box on top of the page
         var asked = ChoiceBox.AskText(DialogText.NewFile, DialogText.EnterFileNameAndPressEnter, DialogText.NameColon,
-            title);
+            string.Empty);
         if (asked == null)
         {
             return false;

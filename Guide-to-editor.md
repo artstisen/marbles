@@ -318,7 +318,6 @@ The paste bin is not encrypted: text from a note written to it can be read by an
 
 ## Other commands
 - `:ts` Insert an ISO timestamp (YYYY-MM-DD HH:MM:SS)
-- `:cal` Insert a calendar (select start month and year, and the length)
 - `:pw` Insert a generated strong password
 - `:trim` Trim blank space at the start and end of all lines
 - `:ol` Make the selected lines a numbered list (`1. `, `2. ` ...), and `:ul` a bulleted list (`- `). Select the lines with `V` (or `v`, `Q`) and type the command: the command line then starts with `'<,'>`, which stands for the selected lines. Without a selection the command works on the line of the cursor, and `:2,5ol` on lines 2 to 5. Lines that are a list of the other kind are changed to this kind, and when all the lines already are a list of the kind asked for, the list marks are removed again. Blank lines are left as they are, the indentation is kept, and indented lines are numbered as a list of their own (1, 2 ... again under each item). One `u` undoes it

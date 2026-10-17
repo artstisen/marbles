@@ -913,8 +913,7 @@ internal static class Tools
         if (!FileActions.IsLockedForMove() && (CreateNewDataFile || !FileBrowser.ResolveDefaultDataFile()))
         {
             CreateNewDataFile = false;
-            // Calendar related
-            // Only display welcome text if normal filetype
+            // The welcome text only for the data file made at the first start
             if (FileActions.CurrentFileType == FileActions.FileType.Normal)
             {
                 DisplayWelcomeText();
@@ -1295,12 +1294,6 @@ internal static class Tools
             // cannot be saved with the new one)
             var oldKey = _tempResetPassword;
             Encryptor.SetKey(_newPass);
-            // A new calendar gets its entries
-            if (!isPasswordReset && FileActions.CurrentFileType == FileActions.FileType.Calendar)
-            {
-                // Assume that year was already set
-                IsoDateTime.CreateYearCalendar();
-            }
 
             // Return to normal filetype
             FileActions.CurrentFileType = FileActions.FileType.Normal;
@@ -1899,7 +1892,6 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":regclear", Lang.T("Clear string memory"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Other commands"), true));
             _shortcutList.Add(new Shortcut(":ts", Lang.T("Insert ISO timestamp (YYYY-MM-DD HH:MM:SS)"), false));
-            _shortcutList.Add(new Shortcut(":cal", Lang.T("Insert calendar..."), false));
             _shortcutList.Add(new Shortcut(":pw", Lang.T("Insert generated strong password"), false));
             _shortcutList.Add(new Shortcut(":trim", Lang.T("Trim blank space (line start/end)"), false));
             _shortcutList.Add(new Shortcut(":ol :ul", Lang.T("Numbered/Bulleted list (selected lines)"), false));

@@ -136,7 +136,7 @@ class Encryptor
             var textbytes = Encoding.UTF8.GetBytes(decrypted);
             try
             {
-                return Encrypt(textbytes);
+                return Encrypt(textbytes, _derivedKey);
             }
             finally
             {
@@ -150,8 +150,8 @@ class Encryptor
         }
     }
 
-    // The content of the data file for the notes as plain bytes (the key is derived)
-    private static byte[] Encrypt(byte[] textbytes)
+    // The content of the data file for the notes as plain bytes, with the derived key
+    private static byte[] Encrypt(byte[] textbytes, byte[] key)
     {
         var output = new byte[HeaderLength + textbytes.Length];
         // Header
@@ -162,7 +162,7 @@ class Encryptor
         _salt.CopyTo(output, SaltOffset);
         RandomNumberGenerator.Fill(output.AsSpan(NonceOffset, NonceLength)); // Never reuse a nonce with the same key
         // Content
-        using var endec = new AesGcm(_derivedKey, TagLength);
+        using var endec = new AesGcm(key, TagLength);
         endec.Encrypt(output.AsSpan(NonceOffset, NonceLength), textbytes, output.AsSpan(HeaderLength),
             output.AsSpan(TagOffset, TagLength), output.AsSpan(0, TagOffset));
         return output;
