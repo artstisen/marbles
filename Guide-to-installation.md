@@ -25,6 +25,7 @@ Give a file or a directory when you start Marbles, and it is opened at once, wit
 ```
 marbles notes.md                Open notes.md in the editor (the file browser is in its directory behind it)
 marbles ~/projects/site         Show the directory in the file browser
+marbles .                       Show the directory you are in, in the file browser
 marbles work.mbls               Select the data file on the login page (in the data directory)
 ```
 
