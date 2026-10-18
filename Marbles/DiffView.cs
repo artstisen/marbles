@@ -57,7 +57,7 @@ internal static class DiffView
         Tools.ClearScreen();
         DrawHeader();
         var start = Snippets.IndexOfLine(unified.Text, unified.Changes.Count > 0 ? unified.Changes[0] : 0);
-        var textArea = new TextArea(0, Console.CursorTop, Init.LineWidth - 1, Init.LineCount - 5, unified.Text, start,
+        var textArea = new TextArea(0, Console.CursorTop, Init.LineWidth - 1, Init.LineCount - 3, unified.Text, start,
             false, false, false, TextArea.SaveAsFile, false,
             new TextArea.PeekOptions(SyntaxType.Diff, DrawHeader)
             {

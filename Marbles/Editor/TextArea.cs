@@ -19,7 +19,7 @@ namespace Marbles;
      text with PageUp and PageDown.
 
    Example:
-     var textArea = new TextArea(0, 4, Init.LineWidth - 1, Init.LineCount - 5, "Some text...", 0, false, false, false, 0);
+     var textArea = new TextArea(0, 2, Init.LineWidth - 1, Init.LineCount - 3, "Some text...", 0, false, false, false, 0);
      if (!textArea.Canceled)
      {
          var text = textArea.GetText();
@@ -288,6 +288,11 @@ public class TextArea
             // The pane is cleared where the text is written, and the keys of a peek are told
             Array.Fill(_shownCells, width - 1);
             _engine.SetMessage(_peek.Hint ?? DialogText.PeekHint, false);
+        }
+        else if (!_singleLine && !_readOnly)
+        {
+            // Once, until the first key: where the keys are found (the top row has no room for it)
+            _engine.SetMessage(DialogText.EditorHelpHint, false);
         }
 
         DrawReadOnlyLabel();
@@ -1342,8 +1347,9 @@ public class TextArea
     private void DrawReadOnlyLabel()
     {
         if (!_engine.ReadOnly || _peek != null) return;
-        var label = " " + Lang.T("Read only") + " ";
-        Tools.SetCursorEx(2, Math.Max(0, Init.LineWidth - TextMetrics.WidthOf(label)));
+        // At the right of the top row, where Unsaved is shown (a text that is read only is not changed)
+        var label = DialogText.ReadOnlyLabel;
+        Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - TextMetrics.WidthOf(label)));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
         Console.Write(label);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

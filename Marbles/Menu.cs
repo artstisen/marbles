@@ -780,41 +780,36 @@ internal static class Menu
 
     #endregion
 
-    private static string _tempTitleLabel = string.Empty;
-
-    public static void WriteTitleLabel()
-    {
-        if (Entries.CurrentEntryExists() && Entries.CurrentEntry.Title.Length > 0)
-        {
-            _tempTitleLabel = TextMetrics.Printable(
-                Tools.TruncateString(Entries.CurrentEntry.Title, Tools.GetTitlePreviewWidth(), true));
-            Console.Write(" " + DialogText.TitleColon + " ");
-            Console.Write(_tempTitleLabel);
-        }
-    }
+    /// <summary>
+    /// The width kept free at the right of the top row of the editor, for the label Unsaved or Read only (the
+    /// wider of them, in the language in use)
+    /// </summary>
+    internal static int EditorLabelWidth =>
+        Math.Max(TextMetrics.WidthOf(DialogText.SavIndicator), TextMetrics.WidthOf(DialogText.ReadOnlyLabel));
 
     /// <summary>
-    /// The top row of the editor: the label EDITOR at the left, the name of the program in the middle, and
-    /// ":help" at the right
+    /// The top row of the editor: the caption (EDITOR, or COMPARE) at the left, then the name of what is edited
+    /// (the title of the entry or the name of the file) and a reminder after it, if any. The name is cut so the
+    /// label Unsaved or Read only fits at the right
     /// </summary>
-    internal static void WriteEditorTop()
+    internal static void WriteEditorTop(string caption, string title, string reminder)
     {
-        WriteEditorTop(DialogText.CaptionsEditor);
-    }
-
-    // The top line of the editor, with another caption (a comparison)
-    internal static void WriteEditorTop(string caption)
-    {
-        WriteModeLabel(caption, string.Empty, 0);
-        WriteNameInTopBar(false);
-        var key = " :help ";
-        var text = " " + Lang.T("Help") + " ";
-        Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - 1 - TextMetrics.WidthOf(key + text)));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHintInverted);
-        Console.Write(key);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.KeyHint);
-        Console.Write(text);
+        Tools.SetCursorEx(0, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Console.Write(new string(' ', Math.Max(0, Init.LineWidth - 1)));
+        WriteModeLabel(caption, string.Empty, 0);
+        var start = TextMetrics.WidthOf(" " + caption.ToUpper() + " ") + 1;
+        var room = Init.LineWidth - start - EditorLabelWidth - 2;
+        if (reminder.Length > 0) room -= TextMetrics.WidthOf(reminder) + 1;
+        if (room < 1) return;
+        Tools.SetCursorEx(0, start);
+        Console.Write(TextMetrics.Printable(Tools.TruncateString(title, room, true)));
+        if (reminder.Length > 0)
+        {
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write(" " + reminder);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        }
     }
 
     internal static void WriteNameInTopBar(bool displayDataFileName)
@@ -893,9 +888,8 @@ internal static class Menu
     {
         if (DocumentInfo.HasChanged && (_tempCurrentSaveIndicator == "" || forceDisplay))
         {
-            Tools.CursorTopLeft();
-            Tools.CursorDown(2);
-            Tools.CursorRight(Init.LineWidth - (DialogText.SavIndicator.Length));
+            // At the right of the top row of the editor
+            Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - TextMetrics.WidthOf(DialogText.SavIndicator)));
             _tempCurrentSaveIndicator = DialogText.SavIndicator;
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.UnsavedInverted);
             Console.Write(_tempCurrentSaveIndicator);
@@ -909,11 +903,10 @@ internal static class Menu
 
     internal static void ClearChangeIndicator()
     {
-        Tools.CursorTopLeft();
-        Tools.CursorDown(2);
-        Tools.CursorRight(Init.LineWidth - (DialogText.SavIndicator.Length));
+        var width = TextMetrics.WidthOf(DialogText.SavIndicator);
+        Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - width));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.Write(new string(' ', DialogText.SavIndicator.Length));
+        Console.Write(new string(' ', width));
     }
 
     private static void WriteCenterText(string label)

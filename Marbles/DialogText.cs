@@ -145,6 +145,8 @@ internal static class DialogText
     public const string UnCheckedSetting = "[ ]";
     public static string NotAvailable => Lang.T("N/A");
     public static string SavIndicator => " " + Lang.T("Unsaved") + " ";
+    public static string ReadOnlyLabel => " " + CaptionsReadOnly + " ";
+    public static string EditorHelpHint => Lang.T(":help shows the keys of the editor");
 
     public const string PaginationLeftRight = "<- ->";
     public static string BrowseUpDown => Lang.T("Up/Down");

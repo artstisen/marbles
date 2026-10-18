@@ -809,92 +809,49 @@ internal static class Actions
     }
 
 
+    // The editor frame for an entry: its title at the top
     internal static void DrawEditMenu()
     {
         Menu.DrawTopMenu(false, false, false);
-        Menu.WriteEditorTop();
-        Tools.CursorTopLeft();
-        Tools.CursorDown(1);
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Menu.WriteTitleLabel(); // Insert title
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        // The editor writes its mode on the divider
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.EditorTitle);
-        Tools.SaveCursorPosition(1);
-        Tools.CursorTopLeft();
-        Tools.CursorDown(Init.LineCount - 1); // Insert bottom line
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Tools.LoadCursorPosition(1);
+        DrawEditorFrame(DialogText.CaptionsEditor,
+            Entries.CurrentEntryExists() ? Entries.CurrentEntry.Title : string.Empty, string.Empty);
     }
 
     // The editor frame for a plain text file opened from the file browser
     internal static void DrawEditFileMenu()
     {
         Menu.DrawTopMenu(false, false, false);
-        Menu.WriteEditorTop();
-        Tools.CursorTopLeft();
-        Tools.CursorDown(1);
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Console.Write(" " + DialogText.FileColon + " " +
-                      Tools.TruncateString(FileExplorer.CurrentFileName, Init.LineWidth - 40, true) + " ");
-        if (FileExplorer.FromDataFile)
-        {
-            // Coming from the encrypted notes of a data file: a reminder that this file is not
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(DialogText.NotEncrypted);
-        }
-
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        // The editor writes its mode on the divider
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.EditorTitle);
-        Tools.SaveCursorPosition(1);
-        Tools.CursorTopLeft();
-        Tools.CursorDown(Init.LineCount - 1); // Insert bottom line
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Tools.LoadCursorPosition(1);
+        // Coming from the encrypted notes of a data file: a reminder that this file is not
+        DrawEditorFrame(DialogText.CaptionsEditor, FileExplorer.CurrentFileName,
+            FileExplorer.FromDataFile ? DialogText.NotEncrypted : string.Empty);
     }
 
     /// <summary>
-    /// The top of the view of a comparison (DiffView), as that of the editor: the caption, and a line about the
-    /// comparison where the editor names the file. The cursor is left where the text starts
+    /// The top of the view of a comparison (DiffView), as that of the editor: the caption, and what is compared
+    /// where the editor names the file. The cursor is left where the text starts
     /// </summary>
     internal static void DrawCompareMenu(string about)
     {
         // Not Menu.DrawTopMenu: it shows the page of the mode (the login page, from the file browser)
-        Tools.CursorTopLeft();
-        Menu.WriteEditorTop(DialogText.CaptionsCompare);
-        Tools.CursorTopLeft();
-        Tools.CursorDown(1);
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Console.Write(" " + Tools.TruncateString(about, Init.LineWidth - 3, true) + " ");
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.EditorTitle);
-        Tools.SaveCursorPosition(1);
-        Tools.CursorTopLeft();
-        Tools.CursorDown(Init.LineCount - 1);
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Tools.LoadCursorPosition(1);
+        DrawEditorFrame(DialogText.CaptionsCompare, about, string.Empty);
     }
 
     internal static void DrawEditSettingsMenu()
     {
         Menu.DrawTopMenu(false, false, false);
-        Menu.WriteEditorTop();
-        Tools.CursorTopLeft();
-        Tools.CursorDown(1);
-        WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Console.Write(" " + DialogText.FileColon + " " + FileIo.SettingsFileName);
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        // The editor writes its mode on the divider
+        DrawEditorFrame(DialogText.CaptionsEditor, FileIo.SettingsFileName, string.Empty);
+    }
+
+    // The frame of the editor: the top row (the caption, the name of what is edited, and the place of the labels
+    // Unsaved and Read only at the right), the divider the editor writes its mode on, and the bottom line. The
+    // cursor is left where the text starts, below the divider
+    private static void DrawEditorFrame(string caption, string title, string reminder)
+    {
+        Menu.WriteEditorTop(caption, title, reminder);
+        Tools.SetCursorEx(1, 0);
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.EditorTitle);
         Tools.SaveCursorPosition(1);
-        Tools.CursorTopLeft();
-        Tools.CursorDown(Init.LineCount - 1); // Insert bottom line
+        Tools.SetCursorEx(Init.LineCount - 1, 0);
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
         Tools.LoadCursorPosition(1);
     }
@@ -916,7 +873,7 @@ internal static class Actions
                 TextArea.NextEntrySyntax = EntrySyntax.Get(Entries.CurrentEntry.Options);
                 TextArea.NextEntryReadOnly = Entries.IsReadOnly(Entries.CurrentEntry);
                 TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                    Init.LineCount - 5, Entries.CurrentEntry.Text, cursorIndex, false, false, search, 0);
+                    Init.LineCount - 3, Entries.CurrentEntry.Text, cursorIndex, false, false, search, 0);
                 // Cleanup
                 textArea.ClearUndoRedoCache();
                 // ":snip edit" or ":complete edit": that file, and then the entry again

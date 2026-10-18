@@ -549,7 +549,7 @@ internal static class Tools
         ClearScreen();
         Actions.DrawEditSettingsMenu();
         TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-            Init.LineCount - 5, FileIo.ReadSettingsFile(), 0, false, false, false, 1);
+            Init.LineCount - 3, FileIo.ReadSettingsFile(), 0, false, false, false, 1);
         // Cleanup
         textArea.ClearUndoRedoCache();
         Mode.SetMode(mode);
@@ -776,11 +776,6 @@ internal static class Tools
     internal static int GetTitleEditWidth()
     {
         return Init.LineWidth - 15;
-    }
-
-    internal static int GetTitlePreviewWidth()
-    {
-        return Init.LineWidth - 20;
     }
 
     internal static int GetTitleListWidth()

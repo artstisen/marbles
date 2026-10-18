@@ -773,7 +773,7 @@ internal static partial class FileExplorer
                 Tools.ClearScreen();
                 Actions.DrawEditFileMenu();
                 var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                    Init.LineCount - 5, _file?.Text ?? string.Empty, cursorIndex, false, false, false, TextArea.SaveAsFile, modified);
+                    Init.LineCount - 3, _file?.Text ?? string.Empty, cursorIndex, false, false, false, TextArea.SaveAsFile, modified);
                 textArea.ClearUndoRedoCache();
                 if (_file != null) file = _file; // Renamed in the editor
                 KeepCaret(file.Path, textArea);
@@ -941,7 +941,7 @@ internal static partial class FileExplorer
             Tools.ClearScreen();
             Actions.DrawEditFileMenu();
             var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                Init.LineCount - 5, _file.Text, Snippets.IndexOfLine(_file.Text, line), false, false, false,
+                Init.LineCount - 3, _file.Text, Snippets.IndexOfLine(_file.Text, line), false, false, false,
                 TextArea.SaveAsFile);
             textArea.ClearUndoRedoCache();
             TextArea.TakeSideFileRequest();
