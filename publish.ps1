@@ -3,16 +3,18 @@
 #               and is started with:  dotnet Marbles.dll
 #   win-x64 ... A self-contained single file for each platform. The .NET runtime is included in the file,
 #               so nothing has to be installed to run it.
+#   languages   The language file pack: a zip with the language files (lang), the German file built into
+#               Marbles (built-in) and a read-me, to be downloaded on its own
 # Usage:  ./publish.ps1                     (all versions)
 #         ./publish.ps1 portable,win-x64    (one or more versions)
 param(
-    [string[]]$Platforms = @("portable", "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-arm", "osx-x64", "osx-arm64")
+    [string[]]$Platforms = @("portable", "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-arm", "osx-x64", "osx-arm64", "languages")
 )
 
 $ErrorActionPreference = "Stop"
 $project = Join-Path $PSScriptRoot "Marbles/Marbles.csproj"
 $output = Join-Path $PSScriptRoot "publish"
-$known = @("portable", "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-arm", "osx-x64", "osx-arm64")
+$known = @("portable", "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-arm", "osx-x64", "osx-arm64", "languages")
 
 # "portable,win-x64" as one argument (as when started with pwsh -File) is a list too
 $Platforms = @($Platforms | ForEach-Object { $_ -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
@@ -33,6 +35,21 @@ foreach ($platform in $Platforms) {
     Write-Host "Publishing $platform..."
     $folder = Join-Path $output $platform
     if (Test-Path $folder) { Remove-Item -Recurse -Force $folder }
+    if ($platform -eq "languages") {
+        # The zip is named by the version of Marbles (Marbles-languages-1.5.3.zip)
+        [xml]$csproj = Get-Content $project
+        $version = ($csproj.Project.PropertyGroup.FileVersion | Where-Object { $_ } | Select-Object -First 1) -replace '\.0$', ''
+        $lang = Join-Path $PSScriptRoot "Marbles/Lang"
+        $staging = Join-Path ([System.IO.Path]::GetTempPath()) ("marbles-languages-" + [guid]::NewGuid().ToString("N"))
+        New-Item -ItemType Directory -Force (Join-Path $staging "lang"), (Join-Path $staging "built-in") | Out-Null
+        Copy-Item (Join-Path $lang "External/*.txt") (Join-Path $staging "lang")
+        Copy-Item (Join-Path $lang "*.txt") (Join-Path $staging "built-in")
+        Copy-Item (Join-Path $lang "Pack/README.txt") $staging
+        New-Item -ItemType Directory -Force $folder | Out-Null
+        Compress-Archive -Path (Join-Path $staging "*") -DestinationPath (Join-Path $folder "Marbles-languages-$version.zip")
+        Remove-Item -Recurse -Force $staging
+        continue
+    }
     if ($platform -eq "portable") {
         dotnet publish $project -c Release `
             -p:UseAppHost=false `

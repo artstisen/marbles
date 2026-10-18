@@ -63,7 +63,7 @@ Marbles v1.5.3 in Windows Terminal on Windows 11:
 
 ![Marbles in WT on Windows 11, 2](marbles-153-tui-2.jpg)
 
-Marbles v1.5.3 in Ptyxis on Ubuntu 26.4:
+Marbles v1.5.3 in Ptyxis on Ubuntu 26.04:
 
 ![Marbles in Ptyxis on Ubuntu](marbles-153-ubuntu-26-4-1.jpg)
 
@@ -100,7 +100,7 @@ Inside Marbles, press `?` for the list of keys.
 | Core code base | Agnostic: no OS-specific logic, .NET handles the differences between the platforms |
 | Box drawing | Classic ASCII |
 | Console I/O encoding | UTF-8 |
-| Languages | English and German built in; Danish, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (the commands and keys are the same in all languages) |
+| Languages | English and German built in; Danish, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (the commands and keys are the same in all languages). The language files are also a pack of their own on the releases page (`Marbles-languages-1.5.3.zip`) |
 | Date/time format | ISO 8601 |
 | File encryption | AES-256-GCM, with the key derived from the password using PBKDF2-HMAC-SHA256 |
 | Software license | [MIT](LICENSE) |
