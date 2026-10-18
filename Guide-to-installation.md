@@ -57,6 +57,8 @@ A path that is not a full path is taken from the directory you are in. Closing t
 ## Language files
 English and German are built into Marbles. The other languages are text files in a folder named `lang` next to the Marbles program: `da.txt` (Danish), `nb.txt` (Norwegian), `sv.txt` (Swedish), `es.txt` (Spanish), `fr.txt` (French), `it.txt` (Italian), `pl.txt` (Polish), `nl.txt` (Dutch) and `fi.txt` (Finnish). They come with Marbles; keep the folder next to the program when you copy or move it. If it is missing, those languages are not offered (and Marbles starts in English if one of them was chosen, keeping the choice for when the file is back).
 
+The language files can also be downloaded on their own, as the **language file pack** on the [releases page](https://github.com/artstisen/marbles/releases) (`Marbles-languages-1.5.3.zip`): the folder `lang` with the language files, the German file that is built into Marbles (in the folder `built-in`, to change the German translation), and a read-me. Unzip it next to the Marbles program to put the folder `lang` in place. In the source, the files are `Marbles/Lang/External` (and `Marbles/Lang/de.txt`), and `./publish.ps1 languages` makes the pack in _publish/languages_.
+
 Marbles also looks for a folder `lang` in the data directory, which is used first. A language file there (or next to the program):
 
 - **Changes a translation**: copy the file (or `de.txt` from the source, `Marbles/Lang`) into the folder, and edit the translations. A file for German is used instead of the one built in, and the list of languages shows `(lang)` after it
