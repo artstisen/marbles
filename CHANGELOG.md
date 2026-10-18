@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Command history**: `Up` and `Down` on a command line bring back the commands given before on that page (the editor, the file browser, Favorites, the lists, the menus ... each has its own, the newest first, at most 20). With the start of a command typed, only those that start with it. Kept in memory only, never written to a file, and forgotten at logout.
 - **Editor: two more rows for the text.** The title of the note (or the name of the file) is on the top row after _EDITOR_, with the label _Unsaved_ or _Read only_ at the right; the line with the mode (NAVIGATE, EDIT ...) is right below it. The name Marbles and `:help Help` are no longer on that row, and the line that held the title is gone. When the editor opens, the bottom line says that `:help` shows its keys. Titles and file names have more room. The comparison (`:diff`) has the same top.
 - **Languages**: Danish is now a language file in the folder `lang` next to Marbles, like Norwegian, Swedish and the others; English and German are built in. A Danish translation is chosen as before (`:language da`); if the folder `lang` is missing, Marbles starts in English and keeps the choice for when the file is back.
 - **Start page, Help tab**: the **Quick guide**, and four short guides: **Jump menu**, **File browser**, **Text editor** and **Note Management**. Each tells what the part is for and its most used keys; `?` in a guide shows all the keys of that part. The order is Help, Quick guide, the guides, About.

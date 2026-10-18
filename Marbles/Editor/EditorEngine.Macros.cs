@@ -70,6 +70,15 @@ internal sealed partial class EditorEngine
         _macroCommands.Add(MacroLanguage.ParseKeys(":play " + name.Replace("<", "<lt>") + "<CR>").ToArray());
     }
 
+    // A command brought back with Up on the command line: it is recorded as typed (":" and its text), as the
+    // commands given before are not the same when the macro is played
+    private void RecordCommandAsTyped(string command)
+    {
+        if (!IsRecording || _replaying || IsPlayingMacro) return;
+        _macroCommand.Clear();
+        _macroCommand.AddRange(MacroLanguage.ParseKeys(":" + command.Replace("<", "<lt>") + "<CR>"));
+    }
+
     // Called by HandleKey before a key is handled: a command that starts is recorded from its first key
     private void RecordMacroKey(ConsoleKeyInfo key, bool startsCommand)
     {

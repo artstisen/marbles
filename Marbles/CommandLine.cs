@@ -47,12 +47,27 @@ internal static class CommandLine
     {
         var command = string.Empty;
         var completion = context == null ? null : new CommandCompletion(context.Value);
+        // Up and Down: the commands given here before
+        var recall = context == null ? null : new CommandRecall(context.Value);
         // The whole line is highlighted while typing
         WriteLine(prefix == Prefix ? DialogText.CommandPrompt : prefix.ToString(),
             ConsoleColors.ColorPreset.HighlightInverted, true);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
         Tools.ShowCursor();
         var left = Console.CursorLeft; // Where the text starts
+
+        // Show another text on the line instead of the one typed (counted in columns, and only when it fits)
+        void Replace(string text)
+        {
+            if (text == command || TextMetrics.WidthOf(text) + 2 >= VisibleWidth() - left) return;
+            var shown = TextMetrics.WidthOf(command);
+            var width = TextMetrics.WidthOf(text);
+            Tools.SetCursorEx(Console.CursorTop, left);
+            Console.Write(text + new string(' ', Math.Max(0, shown - width)));
+            Tools.SetCursorEx(Console.CursorTop, left + width);
+            command = text;
+        }
+
         try
         {
             while (true)
@@ -66,16 +81,18 @@ internal static class CommandLine
                 if (key.Key == ConsoleKey.Tab)
                 {
                     // Complete the command. Tab again: the next command that starts the same (Shift+Tab: the previous)
-                    var completed = completion?.Next(command, (key.Modifiers & ConsoleModifiers.Shift) == 0) ?? command;
-                    // (Counted in columns, and only when it fits on the line)
-                    if (completed != command && TextMetrics.WidthOf(completed) + 2 < VisibleWidth() - left)
+                    Replace(completion?.Next(command, (key.Modifiers & ConsoleModifiers.Shift) == 0) ?? command);
+                    recall?.Reset();
+                    continue;
+                }
+
+                if (key.Key is ConsoleKey.UpArrow or ConsoleKey.DownArrow)
+                {
+                    var recalled = key.Key == ConsoleKey.UpArrow ? recall?.Previous(command) : recall?.Next();
+                    if (recalled != null)
                     {
-                        var shown = TextMetrics.WidthOf(command);
-                        var width = TextMetrics.WidthOf(completed);
-                        Tools.SetCursorEx(Console.CursorTop, left);
-                        Console.Write(completed + new string(' ', Math.Max(0, shown - width)));
-                        Tools.SetCursorEx(Console.CursorTop, left + width);
-                        command = completed;
+                        Replace(recalled);
+                        completion?.Reset();
                     }
 
                     continue;
@@ -83,6 +100,8 @@ internal static class CommandLine
 
                 if (key.Key == ConsoleKey.Enter)
                 {
+                    // A command line of a place (also one read as typed, as the file browser's) keeps its commands
+                    if (context != null) CommandHistory.Add(context.Value, command);
                     if (isCommand)
                     {
                         LastArgument = Argument(command.Trim());
@@ -101,6 +120,7 @@ internal static class CommandLine
                     var length = TextMetrics.PreviousElementLength(command, command.Length);
                     var cells = TextMetrics.WidthOf(command[^length..]);
                     command = command[..^length];
+                    recall?.Reset();
                     Tools.SetCursorEx(Console.CursorTop, Math.Max(left, Console.CursorLeft - cells));
                     Console.Write(new string(' ', cells));
                     Tools.SetCursorEx(Console.CursorTop, Math.Max(left, Console.CursorLeft - cells));
@@ -109,6 +129,7 @@ internal static class CommandLine
                          TextMetrics.WidthOf(command) + 2 < VisibleWidth() - left)
                 {
                     command += key.KeyChar;
+                    recall?.Reset();
                     Console.Write(key.KeyChar);
                 }
             }

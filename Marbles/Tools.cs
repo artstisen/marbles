@@ -1166,6 +1166,7 @@ internal static class Tools
         }
 
         ClearLineMemory();
+        CommandHistory.Clear();
         Entries.ClearAllEntries(true);
         Entries.ResetCurrentEntry();
         Entries.ResetRecallId();
@@ -1461,6 +1462,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Shift+Tab", Lang.T("The tab before"), false));
             _shortcutList.Add(new Shortcut("Q Esc", Lang.T("Exit Marbles, asking first (Configuration: to Mode)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line, on every tab (Tab completes)"), false));
+            _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut(":note :file", Lang.T("The login page/The file browser"), false));
             _shortcutList.Add(new Shortcut(":mode :config", Lang.T("The Mode tab/Configuration (General)"), false));
             _shortcutList.Add(new Shortcut(":layout :editor", Lang.T("The pages of Configuration (and :system)"), false));
@@ -1525,6 +1527,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("?", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (commands are shown in the menus)"), false));
             _shortcutList.Add(new Shortcut("  Tab", Lang.T("Complete the command (again: the next, Shift: back)"), false));
+            _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut(":q :qa", Lang.T("Exit Marbles"), false));
             _shortcutList.Add(new Shortcut(":new :new Title", Lang.T("New entry (asks for the title if not given)"), false));
             _shortcutList.Add(new Shortcut(":logout", Lang.T("Logout"), false));
@@ -1565,6 +1568,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("D", Lang.T("Display timestamp"), false));
             _shortcutList.Add(new Shortcut("?", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut("X :logout", Lang.T("Logout"), false));
             _shortcutList.Add(new Shortcut("Esc - :q", Lang.T("Back to the main menu"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFiles, true));
@@ -1608,6 +1612,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":home", Lang.T("Go to the folder of the data files in use"), false));
             _shortcutList.Add(new Shortcut(":data", Lang.T("Go to the data directory (settings, snippets ...)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut("Esc Q :q", Lang.T("Close the file browser"), false));
             _shortcutList.Add(new Shortcut(":exit", Lang.T("Exit Marbles (asks first)"), false));
             _shortcutList.Add(new Shortcut(":logout", Lang.T("Log out of the data file (staying logged in)"), false));
@@ -1629,6 +1634,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show the files with \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut("S :find", Lang.T("Search again"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut("Esc Q h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFavorites, true));
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
@@ -1657,6 +1663,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut("u :undo", Lang.T("Put back what was removed last"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut("Esc Q F h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.T("Kept in favorites.txt in the data directory"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionHistory, true));
@@ -1672,6 +1679,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":path :name", Lang.T("Copy the path/the name shown (also p in the editor)"), false));
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut("Esc Q O h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.F("The last {0} files opened, kept in history.txt", FileHistory.MaxCount), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionHotlist, true));
@@ -1690,6 +1698,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":path :name", Lang.T("Copy the path/the name shown (also p in the editor)"), false));
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
+            _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut("Esc Q W h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.F("At most {0} directories, kept in hotlist.txt", DirectoryHotlist.MaxCount), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionJump, true));
@@ -1716,6 +1725,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":expand :collapse", Lang.T("Bookmarks: open/close all the folders"), false));
             _shortcutList.Add(new Shortcut("u :clearbook", Lang.T("Bookmarks: put back the removed/clear (asks first)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("A command (on the Bookmarks tab)"), false));
+            _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut(":path :name", Lang.T("Copy the path/the name of the file (all tabs)"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
             _shortcutList.Add(new Shortcut("  :book 3", Lang.T("The number is shown at the right of the bookmark"), false));
@@ -1786,6 +1796,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("gv", Lang.T("Select the last selection again"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (type a command, press Enter)"), false));
             _shortcutList.Add(new Shortcut("  Tab", Lang.T("Complete the command (again: the next, Shift: back)"), false));
+            _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Save and close"), true));
             _shortcutList.Add(new Shortcut(":w", Lang.T("Save"), false));
             _shortcutList.Add(new Shortcut(":wq :x ZZ", Lang.T("Save and close editor"), false));

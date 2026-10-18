@@ -66,7 +66,7 @@ The settings are on four pages, so they can be changed in one place without logg
 - **View log**: Show the [log](#the-log)
 
 ### Commands
-On every tab of the start page (Mode, the pages of Configuration, Help), `:` opens the command line on the bottom line. `Tab` completes the command you are typing, from the commands of this page:
+On every tab of the start page (Mode, the pages of Configuration, Help), `:` opens the command line on the bottom line. `Tab` completes the command you are typing, from the commands of this page, and `Up`/`Down` bring back the commands given here before:
 
 - `:note` (or `:notes`) The login page, as _Note Management_ on the Mode tab; `:file` (or `:browse`) The file browser, as _Text Editor/File Management_. With _Text Editor only_ or _Note Management only_, the mode that is not used is refused
 - `:mode` The Mode tab; `:config` (or `:general`), `:layout`, `:editor` and `:system` The pages of the Configuration tab (`:editor` is the Editor page of Configuration, not the text editor)
@@ -154,7 +154,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `:match` With two panes: the other pane shows the directory of the pane with the focus (with the same file or directory selected). The focus stays where it is
 - `:cd path` Go to a directory. `:home` Go to the folder of the data files in use (the data directory, or the subfolder of it chosen for the data files)
 - `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` and `completions.txt` (the snippets and the completions of the editor), `favorites.txt`, `history.txt` and `hotlist.txt` (of the file browser), and `jump.txt` and `bookmarks.txt` (of the Jump menu)
-- `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again (see [the command line](Guide-to-main-menu.md))
+- `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again; `Up` and `Down` bring back the commands given in the file browser before (see [the command line](Guide-to-main-menu.md))
 - `?` Help
 - `Esc`, `Q` or `:q` Close the file browser
 - `:exit` Exit Marbles (asks first)

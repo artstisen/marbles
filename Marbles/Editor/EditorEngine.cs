@@ -850,10 +850,17 @@ internal sealed partial class EditorEngine
 
     private readonly CommandCompletion _completion = new(CommandContext.Editor);
 
+    // Up and Down on the command line: the commands given in the editor before (CommandHistory), and whether the
+    // one on the line was brought back so
+    private CommandRecall _recall = new(CommandContext.Editor);
+    private bool _commandRecalled;
+
     private void OpenCommandLine(char prefix)
     {
         ResetPending();
         _completion.Reset();
+        _recall = new CommandRecall(CommandContext.Editor);
+        _commandRecalled = false;
         _commandReturnMode = Mode is EditorMode.Command or EditorMode.Search ? EditorMode.Normal : Mode;
         CommandPrefix = prefix;
         CommandText = string.Empty;
@@ -878,6 +885,10 @@ internal sealed partial class EditorEngine
             else
             {
                 Mode = EditorMode.Normal;
+                // A macro plays its own commands: they are not kept
+                if (!SingleLine && !IsPlayingMacro) CommandHistory.Add(CommandContext.Editor, text);
+                // Brought back with Up: a macro being recorded gets the command as typed, not the keys
+                if (_commandRecalled) RecordCommandAsTyped(text.Trim());
                 ExecuteCommand(text.Trim());
             }
         }
@@ -887,7 +898,18 @@ internal sealed partial class EditorEngine
             if (Mode == EditorMode.Command)
             {
                 CommandText = _completion.Next(CommandText, (key.Modifiers & ConsoleModifiers.Shift) == 0);
+                _recall.Reset();
             }
+        }
+        else if (key.Key is ConsoleKey.UpArrow or ConsoleKey.DownArrow)
+        {
+            // An earlier command (not in a search, or a field of one line)
+            if (Mode != EditorMode.Command || SingleLine) return;
+            var recalled = key.Key == ConsoleKey.UpArrow ? _recall.Previous(CommandText) : _recall.Next();
+            if (recalled == null || recalled.Length > MaxCommandLength) return;
+            CommandText = recalled;
+            _completion.Reset();
+            _commandRecalled = true;
         }
         else if (key.Key == ConsoleKey.Backspace)
         {
@@ -898,11 +920,13 @@ internal sealed partial class EditorEngine
             else
             {
                 CommandText = CommandText[..^TextMetrics.PreviousElementLength(CommandText, CommandText.Length)];
+                _recall.Reset();
             }
         }
         else if (IsText(key) && CommandText.Length < MaxCommandLength)
         {
             CommandText += key.KeyChar;
+            _recall.Reset();
         }
     }
 
