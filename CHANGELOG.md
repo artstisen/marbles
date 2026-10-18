@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Languages**: Danish is now a language file in the folder `lang` next to Marbles, like Norwegian, Swedish and the others; English and German are built in. A Danish translation is chosen as before (`:language da`); if the folder `lang` is missing, Marbles starts in English and keeps the choice for when the file is back.
 - **Start page, Help tab**: the **Quick guide**, and four short guides: **Jump menu**, **File browser**, **Text editor** and **Note Management**. Each tells what the part is for and its most used keys; `?` in a guide shows all the keys of that part. The order is Help, Quick guide, the guides, About.
 - **Configuration** (Layout): **Classic ASCII corners** draws the corners of boxes, dialogs and tabs with `+` instead of `.` and `'`. Setting `asciistyle` (`1` or `0`).
 - **Editor: `:favorite`** (or `:fav`) makes the file being edited a favorite of the file browser, or takes it out of the favorites, as `P` there. In a note, it makes the note a favorite of its data file (or not).

@@ -13,7 +13,7 @@ namespace Marbles;
 /// A text that is not in the file of the language is shown in English. Commands, keys, the names of the editor
 /// modes, the settings file and the log are always English.
 ///
-/// Danish and German are built into the program (Marbles/Lang/xx.txt). The other languages are files in a folder
+/// German is built into the program (Marbles/Lang/de.txt). The other languages are files in a folder
 /// "lang": next to the program (published with it, from Marbles/Lang/External), or in the data directory. A file
 /// there can also replace a built-in one (to change a translation), and a new language is added by putting its file
 /// there: it is found by its name, "pl.txt", and named by its first line ("# Marbles: Polski (pl)"). A file in the
@@ -29,7 +29,6 @@ internal static class Lang
     internal static readonly (string Code, string Name)[] Languages =
     {
         (English, "English"),
-        ("da", "Dansk"),
         ("de", "Deutsch")
     };
 
@@ -231,14 +230,14 @@ internal static class Lang
         return code;
     }
 
-    // The texts of this version of Marbles: those of the built-in Danish file, which has them all
+    // The texts of this version of Marbles: those of the built-in German file, which has them all
     private static HashSet<string>? _reference;
 
     // How much of the texts of this version is translated in a file (0 to 100)
     private static int PercentOf(string? content, string code)
     {
         if (content == null) return 0;
-        _reference ??= new HashSet<string>(EnglishTexts(ReadBuiltIn("da") ?? string.Empty), StringComparer.Ordinal);
+        _reference ??= new HashSet<string>(EnglishTexts(ReadBuiltIn("de") ?? string.Empty), StringComparer.Ordinal);
         if (_reference.Count == 0) return 100;
         var texts = Parse(content, code);
         var translated = _reference.Count(texts.ContainsKey);

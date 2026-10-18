@@ -1,10 +1,10 @@
 # Marbles
 A free, open-source, cross-platform Vim-style modal text editor for taking encrypted notes in any terminal program on Windows, Linux, and macOS.
 
-Marbles includes an orthodox file manager and a text editor with syntax highlighting, code completion, spell checking, macro recorder/editor, code snippet support, search/replace, comparison (diff), etc., and can be used as a fully-featured text editing and file management tool. 
+Marbles includes an orthodox file manager and a capable Unicode text editor with syntax highlighting, code completion, spell checking, macro recorder/editor, code snippet support, search/replace, file diff, jump menu, bookmarks, hotlist and favorites, and can be used as a feature-rich text editing and file management tool. 
 
-## Aim 
-The aim is to make a lean and unbloated set of core tools. The combination of being able to store encrypted data while also having a capable file editor or file organization tool is the foundation of the project. I've included functionality that I would normally have added via lightweight, functional plugins in Neovim, without disrupting the classic terminal aesthetic, where the TUI is rendered in pure ASCII and doesn't require special fonts, etc.
+## Pure 7-bit ASCII TUI
+The aim is to make an unbloated set of core tools. I've included functionality that I would normally have added via lightweight, functional plugins, and init modifications in Neovim, without disrupting the classic terminal aesthetic. The interface of Marbles is drawn with standard 128-character ASCII only (no extended ASCII or ANSI character sets). This makes Marbles compatible with all standard monospaced fonts, regardless of the platform.  Encrypted notes, text/code files can contain any Unicode text.
 
 
 ![Marbles animation](marbles.gif)
@@ -25,7 +25,7 @@ Marbles is operated in the style of Vim: the editor has Normal, Insert and Visua
 - Core code base: Agnostic
 - Box drawing: ASCII
 - Console I/O encoding: UTF-8
-- Languages: English, Danish and German built in; Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (the commands and keys are the same in all languages)
+- Languages: English and German built in; Danish, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (the commands and keys are the same in all languages)
 - Date/time format: ISO 8601
 - File encryption: AES-256-GCM, with the key derived from the password using PBKDF2-HMAC-SHA256
 - Software license: [MIT](LICENSE)
@@ -34,9 +34,7 @@ Marbles is operated in the style of Vim: the editor has Normal, Insert and Visua
 - Code editor: Marbles
 - Programming language: C# 14
 - Framework: .NET 10
-- Claude Opus 5.5: Scripting/testing/code review (after Marbles version 1.0.1.1)
-
-The interface of Marbles is drawn with standard 128-character ASCII only (no extended ASCII or ANSI character sets). This makes Marbles compatible with all standard monospaced fonts, regardless of the platform. Your notes can contain any Unicode text.
+- Claude Opus 5.5: Scripting/testing/code review (as of Marbles v1.5.0)
 
 Marbles relies on the .NET framework to handle the differences between the platforms and has no OS-specific logic built into the source.
 

@@ -4,8 +4,8 @@
     python tools/langfile.py pl path/to/pl.txt     (a file somewhere else, such as the folder lang)
 
 Every text given to Lang.T or Lang.F in the code (and the names listed in Lang.Names) is written to the file of
-the language, in the order it appears in the code, with the translation already in the file. Danish and German are
-built into the program (Marbles/Lang/da.txt); the other languages are files of the folder lang next to the program
+the language, in the order it appears in the code, with the translation already in the file. German is
+built into the program (Marbles/Lang/de.txt); the other languages are files of the folder lang next to the program
 (Marbles/Lang/External/pl.txt in the source). A new language gets a new file. A new text
 gets an empty translation (it is shown in English until it is translated), and a text that is no longer in the
 code is left out. Run it after changing texts, then fill in the empty translations.
@@ -22,7 +22,7 @@ LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
 NAMES = {'da': 'Dansk', 'de': 'Deutsch', 'nb': 'Norsk bokmål', 'sv': 'Svenska', 'es': 'Español', 'fr': 'Français',
          'it': 'Italiano', 'pl': 'Polski', 'nl': 'Nederlands', 'fi': 'Suomi'}
 
-BUILT_IN = ('da', 'de')  # Built into the program (Marbles/Lang); the others are files of the folder lang
+BUILT_IN = ('de',)  # Built into the program (Marbles/Lang); the others are files of the folder lang
 
 
 def language_path(code, given=None):

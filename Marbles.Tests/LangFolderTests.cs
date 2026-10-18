@@ -79,7 +79,7 @@ public class LangFolderTests : IDisposable
         Assert.False(polish.Replaced);
         Assert.InRange(polish.Percent ?? -1, 0, 5);
         // English and the built-in languages first
-        Assert.Equal(new[] { "en", "da", "de" }, Lang.Available.Take(3).Select(language => language.Code));
+        Assert.Equal(new[] { "en", "de" }, Lang.Available.Take(2).Select(language => language.Code));
 
         Assert.True(Lang.Set("pl"));
         Assert.Equal("Plik usunięty", Lang.T("File deleted"));
@@ -93,19 +93,21 @@ public class LangFolderTests : IDisposable
     {
         System.IO.File.WriteAllText(Path.Combine(_program, "pl.txt"), File("pl", "Polski", ("File deleted", "Program")));
         System.IO.File.WriteAllText(Path.Combine(_data, "pl.txt"), File("pl", "Polski", ("File deleted", "Data")));
-        System.IO.File.WriteAllText(Path.Combine(_data, "da.txt"), File("da", "Dansk", ("File deleted", "Min fil er slettet")));
+        System.IO.File.WriteAllText(Path.Combine(_data, "de.txt"), File("de", "Deutsch", ("File deleted", "Meine Datei ist weg")));
         Lang.Refresh();
         Assert.Equal(Lang.Source.DataFolder, Lang.Available.Single(language => language.Code == "pl").From);
         Assert.True(Lang.Set("pl"));
         Assert.Equal("Data", Lang.T("File deleted"));
 
-        var danish = Lang.Available.Single(language => language.Code == "da");
-        Assert.True(danish.Replaced);
-        Assert.Equal(Lang.Source.DataFolder, danish.From);
-        Assert.True(Lang.Set("da"));
-        Assert.Equal("Min fil er slettet", Lang.T("File deleted"));
+        var german = Lang.Available.Single(language => language.Code == "de");
+        Assert.True(german.Replaced);
+        Assert.Equal(Lang.Source.DataFolder, german.From);
+        Assert.True(Lang.Set("de"));
+        Assert.Equal("Meine Datei ist weg", Lang.T("File deleted"));
         // The built-in file is still there to compare with
-        Assert.NotNull(Lang.ReadBuiltIn("da"));
+        Assert.NotNull(Lang.ReadBuiltIn("de"));
+        // Danish is a file of the folder lang, not built in
+        Assert.Null(Lang.ReadBuiltIn("da"));
     }
 
     [Fact]

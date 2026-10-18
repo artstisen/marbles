@@ -5,7 +5,7 @@ Marbles comes in two kinds of builds, so pick the one that suits you:
 - **The portable version**: a small version (about 1 MB) that runs on every platform, but needs the .NET 10 runtime to be installed (see [Install .NET](#install-net) below)
 
 ## Download and run Marbles
-Download the latest Marbles zip file for your platform from the [releases page](https://github.com/artstisen/marbles/releases), and unzip it into a directory of your choosing. Keep the folder _lang_ next to the program: it holds the languages other than English, Danish and German.
+Download the latest Marbles zip file for your platform from the [releases page](https://github.com/artstisen/marbles/releases), and unzip it into a directory of your choosing. Keep the folder _lang_ next to the program: it holds the languages other than English and German.
 
 | Platform | Build |
 |---|---|
@@ -38,7 +38,7 @@ Only the portable version needs this. Ensure that you have the .NET 10 runtime i
 ## Good to know
 You can create an alias like "_mbls_" to run Marbles with less typing. See [this guide](Guide-to-windows-terminal-crt.md) for more information.
 
-Marbles keeps your notes and settings in a directory named "data", next to the Marbles program, so the same notes and settings are used wherever Marbles is started from. If the directory you start Marbles in has a directory "data" of its own, that one is used instead (as earlier versions did, which used the directory they were started in). If the program directory cannot be written to (a program installed for all users), the data directory is "Marbles/data" in your application data (`~/.local/share` on Linux, `AppData\Local` on Windows). The languages other than English, Danish and German are files in the folder "lang" next to the program (see [Language files](#language-files)). To use spell checking in the editor, place spell files in a directory named "spell" next to it (see the [guide to the editor](Guide-to-editor.md#spell-checking)). Marbles needs a terminal window of at least 80 columns and 23 rows.
+Marbles keeps your notes and settings in a directory named "data", next to the Marbles program, so the same notes and settings are used wherever Marbles is started from. If the directory you start Marbles in has a directory "data" of its own, that one is used instead (as earlier versions did, which used the directory they were started in). If the program directory cannot be written to (a program installed for all users), the data directory is "Marbles/data" in your application data (`~/.local/share` on Linux, `AppData\Local` on Windows). The languages other than English and German are files in the folder "lang" next to the program (see [Language files](#language-files)). To use spell checking in the editor, place spell files in a directory named "spell" next to it (see the [guide to the editor](Guide-to-editor.md#spell-checking)). Marbles needs a terminal window of at least 80 columns and 23 rows.
 
 ## Starting Marbles with a file
 Give a file or a directory when you start Marbles, and it is opened at once, without the start page:
@@ -55,11 +55,11 @@ A path that is not a full path is taken from the directory you are in. Closing t
 (On Windows the program is `Marbles.exe`, and the portable version is started with `dotnet Marbles.dll notes.md`.)
 
 ## Language files
-English, Danish and German are built into Marbles. The other languages are text files in a folder named `lang` next to the Marbles program: `nb.txt` (Norwegian), `sv.txt` (Swedish), `es.txt` (Spanish), `fr.txt` (French), `it.txt` (Italian), `pl.txt` (Polish), `nl.txt` (Dutch) and `fi.txt` (Finnish). They come with Marbles; keep the folder next to the program when you copy or move it. If it is missing, those languages are not offered (and Marbles starts in English if one of them was chosen, keeping the choice for when the file is back).
+English and German are built into Marbles. The other languages are text files in a folder named `lang` next to the Marbles program: `da.txt` (Danish), `nb.txt` (Norwegian), `sv.txt` (Swedish), `es.txt` (Spanish), `fr.txt` (French), `it.txt` (Italian), `pl.txt` (Polish), `nl.txt` (Dutch) and `fi.txt` (Finnish). They come with Marbles; keep the folder next to the program when you copy or move it. If it is missing, those languages are not offered (and Marbles starts in English if one of them was chosen, keeping the choice for when the file is back).
 
 Marbles also looks for a folder `lang` in the data directory, which is used first. A language file there (or next to the program):
 
-- **Changes a translation**: copy the file (or `da.txt` / `de.txt` from the source, `Marbles/Lang`) into the folder, and edit the translations. A file for Danish or German is used instead of the one built in, and the list of languages shows `(lang)` after it
+- **Changes a translation**: copy the file (or `de.txt` from the source, `Marbles/Lang`) into the folder, and edit the translations. A file for German is used instead of the one built in, and the list of languages shows `(lang)` after it
 - **Adds a language**: a file named by the code of the language (`pt.txt`, `cs.txt`, `pt-br.txt`, in any letter case: `PT-BR.txt`) is found by itself and offered in the list of languages, with how much of it is translated. Its first line names it: `# Marbles: Português (pt)`
 
 The files are UTF-8 text, with each text in English and translated below it:

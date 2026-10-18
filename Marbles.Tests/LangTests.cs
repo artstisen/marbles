@@ -127,9 +127,10 @@ public class LangTests : IDisposable
     #endregion
 
     [Fact]
-    public void TheDanishFile_IsThere()
+    public void TheDanishAndGermanFiles_AreThere()
     {
         Assert.Contains("da", Translated);
+        Assert.Contains("de", Translated);
     }
 
     [Theory]
@@ -191,20 +192,22 @@ public class LangTests : IDisposable
         Assert.True(problems.Count == 0, code + ": " + string.Join(Environment.NewLine, problems));
     }
 
-    [Fact]
-    public void TheDanishFile_IsComplete()
+    [Theory]
+    [InlineData("de")] // Built in: the texts of this version are counted from it
+    [InlineData("da")]
+    public void TheGermanAndDanishFiles_AreComplete(string code)
     {
-        var missing = FilePairs("da").Where(pair => pair.Text.Length == 0).Select(pair => pair.English).ToList();
-        Assert.True(missing.Count == 0, "Not translated: " + string.Join(" | ", missing));
+        var missing = FilePairs(code).Where(pair => pair.Text.Length == 0).Select(pair => pair.English).ToList();
+        Assert.True(missing.Count == 0, code + ": not translated: " + string.Join(" | ", missing));
     }
 
     [Fact]
     public void T_AndF_UseTheLanguage_AndFallBackToEnglish()
     {
         Assert.Equal("File deleted", Lang.T("File deleted"));
-        Assert.True(Lang.Set("da"));
-        Assert.Equal("da", Lang.Current);
-        Assert.Equal("Dansk", Lang.CurrentName);
+        Assert.True(Lang.Set("de"));
+        Assert.Equal("de", Lang.Current);
+        Assert.Equal("Deutsch", Lang.CurrentName);
         Assert.NotEqual("File deleted", Lang.T("File deleted"));
         Assert.NotEqual("File deleted", DialogText.FileDeleted);
         // Not in the file: English
@@ -217,7 +220,7 @@ public class LangTests : IDisposable
         Assert.False(Lang.Set("xx"));
         Assert.Equal(Lang.English, Lang.Current);
         Assert.Equal("File deleted", DialogText.FileDeleted);
-        Assert.Equal("da", Lang.Next(true));
+        Assert.Equal("de", Lang.Next(true));
         Assert.Equal(Lang.Available[^1].Code, Lang.Next(false));
     }
 
@@ -235,7 +238,7 @@ public class LangTests : IDisposable
     [Fact]
     public void F_WithATextThatIsNotInTheFile_FormatsTheEnglish()
     {
-        Lang.Set("da");
+        Lang.Set("de");
         // A format that is not in the file is used as it is (a broken translation: see LangFolderTests)
         Assert.Equal("a 1 b", Lang.F("a {0} b", 1));
     }
