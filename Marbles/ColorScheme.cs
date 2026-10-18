@@ -392,6 +392,13 @@ internal sealed class ColorScheme
             if (CanBeDefault(item)) scheme.Set(item, null);
         }
 
+        Read(scheme, text);
+        return scheme;
+    }
+
+    // The lines of a scheme as text, read into a scheme (what is not in the text is left as it is)
+    private static void Read(ColorScheme scheme, string text)
+    {
         foreach (var rawLine in text.Split('\n'))
         {
             var line = rawLine.Trim();
@@ -428,183 +435,36 @@ internal sealed class ColorScheme
 
         scheme.Selector ??= scheme.Highlight;
         scheme.SelectorText ??= scheme.HighlightText;
-        return scheme;
     }
 
     #endregion
 
     #region Built-in schemes
 
-    private static ColorScheme Make(string name, ConsoleColor? background, ConsoleColor text, ConsoleColor logo,
-        ConsoleColor dividers, ConsoleColor favorites, ConsoleColor previewTitle, ConsoleColor editorTitle,
-        ConsoleColor highlight, ConsoleColor highlightText, ConsoleColor attention, ConsoleColor attentionText,
-        ConsoleColor warning, ConsoleColor warningText)
+    // The color schemes that come with Marbles, in the order they are offered (the first is the default). Each is a
+    // file built into the program (Marbles/Schemes/name.txt), written as a scheme of the user is, with its colors
+    // set; "default" there is what it is in any scheme (the color another follows, or that of the terminal)
+    private static readonly string[] BuiltInNames =
     {
-        return new ColorScheme
-        {
-            Name = name, Background = background, Text = text, Logo = logo, Dividers = dividers,
-            Favorites = favorites, Accent = previewTitle, EditorTitle = editorTitle, Highlight = highlight,
-            HighlightText = highlightText, Attention = attention, AttentionText = attentionText, Warning = warning,
-            WarningText = warningText,
-            // The selector starts with the colors of the highlight, and keeps them when the highlight is changed
-            Selector = highlight, SelectorText = highlightText
-        };
-    }
+        DefaultName, "Deep Blue", "Marbles Quest", "Tasty Bytes", "Yellow Monochrome", "Green Monochrome", "Ice Warp",
+        "Gray Box"
+    };
 
-    // The colors of the frames and tabs of a scheme (null: the default of the color)
-    private static ColorScheme WithTabs(ColorScheme scheme, ConsoleColor? tabFrames, ConsoleColor? boxBorders,
-        ConsoleColor? tab, ConsoleColor? tabText, ConsoleColor? tabShown, ConsoleColor? otherTabs, bool highlight)
+    private static ColorScheme ReadBuiltIn(string name)
     {
-        scheme.TabFrames = tabFrames;
-        scheme.BoxBorders = boxBorders;
-        scheme.Tab = tab;
-        scheme.TabText = tabText;
-        scheme.TabShown = tabShown;
-        scheme.OtherTabs = otherTabs;
-        scheme.TabHighlight = highlight;
-        return scheme;
-    }
-
-    // The default scheme: white box borders, the focused tab cyan (not highlighted) with a gray corner, the other
-    // tabs dark gray, headings in colors of their own, and the logo "Marbles", which is used when the scheme is
-    // selected
-    private static ColorScheme DefaultScheme()
-    {
-        var scheme = WithTabs(Make(DefaultName, null, ConsoleColor.Gray, ConsoleColor.Cyan, ConsoleColor.DarkGray,
-                ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.Green, ConsoleColor.Cyan, ConsoleColor.Black,
-                ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
-            null, ConsoleColor.White, ConsoleColor.DarkGray, null, ConsoleColor.Cyan, ConsoleColor.DarkGray, false);
-        scheme.TabCorner = ConsoleColor.Gray;
-        scheme.CurrentLineNumber = ConsoleColor.White;
-        // Heading 1 to 5 (Syntax 7 to 11)
-        scheme.Set(ColorItem.Syntax7, ConsoleColor.Red);
-        scheme.Set(ColorItem.Syntax8, ConsoleColor.Magenta);
-        scheme.Set(ColorItem.Syntax9, ConsoleColor.Yellow);
-        scheme.Set(ColorItem.Syntax10, ConsoleColor.Cyan);
-        scheme.Set(ColorItem.Syntax11, ConsoleColor.Green);
-        scheme.UseLogo = LogoArt.BuiltInName;
-        return scheme;
-    }
-
-    // "Deep Blue": a dark blue background with cyan frames, the focused tab white on blue with a white corner,
-    // headings in colors of their own, and the logo "Marbles", which is used when the scheme is selected
-    private static ColorScheme DeepBlue()
-    {
-        var scheme = WithTabs(Make("Deep Blue", ConsoleColor.DarkBlue, ConsoleColor.Gray, ConsoleColor.Cyan,
-                ConsoleColor.Cyan, ConsoleColor.Green, ConsoleColor.Magenta, ConsoleColor.White, ConsoleColor.Blue,
-                ConsoleColor.Cyan, ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
-            null, null, ConsoleColor.Blue, null, ConsoleColor.White, ConsoleColor.Gray, true);
-        scheme.TabCorner = ConsoleColor.White;
-        scheme.KeyHints = ConsoleColor.Gray;
-        scheme.LineNumbers = ConsoleColor.Gray;
-        scheme.CurrentLineNumber = ConsoleColor.White;
-        scheme.Selector = ConsoleColor.Blue;
-        scheme.SelectorText = ConsoleColor.White;
-        // Names (Syntax 2), comments (Syntax 6) and heading 1 to 5 (Syntax 7 to 11)
-        scheme.Set(ColorItem.Syntax2, ConsoleColor.Yellow);
-        scheme.Set(ColorItem.Syntax6, ConsoleColor.Gray);
-        scheme.Set(ColorItem.Syntax7, ConsoleColor.Yellow);
-        scheme.Set(ColorItem.Syntax8, ConsoleColor.Green);
-        scheme.Set(ColorItem.Syntax9, ConsoleColor.Cyan);
-        scheme.Set(ColorItem.Syntax10, ConsoleColor.Magenta);
-        scheme.Set(ColorItem.Syntax11, ConsoleColor.Red);
-        scheme.UseLogo = LogoArt.BuiltInName;
-        return scheme;
-    }
-
-    // "Gray Box": black text on a dark gray background, the focused tab black on gray with a black corner,
-    // colored text in dark colors that can be read on the gray, and the logo "Marbles", which is used when the
-    // scheme is selected
-    private static ColorScheme GrayBox()
-    {
-        var scheme = WithTabs(Make("Gray Box", ConsoleColor.DarkGray, ConsoleColor.Black, ConsoleColor.Black,
-                ConsoleColor.Black, ConsoleColor.Black, ConsoleColor.White, ConsoleColor.Black, ConsoleColor.Black,
-                ConsoleColor.DarkGray, ConsoleColor.Gray, ConsoleColor.Black, ConsoleColor.White, ConsoleColor.Black),
-            null, null, ConsoleColor.Gray, ConsoleColor.Black, ConsoleColor.Black, null, true);
-        scheme.TabCorner = ConsoleColor.Black;
-        scheme.KeyHints = ConsoleColor.Black;
-        scheme.LineNumbers = ConsoleColor.Black;
-        scheme.CurrentLineNumber = ConsoleColor.White;
-        scheme.Selector = ConsoleColor.Gray;
-        scheme.SelectorText = ConsoleColor.Black;
-        scheme.FrameText = ConsoleColor.Black;
-        // Keywords and tags, text in quotes, numbers, links and comments (Syntax 1, 3 to 6)
-        scheme.Set(ColorItem.Syntax1, ConsoleColor.DarkBlue);
-        scheme.Set(ColorItem.Syntax3, ConsoleColor.DarkMagenta);
-        scheme.Set(ColorItem.Syntax4, ConsoleColor.Blue);
-        scheme.Set(ColorItem.Syntax5, ConsoleColor.DarkRed);
-        scheme.Set(ColorItem.Syntax6, ConsoleColor.Gray);
-        scheme.UseLogo = LogoArt.BuiltInName;
-        return scheme;
-    }
-
-    // "Marbles Quest": cyan text with blue dividers, green text in frames and boxes, the focused tab white with a
-    // cyan corner and the other tabs magenta, headings in the colors of the rainbow, and the logo "Reflections",
-    // which is used when the scheme is selected
-    private static ColorScheme MarblesQuest()
-    {
-        var scheme = WithTabs(Make("Marbles Quest", null, ConsoleColor.Cyan, ConsoleColor.Cyan, ConsoleColor.Blue,
-                ConsoleColor.Yellow, ConsoleColor.Magenta, ConsoleColor.Green, ConsoleColor.DarkBlue, ConsoleColor.Cyan,
-                ConsoleColor.Yellow, ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
-            null, null, null, null, ConsoleColor.White, ConsoleColor.Magenta, true);
-        scheme.TabCorner = ConsoleColor.Cyan;
-        scheme.FrameText = ConsoleColor.Green;
-        // Text in quotes, numbers (Syntax 3 and 4), and heading 1 to 6 (Syntax 7 to 12)
-        scheme.Set(ColorItem.Syntax3, ConsoleColor.Yellow);
-        scheme.Set(ColorItem.Syntax4, ConsoleColor.Red);
-        scheme.Set(ColorItem.Syntax7, ConsoleColor.Red);
-        scheme.Set(ColorItem.Syntax8, ConsoleColor.Yellow);
-        scheme.Set(ColorItem.Syntax9, ConsoleColor.Green);
-        scheme.Set(ColorItem.Syntax10, ConsoleColor.Cyan);
-        scheme.Set(ColorItem.Syntax11, ConsoleColor.Magenta);
-        scheme.Set(ColorItem.Syntax12, ConsoleColor.Blue);
-        scheme.UseLogo = "Reflections";
-        return scheme;
-    }
-
-    // "Tasty Bytes": magenta dividers, highlighted tabs in dark blue with a yellow corner, and the logo
-    // "Reflections", which is used when the scheme is selected
-    private static ColorScheme TastyBytes()
-    {
-        var scheme = WithTabs(Make("Tasty Bytes", null, ConsoleColor.Gray, ConsoleColor.Cyan, ConsoleColor.Magenta,
-                ConsoleColor.Green, ConsoleColor.Magenta, ConsoleColor.Green, ConsoleColor.DarkBlue, ConsoleColor.Cyan,
-                ConsoleColor.Yellow, ConsoleColor.Red, ConsoleColor.Red, ConsoleColor.White),
-            null, ConsoleColor.Cyan, ConsoleColor.DarkBlue, ConsoleColor.White, null, ConsoleColor.Cyan, true);
-        scheme.TabCorner = ConsoleColor.Yellow;
-        scheme.KeyHints = ConsoleColor.Green;
-        scheme.Unsaved = ConsoleColor.DarkMagenta;
-        scheme.UnsavedText = ConsoleColor.White;
-        scheme.LineNumbers = ConsoleColor.DarkMagenta;
-        scheme.CurrentLineNumber = ConsoleColor.Cyan;
-        scheme.Selector = ConsoleColor.Blue;
-        scheme.SelectorText = ConsoleColor.White;
-        // The comments (Syntax 6)
-        scheme.Set(ColorItem.Syntax6, ConsoleColor.DarkGray);
-        scheme.UseLogo = "Reflections";
+        var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+        using var stream = assembly.GetManifestResourceStream("Marbles.Schemes." + name + ".txt") ??
+                           throw new InvalidOperationException("A built-in color scheme is missing: " + name); // English
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+        var scheme = new ColorScheme { Name = name };
+        Read(scheme, reader.ReadToEnd());
         return scheme;
     }
 
     /// <summary>
     /// The color schemes that come with Marbles (the first is the default)
     /// </summary>
-    internal static readonly IReadOnlyList<ColorScheme> BuiltIn = new[]
-    {
-        DefaultScheme(),
-        DeepBlue(),
-        MarblesQuest(),
-        TastyBytes(),
-        Make("Yellow Monochrome", null, ConsoleColor.Yellow, ConsoleColor.DarkYellow, ConsoleColor.DarkYellow,
-            ConsoleColor.Yellow, ConsoleColor.Yellow, ConsoleColor.Yellow, ConsoleColor.DarkYellow,
-            ConsoleColor.Yellow, ConsoleColor.Yellow, ConsoleColor.DarkYellow, ConsoleColor.Yellow,
-            ConsoleColor.DarkYellow),
-        Make("Green Monochrome", null, ConsoleColor.Green, ConsoleColor.Green, ConsoleColor.DarkGreen,
-            ConsoleColor.Green, ConsoleColor.Green, ConsoleColor.Green, ConsoleColor.DarkGreen, ConsoleColor.Green,
-            ConsoleColor.Green, ConsoleColor.DarkGreen, ConsoleColor.Green, ConsoleColor.DarkGreen),
-        Make("Ice Warp", null, ConsoleColor.White, ConsoleColor.Cyan, ConsoleColor.Blue, ConsoleColor.Magenta,
-            ConsoleColor.Yellow, ConsoleColor.Green, ConsoleColor.DarkBlue, ConsoleColor.Cyan, ConsoleColor.Yellow,
-            ConsoleColor.Black, ConsoleColor.Red, ConsoleColor.White),
-        GrayBox()
-    };
+    internal static readonly IReadOnlyList<ColorScheme> BuiltIn = BuiltInNames.Select(ReadBuiltIn).ToArray();
 
     /// <summary>
     /// The default color scheme (a copy)

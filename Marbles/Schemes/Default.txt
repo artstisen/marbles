@@ -1,0 +1,45 @@
+; Marbles color scheme: Default
+; The colors: Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray,
+; DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White (or default)
+background=default
+text=Gray
+logo=Cyan
+dividers=DarkGray
+favorites=Green
+accent=Yellow
+editortitle=Green
+highlight=Cyan
+highlighttext=Black
+attention=Yellow
+attentiontext=Black
+warning=Red
+warningtext=White
+tabframes=DarkGray
+tabcorner=Gray
+boxborders=White
+tab=DarkCyan
+tabtext=Cyan
+tabshown=Cyan
+othertabs=DarkGray
+keyhints=Gray
+unsaved=Gray
+unsavedtext=Black
+linenumbers=DarkGray
+currentline=White
+selector=Cyan
+selectortext=Black
+frametext=Gray
+syntax1=Cyan
+syntax2=Yellow
+syntax3=Green
+syntax4=Magenta
+syntax5=Green
+syntax6=DarkGray
+syntax7=Red
+syntax8=Magenta
+syntax9=Yellow
+syntax10=Cyan
+syntax11=Green
+syntax12=Blue
+tabhighlight=false
+uselogo=Marbles

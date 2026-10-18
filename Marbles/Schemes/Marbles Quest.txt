@@ -1,0 +1,45 @@
+; Marbles color scheme: Marbles Quest
+; The colors: Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray,
+; DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White (or default)
+background=default
+text=Cyan
+logo=Cyan
+dividers=Blue
+favorites=Yellow
+accent=Magenta
+editortitle=Green
+highlight=DarkBlue
+highlighttext=Cyan
+attention=Yellow
+attentiontext=Black
+warning=Red
+warningtext=White
+tabframes=Blue
+tabcorner=Cyan
+boxborders=Blue
+tab=Blue
+tabtext=White
+tabshown=White
+othertabs=Magenta
+keyhints=Cyan
+unsaved=Cyan
+unsavedtext=DarkBlue
+linenumbers=Blue
+currentline=Cyan
+selector=DarkBlue
+selectortext=Cyan
+frametext=Green
+syntax1=Cyan
+syntax2=Magenta
+syntax3=Yellow
+syntax4=Red
+syntax5=DarkYellow
+syntax6=Blue
+syntax7=Red
+syntax8=Yellow
+syntax9=Green
+syntax10=Cyan
+syntax11=Magenta
+syntax12=Blue
+tabhighlight=true
+uselogo=Reflections

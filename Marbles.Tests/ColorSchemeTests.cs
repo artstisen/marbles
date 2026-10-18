@@ -20,6 +20,51 @@ public class ColorSchemeTests : IDisposable
         if (Directory.Exists(_directory)) Directory.Delete(_directory, true);
     }
 
+    // A scheme with only the main colors set (as Ice Warp had before the built-in schemes had all their colors):
+    // the others are "default", and follow the colors they stand for
+    private static ColorScheme Following() => ColorScheme.Parse(
+        "text=White\nlogo=Cyan\ndividers=Blue\nfavorites=Magenta\naccent=Yellow\neditortitle=Green\n" +
+        "highlight=DarkBlue\nhighlighttext=Cyan\nattention=Yellow\nattentiontext=Black\nwarning=Red\n" +
+        "warningtext=White\ntabhighlight=true\n", "Following");
+
+    private static string WithoutComments(string text) =>
+        string.Join("\n", text.Replace("\r\n", "\n").Split('\n').Where(line => !line.StartsWith(';')));
+
+    // The files of the built-in schemes in the source (Marbles/Schemes)
+    private static string SchemesDirectory()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory != null && !File.Exists(Path.Combine(directory.FullName, "Marbles.sln")))
+        {
+            directory = directory.Parent;
+        }
+
+        return Path.Combine(directory!.FullName, "Marbles", "Schemes");
+    }
+
+    [Fact]
+    public void TheBuiltInSchemes_AreTheirFiles_WithTheColorsThatFollowOthersSet()
+    {
+        foreach (var scheme in ColorScheme.BuiltIn)
+        {
+            var file = File.ReadAllText(Path.Combine(SchemesDirectory(), scheme.Name + ".txt"));
+            Assert.Equal(WithoutComments(file), WithoutComments(scheme.Serialize()));
+            // Read again (as a scheme of your own made from it): the same
+            Assert.Equal(WithoutComments(scheme.Serialize()),
+                WithoutComments(ColorScheme.Parse(scheme.Serialize(), scheme.Name).Serialize()));
+            // No color follows another when one of them is changed (the background is that of the terminal)
+            foreach (var item in new[]
+                     {
+                         ColorItem.TabFrames, ColorItem.TabCorner, ColorItem.BoxBorders, ColorItem.Tab, ColorItem.TabText,
+                         ColorItem.TabShown, ColorItem.OtherTabs, ColorItem.KeyHints, ColorItem.Unsaved,
+                         ColorItem.UnsavedText, ColorItem.LineNumbers, ColorItem.CurrentLineNumber, ColorItem.FrameText
+                     })
+            {
+                Assert.True(scheme.Get(item) != null, scheme.Name + ": " + item);
+            }
+        }
+    }
+
     [Fact]
     public void TheBuiltInSchemes_HaveTheirNames_AndDeepBlueABackground()
     {
@@ -41,7 +86,7 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal("Marbles", standard.UseLogo);
         Assert.NotNull(Logos.Load(standard.UseLogo));
         Assert.Equal(ConsoleColor.DarkGray, standard.TabFrameColor);
-        Assert.Equal(ConsoleColor.DarkGray, standard.TabColor);
+        Assert.Equal(ConsoleColor.DarkCyan, standard.TabColor);
         Assert.Equal(ConsoleColor.Cyan, standard.TabShownColor);
         Assert.Equal(ConsoleColor.DarkGray, standard.OtherTabsColor);
         Assert.False(standard.TabHighlight);
@@ -58,18 +103,18 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void AScheme_IsWrittenAndReadByName()
     {
-        var scheme = ColorScheme.BuiltIn[2].Clone();
+        var scheme = Following();
         scheme.Background = ConsoleColor.DarkBlue;
         scheme.TabFrames = ConsoleColor.Yellow;
         scheme.TabText = ConsoleColor.White;
         scheme.TabHighlight = false;
         var text = scheme.Serialize();
-        Assert.Contains("text=Green\n", text);
+        Assert.Contains("text=White\n", text);
         Assert.Contains("boxborders=default\n", text);
         Assert.Contains("tabhighlight=false\n", text);
         var read = ColorScheme.Parse(text, "Copy");
         Assert.Equal("Copy", read.Name);
-        Assert.Equal(text.Replace("Marbles Quest", "Copy"), read.Serialize());
+        Assert.Equal(text.Replace("Following", "Copy"), read.Serialize());
     }
 
     [Fact]
@@ -86,7 +131,7 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void TheDefaults_StandForOtherColors()
     {
-        var scheme = ColorScheme.BuiltIn[6].Clone();
+        var scheme = Following();
         Assert.Equal(ConsoleColor.Blue, scheme.TabFrameColor);
         Assert.Equal(ConsoleColor.Blue, scheme.TabColor);
         // The text of the highlighted tab is the color of the focused tab
@@ -116,7 +161,7 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void TheColorsOfColoredText_HaveTheColorsTheyHadBefore_UntilTheyAreSet()
     {
-        var scheme = ColorScheme.BuiltIn[6].Clone();
+        var scheme = Following();
         // 1 keywords: the logo, 2 names: the accent, 3 strings: the favorites, 4 numbers, 5 links: the editor
         // title, 6 comments: the dividers, 7 to 12 the headings
         Assert.Equal(scheme.Logo, scheme.SyntaxColor(0));
@@ -139,20 +184,10 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
-    public void TheDefaultScheme_HasItsColors()
+    public void TheDefaultScheme_IsReadAsItIsWritten()
     {
-        var expected = "background=default\ntext=Gray\nlogo=Cyan\ndividers=DarkGray\nfavorites=Green\naccent=Yellow\n" +
-                       "editortitle=Green\nhighlight=Cyan\nhighlighttext=Black\nattention=Yellow\n" +
-                       "attentiontext=Black\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=Gray\n" +
-                       "boxborders=White\ntab=DarkGray\ntabtext=default\ntabshown=Cyan\nothertabs=DarkGray\n" +
-                       "keyhints=default\nunsaved=default\nunsavedtext=default\nlinenumbers=default\n" +
-                       "currentline=White\nselector=Cyan\nselectortext=Black\nframetext=default\n" +
-                       "syntax1=default\nsyntax2=default\nsyntax3=default\nsyntax4=default\nsyntax5=default\n" +
-                       "syntax6=default\nsyntax7=Red\nsyntax8=Magenta\nsyntax9=Yellow\nsyntax10=Cyan\n" +
-                       "syntax11=Green\nsyntax12=default\ntabhighlight=false\nuselogo=Marbles\n";
         // Without the comment lines at the top
         var text = string.Join("\n", ColorScheme.Default.Serialize().Split('\n').Where(line => !line.StartsWith(';')));
-        Assert.Equal(expected, text);
         Assert.Equal(text, string.Join("\n", ColorScheme.Parse(ColorScheme.Default.Serialize(), "Default")
             .Serialize().Split('\n').Where(line => !line.StartsWith(';'))));
 
@@ -166,78 +201,19 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
-    public void MarblesQuest_HasItsColors_AndIsUsedWithTheLogoReflections()
+    public void GrayBox_ReplacesWaterSport_AndMarblesQuestUsesTheLogoReflections()
     {
-        var expected = "background=default\ntext=Cyan\nlogo=Cyan\ndividers=Blue\nfavorites=Yellow\naccent=Magenta\n" +
-                       "editortitle=Green\nhighlight=DarkBlue\nhighlighttext=Cyan\nattention=Yellow\n" +
-                       "attentiontext=Black\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=Cyan\n" +
-                       "boxborders=default\ntab=default\ntabtext=default\ntabshown=White\nothertabs=Magenta\n" +
-                       "keyhints=default\nunsaved=default\nunsavedtext=default\nlinenumbers=default\n" +
-                       "currentline=default\nselector=DarkBlue\nselectortext=Cyan\nframetext=Green\n" +
-                       "syntax1=default\nsyntax2=default\nsyntax3=Yellow\nsyntax4=Red\nsyntax5=default\n" +
-                       "syntax6=default\nsyntax7=Red\nsyntax8=Yellow\nsyntax9=Green\nsyntax10=Cyan\n" +
-                       "syntax11=Magenta\nsyntax12=Blue\ntabhighlight=true\nuselogo=Reflections\n";
-        // Without the comment lines at the top
-        var text = string.Join("\n", ColorSchemes.Load("marbles quest")!.Serialize().Split('\n')
-            .Where(line => !line.StartsWith(';')));
-        Assert.Equal(expected, text);
-    }
-
-    [Fact]
-    public void GrayBox_HasItsColors()
-    {
-        var expected = "background=DarkGray\ntext=Black\nlogo=Black\ndividers=Black\nfavorites=Black\naccent=White\n" +
-                       "editortitle=Black\nhighlight=Black\nhighlighttext=DarkGray\nattention=Gray\n" +
-                       "attentiontext=Black\nwarning=White\nwarningtext=Black\ntabframes=default\ntabcorner=Black\n" +
-                       "boxborders=default\ntab=Gray\ntabtext=Black\ntabshown=Black\nothertabs=default\n" +
-                       "keyhints=Black\nunsaved=default\nunsavedtext=default\nlinenumbers=Black\n" +
-                       "currentline=White\nselector=Gray\nselectortext=Black\nframetext=Black\n" +
-                       "syntax1=DarkBlue\nsyntax2=default\nsyntax3=DarkMagenta\nsyntax4=Blue\nsyntax5=DarkRed\n" +
-                       "syntax6=Gray\nsyntax7=default\nsyntax8=default\nsyntax9=default\nsyntax10=default\n" +
-                       "syntax11=default\nsyntax12=default\ntabhighlight=true\nuselogo=Marbles\n";
-        // Without the comment lines at the top
-        var text = string.Join("\n", ColorSchemes.Load("gray box")!.Serialize().Split('\n')
-            .Where(line => !line.StartsWith(';')));
-        Assert.Equal(expected, text);
+        Assert.Equal("Reflections", ColorSchemes.Load("marbles quest")!.UseLogo);
         Assert.Null(ColorSchemes.Load("Water Sport")); // The scheme it replaces
     }
 
     [Fact]
-    public void DeepBlue_HasItsColors()
-    {
-        var expected = "background=DarkBlue\ntext=Gray\nlogo=Cyan\ndividers=Cyan\nfavorites=Green\naccent=Magenta\n" +
-                       "editortitle=White\nhighlight=Blue\nhighlighttext=Cyan\nattention=Yellow\n" +
-                       "attentiontext=Black\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=White\n" +
-                       "boxborders=default\ntab=Blue\ntabtext=default\ntabshown=White\nothertabs=Gray\n" +
-                       "keyhints=Gray\nunsaved=default\nunsavedtext=default\nlinenumbers=Gray\n" +
-                       "currentline=White\nselector=Blue\nselectortext=White\nframetext=default\n" +
-                       "syntax1=default\nsyntax2=Yellow\nsyntax3=default\nsyntax4=default\nsyntax5=default\n" +
-                       "syntax6=Gray\nsyntax7=Yellow\nsyntax8=Green\nsyntax9=Cyan\nsyntax10=Magenta\n" +
-                       "syntax11=Red\nsyntax12=default\ntabhighlight=true\nuselogo=Marbles\n";
-        // Without the comment lines at the top
-        var text = string.Join("\n", ColorSchemes.Load("Deep Blue")!.Serialize().Split('\n')
-            .Where(line => !line.StartsWith(';')));
-        Assert.Equal(expected, text);
-    }
-
-    [Fact]
-    public void TastyBytes_HasItsColors_AndIsUsedWithTheLogoReflections()
+    public void TastyBytes_IsUsedWithTheLogoReflections()
     {
         var scheme = ColorSchemes.Load("tasty bytes")!;
         Assert.Equal("Tasty Bytes", scheme.Name);
         Assert.Equal("Reflections", scheme.UseLogo);
         Assert.NotNull(Logos.Load(scheme.UseLogo));
-        var expected = "background=default\ntext=Gray\nlogo=Cyan\ndividers=Magenta\nfavorites=Green\naccent=Magenta\n" +
-                       "editortitle=Green\nhighlight=DarkBlue\nhighlighttext=Cyan\nattention=Yellow\n" +
-                       "attentiontext=Red\nwarning=Red\nwarningtext=White\ntabframes=default\ntabcorner=Yellow\n" +
-                       "boxborders=Cyan\ntab=DarkBlue\ntabtext=White\ntabshown=default\nothertabs=Cyan\n" +
-                       "keyhints=Green\nunsaved=DarkMagenta\nunsavedtext=White\nlinenumbers=DarkMagenta\n" +
-                       "currentline=Cyan\nselector=Blue\nselectortext=White\nframetext=default\n" +
-                       string.Concat(Enumerable.Range(1, 12).Select(n => "syntax" + n + (n == 6 ? "=DarkGray" : "=default") + "\n")) +
-                       "tabhighlight=true\nuselogo=Reflections\n";
-        // Without the comment lines at the top
-        var text = string.Join("\n", scheme.Serialize().Split('\n').Where(line => !line.StartsWith(';')));
-        Assert.Equal(expected, text);
 
         // The logo of a scheme is kept in a scheme of your own made from it, and the other schemes have none
         var read = ColorScheme.Parse(scheme.Serialize(), "Mine");
@@ -286,7 +262,7 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void LineNumbersAndTheSelector_HaveColorsOfTheirOwn()
     {
-        var scheme = ColorScheme.BuiltIn[2].Clone();
+        var scheme = Following();
         Assert.Equal(scheme.Dividers, scheme.LineNumbersColor);
         Assert.Equal(scheme.Text, scheme.CurrentLineNumberColor);
         Assert.Equal(scheme.Highlight, scheme.SelectorColor);
@@ -334,6 +310,9 @@ public class ColorSchemeTests : IDisposable
     public void TextCannotHaveTheColorOfItsBackground()
     {
         var scheme = ColorScheme.Default;
+        // (the text of the highlighted tab as the name of the focused tab, on a dark gray tab)
+        scheme.TabText = null;
+        scheme.Tab = ConsoleColor.DarkGray;
         // The background cannot have the color of the text on it
         Assert.False(scheme.Allowed(ColorItem.Background, ConsoleColor.Gray));
         Assert.False(scheme.Allowed(ColorItem.Background, ConsoleColor.Cyan));
@@ -353,7 +332,7 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void TheCornerOfTheTabShown_HasTheColorOfTheTabFrames_UntilItIsSet()
     {
-        var scheme = ColorScheme.BuiltIn[6].Clone();
+        var scheme = Following();
         Assert.Null(scheme.TabCorner);
         Assert.Equal(scheme.TabFrameColor, scheme.TabCornerColor);
         Assert.Contains("tabcorner=default\n", scheme.Serialize());

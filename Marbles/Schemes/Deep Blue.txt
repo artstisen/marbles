@@ -1,0 +1,45 @@
+; Marbles color scheme: Deep Blue
+; The colors: Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray,
+; DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White (or default)
+background=DarkBlue
+text=Gray
+logo=Cyan
+dividers=Cyan
+favorites=Green
+accent=Magenta
+editortitle=White
+highlight=Blue
+highlighttext=Cyan
+attention=Yellow
+attentiontext=Black
+warning=Red
+warningtext=White
+tabframes=Cyan
+tabcorner=White
+boxborders=Cyan
+tab=Blue
+tabtext=White
+tabshown=White
+othertabs=Gray
+keyhints=Gray
+unsaved=Gray
+unsavedtext=DarkBlue
+linenumbers=Gray
+currentline=White
+selector=Blue
+selectortext=White
+frametext=Gray
+syntax1=Cyan
+syntax2=Yellow
+syntax3=Green
+syntax4=Magenta
+syntax5=White
+syntax6=Gray
+syntax7=Yellow
+syntax8=Green
+syntax9=Cyan
+syntax10=Magenta
+syntax11=Red
+syntax12=Blue
+tabhighlight=true
+uselogo=Marbles

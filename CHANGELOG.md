@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Color schemes**: the built-in schemes have all their colors set (new colors in several of them), so changing one color (as the dividers) no longer changes others that followed it, like the tab frames. A color left at _[Default]_ in a scheme of your own still follows the color it names. The built-in schemes are files in the program (`Marbles/Schemes`), written as a scheme of your own is.
 - **Editor: a split is remembered.** A text file or a note closed in two panes opens in two panes again, with each cursor where it was and the focus in the same pane (files: in `history.txt` and `favorites.txt`, as `12:5|40:1`; notes: in the encrypted data file, which earlier versions still open). `:split` now turns the split on and off.
 - **Editor: `:split`** shows the text in two panes side by side. A change in one is seen in the other at once, and the other pane keeps showing its place. `Tab` / `Shift+Tab` in Normal mode go to the other pane, and the mode is shown over the pane with the focus; the top row, _Unsaved_ and the bottom line stay those of the text. `:q` closes the pane with the focus, `:only` the other one.
 - **Command history**: `Up` and `Down` on a command line bring back the commands given before on that page (the editor, the file browser, Favorites, the lists, the menus ... each has its own, the newest first, at most 20). With the start of a command typed, only those that start with it. Kept in memory only, never written to a file, and forgotten at logout.

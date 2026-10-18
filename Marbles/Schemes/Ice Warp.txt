@@ -1,0 +1,44 @@
+; Marbles color scheme: Ice Warp
+; The colors: Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray,
+; DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White (or default)
+background=default
+text=White
+logo=Cyan
+dividers=Blue
+favorites=Magenta
+accent=Yellow
+editortitle=Green
+highlight=DarkBlue
+highlighttext=Cyan
+attention=Yellow
+attentiontext=Black
+warning=Red
+warningtext=White
+tabframes=Blue
+tabcorner=Blue
+boxborders=Blue
+tab=Blue
+tabtext=White
+tabshown=White
+othertabs=White
+keyhints=White
+unsaved=White
+unsavedtext=DarkBlue
+linenumbers=Blue
+currentline=White
+selector=DarkBlue
+selectortext=Cyan
+frametext=White
+syntax1=Cyan
+syntax2=Yellow
+syntax3=Magenta
+syntax4=Red
+syntax5=Green
+syntax6=Blue
+syntax7=default
+syntax8=default
+syntax9=default
+syntax10=default
+syntax11=default
+syntax12=default
+tabhighlight=true

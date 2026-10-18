@@ -1,0 +1,45 @@
+; Marbles color scheme: Tasty Bytes
+; The colors: Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray,
+; DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White (or default)
+background=default
+text=Gray
+logo=Cyan
+dividers=Magenta
+favorites=Green
+accent=Magenta
+editortitle=Green
+highlight=DarkBlue
+highlighttext=Cyan
+attention=Yellow
+attentiontext=Red
+warning=Red
+warningtext=White
+tabframes=Magenta
+tabcorner=Yellow
+boxborders=Cyan
+tab=DarkBlue
+tabtext=White
+tabshown=White
+othertabs=Cyan
+keyhints=Green
+unsaved=DarkMagenta
+unsavedtext=White
+linenumbers=DarkMagenta
+currentline=Cyan
+selector=Blue
+selectortext=White
+frametext=Gray
+syntax1=Cyan
+syntax2=Magenta
+syntax3=Green
+syntax4=Yellow
+syntax5=Blue
+syntax6=DarkGray
+syntax7=Red
+syntax8=Magenta
+syntax9=Yellow
+syntax10=Cyan
+syntax11=Green
+syntax12=Blue
+tabhighlight=true
+uselogo=Reflections

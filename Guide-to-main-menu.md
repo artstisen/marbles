@@ -155,6 +155,7 @@ The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEM
 
 - `j` `k` Select a group
 - `Enter` (or `Space`) Pick its color from a list of the 16 colors: select with `j` `k` and press `Enter` (or `l`), or `Esc` to cancel. For Highlight, Attention, Warning and Tabs (shown inverted) this is the background color, and `T` picks the text color
+- `[Default]` (for the colors that have it) is not a color of its own: the color follows the one it names, as _[Default]: the dividers_ for the tab frames, so changing the dividers changes them too. Pick a color to keep it apart. The built-in schemes have all such colors set, so changing one color changes only that one
 - **Accent**: the keys in the Quick guide (it was called _Preview title_; a scheme file with `previewtitle` is still read). It is also the color Syntax 2 has from the start
 - **Line numbers** and **Current line number**: the line numbers of the editor, and the number of the line the cursor is on. `[Default]` is the color of the dividers, and of the text
 - **Selector**: the arrow `->` that shows the selection in lists, menus, settings and boxes. `Enter` picks its background and `T` the arrow itself. It has colors of its own (in the built-in schemes the same as Highlight), so it stays as it is when the colors of Highlight are changed. A scheme file without `selector` and `selectortext` gets the colors of its highlight
