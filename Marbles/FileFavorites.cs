@@ -26,6 +26,7 @@ internal static class FileFavorites
         public bool InFolder { get; set; } // A favorite in the folder above it in the list
         internal int Line; // Where the cursor was when the file was closed in the editor (from 1; 0: not known)
         internal int Column;
+        internal string Split = string.Empty; // The other pane of a split, as written ("|40:1"; empty: not split)
     }
 
     // The list, with its folders (moving, removing and putting back are done by it)
@@ -96,14 +97,15 @@ internal static class FileFavorites
             }
 
             // Where the cursor was, before the path
-            var (caretLine, caretColumn) = CaretPosition.Take(ref written);
+            var (caretLine, caretColumn, split) = CaretPosition.Take(ref written);
             rest = FileOperations.ListedPath(written);
             if (rest.Length == 0 || Contains(rest)) continue;
             // The favorites of a folder follow it directly
             if (!inFolder) hasFolder = false;
             List.Add(new Favorite
             {
-                Path = rest, Color = color, InFolder = inFolder, Line = caretLine, Column = caretColumn
+                Path = rest, Color = color, InFolder = inFolder, Line = caretLine, Column = caretColumn,
+                Split = split
             });
         }
     }
@@ -122,7 +124,7 @@ internal static class FileFavorites
             }
             else
             {
-                text.Append(CaretPosition.Write(favorite.Line, favorite.Column)).Append(favorite.Path);
+                text.Append(CaretPosition.Write(favorite.Line, favorite.Column, favorite.Split)).Append(favorite.Path);
             }
 
             text.Append('\n');
@@ -169,22 +171,23 @@ internal static class FileFavorites
     /// <summary>
     /// Where the cursor was in a favorite file when it was closed (line and column from 1), or null if not known
     /// </summary>
-    internal static (int Line, int Column)? CaretOf(string path)
+    internal static (int Line, int Column, string Split)? CaretOf(string path)
     {
         var index = IndexOf(path);
-        return index >= 0 && List[index].Line > 0 ? (List[index].Line, List[index].Column) : null;
+        return index >= 0 && List[index].Line > 0 ? (List[index].Line, List[index].Column, List[index].Split) : null;
     }
 
     /// <summary>
     /// Keep where the cursor was in a favorite file when it was closed
     /// </summary>
     /// <returns>True if the file is a favorite</returns>
-    internal static bool SetCaret(string path, int line, int column)
+    internal static bool SetCaret(string path, int line, int column, string split = "")
     {
         var index = IndexOf(path);
         if (index < 0) return false;
         List[index].Line = Math.Max(1, line);
         List[index].Column = Math.Max(1, column);
+        List[index].Split = split;
         return true;
     }
 

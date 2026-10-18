@@ -864,21 +864,25 @@ internal static class Actions
             Entries.RegisterSessionId((Entries.CurrentEntry.Id));
             
             var cursorIndex = Entries.CurrentEntry.CursorIndex;
+            var split = SplitOfEntry(Entries.CurrentEntry.Split);
             while (true)
             {
                 Mode.SetMode(Mode.SelectedMode.Edit);
                 Tools.ClearScreen();
                 DrawEditMenu();
-                // Insert editor at current cursor position (colored as set for the entry)
+                // Insert editor at current cursor position (colored as set for the entry, and split if it was)
                 TextArea.NextEntrySyntax = EntrySyntax.Get(Entries.CurrentEntry.Options);
                 TextArea.NextEntryReadOnly = Entries.IsReadOnly(Entries.CurrentEntry);
+                TextArea.NextSplit = split;
                 TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
                     Init.LineCount - 3, Entries.CurrentEntry.Text, cursorIndex, false, false, search, 0);
                 // Cleanup
                 textArea.ClearUndoRedoCache();
+                KeepSplitOfEntry(textArea);
                 // ":snip edit" or ":complete edit": that file, and then the entry again
                 if (TextArea.TakeSideFileRequest() is not { } sideFile) break;
                 cursorIndex = textArea.GetCursorIndex();
+                split = textArea.SplitPlace;
                 search = false;
                 FileExplorer.EditSideFile(sideFile);
             }
@@ -918,8 +922,30 @@ internal static class Actions
         //ResetLastSelectedIndex(); // <- Do not reset index here as this will prevent reselecting the entry when returning to the lists
         Entries.CurrentEntry.Text = _tempText;
         Entries.CurrentEntry.CursorIndex = textArea.GetCursorIndex();
+        Entries.CurrentEntry.Split = SplitTextOf(textArea);
         Entries.UpdateEntry(Entries.CurrentEntry, true);
         return Entries.SaveEntriesToFile();
+    }
+
+    // The other pane of a split as kept for an entry (Entry.Split): "1234", "L1234" when it is at the left
+    private static string SplitTextOf(TextArea textArea) =>
+        textArea.SplitPlace is { } other ? (other.OtherLeft ? "L" : string.Empty) + other.Index : string.Empty;
+
+    private static (int Index, bool OtherLeft)? SplitOfEntry(string split) =>
+        FileIo.IsSplitText(split) && int.TryParse(split.TrimStart('L'), out var index)
+            ? (index, split.StartsWith('L'))
+            : null;
+
+    // The editor was closed (or left by a jump): whether the entry was split is remembered, also when the text was
+    // not changed (in the entry, without changing its date; it is written to the data file when the file is saved
+    // next). A read-only entry is not changed, as its cursor is not
+    internal static void KeepSplitOfEntry(TextArea textArea)
+    {
+        if (!Entries.CurrentEntryExists() || Entries.IsReadOnly(Entries.CurrentEntry)) return;
+        var split = SplitTextOf(textArea);
+        if (split == Entries.CurrentEntry.Split) return;
+        Entries.CurrentEntry.Split = split;
+        Entries.UpdateEntry(Entries.CurrentEntry, false);
     }
 
 

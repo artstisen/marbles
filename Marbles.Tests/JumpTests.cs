@@ -137,7 +137,7 @@ public class JumpTests : IDisposable
             FileHistory.SetCaret(In("old.md"), 4, 2);
             Assert.True(FileHistory.PathChanged(In("old.md"), In("new.md")));
             // The place of the cursor goes with it
-            Assert.Equal((4, 2), FileHistory.CaretOf(In("new.md")));
+            Assert.Equal((4, 2, ""), FileHistory.CaretOf(In("new.md")));
             Assert.Null(FileHistory.CaretOf(In("old.md")));
         }
         finally

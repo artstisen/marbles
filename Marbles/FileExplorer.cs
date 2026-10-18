@@ -763,15 +763,19 @@ internal static partial class FileExplorer
             // The line found by a search, or else where the cursor was when the file was closed last time (a
             // favorite first, then the history)
             var cursorIndex = _openAtIndex;
+            (int Index, bool OtherLeft)? split = null;
             if (!_openAtFound && CaretOfFile(file.Path) is { } caret)
             {
                 cursorIndex = CaretPosition.IndexOf(_file?.Text ?? string.Empty, caret.Line, caret.Column);
+                // Closed in a split: opened split again
+                split = CaretPosition.SplitOf(caret.Split, _file?.Text ?? string.Empty);
             }
 
             while (true)
             {
                 Tools.ClearScreen();
                 Actions.DrawEditFileMenu();
+                TextArea.NextSplit = split;
                 var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
                     Init.LineCount - 3, _file?.Text ?? string.Empty, cursorIndex, false, false, false, TextArea.SaveAsFile, modified);
                 textArea.ClearUndoRedoCache();
@@ -780,6 +784,7 @@ internal static partial class FileExplorer
                 // ":snip edit" or ":complete edit": that file, and then this file again (as it is on disk)
                 if (TextArea.TakeSideFileRequest() is not { } sideFile) break;
                 cursorIndex = textArea.GetCursorIndex();
+                split = textArea.SplitPlace;
                 EditSideFile(sideFile);
                 if (!File.Exists(file.Path)) break;
                 _file = TextFile.Load(file.Path);
@@ -853,7 +858,7 @@ internal static partial class FileExplorer
     }
 
     // Where the cursor was in a file when it was closed: kept in the favorites first, then in the history
-    private static (int Line, int Column)? CaretOfFile(string path)
+    private static (int Line, int Column, string Split)? CaretOfFile(string path)
     {
         FileFavorites.Load();
         FileHistory.Load();
@@ -872,16 +877,25 @@ internal static partial class FileExplorer
     // it is one
     private static void KeepCaret(string path, TextArea textArea)
     {
-        var (line, column) = CaretPosition.Of(textArea.GetText(), textArea.GetCursorIndex());
+        var text = textArea.GetText();
+        var (line, column) = CaretPosition.Of(text, textArea.GetCursorIndex());
+        // Closed in a split: where the cursor of the other pane was, and on which side
+        var split = string.Empty;
+        if (textArea.SplitPlace is { } other)
+        {
+            var (otherLine, otherColumn) = CaretPosition.Of(text, other.Index);
+            split = CaretPosition.SplitText(otherLine, otherColumn, other.OtherLeft);
+        }
+
         FileHistory.Load();
-        if (FileHistory.SetCaret(path, line, column))
+        if (FileHistory.SetCaret(path, line, column, split))
         {
             var status = FileHistory.Save();
             if (status != DialogText.Success) EventLog.Add(DialogText.LogFile + "History: " + status);
         }
 
         FileFavorites.Load();
-        if (FileFavorites.SetCaret(path, line, column))
+        if (FileFavorites.SetCaret(path, line, column, split))
         {
             var status = FileFavorites.Save();
             if (status != DialogText.Success) EventLog.Add(DialogText.LogFile + "Favorites: " + status);

@@ -4,6 +4,7 @@
 /// A split of the editor (":split"): a second editor on the same text, which follows the changes made in the first
 /// while it does not have the focus, and the requests the host acts on (Tab, ":q" and ":only" in a split)
 /// </summary>
+[Collection("Static state")]
 public class SplitTests
 {
     private static string Text(int lines) =>

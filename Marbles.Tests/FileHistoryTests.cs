@@ -49,11 +49,44 @@ public class FileHistoryTests : IDisposable
         Assert.Equal("12:5\t", CaretPosition.Write(12, 5));
         Assert.Equal(string.Empty, CaretPosition.Write(0, 0));
         var written = "12:5\tC:\\notes\\a.md";
-        Assert.Equal((12, 5), CaretPosition.Take(ref written));
+        Assert.Equal((12, 5, ""), CaretPosition.Take(ref written));
         Assert.Equal("C:\\notes\\a.md", written);
         var path = "/home/notes/1:2 a.md";
-        Assert.Equal((0, 0), CaretPosition.Take(ref path));
+        Assert.Equal((0, 0, ""), CaretPosition.Take(ref path));
         Assert.Equal("/home/notes/1:2 a.md", path);
+    }
+
+    [Fact]
+    public void ASplit_IsKeptAfterTheLineAndColumn_AndALineWithoutItIsReadAsBefore()
+    {
+        // The other pane after "|" ("<": at the left)
+        Assert.Equal("12:5|40:1\t", CaretPosition.Write(12, 5, CaretPosition.SplitText(40, 1, false)));
+        Assert.Equal("|<40:1", CaretPosition.SplitText(40, 1, true));
+        var written = "12:5|<40:1\tC:\\notes\\a.md";
+        Assert.Equal((12, 5, "|<40:1"), CaretPosition.Take(ref written));
+        Assert.Equal("C:\\notes\\a.md", written);
+        written = "12:5\tC:\\notes\\a.md";
+        Assert.Equal((12, 5, ""), CaretPosition.Take(ref written));
+        // Something else after the line and column: not a caret (the line is a path, as before)
+        var path = "12:5|x\ta.md";
+        Assert.Equal((0, 0, ""), CaretPosition.Take(ref path));
+
+        const string text = "one\ntwo\nthree";
+        Assert.Equal((8, true), CaretPosition.SplitOf("|<3:1", text));
+        Assert.Equal((5, false), CaretPosition.SplitOf("|2:2", text));
+        // A line past the end: the end of the text (it may have changed since)
+        Assert.Equal((text.Length, false), CaretPosition.SplitOf("|99:1", text));
+        Assert.Null(CaretPosition.SplitOf("", text));
+        Assert.Null(CaretPosition.SplitOf("|x", text));
+
+        var time = new DateTime(2026, 10, 18, 9, 30, 0);
+        FileHistory.Add(In("a.txt"), time);
+        Assert.True(FileHistory.SetCaret(In("a.txt"), 12, 5, "|<40:1"));
+        FileHistory.Parse(FileHistory.Serialize());
+        Assert.Equal((12, 5, "|<40:1"), FileHistory.CaretOf(In("a.txt")));
+        // Closed with one pane: the split is forgotten
+        Assert.True(FileHistory.SetCaret(In("a.txt"), 3, 1));
+        Assert.Equal((3, 1, ""), FileHistory.CaretOf(In("a.txt")));
     }
 
     [Fact]
@@ -65,16 +98,16 @@ public class FileHistoryTests : IDisposable
         Assert.Null(FileHistory.CaretOf(In("a.txt")));
         Assert.True(FileHistory.SetCaret(In("a.txt"), 12, 5));
         Assert.False(FileHistory.SetCaret(In("other.txt"), 1, 1));
-        Assert.Equal((12, 5), FileHistory.CaretOf(In("a.txt")));
+        Assert.Equal((12, 5, ""), FileHistory.CaretOf(In("a.txt")));
         // Opened again: moved to the top, with the place kept
         FileHistory.Add(In("a.txt"), time.AddMinutes(1));
-        Assert.Equal((12, 5), FileHistory.CaretOf(In("a.txt")));
+        Assert.Equal((12, 5, ""), FileHistory.CaretOf(In("a.txt")));
 
         var text = FileHistory.Serialize();
         Assert.Contains("2026-10-14 09:31\t12:5\t" + In("a.txt") + "\n", text);
         Assert.Contains("2026-10-14 09:30\t" + In("b.txt") + "\n", text);
         FileHistory.Parse(text);
-        Assert.Equal((12, 5), FileHistory.CaretOf(In("a.txt")));
+        Assert.Equal((12, 5, ""), FileHistory.CaretOf(In("a.txt")));
         Assert.Null(FileHistory.CaretOf(In("b.txt")));
         Assert.Equal(new[] { "a.txt", "b.txt" }, FileHistory.Items.Select(entry => Path.GetFileName(entry.Path)));
     }

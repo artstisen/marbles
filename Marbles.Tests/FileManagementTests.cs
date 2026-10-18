@@ -388,11 +388,16 @@ public class FileManagementTests : IDisposable
         Assert.Contains(" \t20:1\t" + b + "\n", text);
 
         FileFavorites.Parse(text);
-        Assert.Equal((3, 7), FileFavorites.CaretOf(a));
-        Assert.Equal((20, 1), FileFavorites.CaretOf(b));
+        Assert.Equal((3, 7, ""), FileFavorites.CaretOf(a));
+        Assert.Equal((20, 1, ""), FileFavorites.CaretOf(b));
         Assert.Equal(ConsoleColor.Cyan, FileFavorites.Items[0].Color);
         Assert.True(FileFavorites.Items[2].InFolder);
         Assert.Equal(text, FileFavorites.Serialize());
+
+        // Closed in a split: the other pane is kept too
+        Assert.True(FileFavorites.SetCaret(a, 3, 7, "|40:2"));
+        FileFavorites.Parse(FileFavorites.Serialize());
+        Assert.Equal((3, 7, "|40:2"), FileFavorites.CaretOf(a));
     }
 
     [Fact]

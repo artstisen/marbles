@@ -1938,7 +1938,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md, css, js, json, xml)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Entries"), Lang.T("Remember their colors (shown as MD, HTML ...)"), false));
             _shortcutList.Add(new Shortcut(":number :nu", Lang.T("Line numbers on/off"), false));
-            _shortcutList.Add(new Shortcut(":split", Lang.T("The text in two panes (Tab: go to the other)"), false));
+            _shortcutList.Add(new Shortcut(":split", Lang.T("Two panes on/off (Tab: go to the other)"), false));
             _shortcutList.Add(new Shortcut("Tab Shift+Tab", Lang.T("Split: go to the other pane (Normal mode)"), false));
             _shortcutList.Add(new Shortcut(":only :q", Lang.T("Split: close the other pane/this pane"), false));
             _shortcutList.Add(new Shortcut(":yankall", Lang.T("Yank all the text (as gg V G y; the clipboard as y)"), false));

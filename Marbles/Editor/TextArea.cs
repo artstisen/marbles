@@ -124,6 +124,12 @@ public partial class TextArea
     internal static bool NextEntryReadOnly { get; set; }
 
     /// <summary>
+    /// The next editor is opened split (it was closed so): the cursor index of the other pane, and whether that
+    /// pane is at the left. It is used once
+    /// </summary>
+    internal static (int Index, bool OtherLeft)? NextSplit { get; set; }
+
+    /// <summary>
     /// A file of Marbles opened from the editor, which is closed for it: the snippets (":snip edit", at a line) or
     /// the completions (":complete edit")
     /// </summary>
@@ -183,6 +189,9 @@ public partial class TextArea
     internal TextArea(int left, int top, int width, int height, string text, int recallCursorIndex, bool scrollToEnd,
         bool readOnly, bool openSearchDialog, int saveMode, bool modified, PeekOptions? peek = null)
     {
+        // Taken at once, so it is never left for another editor
+        var split = NextSplit;
+        NextSplit = null;
         _peek = peek;
         _top = top;
         _left = left;
@@ -292,9 +301,12 @@ public partial class TextArea
         }
         else if (!_singleLine && !_readOnly)
         {
+            // Split as it was when it was closed
+            if (split is { } place) RestoreSplit(place.Index, place.OtherLeft);
             // Once, until the first key: where the keys are found (the top row has no room for it)
             _engine.SetMessage(DialogText.EditorHelpHint, false);
         }
+
 
         DrawReadOnlyLabel();
         Draw();
@@ -960,6 +972,8 @@ public partial class TextArea
                     };
         // A file is opened where the cursor is the next time, as when it is closed
         if (leave && _saveMode == SaveAsFile) FileExplorer.KeepCaretOfCurrentFile(this);
+        // An entry is opened split again if it is now
+        if (leave && _saveMode == SaveAsEntry) Actions.KeepSplitOfEntry(this);
         return leave;
     }
 

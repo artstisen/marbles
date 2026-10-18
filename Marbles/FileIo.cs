@@ -738,6 +738,7 @@ internal static class FileIo
     private const string XmlParent = "entries";
     private const string XmlText = "text";
     private const string XmlCursorIndex = "cindex";
+    private const string XmlSplit = "split"; // The other pane of a split (Entry.Split); only written when split
     private const string XmlTitle = "title";
     private static StringBuilder _xmlDocument = new();
 
@@ -764,6 +765,12 @@ internal static class FileIo
                                     MakeElement(XmlText, true, true));
                 _xmlDocument.Append(MakeElement(XmlCursorIndex, false, false) + t.CursorIndex +
                                     MakeElement(XmlCursorIndex, true, false));
+                // Only an entry closed in a split has it (earlier versions read a file without it, and skip it)
+                if (IsSplitText(t.Split))
+                {
+                    _xmlDocument.Append(MakeElement(XmlSplit, false, false) + t.Split + MakeElement(XmlSplit, true, false));
+                }
+
                 _xmlDocument.Append(MakeElement(XmlOptions, false, false) + t.Options +
                                     MakeElement(XmlOptions, true, false));
                 _xmlDocument.Append(MakeElement(XmlItem, true, false));
@@ -943,12 +950,18 @@ internal static class FileIo
             entry.CursorIndex = int.TryParse(NodeText(node, XmlCursorIndex), out var cursorIndex) && cursorIndex > 0
                 ? cursorIndex
                 : 0;
+            var split = NodeText(node, XmlSplit);
+            entry.Split = IsSplitText(split) ? split : string.Empty;
             entry.Options = NodeText(node, XmlOptions);
             entries.Add(entry);
         }
 
         return entries;
     }
+
+    // The other pane of a split as kept for an entry: "1234", or "L1234" when it was at the left
+    internal static bool IsSplitText(string split) =>
+        System.Text.RegularExpressions.Regex.IsMatch(split, @"^L?[0-9]{1,9}\z");
 
     private static string NodeText(XmlNode entryNode, string name, string defaultValue = "")
     {

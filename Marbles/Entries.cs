@@ -280,6 +280,7 @@ internal static class Entries
                     _entryList[i].Title = DialogText.Cleared;
                     _entryList[i].Text = DialogText.Cleared;
                     _entryList[i].CursorIndex = 0;
+                    _entryList[i].Split = string.Empty;
                     _entryList[i].Id = DialogText.Cleared;
                     _entryList[i].DateCreated = DialogText.Cleared;
                     _entryList[i].DateChanged = DialogText.Cleared;
@@ -304,6 +305,7 @@ internal static class Entries
                 Title = e.Title,
                 Text = e.Text,
                 CursorIndex = e.CursorIndex,
+                Split = e.Split,
                 Options = e.Options
             };
 
@@ -333,6 +335,7 @@ internal static class Entries
             Title = originalEntry.Title + DialogText.TitleCopyText,
             Text = originalEntry.Text,
             CursorIndex = originalEntry.CursorIndex,
+            Split = originalEntry.Split,
             Options = originalEntry.Options
         };
         // A copy can be edited
@@ -351,6 +354,7 @@ internal static class Entries
             Title = e.Title,
             Text = e.Text,
             CursorIndex = e.CursorIndex,
+            Split = e.Split,
             Options = e.Options
         };
 
@@ -382,6 +386,7 @@ internal static class Entries
             Title = e.Title,
             Text = e.Text,
             CursorIndex = e.CursorIndex,
+            Split = e.Split,
             Options = e.Options
         };
         _entryList.Add(_newEntry);
@@ -446,6 +451,7 @@ internal static class Entries
             Title = _tempEntry.Title,
             Text = _tempEntry.Text,
             CursorIndex = _tempEntry.CursorIndex,
+            Split = _tempEntry.Split,
             Options = _tempEntry.Options
         };
         RecallEntryId = CurrentEntry.Id;
@@ -462,6 +468,7 @@ internal static class Entries
             Title = _tempEntry.Title,
             Text = _tempEntry.Text,
             CursorIndex = _tempEntry.CursorIndex,
+            Split = _tempEntry.Split,
             Options = _tempEntry.Options
         };
         RecallEntryId = CurrentEntry.Id;
@@ -498,6 +505,7 @@ internal static class Entries
                 _entryList[i].Title = changedEntry.Title;
                 _entryList[i].Text = changedEntry.Text;
                 _entryList[i].CursorIndex = changedEntry.CursorIndex;
+                _entryList[i].Split = changedEntry.Split;
                 if (setDateChanged)
                 {
                     _entryList[i].DateChanged = IsoDateTime.GetDateTimeNow(); // Manual formatted to force ISO date/Time
@@ -565,6 +573,7 @@ internal static class Entries
         CurrentEntry.Title = string.Empty;
         CurrentEntry.Text = string.Empty;
         CurrentEntry.CursorIndex = 0;
+        CurrentEntry.Split = string.Empty;
         CurrentEntry.Options = string.Empty;
     }
 
@@ -576,6 +585,7 @@ internal static class Entries
         BackupEntry.Title = string.Empty;
         BackupEntry.Text = string.Empty;
         BackupEntry.CursorIndex = 0;
+        BackupEntry.Split = string.Empty;
         BackupEntry.Options = string.Empty;
     }
 
@@ -587,6 +597,7 @@ internal static class Entries
         DeletedEntry.Title = string.Empty;
         DeletedEntry.Text = string.Empty;
         DeletedEntry.CursorIndex = 0;
+        DeletedEntry.Split = string.Empty;
         DeletedEntry.Options = string.Empty;
     }
 
@@ -848,6 +859,12 @@ internal class Entry
     internal string Title { get; set; }
     internal string Text { get; set; }
     internal int CursorIndex { get; set; }
+
+    /// <summary>
+    /// Closed in a split (":split"): the cursor index of the other pane, with "L" in front when it was at the left
+    /// ("1234", "L1234"); empty when not split. Kept in the data file (element "split", not written when empty)
+    /// </summary>
+    internal string Split { get; set; } = string.Empty;
     internal string DateCreated { get; set; }
     internal string DateChanged { get; set; }
     internal string Options { get; set; }

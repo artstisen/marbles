@@ -435,6 +435,58 @@ public class FileIoTests : IDisposable
     }
 
     [Fact]
+    public void ASplit_IsKeptInTheDataFile_OnlyForAnEntryThatWasSplit()
+    {
+        Login(Password);
+        Entries.NewEntry("Split", "one\ntwo");
+        Entries.NewEntry("Not split", "three");
+        Entries.GetEntries()[0].Split = "L4";
+        // Not a split as kept: not written
+        Entries.GetEntries()[1].Split = "x";
+        FileIo.SaveEntries();
+        var document = Encryptor.DecryptData(File.ReadAllBytes(DataFile));
+        Assert.Single(System.Text.RegularExpressions.Regex.Matches(document, "<split>"));
+        Assert.Contains("<split>L4</split>", document);
+
+        Login(Password);
+        Assert.True(FileIo.LoadEntries().Success);
+        Assert.Equal("L4", Entries.GetEntries().Single(entry => entry.Title == "Split").Split);
+        Assert.Equal("", Entries.GetEntries().Single(entry => entry.Title == "Not split").Split);
+    }
+
+    [Fact]
+    public void TheSplitOfAnEntry_IsKeptWhenItIsUpdated_WithoutChangingItsDate()
+    {
+        Login(Password);
+        Entries.NewEntry("A", "text");
+        var entry = Entries.GetEntries()[0];
+        var changed = entry.DateChanged;
+        var copy = new Entry { Id = entry.Id, Title = entry.Title, Text = entry.Text, DateCreated = entry.DateCreated,
+            DateChanged = changed, Options = entry.Options, Split = "L12" };
+        Assert.True(Entries.UpdateEntry(copy, false));
+        Assert.Equal("L12", Entries.GetEntries()[0].Split);
+        Assert.Equal(changed, Entries.GetEntries()[0].DateChanged);
+        // Only a split as kept is written
+        Assert.False(FileIo.IsSplitText("L12" + (char)10));
+        Assert.False(FileIo.IsSplitText("1" + (char)0x0663));
+    }
+
+    [Fact]
+    public void ASplitThatIsNotOne_IsLeftOut_AndAFileWithoutIt_IsReadAsBefore()
+    {
+        var document = FileIo.XmlDoctype + "<entries><entry><id>1</id><created>2022-01-01 10:00:00</created>" +
+                       "<changed>2022-01-02 10:00:00</changed><title><![CDATA[A]]></title>" +
+                       "<text><![CDATA[Text]]></text><cindex>2</cindex><split>R7</split><options></options></entry>" +
+                       "<entry><id>2</id><title><![CDATA[B]]></title><text><![CDATA[Text]]></text></entry></entries>";
+        File.WriteAllBytes(DataFile, LegacyFileWriter.Create(document, Password));
+        Login(Password);
+        Assert.True(FileIo.LoadEntries().Success);
+        Assert.Equal("", Entries.GetEntries()[0].Split);
+        Assert.Equal(2, Entries.GetEntries()[0].CursorIndex);
+        Assert.Equal("", Entries.GetEntries()[1].Split);
+    }
+
+    [Fact]
     public void File_WithMissingElements_IsLoadedWithDefaults()
     {
         // The oldest files have no cursor index

@@ -28,11 +28,12 @@ public partial class TextArea
     private int _wholeLeft;
     private int _wholeWidth;
 
+    // ":split": two panes, or one again (as ":only")
     private void Split()
     {
         if (_otherPane != null)
         {
-            _engine.SetMessage(Lang.T("The text is already shown in two panes"), true);
+            CloseOtherPane();
             return;
         }
 
@@ -61,6 +62,33 @@ public partial class TextArea
         };
         RedrawAll();
         _engine.SetMessage(Lang.T("Tab: the other pane, :only: one pane"), false);
+    }
+
+    /// <summary>
+    /// The other pane of a split, when the editor is closed: the index of its cursor, and whether it is at the
+    /// left. Null when not split
+    /// </summary>
+    internal (int Index, bool OtherLeft)? SplitPlace =>
+        _otherPane == null ? null : (_otherPane.Engine.GetCursorIndex(), _otherPane.Left < _left);
+
+    // Opened split, as it was when it was closed: the other pane at its cursor, at the left or the right
+    private void RestoreSplit(int index, bool otherLeft)
+    {
+        Split();
+        if (_otherPane == null) return;
+        var other = _otherPane.Engine;
+        other.SetCursorIndex(index);
+        other.StartFollowing();
+        if (otherLeft)
+        {
+            // The panes change places (each keeps its editor)
+            (_left, _otherPane.Left) = (_otherPane.Left, _left);
+            (_width, _otherPane.Width) = (_otherPane.Width, _width);
+            (_textWidth, _otherPane.TextWidth) = (_otherPane.TextWidth, _textWidth);
+            _gutter = -1;
+            _otherPane.Gutter = -1;
+            RedrawAll();
+        }
     }
 
     // Tab (Shift+Tab): the other pane gets the keys

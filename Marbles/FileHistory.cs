@@ -11,7 +11,8 @@ namespace Marbles;
 /// The list is kept in the file "history.txt" in the data directory, with one line for each file: the time it
 /// was last opened (yyyy-MM-dd HH:mm), a tab character and the path. When the file was closed in the editor, the
 /// line and column of the cursor (as "12:5") and a tab character come before the path: the file is opened there
-/// the next time.
+/// the next time. A file closed in a split (":split") also has the place of the cursor of the other pane after it
+/// ("12:5|40:1", or "12:5|<40:1" when that pane was at the left), and is opened split again.
 /// </summary>
 internal static class FileHistory
 {
@@ -28,7 +29,7 @@ internal static class FileHistory
     /// A file of the list: its path, when it was opened, and where the cursor was when it was closed (the line
     /// and column, from 1; 0 when it is not known)
     /// </summary>
-    internal sealed record Entry(string Path, DateTime Opened, int Line = 0, int Column = 0);
+    internal sealed record Entry(string Path, DateTime Opened, int Line = 0, int Column = 0, string Split = "");
 
     private static readonly List<Entry> List = new();
 
@@ -71,7 +72,7 @@ internal static class FileHistory
             if (tab < 0) continue;
             var path = line[(tab + 1)..];
             // Where the cursor was, before the path
-            var (caretLine, caretColumn) = CaretPosition.Take(ref path);
+            var (caretLine, caretColumn, split) = CaretPosition.Take(ref path);
             path = FileOperations.ListedPath(path);
             if (path.Length == 0 || List.Any(entry => FileOperations.SamePath(entry.Path, path))) continue;
             if (!DateTime.TryParseExact(line[..tab].Trim(), TimeFormat, CultureInfo.InvariantCulture,
@@ -80,7 +81,7 @@ internal static class FileHistory
                 opened = DateTime.MinValue;
             }
 
-            List.Add(new Entry(path, opened, caretLine, caretColumn));
+            List.Add(new Entry(path, opened, caretLine, caretColumn, split));
             if (List.Count == MaxCount) break;
         }
     }
@@ -91,7 +92,7 @@ internal static class FileHistory
         foreach (var entry in List)
         {
             text.Append(entry.Opened.ToString(TimeFormat, CultureInfo.InvariantCulture)).Append('\t')
-                .Append(CaretPosition.Write(entry.Line, entry.Column)).Append(entry.Path).Append('\n');
+                .Append(CaretPosition.Write(entry.Line, entry.Column, entry.Split)).Append(entry.Path).Append('\n');
         }
 
         return text.ToString();
@@ -126,28 +127,29 @@ internal static class FileHistory
         // Where the cursor was is kept
         var before = List.FirstOrDefault(entry => FileOperations.SamePath(entry.Path, path));
         List.RemoveAll(entry => FileOperations.SamePath(entry.Path, path));
-        List.Insert(0, new Entry(path, opened, before?.Line ?? 0, before?.Column ?? 0));
+        List.Insert(0, new Entry(path, opened, before?.Line ?? 0, before?.Column ?? 0, before?.Split ?? ""));
         if (List.Count > MaxCount) List.RemoveRange(MaxCount, List.Count - MaxCount);
     }
 
     /// <summary>
     /// Where the cursor was in a file when it was closed (line and column from 1), or null if not known
     /// </summary>
-    internal static (int Line, int Column)? CaretOf(string path)
+    internal static (int Line, int Column, string Split)? CaretOf(string path)
     {
         var entry = List.FirstOrDefault(item => FileOperations.SamePath(item.Path, path));
-        return entry is { Line: > 0 } ? (entry.Line, entry.Column) : null;
+        return entry is { Line: > 0 } ? (entry.Line, entry.Column, entry.Split) : null;
     }
 
     /// <summary>
-    /// Keep where the cursor was in a file of the list when it was closed
+    /// Keep where the cursor was in a file of the list when it was closed (and in the other pane of a split, as
+    /// CaretPosition.SplitText writes it; empty: not split)
     /// </summary>
     /// <returns>True if the file is in the list</returns>
-    internal static bool SetCaret(string path, int line, int column)
+    internal static bool SetCaret(string path, int line, int column, string split = "")
     {
         var index = List.FindIndex(item => FileOperations.SamePath(item.Path, path));
         if (index < 0) return false;
-        List[index] = List[index] with { Line = Math.Max(1, line), Column = Math.Max(1, column) };
+        List[index] = List[index] with { Line = Math.Max(1, line), Column = Math.Max(1, column), Split = split };
         return true;
     }
 
@@ -191,18 +193,42 @@ internal static class FileHistory
 /// </summary>
 internal static class CaretPosition
 {
-    private static readonly System.Text.RegularExpressions.Regex Written = new(@"^(\d{1,9}):(\d{1,9})\t");
+    // "12:5" and a tab; in a split also the other pane: "12:5|40:1" ("|<40:1": that pane at the left)
+    private static readonly System.Text.RegularExpressions.Regex Written =
+        new(@"^([0-9]{1,9}):([0-9]{1,9})(\|<?[0-9]{1,9}:[0-9]{1,9})?\t");
+
+    private static readonly System.Text.RegularExpressions.Regex SplitWritten = new(@"^\|(<?)([0-9]{1,9}):([0-9]{1,9})\z");
 
     /// <summary>
-    /// The line and column at the start of a text from a list ("12:5" and a tab), taken out of it
+    /// The line and column at the start of a text from a list ("12:5" and a tab), taken out of it, and the place in
+    /// the other pane of a split ("|40:1", empty if it was not split)
     /// </summary>
     /// <returns>The line and column, or (0, 0) if the text does not start with one</returns>
-    internal static (int Line, int Column) Take(ref string text)
+    internal static (int Line, int Column, string Split) Take(ref string text)
     {
         var match = Written.Match(text);
-        if (!match.Success) return (0, 0);
+        if (!match.Success) return (0, 0, string.Empty);
         text = text[match.Length..];
-        return (int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value));
+        return (int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value), match.Groups[3].Value);
+    }
+
+    /// <summary>
+    /// The place in the other pane of a split as written after the line and column ("|40:1", "|<40:1" when that
+    /// pane is at the left)
+    /// </summary>
+    internal static string SplitText(int line, int column, bool otherLeft) =>
+        "|" + (otherLeft ? "<" : string.Empty) + Math.Max(1, line) + ":" + Math.Max(1, column);
+
+    /// <summary>
+    /// The other pane of a split, from its place as written ("|40:1"): the index of its cursor in a text, and
+    /// whether it is at the left. Null if not split
+    /// </summary>
+    internal static (int Index, bool OtherLeft)? SplitOf(string split, string text)
+    {
+        var match = SplitWritten.Match(split);
+        if (!match.Success) return null;
+        return (IndexOf(text, int.Parse(match.Groups[2].Value), int.Parse(match.Groups[3].Value)),
+            match.Groups[1].Value.Length > 0);
     }
 
     /// <summary>
@@ -220,7 +246,8 @@ internal static class CaretPosition
     /// <summary>
     /// A line and column as written before a path ("12:5" and a tab), or nothing if it is not known
     /// </summary>
-    internal static string Write(int line, int column) => line > 0 ? line + ":" + Math.Max(1, column) + "\t" : string.Empty;
+    internal static string Write(int line, int column, string split = "") =>
+        line > 0 ? line + ":" + Math.Max(1, column) + split + "\t" : string.Empty;
 
     /// <summary>
     /// The line and column (from 1) of a place in a text, where lines end with a line break of one character
