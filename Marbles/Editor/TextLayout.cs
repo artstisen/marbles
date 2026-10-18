@@ -48,11 +48,21 @@ internal sealed class TextLayout
         _wrap = wrap;
         Width = Math.Max(1, width);
         _segments.AddRange(new int[]?[buffer.LineCount]);
-        buffer.LinesReplaced += (first, removed, inserted) =>
-        {
-            _segments.RemoveRange(first, removed);
-            _segments.InsertRange(first, new int[]?[inserted]);
-        };
+        buffer.LinesReplaced += LinesReplaced;
+    }
+
+    private void LinesReplaced(int first, int removed, int inserted)
+    {
+        _segments.RemoveRange(first, removed);
+        _segments.InsertRange(first, new int[]?[inserted]);
+    }
+
+    /// <summary>
+    /// The layout is no longer used (a pane of a split that is closed): it stops following the text
+    /// </summary>
+    internal void Detach()
+    {
+        _buffer.LinesReplaced -= LinesReplaced;
     }
 
     /// <summary>

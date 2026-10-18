@@ -26,7 +26,7 @@ namespace Marbles;
      }
  */
 
-public class TextArea
+public partial class TextArea
 {
     private const char StyleMarker = '\u0001'; // Separates the differently colored parts of a row
     private const int StyleNormal = 0;
@@ -61,13 +61,14 @@ public class TextArea
 
     private const int GutterGap = 2; // The blank columns between the line numbers and the text
     private const int MinNumberWidth = 2;
-    private readonly int _textWidth; // The width for the text when no line numbers are shown
+    private int _textWidth; // The width for the text when no line numbers are shown
     private int _gutter; // The columns in use for the line numbers and the gap after them (0: no numbers)
 
-    private readonly EditorEngine _engine;
+    // The editor of the text (in a split: of the pane with the focus, TextArea.Split.cs), and its place
+    private EditorEngine _engine;
     private readonly int _top;
-    private readonly int _left;
-    private readonly int _width;
+    private int _left;
+    private int _width;
     private readonly int _height;
     private readonly bool _singleLine;
     private readonly bool _readOnly;
@@ -147,8 +148,8 @@ public class TextArea
     private bool _exit;
 
     // What is currently shown on screen, used to only write the rows that have changed
-    private readonly string?[] _shownRows;
-    private readonly int[] _shownCells;
+    private string?[] _shownRows;
+    private int[] _shownCells;
     private string? _shownStatus;
 
     /// <summary>
@@ -458,6 +459,13 @@ public class TextArea
                 }
 
                 break;
+            case EditorRequest.ForceQuit when _otherPane != null:
+                // In a split: only the pane is closed (the text is still shown in the other)
+                ClosePane();
+                break;
+            case EditorRequest.SaveAndQuit when _otherPane != null:
+                if (Save()) ClosePane();
+                break;
             case EditorRequest.SaveAndQuit:
                 // Stay in the editor if the text could not be saved
                 if (!_engine.IsModified || Save())
@@ -469,6 +477,18 @@ public class TextArea
                 break;
             case EditorRequest.Quit:
                 Quit();
+                break;
+            case EditorRequest.Split:
+                Split();
+                break;
+            case EditorRequest.SwitchPane:
+                SwitchPane();
+                break;
+            case EditorRequest.ClosePane:
+                ClosePane();
+                break;
+            case EditorRequest.OnlyPane:
+                CloseOtherPane();
                 break;
             case EditorRequest.ForceQuit:
             case EditorRequest.Cancel:
@@ -1054,7 +1074,8 @@ public class TextArea
     {
         const int firstRow = 1;
         DrawStatusLine(); // Remove the command from the bottom line
-        var left = Math.Max(0, (Init.LineWidth - ReplaceDialog.Width) / 2 - _left);
+        // In the middle of the window (also in a split: counted from the pane, it can be left of it)
+        var left = Math.Max(0, (Init.LineWidth - ReplaceDialog.Width) / 2) - _left;
         var lines = _engine.ReplaceLines;
         if (ReplaceDialog.Show(_top + firstRow, _left + left, lines != null, _engine.ReplaceFind, out var scope))
         {
@@ -1070,11 +1091,7 @@ public class TextArea
         }
 
         // Write the rows that were covered again
-        for (var r = firstRow; r < firstRow + ReplaceDialog.TotalHeight && r < _height; r++)
-        {
-            _shownRows[r] = null;
-            _shownCells[r] = Math.Max(_shownCells[r], left + ReplaceDialog.Width);
-        }
+        Uncover(firstRow, ReplaceDialog.TotalHeight, left + ReplaceDialog.Width);
 
         UpdateChangeIndicator();
         Draw();
@@ -1149,11 +1166,7 @@ public class TextArea
         if (add) _engine.AddSpellWord();
 
         // Write the rows that were covered again
-        for (var r = firstRow; r < firstRow + boxHeight && r < _height; r++)
-        {
-            _shownRows[r] = null;
-            _shownCells[r] = Math.Max(_shownCells[r], left + inner + 2);
-        }
+        Uncover(firstRow, boxHeight, left + inner + 2);
 
         UpdateChangeIndicator();
         Draw();
@@ -1237,7 +1250,7 @@ public class TextArea
         var frameHeight = choices.Length + 4; // The box, from its top line to its bottom line
         var boxHeight = frameHeight + 1; // And the tab of its title above it
         var firstRow = Math.Max(0, (_height - boxHeight) / 2);
-        var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2 - _left);
+        var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2) - _left;
         var column = _left + left;
         DrawStatusLine(); // Remove the command from the bottom line
 
@@ -1295,11 +1308,7 @@ public class TextArea
         }
 
         // The rows that were covered are written again when the editor is drawn
-        for (var r = firstRow; r < firstRow + boxHeight && r < _height; r++)
-        {
-            _shownRows[r] = null;
-            _shownCells[r] = Math.Max(_shownCells[r], left + inner + 2);
-        }
+        Uncover(firstRow, boxHeight, left + inner + 2);
 
         return result;
     }
@@ -1412,6 +1421,7 @@ public class TextArea
         Array.Fill(_shownCells, 0);
         _shownStatus = null;
         _shownModeLabel = null;
+        RedrawSplit();
         Draw();
     }
 
@@ -1434,7 +1444,30 @@ public class TextArea
 
     private void Draw()
     {
+        if (_redrawWhole)
+        {
+            // A box covered both panes of a split
+            _redrawWhole = false;
+            RedrawAll();
+            return;
+        }
+
         Tools.HideCursor();
+        DrawRows();
+        DrawOtherPane();
+        if (_readOnly) return;
+        if (!_singleLine)
+        {
+            DrawModeDivider();
+            DrawStatusLine();
+        }
+
+        PlaceCursor();
+    }
+
+    // The rows of the text that have changed since they were written
+    private void DrawRows()
+    {
         UpdateGutter();
         var buffer = _engine.Buffer;
         var layout = _engine.Layout;
@@ -1459,15 +1492,6 @@ public class TextArea
             if (content == _shownRows[r]) continue;
             WriteRow(r, content, cells);
         }
-
-        if (_readOnly) return;
-        if (!_singleLine)
-        {
-            DrawModeDivider();
-            DrawStatusLine();
-        }
-
-        PlaceCursor();
     }
 
     private string? _shownModeLabel; // The mode written on the divider above the text
@@ -1496,7 +1520,8 @@ public class TextArea
         Tools.SetCursorEx(_top - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(new string('-', Init.LineWidth));
-        Tools.SetCursorEx(_top - 1, Math.Max(0, Init.LineWidth / 2 - (TextMetrics.WidthOf(label) / 2 + 1)));
+        // Over the pane with the focus in a split
+        Tools.SetCursorEx(_top - 1, Math.Max(0, ModeCenter - (TextMetrics.WidthOf(label) / 2 + 1)));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
         Console.Write(" " + label + " ");
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

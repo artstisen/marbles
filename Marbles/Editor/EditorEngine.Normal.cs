@@ -120,6 +120,20 @@ internal sealed partial class EditorEngine
             return;
         }
 
+        // Tab and Shift+Tab: the other pane of a split (a macro works on the pane it is recorded in)
+        if (key.Key == ConsoleKey.Tab && !SingleLine && Mode == EditorMode.Normal)
+        {
+            ResetPending();
+            if (IsRecording && !IsPlayingMacro)
+            {
+                SetError(Lang.T("The other pane is not used while recording"));
+                // Not a step of the macro
+                _macroCommandLeftOut = true;
+            }
+            else _request = EditorRequest.SwitchPane;
+            return;
+        }
+
         var cmd = Translate(key);
         if (cmd == NoKey)
         {

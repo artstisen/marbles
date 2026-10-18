@@ -97,6 +97,12 @@ internal sealed partial class EditorEngine
         return result;
     }
 
+    // Lines were changed: the states from the first of them are found again
+    private void ForgetLineStates(int first, int removed, int inserted)
+    {
+        _knownStates = Math.Min(_knownStates, first + 1);
+    }
+
     /// <summary>
     /// The style of each character of a line (null if the line has none, or the colors are off)
     /// </summary>
@@ -107,7 +113,7 @@ internal sealed partial class EditorEngine
         {
             // When lines are changed, the states from the first of them are found again
             _watchingLines = true;
-            Buffer.LinesReplaced += (first, _, _) => _knownStates = Math.Min(_knownStates, first + 1);
+            Buffer.LinesReplaced += ForgetLineStates;
             _knownStates = 1;
         }
 

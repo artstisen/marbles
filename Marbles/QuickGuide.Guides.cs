@@ -125,6 +125,7 @@ internal static partial class QuickGuide
         (Kind.Item, "Ctrl+K", Lang.T("Snippets: insert one at the cursor")),
         (Kind.Item, ":spell", Lang.T("Mark the misspelled words (again: remove the marks)")),
         (Kind.Item, ":bookmark", Lang.T("Bookmark the file being edited (Jump menu)")),
+        (Kind.Item, ":split  Tab", Lang.T("The text in two panes (Tab: go to the other)")),
         (Kind.Text, "", ""),
         (Kind.Text, "", Lang.T("There is more: press ? here, or type :help in the editor, to see all its keys."))
     };

@@ -61,6 +61,10 @@ internal enum EditorRequest
     MacroRecord, // ":record": start recording a macro (the host warns first in a note of a data file)
     MacroStop, // The Esc that would close the editor, while recording: ask whether to stop, save or go on
     MacroList, // ":macro": show the macros, to pick one to play
+    Split, // ":split": show the text in two panes
+    SwitchPane, // Tab (Shift+Tab) in Normal mode: the other pane of a split gets the keys
+    ClosePane, // ":q" in a split: close this pane (the other shows the text)
+    OnlyPane, // ":only": close the other pane of a split
     Favorite // ":favorite": the file a favorite of the file browser, or the note a favorite of its data file (or not)
 }
 
@@ -214,6 +218,8 @@ internal sealed partial class EditorEngine
         Height = Math.Max(1, height);
         // Start typing right away in a single line editor and in an empty document
         Mode = singleLine || Buffer.IsEmpty ? EditorMode.Insert : EditorMode.Normal;
+        // A second pane of a split may get the keys: this one then follows its changes
+        Buffer.LinesReplaced += Follow;
     }
 
     internal bool IsVisual => Mode is EditorMode.Visual or EditorMode.VisualLine or EditorMode.VisualBlock;
@@ -506,7 +512,8 @@ internal sealed partial class EditorEngine
 
         // While recording, :q, :wq and ZZ ask about the macro first (as Esc does)
         if (IsRecording && !IsPlayingMacro &&
-            _request is EditorRequest.Quit or EditorRequest.ForceQuit or EditorRequest.SaveAndQuit)
+            _request is EditorRequest.Quit or EditorRequest.ForceQuit or EditorRequest.SaveAndQuit
+                or EditorRequest.ClosePane)
         {
             _request = EditorRequest.MacroStop;
         }
@@ -1157,7 +1164,14 @@ internal sealed partial class EditorEngine
                 break;
             case "q":
             case "quit":
-                _request = EditorRequest.Quit;
+                // In a split: only this pane is closed
+                _request = InSplit ? EditorRequest.ClosePane : EditorRequest.Quit;
+                break;
+            case "split":
+                if (!SingleLine) _request = EditorRequest.Split;
+                break;
+            case "only":
+                if (!SingleLine) _request = EditorRequest.OnlyPane;
                 break;
             case "q!":
             case "quit!":
