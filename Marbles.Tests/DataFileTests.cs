@@ -697,7 +697,8 @@ public class FileIoTests : IDisposable
         var renamed = bookmark.Followed(Path.Combine(data, "notes.mbls"), Path.Combine(data, "work.mbls"));
         Assert.Equal("work.mbls", renamed?.Target);
         var moved = renamed!.Followed(Path.Combine(data, "work.mbls"), Path.Combine(data, "sub", "work.mbls"));
-        Assert.Equal(Path.Combine(data, "sub", "work.mbls"), moved?.FullPath);
+        // (with links followed, as the data directory is told)
+        Assert.Equal(FileOperations.RealPath(Path.Combine(data, "sub", "work.mbls")), moved?.FullPath);
         Assert.Equal(JumpKind.DataFile, moved?.Kind);
         // Another file is not affected
         Assert.Null(bookmark.Followed(Path.Combine(data, "other.mbls"), Path.Combine(data, "x.mbls")));

@@ -595,7 +595,7 @@ internal static class ColorSchemes
             if (!File.Exists(PathOf(name))) return DialogText.SchemeNameInvalid;
             var sameScheme = name.Trim().Equals(newName.Trim(), StringComparison.OrdinalIgnoreCase);
             if (!sameScheme && File.Exists(PathOf(newName))) return DialogText.SchemeNameTaken;
-            if (name.Trim() != newName.Trim()) File.Move(PathOf(name), PathOf(newName));
+            if (name.Trim() != newName.Trim()) File.Move(PathOf(name), Path.Combine(Directory, newName.Trim() + Extension)); // (the new name as typed)
             return DialogText.Success;
         }
         catch (Exception e)

@@ -392,7 +392,7 @@ internal static class Logos
             if (!File.Exists(PathOf(name))) return DialogText.LogoNameInvalid;
             var sameLogo = name.Trim().Equals(newName.Trim(), StringComparison.OrdinalIgnoreCase);
             if (!sameLogo && File.Exists(PathOf(newName))) return DialogText.LogoNameTaken;
-            if (name.Trim() != newName.Trim()) File.Move(PathOf(name), PathOf(newName));
+            if (name.Trim() != newName.Trim()) File.Move(PathOf(name), Path.Combine(Directory, newName.Trim() + Extension)); // (the new name as typed)
             return DialogText.Success;
         }
         catch (Exception e)
