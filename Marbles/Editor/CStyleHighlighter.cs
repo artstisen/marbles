@@ -27,6 +27,13 @@ internal sealed class CStyleLanguage
     /// "$" is a part of names (JavaScript)
     /// </summary>
     internal bool DollarInNames { get; init; }
+
+    /// <summary>
+    /// The rules of PHP: $variables colored as names, # comments and #[attributes], strings in ' and " over several
+    /// lines, heredoc and nowdoc (&lt;&lt;&lt;EOT), "->" before a member, and "?&gt;" ending the code (the HTML
+    /// around it is read by HtmlHighlighter)
+    /// </summary>
+    internal bool Php { get; init; }
 }
 
 /// <summary>
@@ -43,6 +50,9 @@ internal static class CStyleHighlighter
     internal const int InTemplate = 2; // A `template string` (JavaScript)
     internal const int InVerbatim = 3; // A @"verbatim string" (C#)
     internal const int InRaw = 4; // A """raw string""" (C#)
+    internal const int InSingle = 5; // A 'string' over several lines (PHP)
+    internal const int InDouble = 6; // A "string" over several lines (PHP)
+    internal const int InHeredoc = 7; // A heredoc or nowdoc, to the line with its marker (PHP)
 
     internal static readonly CStyleLanguage JavaScript = new()
     {
@@ -79,6 +89,26 @@ internal static class CStyleHighlighter
         Preprocessor = true
     };
 
+    internal static readonly CStyleLanguage Php = new()
+    {
+        // (the words of PHP are the same in any letter case)
+        Keywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "abstract", "and", "array", "as", "break", "callable", "case", "catch", "class", "clone", "const",
+            "continue", "declare", "default", "do", "echo", "else", "elseif", "empty", "enddeclare", "endfor",
+            "endforeach", "endif", "endswitch", "endwhile", "enum", "eval", "exit", "die", "extends", "final",
+            "finally", "fn", "for", "foreach", "function", "global", "goto", "if", "implements", "include",
+            "include_once", "instanceof", "insteadof", "interface", "isset", "list", "match", "namespace", "new",
+            "or", "print", "private", "protected", "public", "readonly", "require", "require_once", "return",
+            "static", "switch", "throw", "trait", "try", "unset", "use", "var", "while", "xor", "yield",
+            "true", "false", "null", "self", "parent",
+            "int", "float", "bool", "string", "void", "mixed", "never", "object", "iterable",
+            "__CLASS__", "__DIR__", "__FILE__", "__FUNCTION__", "__LINE__", "__METHOD__", "__NAMESPACE__",
+            "__TRAIT__", "__COMPILER_HALT_OFFSET__"
+        },
+        Php = true
+    };
+
     /// <summary>
     /// Find the styles of a part of a line
     /// </summary>
@@ -90,9 +120,29 @@ internal static class CStyleHighlighter
     /// <param name="styles">The styles of the line, to fill in</param>
     /// <returns>The state after the part</returns>
     internal static int Scan(CStyleLanguage language, string line, int start, int end, int state,
-        SyntaxStyle[] styles)
+        SyntaxStyle[] styles) => Scan(language, line, start, end, state, styles, out _);
+
+    /// <param name="stop">Where the code ended: at "?&gt;" in PHP, else at the end of the part</param>
+    internal static int Scan(CStyleLanguage language, string line, int start, int end, int state,
+        SyntaxStyle[] styles, out int stop)
     {
+        stop = end;
         var i = start;
+        if (state == InHeredoc)
+        {
+            // To the line that has only the marker (as "EOT;"): the code goes on after it
+            var marker = HeredocMarkerEnd(line, start, end);
+            if (marker < 0)
+            {
+                Fill(styles, start, end, SyntaxStyle.String);
+                return state;
+            }
+
+            Fill(styles, start, marker, SyntaxStyle.String);
+            state = Normal;
+            i = marker;
+        }
+
         if (state == Normal && language.Preprocessor)
         {
             // A line of the preprocessor: all of it
@@ -110,25 +160,65 @@ internal static class CStyleHighlighter
             if (state != Normal)
             {
                 // Inside a comment or a string that began before: up to its end, or the end of the part
-                var (stop, closed) = state switch
+                var (to, closed) = state switch
                 {
                     InComment => EndOf(line, i, end, "*/"),
                     InTemplate => (JavaScriptHighlighter.StringEnd(line, i, end, '`', out var template), template),
                     InVerbatim => (VerbatimEnd(line, i, end, out var verbatim), verbatim),
+                    InSingle => (JavaScriptHighlighter.StringEnd(line, i, end, '\'', out var single), single),
+                    InDouble => (JavaScriptHighlighter.StringEnd(line, i, end, '"', out var quoted), quoted),
                     _ => EndOf(line, i, end, "\"\"\"")
                 };
-                Fill(styles, i, stop, state == InComment ? SyntaxStyle.Comment : SyntaxStyle.String);
+                Fill(styles, i, to, state == InComment ? SyntaxStyle.Comment : SyntaxStyle.String);
                 if (closed) state = Normal;
-                i = stop;
+                i = to;
                 continue;
             }
 
             var c = line[i];
             var next = i + 1 < end ? line[i + 1] : '\0';
-            if (c == '/' && next == '/')
+            if (language.Php && c == '?' && next == '>')
             {
-                Fill(styles, i, end, SyntaxStyle.Comment);
+                // The end of the code: the HTML goes on
+                stop = i;
                 return state;
+            }
+
+            if ((c == '/' && next == '/') || (language.Php && c == '#' && next != '['))
+            {
+                // To the end of the line (in PHP, or to "?>")
+                var close = language.Php ? line.IndexOf("?>", i, end - i, StringComparison.Ordinal) : -1;
+                Fill(styles, i, close < 0 ? end : close, SyntaxStyle.Comment);
+                if (close < 0) return state;
+                stop = close;
+                return state;
+            }
+
+            if (language.Php && c == '#')
+            {
+                // #[Attribute]
+                var close = line.IndexOf(']', i, end - i);
+                var to = close < 0 ? end : close + 1;
+                Fill(styles, i, to, SyntaxStyle.Name);
+                i = to;
+                continue;
+            }
+
+            if (language.Php && c == '$' && IsNameStart(language, next))
+            {
+                // $variable
+                var to = NameEnd(language, line, i + 1, end);
+                Fill(styles, i, to, SyntaxStyle.Name);
+                i = to;
+                continue;
+            }
+
+            if (language.Php && c == '<' && string.CompareOrdinal(line, i, "<<<", 0, 3) == 0 &&
+                HeredocStart(line, i + 3, end) is var after and > 0)
+            {
+                // <<<EOT, <<<"EOT" and <<<'EOT': the text follows on the next lines
+                Fill(styles, i, end, SyntaxStyle.String);
+                return InHeredoc;
             }
 
             if (c == '/' && next == '*')
@@ -155,9 +245,9 @@ internal static class CStyleHighlighter
                 }
                 else
                 {
-                    var stop = JavaScriptHighlighter.StringEnd(line, quote + 1, end, '"', out _);
-                    Fill(styles, i, stop, SyntaxStyle.String);
-                    i = stop;
+                    var to = JavaScriptHighlighter.StringEnd(line, quote + 1, end, '"', out _);
+                    Fill(styles, i, to, SyntaxStyle.String);
+                    i = to;
                 }
             }
             else if (language.VerbatimStrings && c == '@' && IsNameStart(language, next))
@@ -174,9 +264,11 @@ internal static class CStyleHighlighter
             else if (c is '"' or '\'')
             {
                 // A string ends at its quote, or at the end of the line
-                var stop = JavaScriptHighlighter.StringEnd(line, i + 1, end, c, out _);
-                Fill(styles, i, stop, SyntaxStyle.String);
-                i = stop;
+                var to = JavaScriptHighlighter.StringEnd(line, i + 1, end, c, out var closed);
+                Fill(styles, i, to, SyntaxStyle.String);
+                // In PHP a string goes on to the next line
+                if (!closed && language.Php) state = c == '"' ? InDouble : InSingle;
+                i = to;
             }
             else if (language.TemplateStrings && c == '`')
             {
@@ -186,21 +278,23 @@ internal static class CStyleHighlighter
             }
             else if (char.IsAsciiDigit(c) || (c == '.' && char.IsAsciiDigit(next)))
             {
-                var stop = i + 1;
-                while (stop < end && (char.IsLetterOrDigit(line[stop]) || line[stop] is '.' or '_')) stop++;
-                Fill(styles, i, stop, SyntaxStyle.Number);
-                i = stop;
+                var to = i + 1;
+                while (to < end && (char.IsLetterOrDigit(line[to]) || line[to] is '.' or '_')) to++;
+                Fill(styles, i, to, SyntaxStyle.Number);
+                i = to;
             }
             else if (IsNameStart(language, c))
             {
-                var stop = NameEnd(language, line, i + 1, end);
-                // (a word after a dot is the name of a member, as in "object.default")
-                if ((i == start || line[i - 1] != '.') && language.Keywords.Contains(line[i..stop]))
+                var to = NameEnd(language, line, i + 1, end);
+                // (a word after a dot is the name of a member, as in "object.default", and in PHP after "->")
+                var member = i > start && (line[i - 1] == '.' ||
+                                           (language.Php && line[i - 1] == '>' && i - 2 >= start && line[i - 2] == '-'));
+                if (!member && language.Keywords.Contains(line[i..to]))
                 {
-                    Fill(styles, i, stop, SyntaxStyle.Keyword);
+                    Fill(styles, i, to, SyntaxStyle.Keyword);
                 }
 
-                i = stop;
+                i = to;
             }
             else
             {
@@ -209,6 +303,33 @@ internal static class CStyleHighlighter
         }
 
         return state;
+    }
+
+    // After "<<<": the marker of a heredoc ("EOT", "\"EOT\"" or "'EOT'"), and where it ends, or -1 if there is none
+    private static int HeredocStart(string line, int from, int end)
+    {
+        var i = from;
+        while (i < end && line[i] == ' ') i++;
+        var quote = i < end && line[i] is '"' or '\'' ? line[i] : '\0';
+        if (quote != '\0') i++;
+        var name = i;
+        while (i < end && (char.IsAsciiLetterOrDigit(line[i]) || line[i] == '_')) i++;
+        if (i == name || char.IsAsciiDigit(line[name])) return -1;
+        if (quote != '\0' && (i >= end || line[i] != quote)) return -1;
+        return quote != '\0' ? i + 1 : i;
+    }
+
+    // The line that ends a heredoc: only its marker (a word in capitals, as "EOT" or "SQL"), maybe followed by ";",
+    // ",", ")" or "]" and more code. Where the marker ends, or -1 if this is a line of the text. (The marker is not
+    // known here, as the state of a line is a number: a line like that is taken to be it)
+    private static int HeredocMarkerEnd(string line, int start, int end)
+    {
+        var i = start;
+        while (i < end && char.IsWhiteSpace(line[i])) i++;
+        var name = i;
+        while (i < end && (char.IsAsciiLetterUpper(line[i]) || char.IsAsciiDigit(line[i]) || line[i] == '_')) i++;
+        if (i == name || !char.IsAsciiLetterUpper(line[name])) return -1;
+        return i == end || line[i] is ';' or ',' or ')' or ']' ? i : -1;
     }
 
     private static bool IsNameStart(CStyleLanguage language, char c) =>

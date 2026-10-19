@@ -244,6 +244,38 @@ public class SyntaxTests
 
     #endregion
 
+    #region PHP
+
+    [Theory]
+    [InlineData("<b><?= $n ?></b>", "WWWWWW.NN.WWWWWW")]
+    [InlineData("<a href=\"<?= $u ?>x\">", "WW.NNNN.SWWW.NN.WWSSW")]
+    [InlineData("<script>var n = <?= $n ?>;</script>", "WWWWWWWWWWW.....WWW.NN.WW.WWWWWWWWW")]
+    [InlineData("<?php IF ($a->list) # x", "WWWWW.WW..NN........###")]
+    [InlineData("<?php #[Route] fn", "WWWWW.NNNNNNNN.WW")]
+    [InlineData("<?php // c ?><b>", "WWWWW.#####WWWWW")]
+    [InlineData("<?xml version=\"1.0\"?>", "WWWWW.NNNNNNN.SSSSSWW")]
+    public void Php_Lines(string line, string expected)
+    {
+        Assert.Equal(expected, Style(SyntaxType.Php, line));
+    }
+
+    [Fact]
+    public void Php_CodeStringsAndHeredocOverSeveralLines_AndTheHtmlAfterIt()
+    {
+        Assert.Equal(new[] { "WWWWW", "NN...SSS..####", "WWWW.NN." },
+            Styles(SyntaxType.Php, "<?php", "$x = 'a'; // c", "echo $x;"));
+        Assert.Equal(new[] { "WWWWW.NN...SSSS", "SSSS.", "NN...SSSSSS", "SSSSSSS", "SSS.", "WWWWW" },
+            Styles(SyntaxType.Php, "<?php $s = \"one", "two\";", "$t = <<<EOT", "text $x", "EOT;", "?><p>"));
+        // Text before the code is HTML
+        Assert.Equal(new[] { "......", "WWWWW" }, Styles(SyntaxType.Php, "if $x;", "<?php"));
+        Assert.Equal(SyntaxType.Php, SyntaxHighlighter.ParseType("php"));
+        Assert.Equal("PHP", SyntaxHighlighter.Name(SyntaxType.Php));
+        // A note remembers it with the letter "q"
+        Assert.Equal(SyntaxType.Php, EntrySyntax.Get(EntrySyntax.Set("f", SyntaxType.Php)));
+    }
+
+    #endregion
+
     #region Kinds of text
 
     [Theory]
@@ -254,6 +286,8 @@ public class SyntaxTests
     [InlineData("module.mjs", nameof(SyntaxType.JavaScript))]
     [InlineData("Program.cs", nameof(SyntaxType.CSharp))]
     [InlineData("script.CSX", nameof(SyntaxType.CSharp))]
+    [InlineData("index.php", nameof(SyntaxType.Php))]
+    [InlineData("view.PHTML", nameof(SyntaxType.Php))]
     [InlineData("data.json", nameof(SyntaxType.Json))]
     [InlineData("feed.xml", nameof(SyntaxType.Xml))]
     [InlineData("icon.SVG", nameof(SyntaxType.Xml))]

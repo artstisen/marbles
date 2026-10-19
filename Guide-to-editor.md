@@ -195,7 +195,7 @@ justify-content: center;
 ```
 
 - `$0` marks where the cursor goes when the snippet is inserted: the editor is then in Insert mode, ready to type there. With a selection, the selected text goes there
-- A tag at the end of the title, like `(html)`, `(css)`, `(js)`, `(json)`, `(xml)`, `(cs)` or `(md)`, shows the snippet first in the list when that kind of text is edited
+- A tag at the end of the title, like `(html)`, `(css)`, `(js)`, `(json)`, `(xml)`, `(cs)`, `(php)` or `(md)`, shows the snippet first in the list when that kind of text is edited
 - Blank lines at the end of a snippet are not part of it. A line of a snippet that starts with `===` is written with a `\` in front of it (`\===`)
 - The text above the first title is not used (the file starts with a short explanation)
 
@@ -256,7 +256,7 @@ lorem = Lorem ipsum dolor sit amet
 Marbles
 ```
 
-- A line starting with `===` starts a list, and the rest of the line is its title. A tag at the end of the title, like `(html)`, `(css)`, `(js)`, `(json)`, `(xml)`, `(cs)` or `(md)`, uses the list when that kind of text is edited (the colors used, or the kind of the file); a list without a tag is used for all text
+- A line starting with `===` starts a list, and the rest of the line is its title. A tag at the end of the title, like `(html)`, `(css)`, `(js)`, `(json)`, `(xml)`, `(cs)`, `(php)` or `(md)`, uses the list when that kind of text is edited (the colors used, or the kind of the file); a list without a tag is used for all text
 - Each line of a list is a word, or `word = text`: the word is what you type, and the text what it is completed to. A word alone is completed to itself (a list of words you use often)
 - In the text, `$0` marks where the cursor goes, `\n` starts a new line and `\\` is a `\`
 - Blank lines are not used, and neither is the text above the first title
@@ -281,11 +281,11 @@ A number of lines (12 from the start) are kept above and below the cursor: the t
 - The choice is remembered (`scrolloff` and `scrolllines` in the settings file), and it can be turned on and off on the Configuration page of the start page
 
 ## Colors
-The editor can color the parts of a text by what they are, for Markdown, HTML, CSS, JavaScript, JSON, XML and C#. The text itself is shown as it is written: it is coloring, not a preview, and nothing is checked for errors.
+The editor can color the parts of a text by what they are, for Markdown, HTML, CSS, JavaScript, JSON, XML, C# and PHP. The text itself is shown as it is written: it is coloring, not a preview, and nothing is checked for errors.
 
-- Files named `.md`, `.html`/`.htm`, `.css`, `.js`/`.mjs`, `.json`, `.cs` and `.xml` (also `.svg`, `.xsd`, `.xsl`, `.xaml`, `.rss`, `.csproj` and other XML files) are colored when they are opened from the file browser
+- Files named `.md`, `.html`/`.htm`, `.css`, `.js`/`.mjs`, `.json`, `.cs`, `.php` and `.xml` (also `.svg`, `.xsd`, `.xsl`, `.xaml`, `.rss`, `.csproj` and other XML files) are colored when they are opened from the file browser
 - `:syntax` Turn the colors on or off (`:syntax on` and `:syntax off` do one of the two). When you turn them off in one of these files, that is remembered (`syntaxcolors` in the settings file), so files are opened without colors until you turn them on again
-- `:syntax md`, `:syntax html`, `:syntax css`, `:syntax js`, `:syntax json`, `:syntax xml`, `:syntax cs`, `:syntax diff` Color the text as that kind, whatever the name of the file is. This is how the colors are used in a note of a data file, where they are off until you ask for them. In a note, `:syntax` alone colors it as Markdown. A note remembers its colors: they are kept in the note (in the encrypted data file), so it is colored when it is opened again, and the lists show the kind (_MD_, _HTML_, _CSS_, _JS_, _JSON_, _XML_, _DIFF_) before the date. `:syntax off` removes it
+- `:syntax md`, `:syntax html`, `:syntax css`, `:syntax js`, `:syntax json`, `:syntax xml`, `:syntax cs`, `:syntax php`, `:syntax diff` Color the text as that kind, whatever the name of the file is. This is how the colors are used in a note of a data file, where they are off until you ask for them. In a note, `:syntax` alone colors it as Markdown. A note remembers its colors: they are kept in the note (in the encrypted data file), so it is colored when it is opened again, and the lists show the kind (_MD_, _HTML_, _CSS_, _JS_, _JSON_, _XML_, _DIFF_) before the date. `:syntax off` removes it
 
 Selected text, search matches and misspelled words are shown on top of the colors. With _Black and white_ on, the colored parts are shown brighter than the text.
 
@@ -302,14 +302,14 @@ Selected text, search matches and misspelled words are shown on top of the color
 
 The reading of Markdown is simple: emphasis inside emphasis is shown as the outer one, emphasis that continues on the next line is not found, and tables are not colored.
 
-### HTML, CSS, JavaScript, JSON, XML and C#
+### HTML, CSS, JavaScript, JSON, XML, C# and PHP
 
 | | |
 |---|---|
 | Comments | The color of dividers |
 | Strings (text in quotes), and the values of attributes in HTML | The color of favorites |
-| The words of JavaScript and C# (`const`, `function`, `class`, `return` ...), HTML tags, CSS selectors and words like `@media` and `!important` | The color of the logo and labels |
-| The names of attributes in HTML, of properties in CSS and of values in JSON, and the lines of the C# preprocessor (`#region`, `#if` ...) | The color of the preview title |
+| The words of JavaScript, C# and PHP (`const`, `function`, `class`, `return` ...), the marks `<?php` and `?>`, HTML tags, CSS selectors and words like `@media` and `!important` | The color of the logo and labels |
+| The names of attributes in HTML, of properties in CSS and of values in JSON, the lines of the C# preprocessor (`#region`, `#if` ...), and `$variables` and `#[attributes]` in PHP | The color of the preview title |
 | Numbers (also with units, like `12px`), CSS colors like `#fff`, and character entities like `&amp;` | Magenta |
 
 In an HTML file, what is between `<style>` and `</style>` is colored as CSS, and what is between `<script>` and `</script>` as JavaScript. XML is colored like HTML (tags, attributes, comments and entities), without the CSS and JavaScript, and the text of a `<![CDATA[ ... ]]>` section is left uncolored.
@@ -317,6 +317,8 @@ In an HTML file, what is between `<style>` and `</style>` is colored as CSS, and
 This too is a simple reading. Regular expressions written between slashes in JavaScript are not recognized (and can be colored wrongly if they contain quotes), the code inside `${...}` in a template string is shown as part of the string, and CSS or JavaScript written in the attributes of an HTML tag is shown as an ordinary value.
 
 C# is read the same way as JavaScript, with the words of C#: strings in quotes, `@"verbatim strings"` and `"""raw strings"""` (also over several lines), and `$"..."` strings, where the code inside `{...}` is shown as part of the string. A name written with `@` in front (`@class`) is not a word of the language. Names of your own (classes, methods) are not colored.
+
+PHP is colored as it is in a PHP file: the HTML as HTML, and the code from `<?php` (or `<?=`) to `?>` as PHP, also over several lines; a file that starts with `<?php` and has no `?>` is PHP to its end (and text before `<?php`, as in a note with only code, is read as HTML). The words of PHP are colored in any letter case (`IF`, `Function`), but not after `->` (`$a->list`). Strings in quotes can go over several lines, and so can heredoc and nowdoc text (`<<<EOT`): it ends at the first line that has only a word in capitals (as `EOT;`). A block of PHP inside the value of an attribute or in a `<script>` or `<style>` is colored when it ends on the same line.
 
 ## String memory
 Text that is yanked, and lines that are deleted, are kept in the string memory (up to 64 strings). The memory is kept while you are logged in, so text can be copied from one entry to another. The status line shows `mem 3/11`: the selected string (the one `p` and `P` put) and how many strings there are. A new string is added last and selected, so the two numbers are the same until another is selected with `CTRL+P` `CTRL+N`.

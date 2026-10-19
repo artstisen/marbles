@@ -14,11 +14,12 @@ internal enum SyntaxType
     Xml,
     Diff, // A comparison (":diff"), and .diff and .patch files
     Macro, // A macro of the editor (.macro files, see MacroLanguage)
-    CSharp
+    CSharp,
+    Php // HTML with PHP in it (and PHP alone, from "<?php")
 }
 
 /// <summary>
-/// The coloring of text in the editor by what it is: Markdown, HTML, CSS, JavaScript, JSON, XML or C#.
+/// The coloring of text in the editor by what it is: Markdown, HTML, CSS, JavaScript, JSON, XML, C# or PHP.
 /// Each kind has a class of its own that finds the styles of a line (MarkdownHighlighter, HtmlHighlighter ...).
 /// This class picks the one to use, and tells what kind a file is from its name.
 ///
@@ -45,6 +46,7 @@ internal static class SyntaxHighlighter
             ".css" => SyntaxType.Css,
             ".js" or ".mjs" or ".cjs" => SyntaxType.JavaScript,
             ".cs" or ".csx" => SyntaxType.CSharp,
+            ".php" or ".phtml" => SyntaxType.Php,
             ".json" => SyntaxType.Json,
             ".xml" or ".xsd" or ".xsl" or ".xslt" or ".svg" or ".xaml" or ".rss" or ".atom" or ".plist"
                 or ".csproj" or ".props" or ".targets" or ".resx" => SyntaxType.Xml,
@@ -66,6 +68,7 @@ internal static class SyntaxHighlighter
             "css" => SyntaxType.Css,
             "js" or "javascript" => SyntaxType.JavaScript,
             "cs" or "csharp" or "c#" => SyntaxType.CSharp,
+            "php" => SyntaxType.Php,
             "json" => SyntaxType.Json,
             "xml" => SyntaxType.Xml,
             "diff" or "patch" => SyntaxType.Diff,
@@ -83,6 +86,7 @@ internal static class SyntaxHighlighter
             SyntaxType.Css => "CSS",
             SyntaxType.JavaScript => "JavaScript",
             SyntaxType.CSharp => "C#",
+            SyntaxType.Php => "PHP",
             SyntaxType.Json => "JSON",
             SyntaxType.Xml => "XML",
             SyntaxType.Diff => "Diff",
@@ -124,6 +128,9 @@ internal static class SyntaxHighlighter
                 break;
             case SyntaxType.Json:
                 JavaScriptHighlighter.ScanJson(line, styles);
+                break;
+            case SyntaxType.Php:
+                nextState = HtmlHighlighter.Scan(line, state, styles, php: true);
                 break;
             case SyntaxType.CSharp:
                 nextState = CStyleHighlighter.Scan(CStyleHighlighter.CSharp, line, 0, line.Length, state, styles);

@@ -379,7 +379,7 @@ internal static class DialogText
     public static string WrapOff => Lang.T("Long lines are not wrapped (zh zl: scroll)");
     public static string SyntaxOn => Lang.T("Colors on: ");
     public static string SyntaxOff => Lang.T("Colors off");
-    public static string SyntaxUnknown => Lang.T("Use md, html, css, js, json, xml, cs or diff, not: ");
+    public static string SyntaxUnknown => Lang.T("Use md, html, css, js, json, xml, cs, php or diff, not: ");
 
     // The log
     public static string LogKeys => Lang.T("| h/l Page | j/k Line | gg G First/Last | /text Filter | Esc Close");
