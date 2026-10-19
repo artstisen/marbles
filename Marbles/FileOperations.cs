@@ -45,6 +45,39 @@ internal static class FileOperations
     private static bool Exists(string path) => File.Exists(path) || Directory.Exists(path);
 
     /// <summary>
+    /// A path with the links in it followed, so the same place is written the same way: on Linux and macOS a
+    /// directory can be a link to another (on macOS "/var" and "/tmp" are links into "/private"), and the current
+    /// directory is told with the links followed. The parts that are not there are kept as they are. On Windows,
+    /// the full path
+    /// </summary>
+    internal static string RealPath(string path)
+    {
+        var full = Path.GetFullPath(path);
+        if (OperatingSystem.IsWindows()) return full;
+        try
+        {
+            var root = Path.GetPathRoot(full) ?? string.Empty;
+            var current = root;
+            var parts = full[root.Length..].Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < parts.Length; i++)
+            {
+                var next = Path.Combine(current, parts[i]);
+                FileSystemInfo item = Directory.Exists(next) ? new DirectoryInfo(next) : new FileInfo(next);
+                if (!item.Exists) return Path.Combine(new[] { current }.Concat(parts[i..]).ToArray());
+                current = item.LinkTarget != null && item.ResolveLinkTarget(true) is { } target
+                    ? Path.GetFullPath(target.FullName)
+                    : next;
+            }
+
+            return current;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return full;
+        }
+    }
+
+    /// <summary>
     /// A path as written in a list file (favorites, history, bookmarks, jumps): without blank space at its ends,
     /// unless a file or directory has those in its name (Linux and macOS allow it) and is there
     /// </summary>

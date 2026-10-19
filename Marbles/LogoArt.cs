@@ -306,7 +306,15 @@ internal static class Logos
                name.IndexOfAny(new[] { '/', '\\', ':', '*', '?', '"', '<', '>', '|' }) < 0 && name != "." && name != "..";
     }
 
-    private static string PathOf(string name) => Path.Combine(Directory, name.Trim() + Extension);
+    // The file of a name: in any letter case, as the names are (file names on Linux tell the letter case apart)
+    private static string PathOf(string name)
+    {
+        var file = name.Trim() + Extension;
+        var path = Path.Combine(Directory, file);
+        if (File.Exists(path) || !System.IO.Directory.Exists(Directory)) return path;
+        return System.IO.Directory.EnumerateFiles(Directory, "*" + Extension)
+            .FirstOrDefault(found => Path.GetFileName(found).Equals(file, StringComparison.OrdinalIgnoreCase)) ?? path;
+    }
 
     /// <summary>
     /// The names of the logos made by the user (in alphabetical order)

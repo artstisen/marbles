@@ -65,7 +65,9 @@ internal sealed record JumpTarget(JumpKind Kind, string Target)
             case JumpKind.File or JumpKind.Directory:
                 return CaretPosition.NewPath(Target, oldPath, newPath) is { } path ? this with { Target = path } : null;
             case JumpKind.DataFile:
-                return CaretPosition.NewPath(FullPath, oldPath, newPath) is { } moved &&
+                // (with links followed: the data directory can be written in two ways)
+                return CaretPosition.NewPath(FileOperations.RealPath(FullPath), FileOperations.RealPath(oldPath),
+                           FileOperations.RealPath(newPath)) is { } moved &&
                        StartArgument.DataFileInDataDirectory(moved) is { } inData
                     ? this with { Target = inData }
                     : null;

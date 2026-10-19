@@ -992,8 +992,9 @@ internal static class FileIo
             // written on top of another data file (or the data file itself)
             if (!string.IsNullOrEmpty(path) && Directory.Exists(path))
             {
-                var backup = Path.GetFullPath(path);
-                var data = Path.GetFullPath(DataDirectory);
+                // (with links followed: the same directory can be written in two ways)
+                var backup = FileOperations.RealPath(path);
+                var data = FileOperations.RealPath(DataDirectory);
                 return !FileOperations.SamePath(backup, data) && !FileOperations.IsInside(backup, data);
             }
 

@@ -16,6 +16,8 @@ public class StartArgumentTests : IDisposable
         Directory.CreateDirectory(Path.Combine(_root, "notes"));
         File.WriteAllText(Path.Combine(_root, "notes", "a.md"), "x");
         File.WriteAllText(Path.Combine(_root, "notes", "other.mbls"), "x");
+        // As the current directory tells it (on macOS the temporary directory is reached by a link)
+        _root = FileOperations.RealPath(_root);
     }
 
     public void Dispose()

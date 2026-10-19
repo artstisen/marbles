@@ -77,7 +77,9 @@ internal static class StartArgument
     // null if it is not in the data directory or a directory in it
     internal static string? DataFileInDataDirectory(string path)
     {
-        var data = System.IO.Path.GetFullPath(FileIo.GetDataDirectoryName());
+        // (with links followed: the same directory can be written in two ways)
+        var data = FileOperations.RealPath(FileIo.GetDataDirectoryName());
+        path = FileOperations.RealPath(path);
         if (!FileOperations.IsInside(path, data)) return null;
         var relative = System.IO.Path.GetRelativePath(data, path).Replace('\\', '/');
         return relative.Count(c => c == '/') <= 1 ? relative : null;
