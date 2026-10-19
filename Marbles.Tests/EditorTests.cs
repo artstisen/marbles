@@ -68,6 +68,19 @@ internal static class Keys
 [Collection("Static state")]
 public class EditorTests
 {
+    [Fact]
+    public void New_AsksTheHostForANewFileOrNote_WithTheNameAsTyped()
+    {
+        var editor = Editor("text");
+        Assert.Equal(EditorRequest.NewDocument, editor.Type(":new Notes 2.md<CR>"));
+        Assert.Equal("Notes 2.md", editor.NewName);
+        Assert.Equal(EditorRequest.NewDocument, editor.Type(":new<CR>"));
+        Assert.Equal("", editor.NewName);
+        // Not in a field of one line, and ":newline" is not it
+        Assert.NotEqual(EditorRequest.NewDocument, new EditorEngine("x", 10, 1, true).Type("<Esc>:new a<CR>"));
+        Assert.NotEqual(EditorRequest.NewDocument, editor.Type(":newline<CR>"));
+    }
+
     public EditorTests()
     {
         Tools.ClearLineMemory(); // The registers are shared by all editors

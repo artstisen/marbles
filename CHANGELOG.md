@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Editor: `:new name`** makes a new, empty file next to the file being edited and opens it in its place (asking about unsaved changes first); in a note, `:new Title` makes a new note in the data file. A name that is there already, a path or a data file is refused, and the name is asked for when it is not given.
 - **Editor: PHP is colored** (`.php` and `.phtml` files, `:syntax php`, and in notes): the HTML as HTML, and the code between `<?php` and `?>` as PHP, with its words in any letter case, `$variables`, `#` comments, strings and heredoc text over several lines. A block of PHP in the value of an attribute or in a script is colored on its line.
 - **Editor: C# is colored** (`.cs` and `.csx` files, `:syntax cs`, and in notes): keywords, comments, strings (also `@"verbatim"` and `"""raw"""` strings over several lines), numbers and the lines of the preprocessor, in the shared syntax colors. JavaScript and C# are read by one reader of the languages written in the style of C, to which more languages can be added.
 - **Language file pack**: the language files can be downloaded on their own (`Marbles-languages-1.5.3.zip`, made by `publish.ps1`): the folder `lang`, the German file built into Marbles, and a read-me on using, changing and adding languages.

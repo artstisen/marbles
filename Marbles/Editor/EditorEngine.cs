@@ -65,6 +65,7 @@ internal enum EditorRequest
     SwitchPane, // Tab (Shift+Tab) in Normal mode: the other pane of a split gets the keys
     ClosePane, // ":q" in a split: close this pane (the other shows the text)
     OnlyPane, // ":only": close the other pane of a split
+    NewDocument, // ":new name": a new file next to this one (in an entry: a new entry), opened in its place
     Favorite // ":favorite": the file a favorite of the file browser, or the note a favorite of its data file (or not)
 }
 
@@ -376,6 +377,11 @@ internal sealed partial class EditorEngine
     /// The new name given with ":rename" or ":title" (empty: it is asked for)
     /// </summary>
     internal string RenameText { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// ":new name": the name of the new file, or the title of the new entry, as typed (empty: it is asked for)
+    /// </summary>
+    internal string NewName { get; private set; } = string.Empty;
 
     /// <summary>
     /// True if the command was ":title" (in a file, the name is changed with ":rename")
@@ -984,6 +990,15 @@ internal sealed partial class EditorEngine
         {
             BookArgument = book.Groups[1].Value.Trim();
             if (!SingleLine) _request = EditorRequest.JumpToBookmark;
+            return;
+        }
+
+        // ":new name" (":new Title" in an entry): the host makes it and opens it in place of this text
+        var newDocument = Regex.Match(command, "^new(?: +(.*))?$");
+        if (newDocument.Success)
+        {
+            NewName = newDocument.Groups[1].Value.Trim();
+            if (!SingleLine) _request = EditorRequest.NewDocument;
             return;
         }
 

@@ -502,6 +502,9 @@ public partial class TextArea
             case EditorRequest.OnlyPane:
                 CloseOtherPane();
                 break;
+            case EditorRequest.NewDocument:
+                NewDocument();
+                break;
             case EditorRequest.ForceQuit:
             case EditorRequest.Cancel:
                 Canceled = true;
@@ -975,6 +978,79 @@ public partial class TextArea
         // An entry is opened split again if it is now
         if (leave && _saveMode == SaveAsEntry) Actions.KeepSplitOfEntry(this);
         return leave;
+    }
+
+    // ":new name": the file or entry to open when the editor is closed for it (and it is forgotten)
+    private static string? _newDocument;
+
+    /// <summary>
+    /// The editor was closed for ":new name": the name of the new file, made next to the file that was edited, or
+    /// the title of the new entry, which the caller makes (and it is forgotten). Null if it was not
+    /// </summary>
+    internal static string? TakeNewDocumentRequest()
+    {
+        var name = _newDocument;
+        _newDocument = null;
+        return name;
+    }
+
+    // ":new name" in a text file: a new, empty file in the same directory (a plain name, not one that is there);
+    // ":new Title" in an entry: a new entry in the data file. The name is asked for if it is not given, the text
+    // being edited is asked about if it has changes, and the new one is opened in its place
+    private void NewDocument()
+    {
+        if (_engine.IsRecording)
+        {
+            _engine.SetMessage(Lang.T("A new file or note is not made while recording"), true);
+            return;
+        }
+
+        if (_peek != null || _saveMode is not (SaveAsFile or SaveAsEntry) || FileExplorer.EditingMarblesFile)
+        {
+            _engine.SetMessage(Lang.T("A new file or note is not made here"), true);
+            return;
+        }
+
+        var name = _engine.NewName;
+        if (name.Length == 0)
+        {
+            ChoiceBox.Forget();
+            name = (_saveMode == SaveAsFile
+                ? ChoiceBox.AskText(DialogText.NewFile, DialogText.TypeNameAndPressEnter, DialogText.NameColon, string.Empty)
+                : ChoiceBox.AskText(DialogText.New, DialogText.EnterTitleAndPressEnter, DialogText.TitleColon,
+                    string.Empty))?.Trim() ?? string.Empty;
+            RedrawAll();
+            if (name.Length == 0) return;
+        }
+
+        if (_saveMode == SaveAsEntry)
+        {
+            name = Tools.ConstrainTitle(name);
+            if (!Tools.IsValid(name)) return;
+        }
+        else if (FileExplorer.NewFileProblem(name) is { } problem)
+        {
+            _engine.SetMessage(problem, true);
+            return;
+        }
+
+        // The text being edited first (saved or not, as asked), then the new file is made
+        if (!LeaveForJump())
+        {
+            RedrawAll();
+            return;
+        }
+
+        if (_saveMode == SaveAsFile && FileExplorer.CreateFileNextToCurrent(name) is { } failed)
+        {
+            RedrawAll();
+            _engine.SetMessage(failed, true);
+            return;
+        }
+
+        _newDocument = name;
+        Canceled = _engine.IsModified;
+        _exit = true;
     }
 
     // ":rename" and ":title": a file gets another name (the changes that are not saved stay so, and are saved to

@@ -781,6 +781,20 @@ internal static partial class FileExplorer
                 textArea.ClearUndoRedoCache();
                 if (_file != null) file = _file; // Renamed in the editor
                 KeepCaret(file.Path, textArea);
+                // ":new name": the new file (made next to this one) in its place
+                if (TextArea.TakeNewDocumentRequest() is { } newName)
+                {
+                    var path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(file.Path) ?? string.Empty, newName);
+                    _file = TextFile.Create(path);
+                    file = _file;
+                    EventLog.Add(DialogText.LogFile + "Open: " + file.Path);
+                    AddToHistory(file.Path);
+                    cursorIndex = 0;
+                    split = null;
+                    modified = false;
+                    continue;
+                }
+
                 // ":snip edit" or ":complete edit": that file, and then this file again (as it is on disk)
                 if (TextArea.TakeSideFileRequest() is not { } sideFile) break;
                 cursorIndex = textArea.GetCursorIndex();
@@ -942,11 +956,18 @@ internal static partial class FileExplorer
         EditMarblesFile(Completions.FilePath, DialogText.CaptionsCompletions, 0);
     }
 
+    /// <summary>
+    /// A file of Marbles (snippets, completions) is being edited
+    /// </summary>
+    internal static bool EditingMarblesFile { get; private set; }
+
     // Open a file of Marbles (snippets, completions) in the editor at a line
     private static void EditMarblesFile(string path, string caption, int line)
     {
         var outer = _file;
         var mode = Mode.CurrentMode;
+        var editingBefore = EditingMarblesFile;
+        EditingMarblesFile = true;
         try
         {
             _file = TextFile.Load(path);
@@ -969,6 +990,7 @@ internal static partial class FileExplorer
         {
             _file = outer;
             Mode.SetMode(mode);
+            EditingMarblesFile = editingBefore;
         }
     }
 
@@ -1030,6 +1052,46 @@ internal static partial class FileExplorer
     internal static string SaveCurrentFile(string text)
     {
         return _file == null ? DialogText.StatusUnableToSave : _file.Save(text);
+    }
+
+    /// <summary>
+    /// What is wrong with a name for a new file next to the file being edited (":new name" in the editor): not a
+    /// name of a file (a path is not), a data file (made on the login page), or one that is there. Null if it can be
+    /// made
+    /// </summary>
+    internal static string? NewFileProblem(string name)
+    {
+        if (_file == null) return DialogText.NoFilePath;
+        if (Tools.FileNameProblem(name) is { } problem) return problem;
+        if (name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase))
+        {
+            return Lang.T("A data file is made on the login page (Esc N)");
+        }
+
+        var path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(_file.Path) ?? string.Empty, name);
+        return File.Exists(path) || Directory.Exists(path) ? DialogText.NameExists : null;
+    }
+
+    /// <summary>
+    /// Make an empty file next to the file being edited (":new name"; NewFileProblem has checked the name)
+    /// </summary>
+    /// <returns>Null if it was made, else why it was not</returns>
+    internal static string? CreateFileNextToCurrent(string name)
+    {
+        if (_file == null) return DialogText.NoFilePath;
+        var path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(_file.Path) ?? string.Empty, name);
+        try
+        {
+            File.WriteAllBytes(path, Array.Empty<byte>());
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException)
+        {
+            LogOperation("New file", path, e.Message);
+            return e.Message;
+        }
+
+        LogOperation("New file", path, DialogText.Success);
+        return null;
     }
 
     // Create a file in the directory shown and open it in the editor. The name is asked for if it is not given

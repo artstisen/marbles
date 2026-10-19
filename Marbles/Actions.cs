@@ -879,6 +879,18 @@ internal static class Actions
                 // Cleanup
                 textArea.ClearUndoRedoCache();
                 KeepSplitOfEntry(textArea);
+                // ":new Title": a new entry in the data file, in its place
+                if (TextArea.TakeNewDocumentRequest() is { } title)
+                {
+                    Entries.NewEntry(title, string.Empty);
+                    Entries.SaveEntriesToFile();
+                    Entries.RegisterSessionId(Entries.CurrentEntry.Id);
+                    cursorIndex = 0;
+                    split = null;
+                    search = false;
+                    continue;
+                }
+
                 // ":snip edit" or ":complete edit": that file, and then the entry again
                 if (TextArea.TakeSideFileRequest() is not { } sideFile) break;
                 cursorIndex = textArea.GetCursorIndex();

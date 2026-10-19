@@ -1942,6 +1942,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Tab Shift+Tab", Lang.T("Split: go to the other pane (Normal mode)"), false));
             _shortcutList.Add(new Shortcut(":only :q", Lang.T("Split: close the other pane/this pane"), false));
             _shortcutList.Add(new Shortcut(":yankall", Lang.T("Yank all the text (as gg V G y; the clipboard as y)"), false));
+            _shortcutList.Add(new Shortcut(":new name", Lang.T("New file next to this one (in a note: a new note)"), false));
             _shortcutList.Add(new Shortcut(":bookmark", Lang.T("Bookmark the file being edited (Jump menu)"), false));
             _shortcutList.Add(new Shortcut(":favorite :fav", Lang.T("Add/remove the file (or the note) as a favorite"), false));
             _shortcutList.Add(new Shortcut(":diff :diff -w", Lang.T("Compare with the saved text (-w: not blank space)"), false));
