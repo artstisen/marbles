@@ -54,6 +54,10 @@ internal static class CStyleHighlighter
     internal const int InDouble = 6; // A "string" over several lines (PHP)
     internal const int InHeredoc = 7; // A heredoc or nowdoc, to the line with its marker (PHP)
 
+    // The state of a heredoc also has a hash of its marker, above the 3 bits of the state (HeredocState)
+    private const int StateBits = 3;
+    private const int MarkerHashBits = 20;
+
     internal static readonly CStyleLanguage JavaScript = new()
     {
         Keywords = new HashSet<string>(StringComparer.Ordinal)
@@ -128,10 +132,10 @@ internal static class CStyleHighlighter
     {
         stop = end;
         var i = start;
-        if (state == InHeredoc)
+        if ((state & ((1 << StateBits) - 1)) == InHeredoc)
         {
-            // To the line that has only the marker (as "EOT;"): the code goes on after it
-            var marker = HeredocMarkerEnd(line, start, end);
+            // To the line that starts with its marker (as "EOT;"): the code goes on after it
+            var marker = HeredocMarkerEnd(line, start, end, state >> StateBits);
             if (marker < 0)
             {
                 Fill(styles, start, end, SyntaxStyle.String);
@@ -214,11 +218,11 @@ internal static class CStyleHighlighter
             }
 
             if (language.Php && c == '<' && string.CompareOrdinal(line, i, "<<<", 0, 3) == 0 &&
-                HeredocStart(line, i + 3, end) is var after and > 0)
+                HeredocMarker(line, i + 3, end) is { } marker)
             {
-                // <<<EOT, <<<"EOT" and <<<'EOT': the text follows on the next lines
+                // <<<EOT, <<<"EOT" and <<<'EOT': the text follows on the next lines, to the line with the marker
                 Fill(styles, i, end, SyntaxStyle.String);
-                return InHeredoc;
+                return InHeredoc | (MarkerHash(marker) << StateBits);
             }
 
             if (c == '/' && next == '*')
@@ -305,31 +309,45 @@ internal static class CStyleHighlighter
         return state;
     }
 
-    // After "<<<": the marker of a heredoc ("EOT", "\"EOT\"" or "'EOT'"), and where it ends, or -1 if there is none
-    private static int HeredocStart(string line, int from, int end)
+    // After "<<<": the marker of a heredoc ("EOT", "\"EOT\"" or "'EOT'"), or null if there is none
+    private static string? HeredocMarker(string line, int from, int end)
     {
         var i = from;
         while (i < end && line[i] == ' ') i++;
         var quote = i < end && line[i] is '"' or '\'' ? line[i] : '\0';
         if (quote != '\0') i++;
         var name = i;
-        while (i < end && (char.IsAsciiLetterOrDigit(line[i]) || line[i] == '_')) i++;
-        if (i == name || char.IsAsciiDigit(line[name])) return -1;
-        if (quote != '\0' && (i >= end || line[i] != quote)) return -1;
-        return quote != '\0' ? i + 1 : i;
+        while (i < end && IsMarkerChar(line[i])) i++;
+        if (i == name || char.IsAsciiDigit(line[name])) return null;
+        if (quote != '\0' && (i >= end || line[i] != quote)) return null;
+        return line[name..i];
     }
 
-    // The line that ends a heredoc: only its marker (a word in capitals, as "EOT" or "SQL"), maybe followed by ";",
-    // ",", ")" or "]" and more code. Where the marker ends, or -1 if this is a line of the text. (The marker is not
-    // known here, as the state of a line is a number: a line like that is taken to be it)
-    private static int HeredocMarkerEnd(string line, int start, int end)
+    // The line that ends a heredoc: its marker first (after blank space), not followed by a letter, digit or "_"
+    // (as "EOT;" or "EOT, $x);"). Where the marker ends, or -1 if this is a line of the text. Only a hash of the
+    // marker is in the state (a number): a word with the same hash would end it too, which is very unlikely
+    private static int HeredocMarkerEnd(string line, int start, int end, int hash)
     {
         var i = start;
         while (i < end && char.IsWhiteSpace(line[i])) i++;
         var name = i;
-        while (i < end && (char.IsAsciiLetterUpper(line[i]) || char.IsAsciiDigit(line[i]) || line[i] == '_')) i++;
-        if (i == name || !char.IsAsciiLetterUpper(line[name])) return -1;
-        return i == end || line[i] is ';' or ',' or ')' or ']' ? i : -1;
+        while (i < end && IsMarkerChar(line[i])) i++;
+        if (i == name || char.IsAsciiDigit(line[name])) return -1;
+        return MarkerHash(line[name..i]) == hash ? i : -1;
+    }
+
+    private static bool IsMarkerChar(char c) => char.IsAsciiLetterOrDigit(c) || c == '_';
+
+    // A hash of the marker of a heredoc that fits in the state (FNV-1a, MarkerHashBits bits)
+    private static int MarkerHash(string marker)
+    {
+        var hash = 2166136261;
+        foreach (var c in marker)
+        {
+            hash = (hash ^ c) * 16777619;
+        }
+
+        return (int)(hash & ((1u << MarkerHashBits) - 1));
     }
 
     private static bool IsNameStart(CStyleLanguage language, char c) =>

@@ -690,6 +690,11 @@ public partial class TextArea
                 if (Completions.Enabled) TurnCompletionsOn();
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
                 break;
+            case EditorRequest.Jump when _engine.IsRecording:
+            case EditorRequest.JumpToBookmark when _engine.IsRecording:
+                // Leaving would throw the macro away: it is stopped first (Esc)
+                _engine.SetMessage(Lang.T("Stop recording the macro first (Esc)"), true);
+                break;
             case EditorRequest.Jump:
                 Tools.HideCursor();
                 // Leaving the text asks about changes that are not saved

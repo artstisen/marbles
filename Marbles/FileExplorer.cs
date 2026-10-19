@@ -1082,7 +1082,8 @@ internal static partial class FileExplorer
         var path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(_file.Path) ?? string.Empty, name);
         try
         {
-            File.WriteAllBytes(path, Array.Empty<byte>());
+            // Only a new file: one that was made since the name was checked is not emptied
+            new FileStream(path, FileMode.CreateNew).Dispose();
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException)
         {

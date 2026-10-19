@@ -281,11 +281,16 @@ internal sealed class TextBuffer
         if (_groupDepth == 0 || --_groupDepth > 0) return;
         EndStep(cursor);
         var count = _undo.Count - _groupStart;
-        if (count < 2) return;
-        var merged = new UndoStep { CursorBefore = _undo[_groupStart].CursorBefore, CursorAfter = _undo[^1].CursorAfter };
-        foreach (var step in _undo.Skip(_groupStart)) merged.Edits.AddRange(step.Edits);
-        _undo.RemoveRange(_groupStart, count);
-        _undo.Add(merged);
+        if (count >= 2)
+        {
+            var merged = new UndoStep
+                { CursorBefore = _undo[_groupStart].CursorBefore, CursorAfter = _undo[^1].CursorAfter };
+            foreach (var step in _undo.Skip(_groupStart)) merged.Edits.AddRange(step.Edits);
+            _undo.RemoveRange(_groupStart, count);
+            _undo.Add(merged);
+        }
+
+        ForgetOldestSteps();
     }
 
     /// <summary>
@@ -316,11 +321,18 @@ internal sealed class TextBuffer
     private void AddStep(UndoStep step)
     {
         _undo.Add(step);
-        if (_undo.Count <= MaxUndoSteps) return;
-        // The oldest step is forgotten, and with it the way back to the state before it
-        if (_savedStep == null || _savedStep == _undo[0]) _savedStateLost = true;
-        _undo.RemoveAt(0);
-        if (_groupDepth > 0 && _groupStart > 0) _groupStart--;
+        // (in a group the steps are kept until they are merged into one: then the oldest are forgotten)
+        if (_groupDepth == 0) ForgetOldestSteps();
+    }
+
+    // The oldest steps over the limit are forgotten, and with them the way back to the state before them
+    private void ForgetOldestSteps()
+    {
+        while (_undo.Count > MaxUndoSteps)
+        {
+            if (_savedStep == null || _savedStep == _undo[0]) _savedStateLost = true;
+            _undo.RemoveAt(0);
+        }
     }
 
     private void Record(Edit edit)

@@ -104,15 +104,22 @@ internal static class Bookmarks
     internal static void Load()
     {
         List.Clear();
+        Folders.ForgetRemoved();
+        _unreadable = false;
         try
         {
             if (File.Exists(FilePath)) Parse(File.ReadAllText(FilePath, Encoding.UTF8));
         }
         catch
         {
-            // A list that cannot be read is empty
+            // A list that cannot be read is empty, and the file is not written over until it is read (it may only be
+            // locked for a moment, as by a virus scanner)
+            _unreadable = true;
         }
     }
+
+    // The file was there, but could not be read
+    private static bool _unreadable;
 
     private static ConsoleColor? ParseColor(string text) =>
         Enum.TryParse<ConsoleColor>(text.Trim(), true, out var color) && Enum.IsDefined(color) ? color : null;
@@ -190,6 +197,7 @@ internal static class Bookmarks
     /// <returns>DialogText.Success or an error message</returns>
     internal static string Save()
     {
+        if (_unreadable) return DialogText.ListNotRead;
         try
         {
             var directory = Path.GetDirectoryName(Path.GetFullPath(FilePath));
@@ -213,8 +221,11 @@ internal static class Bookmarks
     {
         Added,
         AlreadyThere,
-        Full
+        Full,
+        NotKept // A tab or a line break in its path
     }
+
+    private static readonly char[] LineBreaking = { '\t', '\r', '\n' };
 
     /// <summary>
     /// Add a place at the end of the list, outside the folders (a place that is there already stays where it is)
@@ -228,6 +239,12 @@ internal static class Bookmarks
 
         if (Contains(target)) return AddResult.AlreadyThere;
         if (Places.Count >= MaxCount) return AddResult.Full;
+        // (a tab or a line break in it would break the line of the file)
+        if (target.Target.IndexOfAny(LineBreaking) >= 0 || target.Name.IndexOfAny(LineBreaking) >= 0)
+        {
+            return AddResult.NotKept;
+        }
+
         List.Add(new Entry(target));
         return AddResult.Added;
     }
@@ -273,8 +290,8 @@ internal static class Bookmarks
     internal static bool Rename(int index, string name)
     {
         if (index < 0 || index >= List.Count) return false;
-        // A tab would end the name in the file
-        name = name.Replace('\t', ' ').Trim();
+        // A tab or a line break would end the name in the file
+        name = name.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ').Trim();
         var entry = List[index];
         if (entry.IsFolder)
         {
@@ -358,6 +375,7 @@ internal static class Bookmarks
         var result = Add(target);
         if (result == AddResult.AlreadyThere) return Lang.F("Already bookmarked: {0}", target.Name);
         if (result == AddResult.Full) return Lang.F("The bookmarks are full ({0})", MaxCount);
+        if (result == AddResult.NotKept) return Lang.T("A path with a tab or a line break is not kept");
         var status = Save();
         return status == DialogText.Success ? Lang.F("Bookmarked: {0}", target.Name) : status;
     }

@@ -70,13 +70,27 @@ internal sealed partial class EditorEngine
         _macroCommands.Add(MacroLanguage.ParseKeys(":play " + name.Replace("<", "<lt>") + "<CR>").ToArray());
     }
 
-    // A command brought back with Up on the command line: it is recorded as typed (":" and its text), as the
-    // commands given before are not the same when the macro is played
+    // Where the keys of the command line being recorded start (its ":"), or -1
+    private int _commandKeysStart = -1;
+
+    // A command line that is given: it is recorded as ":" and its text, and the keys before the ":" (as the
+    // selection a command works on) are kept. Up, Down and Tab are not recorded, as the commands they bring are not
+    // the same when the macro is played. The range of a selection ("'<,'>") is given again when ":" is played in
+    // the Visual mode before it
     private void RecordCommandAsTyped(string command)
     {
         if (!IsRecording || _replaying || IsPlayingMacro) return;
-        _macroCommand.Clear();
-        _macroCommand.AddRange(MacroLanguage.ParseKeys(":" + command.Replace("<", "<lt>") + "<CR>"));
+        var start = _commandKeysStart >= 0 && _commandKeysStart < _macroCommand.Count ? _commandKeysStart : 0;
+        _macroCommand.RemoveRange(start, _macroCommand.Count - start);
+        var erase = string.Empty;
+        if (_commandSelectionMode != EditorMode.Normal)
+        {
+            // Given again when it is played; if it was erased (as for ":%s/a/b/"), it is erased again
+            if (command.StartsWith("'<,'>", StringComparison.Ordinal)) command = command[5..];
+            else erase = string.Concat(Enumerable.Repeat("<BS>", 5));
+        }
+
+        _macroCommand.AddRange(MacroLanguage.ParseKeys(":" + erase + command.Replace("<", "<lt>") + "<CR>"));
     }
 
     // Called by HandleKey before a key is handled: a command that starts is recorded from its first key

@@ -307,6 +307,7 @@ internal static class DialogText
     public static string InvalidFileName => Lang.T("Invalid file name");
     // What is wrong with a new name of a file or directory (Tools.FileNameProblem)
     public static string NameExists => Lang.T("A file or directory with that name already exists");
+    public static string ListNotRead => Lang.T("The list could not be read, so it was not changed");
     public static string DataFileExists => Lang.T("A data file with that name already exists");
     public static string NameControlCharacters => Lang.T("A name cannot contain control characters");
     public static string NameEnd => Lang.T("A name cannot end with a dot or a space");

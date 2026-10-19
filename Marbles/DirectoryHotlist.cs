@@ -63,15 +63,21 @@ internal static class DirectoryHotlist
     internal static void Load()
     {
         List.Clear();
+        _unreadable = false;
         try
         {
             if (File.Exists(FilePath)) Parse(File.ReadAllText(FilePath, Encoding.UTF8));
         }
         catch
         {
-            // A list that cannot be read is empty
+            // A list that cannot be read is empty, and the file is not written over until it is read (it may only be
+            // locked for a moment, as by a virus scanner)
+            _unreadable = true;
         }
     }
+
+    // The file was there, but could not be read
+    private static bool _unreadable;
 
     internal static void Parse(string text)
     {
@@ -108,6 +114,7 @@ internal static class DirectoryHotlist
     /// <returns>DialogText.Success or an error message</returns>
     internal static string Save()
     {
+        if (_unreadable) return DialogText.ListNotRead;
         try
         {
             var directory = Path.GetDirectoryName(Path.GetFullPath(FilePath));

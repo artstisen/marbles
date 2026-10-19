@@ -444,6 +444,8 @@ internal static class MacroLanguage
         // command ...: a command line
         if (line.StartsWith("command ", StringComparison.OrdinalIgnoreCase))
         {
+            // (one that does not fit on the command line would be cut short, and another command given)
+            if (line[8..].Trim().Length > EditorEngine.MaxCommandLength) return null;
             var keys = new List<ConsoleKeyInfo> { CharKey(':') };
             keys.AddRange(line[8..].Trim().Select(CharKey));
             keys.Add(NamedKeys[1].Key);
@@ -460,7 +462,7 @@ internal static class MacroLanguage
 
         // find "text", find back "text"
         var find = Regex.Match(line, "^find( back)? +(\".*\")$", RegexOptions.IgnoreCase);
-        if (find.Success && Unquote(find.Groups[2].Value) is { } search)
+        if (find.Success && Unquote(find.Groups[2].Value) is { } search && search.Length <= EditorEngine.MaxCommandLength)
         {
             var keys = new List<ConsoleKeyInfo> { CharKey(find.Groups[1].Success ? '?' : '/') };
             keys.AddRange(search.Select(CharKey));

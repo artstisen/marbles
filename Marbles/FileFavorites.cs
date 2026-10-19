@@ -52,15 +52,22 @@ internal static class FileFavorites
     internal static void Load()
     {
         List.Clear();
+        Folders.ForgetRemoved();
+        _unreadable = false;
         try
         {
             if (File.Exists(FilePath)) Parse(File.ReadAllText(FilePath, Encoding.UTF8));
         }
         catch
         {
-            // A list that cannot be read is empty
+            // A list that cannot be read is empty, and the file is not written over until it is read (it may only be
+            // locked for a moment, as by a virus scanner)
+            _unreadable = true;
         }
     }
+
+    // The file was there, but could not be read
+    private static bool _unreadable;
 
     internal static void Parse(string text)
     {
@@ -139,6 +146,7 @@ internal static class FileFavorites
     /// <returns>DialogText.Success or an error message</returns>
     internal static string Save()
     {
+        if (_unreadable) return DialogText.ListNotRead;
         try
         {
             var directory = Path.GetDirectoryName(Path.GetFullPath(FilePath));
@@ -203,6 +211,9 @@ internal static class FileFavorites
             List.RemoveAt(index);
             return false;
         }
+
+        // A path with a line break would break the lines of the file
+        if (path.IndexOfAny(new[] { '\r', '\n' }) >= 0) return false;
 
         List.Add(new Favorite { Path = Path.GetFullPath(path) });
         return true;

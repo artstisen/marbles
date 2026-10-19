@@ -266,6 +266,15 @@ public class SyntaxTests
             Styles(SyntaxType.Php, "<?php", "$x = 'a'; // c", "echo $x;"));
         Assert.Equal(new[] { "WWWWW.NN...SSSS", "SSSS.", "NN...SSSSSS", "SSSSSSS", "SSS.", "WWWWW" },
             Styles(SyntaxType.Php, "<?php $s = \"one", "two\";", "$t = <<<EOT", "text $x", "EOT;", "?><p>"));
+        // A heredoc ends at its own marker, not at another word in capitals
+        Assert.Equal(new[] { "WWWWW.NN...SSSSSS", "SSSSSS", "SSSSSSSSSSS", "SSS.", "WWWW.9." },
+            Styles(SyntaxType.Php, "<?php $q = <<<SQL", "SELECT", "  name, 'it", "SQL;", "echo 1;"));
+        // PHP in a tag does not end it: what follows <script ...> is JavaScript
+        Assert.Equal("WWW...",
+            Styles(SyntaxType.Php, "<script src=\"<?php echo \"a.js\"; ?>\">", "var x;")[1]);
+        // (its "?>" does not end the tag: "name" after it is the name of an attribute)
+        Assert.Equal(new[] { "WWWWWW.WWWWW.WWWW.NN..WW.NNNN.SSSW", ".." },
+            Styles(SyntaxType.Php, "<input <?php echo $c; ?> name=\"x\">", "ab"));
         // Text before the code is HTML
         Assert.Equal(new[] { "......", "WWWWW" }, Styles(SyntaxType.Php, "if $x;", "<?php"));
         Assert.Equal(SyntaxType.Php, SyntaxHighlighter.ParseType("php"));

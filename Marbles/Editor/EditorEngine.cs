@@ -79,7 +79,7 @@ internal enum EditorRequest
 internal sealed partial class EditorEngine
 {
     internal const int TabWidth = 4;
-    private const int MaxCommandLength = 64;
+    internal const int MaxCommandLength = 64;
 
     internal TextBuffer Buffer { get; }
     internal TextLayout Layout { get; }
@@ -863,17 +863,16 @@ internal sealed partial class EditorEngine
 
     private readonly CommandCompletion _completion = new(CommandContext.Editor);
 
-    // Up and Down on the command line: the commands given in the editor before (CommandHistory), and whether the
-    // one on the line was brought back so
+    // Up and Down on the command line: the commands given in the editor before (CommandHistory)
     private CommandRecall _recall = new(CommandContext.Editor);
-    private bool _commandRecalled;
 
     private void OpenCommandLine(char prefix)
     {
         ResetPending();
         _completion.Reset();
         _recall = new CommandRecall(CommandContext.Editor);
-        _commandRecalled = false;
+        // While recording: where the keys of this command line start (its ":"), to record it as it is given
+        _commandKeysStart = IsRecording ? Math.Max(0, _macroCommand.Count - 1) : -1;
         _commandReturnMode = Mode is EditorMode.Command or EditorMode.Search ? EditorMode.Normal : Mode;
         CommandPrefix = prefix;
         CommandText = string.Empty;
@@ -900,8 +899,9 @@ internal sealed partial class EditorEngine
                 Mode = EditorMode.Normal;
                 // A macro plays its own commands: they are not kept
                 if (!SingleLine && !IsPlayingMacro) CommandHistory.Add(CommandContext.Editor, text);
-                // Brought back with Up: a macro being recorded gets the command as typed, not the keys
-                if (_commandRecalled) RecordCommandAsTyped(text.Trim());
+                // A macro being recorded gets the command as it was given, not the keys (Up and Tab would give
+                // another command when it is played)
+                RecordCommandAsTyped(text.Trim());
                 ExecuteCommand(text.Trim());
             }
         }
@@ -916,13 +916,12 @@ internal sealed partial class EditorEngine
         }
         else if (key.Key is ConsoleKey.UpArrow or ConsoleKey.DownArrow)
         {
-            // An earlier command (not in a search, or a field of one line)
-            if (Mode != EditorMode.Command || SingleLine) return;
+            // An earlier command (not in a search, a field of one line, or a macro being played)
+            if (Mode != EditorMode.Command || SingleLine || IsPlayingMacro) return;
             var recalled = key.Key == ConsoleKey.UpArrow ? _recall.Previous(CommandText) : _recall.Next();
             if (recalled == null || recalled.Length > MaxCommandLength) return;
             CommandText = recalled;
             _completion.Reset();
-            _commandRecalled = true;
         }
         else if (key.Key == ConsoleKey.Backspace)
         {
