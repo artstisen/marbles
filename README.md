@@ -3,7 +3,7 @@ A free, open-source, cross-platform, Vim-style modal text editor for taking encr
 
 Marbles is also a capable Unicode text editor and an orthodox file manager, so the same tool and the same keys work for your private notes, your text and code files, and your directories.
 
-![Marbles in WT on Windows 11](marbles-153-windows11-1.jpg)
+![Marbles in WT on Windows 11](marbles-text-editor-153-windows-11-1.jpg)
 
 ## Key features
 
@@ -16,7 +16,7 @@ Marbles is also a capable Unicode text editor and an orthodox file manager, so t
 **A Vim-style editor**
 - Normal, Insert and Visual modes (also block selection), counts, text objects, registers and undo
 - Split view: the same text in two panes side by side, remembered when you open it again
-- Syntax highlighting (Markdown, HTML, CSS, JavaScript, JSON, XML), spell checking and word completion
+- Syntax highlighting (Markdown, HTML, PHP, CSS, JavaScript, C#, JSON, XML), spell checking and word completion
 - Search and replace with regular expressions, file comparison (diff), code snippets, and a macro recorder whose macros can be edited as text
 - A command line with `Tab` completion and command history on every page
 
@@ -59,9 +59,11 @@ Marbles is operated in the style of Vim: the editor has Normal, Insert and Visua
 
 Marbles v1.5.3 in Windows Terminal on Windows 11:
 
-![Marbles in WT on Windows 11, 1](marbles-153-tui-1.jpg)
+![Marbles in WT on Windows 11, 1](marbles-text-editor-153-tui-1.jpg)
 
-![Marbles in WT on Windows 11, 2](marbles-153-tui-2.jpg)
+![Marbles in WT on Windows 11, 2](marbles-text-editor-153-tui-2.jpg)
+
+![Marbles in WT on Windows 11, 3](marbles-text-editor-153-tui-3.jpg)
 
 Marbles v1.5.3 in Ptyxis on Ubuntu 26.04:
 
