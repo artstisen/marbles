@@ -1,6 +1,7 @@
 # Changes
 
 ## v1.5.3
+- **Editor: C# is colored** (`.cs` and `.csx` files, `:syntax cs`, and in notes): keywords, comments, strings (also `@"verbatim"` and `"""raw"""` strings over several lines), numbers and the lines of the preprocessor, in the shared syntax colors. JavaScript and C# are read by one reader of the languages written in the style of C, to which more languages can be added.
 - **Language file pack**: the language files can be downloaded on their own (`Marbles-languages-1.5.3.zip`, made by `publish.ps1`): the folder `lang`, the German file built into Marbles, and a read-me on using, changing and adding languages.
 - **Color schemes**: the built-in schemes have all their colors set (new colors in several of them), so changing one color (as the dividers) no longer changes others that followed it, like the tab frames. A color left at _[Default]_ in a scheme of your own still follows the color it names. The built-in schemes are files in the program (`Marbles/Schemes`), written as a scheme of your own is.
 - **Editor: a split is remembered.** A text file or a note closed in two panes opens in two panes again, with each cursor where it was and the focus in the same pane (files: in `history.txt` and `favorites.txt`, as `12:5|40:1`; notes: in the encrypted data file, which earlier versions still open). `:split` now turns the split on and off.

@@ -198,6 +198,52 @@ public class SyntaxTests
 
     #endregion
 
+    #region C#
+
+    [Theory]
+    [InlineData("public int x = 12;", "WWWWWW.WWW.....99.")]
+    [InlineData("var s = @\"C:\\dir\";", "WWW.....SSSSSSSSS.")]
+    [InlineData("x = $\"{a} b\";", "....SSSSSSSS.")]
+    [InlineData("c = 'x'; // done", "....SSS..#######")]
+    [InlineData("int @class = 1;", "WWW..........9.")]
+    [InlineData("obj.string = null;", ".............WWWW.")]
+    [InlineData("#region Fields", "NNNNNNNNNNNNNN")]
+    [InlineData("  #if DEBUG", "..NNNNNNNNN")]
+    public void CSharp_Lines(string line, string expected)
+    {
+        Assert.Equal(expected, Style(SyntaxType.CSharp, line));
+    }
+
+    [Fact]
+    public void CSharp_VerbatimAndRawStringsAndCommentsOverSeveralLines()
+    {
+        // In a verbatim string "" is a quote, and a backslash is only a backslash
+        Assert.Equal(new[] { "....SSSSS", "SSSSSSSS", "SSSS..WWW" },
+            Styles(SyntaxType.CSharp, "s = @\"one", "two \"\" x", "end\"; int"));
+        Assert.Equal(new[] { "....SSS", "SSSSSSS", "SSS..WWW" },
+            Styles(SyntaxType.CSharp, "s = \"\"\"", "a \"b\" c", "\"\"\"; int"));
+        Assert.Equal(new[] { "WWW...####", "##.WWW" }, Styles(SyntaxType.CSharp, "int a /* x", "*/ int"));
+        // A "#" inside a comment is not the preprocessor
+        Assert.Equal(new[] { "##", "#####" }, Styles(SyntaxType.CSharp, "/*", "#if*/"));
+    }
+
+    [Fact]
+    public void CSharp_IsReadAsJavaScriptIs_ButWithItsOwnWords()
+    {
+        // The same reader: what JavaScript has and C# has not (template strings, "$" in names) is left out
+        Assert.Equal("WWW.........", Style(SyntaxType.CSharp, "var s = `ab`"));
+        Assert.Equal("WWW.....SSSS", Style(SyntaxType.JavaScript, "var s = `ab`"));
+        Assert.Equal("......", Style(SyntaxType.CSharp, "let $x"));
+        Assert.Equal("WWW...", Style(SyntaxType.JavaScript, "let $x"));
+        Assert.Equal(SyntaxType.CSharp, SyntaxHighlighter.ParseType("cs"));
+        Assert.Equal(SyntaxType.CSharp, SyntaxHighlighter.ParseType("C#"));
+        Assert.Equal("C#", SyntaxHighlighter.Name(SyntaxType.CSharp));
+        // A note remembers it with the letter "s"
+        Assert.Equal(SyntaxType.CSharp, EntrySyntax.Get(EntrySyntax.Set("fp1", SyntaxType.CSharp)));
+    }
+
+    #endregion
+
     #region Kinds of text
 
     [Theory]
@@ -206,6 +252,8 @@ public class SyntaxTests
     [InlineData("site.css", nameof(SyntaxType.Css))]
     [InlineData("app.js", nameof(SyntaxType.JavaScript))]
     [InlineData("module.mjs", nameof(SyntaxType.JavaScript))]
+    [InlineData("Program.cs", nameof(SyntaxType.CSharp))]
+    [InlineData("script.CSX", nameof(SyntaxType.CSharp))]
     [InlineData("data.json", nameof(SyntaxType.Json))]
     [InlineData("feed.xml", nameof(SyntaxType.Xml))]
     [InlineData("icon.SVG", nameof(SyntaxType.Xml))]

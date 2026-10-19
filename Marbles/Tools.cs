@@ -1934,8 +1934,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":complete", Lang.T("Complete words while typing on/off"), false));
             _shortcutList.Add(new Shortcut(":complete on/off", Lang.T("Turn completing on/off"), false));
             _shortcutList.Add(new Shortcut(":complete edit", Lang.T("Edit the file of completions (completions.txt)"), false));
-            _shortcutList.Add(new Shortcut(":syntax", Lang.T("Colors on/off (md html css js json xml files: on)"), false));
-            _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md, css, js, json, xml)"), false));
+            _shortcutList.Add(new Shortcut(":syntax", Lang.T("Colors on/off (md html css js json xml cs files: on)"), false));
+            _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md, css, js, json, xml, cs)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Entries"), Lang.T("Remember their colors (shown as MD, HTML ...)"), false));
             _shortcutList.Add(new Shortcut(":number :nu", Lang.T("Line numbers on/off"), false));
             _shortcutList.Add(new Shortcut(":split", Lang.T("Two panes on/off (Tab: go to the other)"), false));
