@@ -5,27 +5,29 @@ Marbles comes in two kinds of builds, so pick the one that suits you:
 - **The portable version**: a small version (about 1 MB) that runs on every platform, but needs the .NET 10 runtime to be installed (see [Install .NET](#install-net) below)
 
 ## Download and run Marbles
-Download the latest Marbles zip file for your platform from the [releases page](https://github.com/artstisen/marbles/releases), and unzip it into a directory of your choosing. Keep the folder _lang_ next to the program: it holds the languages other than English and German.
+Download the latest Marbles archive for your platform from the [releases page](https://github.com/artstisen/marbles/releases), and unpack it in a directory of your choosing: it holds a folder _Marbles_ with the program in it. Keep the folder _lang_ next to the program: it holds the languages other than English and German.
 
-| Platform | Build |
+| Platform | Download |
 |---|---|
-| Windows (most PCs) | win-x64 |
-| Windows on ARM | win-arm64 |
-| Linux (most PCs) | linux-x64 |
-| Linux on 64-bit ARM (Raspberry Pi with a 64-bit system) | linux-arm64 |
-| Linux on 32-bit ARM (Raspberry Pi with a 32-bit system) | linux-arm |
-| macOS on Apple silicon (M1 and later) | osx-arm64 |
-| macOS on Intel | osx-x64 |
-| Any platform, with .NET 10 installed | portable |
+| Windows (most PCs) | `Marbles-1.5.3-win-x64.zip` |
+| Windows on ARM | `Marbles-1.5.3-win-arm64.zip` |
+| Linux (most PCs) | `Marbles-1.5.3-linux-x64.tar.gz` |
+| Linux on 64-bit ARM (Raspberry Pi with a 64-bit system) | `Marbles-1.5.3-linux-arm64.tar.gz` |
+| Linux on 32-bit ARM (Raspberry Pi with a 32-bit system) | `Marbles-1.5.3-linux-arm.tar.gz` |
+| macOS on Apple silicon (M1 and later) | `Marbles-1.5.3-osx-arm64.tar.gz` |
+| macOS on Intel | `Marbles-1.5.3-osx-x64.tar.gz` |
+| Any platform, with .NET 10 installed | `Marbles-1.5.3-portable.zip` |
+
+On Linux and macOS, unpack it with ```tar -xzf Marbles-1.5.3-linux-x64.tar.gz``` (with the name of the file you downloaded): the program can then be run as it is.
 
 ### The single file
 Open your favorite terminal, go to the Marbles directory and start the program:
 
 - **Windows**: type ```Marbles.exe``` (or ```.\Marbles.exe``` in PowerShell)
-- **Linux and macOS**: make the file executable once with ```chmod +x Marbles```, then type ```./Marbles``` (Linux and macOS are case sensitive). On macOS the program is not signed: if macOS refuses to open it, allow it once with ```xattr -d com.apple.quarantine Marbles```
+- **Linux and macOS**: type ```./Marbles``` (Linux and macOS are case sensitive). If it was not unpacked with `tar` (some programs leave out that it can be run), make it executable once with ```chmod +x Marbles```. On macOS the program is not signed: if macOS refuses to open it, allow it once with ```xattr -d com.apple.quarantine Marbles```
 
 ### The portable version
-Unzip _Marbles.dll_, _Marbles.deps.json_, _Marbles.runtimeconfig.json_ and the folder _lang_ into the same directory. Open your favorite terminal, go to the Marbles directory and type ```dotnet Marbles.dll``` (Linux and macOS are case sensitive).
+Unzip `Marbles-1.5.3-portable.zip`: its folder _Marbles_ has _Marbles.dll_, _Marbles.deps.json_, _Marbles.runtimeconfig.json_ and the folder _lang_. Open your favorite terminal, go to the Marbles directory and type ```dotnet Marbles.dll``` (Linux and macOS are case sensitive).
 
 ## Install .NET
 Only the portable version needs this. Ensure that you have the .NET 10 runtime installed on your system. If not you can get it here:
@@ -82,7 +84,7 @@ dotnet build Marbles.sln -c Release
 
 The files to run are then found in _Marbles/bin/Release/net10.0_.
 
-To build executables that include the .NET runtime (so nothing has to be installed to run them), run ```./publish.ps1``` with PowerShell. It creates a single file for each platform in the directory _publish_, and the lightweight version for all platforms (which needs the .NET runtime, and is started with ```dotnet Marbles.dll```) in _publish/portable_. On Linux and macOS the file must be made executable before it is run: ```chmod +x Marbles```.
+To build executables that include the .NET runtime (so nothing has to be installed to run them), run ```./publish.ps1``` with PowerShell. It creates a single file for each platform in the directory _publish_, and the lightweight version for all platforms (which needs the .NET runtime, and is started with ```dotnet Marbles.dll```) in _publish/portable_. It also packs each of them for a release in _publish/release_: a zip for Windows and the portable version, and a tar.gz for Linux and macOS (where the program is marked as one that can be run), each with a folder _Marbles_, and the language file pack (`Marbles-languages-1.5.3.zip`). `./publish.ps1 win-x64,languages` builds only the ones named.
 
 ## Upgrading from Marbles v1.0.x
 Copy your "data" directory to the directory of the new version, or unzip the new version over the old.
