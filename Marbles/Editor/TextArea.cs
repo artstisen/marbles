@@ -1973,8 +1973,17 @@ public partial class TextArea
 
         // A blank space between the mode and the line, as a break in the line
         var gap = label.Length > 0 ? " " : string.Empty;
+        // A message comes before what is at the right (it is shown until the next key): if it does not fit, only
+        // the line and column are kept, and else nothing
+        var room = width - label.Length - gap.Length;
+        if (text.Length > 0 && TextMetrics.WidthOf(text) > room - right.Length)
+        {
+            right = " " + (cursor.Line + 1) + ":" + column + " ";
+            if (TextMetrics.WidthOf(text) > room - right.Length) right = string.Empty;
+        }
+
         // Make it fit
-        var available = width - label.Length - gap.Length - right.Length;
+        var available = room - right.Length;
         while (text.Length > 0 && TextMetrics.WidthOf(text) > available)
         {
             text = text[..^TextMetrics.PreviousElementLength(text, text.Length)];
