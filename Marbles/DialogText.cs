@@ -6,7 +6,7 @@ internal static class DialogText
     public const string ApplicationName = "Marbles";
     public const string ApplicationCopyright = "Copyright (c) 2022-2026 Lars Brandt Stisen";
     public const string ApplicationBy = "by Lars Brandt Stisen (c) 2022-2026";
-    public const string ApplicationVersion = "v1.5.3"; // For display. Right click the Marbles project icon to set assembly version
+    public const string ApplicationVersion = "v1.5.4"; // For display. Right click the Marbles project icon to set assembly version
 
     //                                                                                \n <- Max line length
     //-----------------------------------------------------------------------------

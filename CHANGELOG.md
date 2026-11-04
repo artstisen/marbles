@@ -1,5 +1,8 @@
 # Changes
 
+## v1.5.4
+- **Program icon**: Marbles has an icon of its own (a key, in the colors of the default color scheme), shown for `Marbles.exe` in File Explorer and in shortcuts to it on Windows. The drawing is `resources/Marbles.svg`, and `Marbles/Marbles.ico` is made from it in sizes from 16 to 256 pixels.
+
 ## v1.5.3
 - **Linux and macOS**: color schemes and logos of your own are found in any letter case of their name (as on Windows); a folder reached by a link (as `/tmp` on macOS) is seen as the same folder where the data directory is protected (no backup in it), and for data files given at startup or followed by bookmarks.
 - **Releases**: `publish.ps1` packs each version for a release in `publish/release`: `Marbles-1.5.3-win-x64.zip` (and win-arm64), `Marbles-1.5.3-linux-x64.tar.gz` (and the other Linux and macOS builds, where the program can be run as it is unpacked), `Marbles-1.5.3-portable.zip` (for any platform with .NET 10) and the language file pack, each with a folder _Marbles_. The guide to the Windows Terminal CRT mod is updated (the alias starts _Marbles.exe_ and passes on what is typed after it, and the settings are set on the Layout page).
