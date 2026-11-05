@@ -12,7 +12,7 @@ Each choice has a number and a key, shown in front of it. The number selects the
 - `1` `N` **Note Management (encrypted notes)**: Continue to the login page
 - `2` `F` **Text Editor/File Management**: Open the [file browser](#file-browser) to edit plain text files and manage files. Closing the file browser returns here
 - `3` `O` **Jump menu**: Open the [Jump menu](Guide-to-main-menu.md#jump-menu), to go straight to a file, a page of Marbles or a data file (also with `Ctrl+O`). Pages such as Color schemes and Help open on top of the start page
-- `4` `U` **Quick guide**: A short introduction to Marbles: what the two parts are for, the keys for moving around, and the modes of the editor. `Esc` closes it, and `?` shows the help with all the keys
+- `4` `U` **Quick guide**: A short introduction to Marbles: what the two parts are for, the keys for moving around (with a picture of `h` `j` `k` `l` as the arrow keys), and the modes of the editor. `Esc` closes it, and `?` shows the help with all the keys
 - `5` **Exit**: Close Marbles at once (`Enter` on it). `Q` exits too, after asking
 
 Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking in a box on top of the page (`Y`/`N`, or `j`/`k` and `Enter`; `Esc` cancels).

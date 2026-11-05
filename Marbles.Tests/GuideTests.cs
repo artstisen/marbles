@@ -38,10 +38,29 @@ public class GuideTests
         var guide = QuickGuide.All[index];
         foreach (var (kind, key, text) in QuickGuide.Lines(60, guide))
         {
-            // As drawn: an item after three blanks, its key and a blank; other lines after one blank
-            var width = kind == 2 ? 3 + key.Length + 1 + text.Length : 1 + text.Length;
+            // As drawn: an item after three blanks, its key and a blank; a picture after its blanks (the key); other
+            // lines after one blank
+            var width = kind switch
+            {
+                2 => 3 + key.Length + 1 + text.Length,
+                4 => key.Length + text.Length,
+                _ => 1 + text.Length
+            };
             Assert.True(width <= 60, text);
         }
+    }
+
+    [Theory]
+    [InlineData(0)] // The quick guide
+    [InlineData(3)] // The editor guide
+    public void ThePictureOfHjkl_IsBelowTheTextsOfTheItems(int index)
+    {
+        var lines = QuickGuide.Lines(Init.MinLineWidth, QuickGuide.All[index]);
+        // Kind 4 is a picture: its lines start where the texts of the items do
+        var picture = lines.Where(line => line.Kind == 4).ToList();
+        Assert.Equal(new[] { "    ^", "    k", "< h   l >", "    j", "    v" }, picture.Select(line => line.Text));
+        var textColumn = 3 + lines.First(line => line.Kind == 2).Key.Length + 1;
+        Assert.All(picture, line => Assert.Equal(textColumn, line.Key.Length));
     }
 
     [Fact]

@@ -58,8 +58,12 @@ internal static partial class QuickGuide
         Title,
         Heading,
         Item, // A key (or name) and what it does
-        Text
+        Text,
+        Picture // Lines drawn as they are, below the texts of the items: h, j, k and l in the color of keys (not "v")
     }
+
+    // h, j, k and l as the arrow keys they are (the same in all languages: English)
+    private const string NavigationPicture = "    ^|    k|< h   l >|    j|    v";
 
     // The keys of the items take at least KeyWidth columns: more when a key (a name in another language) is
     // longer, up to MaxKeyWidth
@@ -83,6 +87,9 @@ internal static partial class QuickGuide
         (Kind.Heading, "", Lang.T("Moving around (the same keys everywhere)")),
         (Kind.Item, "j  k", Lang.T("Down/Up. The arrow keys work too")),
         (Kind.Item, "h  l", Lang.T("Left/Right: the previous/next page, or back/open")),
+        (Kind.Text, "", ""),
+        (Kind.Picture, "", NavigationPicture),
+        (Kind.Text, "", ""),
         (Kind.Item, "gg  G", Lang.T("The first/last")),
         (Kind.Item, "/", Lang.T("Search or filter")),
         (Kind.Item, ":", Lang.T("Type a command, like :new or :q (a box lists them)")),
@@ -126,6 +133,17 @@ internal static partial class QuickGuide
         var lines = new List<(int Kind, string Key, string Text)>();
         foreach (var (kind, key, text) in paragraphs)
         {
+            if (kind == Kind.Picture)
+            {
+                // Its lines ("|" between them) start where the texts of the items do
+                foreach (var part in text.Split('|'))
+                {
+                    lines.Add(((int)kind, new string(' ', 3 + keyWidth + 1), part));
+                }
+
+                continue;
+            }
+
             // Where the text of an item starts
             var indent = kind == Kind.Item ? 3 + keyWidth + 1 : 1;
             var parts = TextMetrics.Wrap(text, Math.Max(20, width - indent - 1));
@@ -224,6 +242,17 @@ internal static partial class QuickGuide
                 Console.Write("   " + line.Key);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Console.Write(" " + line.Text);
+                break;
+            case Kind.Picture:
+                Console.Write(line.Key);
+                foreach (var c in line.Text)
+                {
+                    ConsoleColors.SetColors(c is 'h' or 'j' or 'k' or 'l'
+                        ? ConsoleColors.ColorPreset.Accent
+                        : ConsoleColors.ColorPreset.Divider);
+                    Console.Write(c);
+                }
+
                 break;
             default:
                 Console.Write(" " + line.Text);
