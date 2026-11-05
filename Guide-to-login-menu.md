@@ -1,9 +1,9 @@
 # Guide to the start and login pages
 
 ## Select mode
-Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with three tabs at its top: **Mode**, where you select what to use Marbles for, **Configuration**, with the settings, and **Help**, with the help and the about page. The settings are on four pages, shown as the sub-tabs **General**, **Layout**, **Editor** and **System** in a row at the top of the frame. The tab and sub-tab shown are highlighted in the color of the frame.
+Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with three tabs at its top: **Mode**, where you select what to use Marbles for, **Configuration**, with the settings, and **Help**, with the help and the about page. The settings are on five pages, shown as the sub-tabs **General**, **Layout**, **Editor**, **Lists** and **System** in a row at the top of the frame. The tab and sub-tab shown are highlighted in the color of the frame.
 
-`Tab` goes to the next tab (Mode, Configuration, Help, and round to Mode again), and `Shift+Tab` the other way. `h` and `l` (or `Left`/`Right`) go to the previous and the next sub-tab of the tab shown, going round, so in Configuration they go through General, Layout, Editor and System. The keys are shown at the right ends of the two rows: `Tab` after the tabs and `h/l` after the sub-tabs, in the color of the frame. A tab opens with the sub-tab it showed last. This is the same in all the frames with tabs (the color schemes, the logos).
+`Tab` goes to the next tab (Mode, Configuration, Help, and round to Mode again), and `Shift+Tab` the other way. `h` and `l` (or `Left`/`Right`) go to the previous and the next sub-tab of the tab shown, going round, so in Configuration they go through General, Layout, Editor, Lists and System. The keys are shown at the right ends of the two rows: `Tab` after the tabs and `h/l` after the sub-tabs, in the color of the frame. A tab opens with the sub-tab it showed last. This is the same in all the frames with tabs (the color schemes, the logos).
 
 
 ### Mode
@@ -18,7 +18,7 @@ Each choice has a number and a key, shown in front of it. The number selects the
 Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking in a box on top of the page (`Y`/`N`, or `j`/`k` and `Enter`; `Esc` cancels).
 
 ### Configuration
-The settings are on four pages, so they can be changed in one place without logging in to a data file. `j` `k` (and `gg` `G`) select a setting on the page, and the number of a row selects it (`0` the tenth). A page with more settings than the window has rows for scrolls as the selection moves, with `^` and `v` at the right when there are more above or below. `Enter` or `Space` changes it. `Esc` or `Q` goes back to the Mode tab. Changes are saved at once.
+The settings are on five pages, so they can be changed in one place without logging in to a data file. `j` `k` (and `gg` `G`) select a setting on the page, and the number of a row selects it (`0` the tenth). A page with more settings than the window has rows for scrolls as the selection moves, with `^` and `v` at the right when there are more above or below. `Enter` or `Space` changes it. `Esc` or `Q` goes back to the Mode tab. Changes are saved at once.
 
 **General**
 
@@ -31,6 +31,7 @@ The settings are on four pages, so they can be changed in one place without logg
 - **Text Editor only** and **Note Management only**: Use this Marbles for one of the two modes only. They are for running two copies of Marbles in separate directories, one as a text editor and one for notes. Only one of them can be set (setting one clears the other, and setting it again turns it off)
   - _Text Editor only_: _Note Management_ is not shown in the Mode tab, and the file browser does not open data files (`.mbls`): it says so on its bottom line
   - _Note Management only_: _Text Editor/File Management_ is not shown in the Mode tab
+- **Delete to trash (:trash in file browser)**: Deleting in the file browser, and a data file on the login page, moves to the trash (`trash` in the data directory) instead of deleting for good (on from the start; setting `deletetotrash`). See [Managing files](#managing-files)
 - **List the commands above the command line**: While a command is typed (after `:`), a box above the command line lists the commands of the page, narrowed while you type, with what the command typed does (on from the start). See [the command line](Guide-to-main-menu.md). Saved as `commandlist` in the settings file
   - The choices of the Mode tab are numbered as they are shown (`1` to `4`), and starting in the mode that is not used cannot be chosen (if it was chosen, the choices are shown at startup)
   - Saved as `onlymode` (`none`, `editor` or `notes`) in the settings file. _Reset all settings_ and `:defaults` turn both off
@@ -54,11 +55,16 @@ The settings are on four pages, so they can be changed in one place without logg
 - **Marks: ' jumps to the exact place**: `'a` jumps to the place of [mark](Guide-to-editor.md#marks) `a`, as `` `a ``, for keyboards where `` ` `` is hard to type or a dead key (off from the start: `'a` goes to the start of the line of the mark, as in Vim). It is the setting `marksapostrophe`
 - **Keep 12 lines around the cursor**: When the cursor comes within 12 lines of the top or the bottom of the editor, the text scrolls, so you see what comes next (on from the start). The number is set with `:scrolloff 8` in the editor (see [the guide to the editor](Guide-to-editor.md#scrolling))
 - **Clipboard and paste bin**: `Enter` opens the clipboard settings: where yanked text goes out of Marbles (see [the guide to the editor](Guide-to-editor.md#system-clipboard-and-paste-bin))
-- **Syntax highlighting**: Color the text of the kinds of files the editor knows (Markdown, HTML, CSS, JavaScript, JSON, XML, C#, PHP), on from the start. It is the setting `syntaxcolors`, which `:syntax off` and `:syntax on` in the editor also change
+- **Syntax highlighting**: Color the text of the kinds of files the editor knows (Markdown, HTML, CSS, JavaScript, JSON, XML, C#, PHP, INI), on from the start. It is the setting `syntaxcolors`, which `:syntax off` and `:syntax on` in the editor also change
 - **Spell checker**: The languages used when spell checking is turned on in the editor with `:spell` (it is not turned on here). `Enter` shows the languages there is a spell file for in a box, where `Enter` turns a language on or off (several can be on, and the last one stays on) and `Esc` closes. Saved as `spelllang` (`en` or `da,en`). The spell files are in the directory `spell`; without any, the row says so
 - **Snippet editor**: Open the file of [snippets](Guide-to-editor.md#snippets), `snippets.txt`, in the editor. If there is no file yet, you are asked whether to make one, with two examples. Closing the editor returns to this page
 - **Complete words while typing**: In Insert mode, the word typed is looked up in the lists of completions, and `Tab` completes it (see [Completing words](Guide-to-editor.md#completing-words)). On from the start; `:complete` in the editor changes it too. It is the setting `autocomplete`
 - **Completions editor**: Open the file of completions, `completions.txt`, in the editor. If there is no file yet, it is made with lists to start with. Closing the editor returns to this page
+
+**Lists**
+
+- **Line numbers in file browser**, **in Favorites**, **in History**, **in Hotlist**, **in Search results** and **in Bookmarks**: Number the rows of each list at the left, as `12gg` and `5j` count them (in the panes of the file browser `..` is row 1). Off from the start. The numbers have the colors of the line numbers of the editor (the selected row: _Current line number_), and the pointer and the names move to the right of them. `:number` and `:nonumber` in a list change its setting too. The History, Favorites and Hotlist tabs of the [Jump menu](Guide-to-main-menu.md#jump-menu) follow the settings of their lists, and _in Bookmarks_ is its Bookmarks tab. Saved as `filenumbers`, `favoritenumbers`, `historynumbers`, `hotlistnumbers`, `searchnumbers` and `bookmarknumbers`. With _Note Management only_ only _Line numbers in Bookmarks_ is shown
+- The lists of entries of a data file have no such numbers: their rows already show the numbers `1` to `0` that open the entries of the page (and `:12` selects entry 12), and a second column of numbers would be mistaken for them
 
 **System**
 
@@ -72,8 +78,8 @@ The settings are on four pages, so they can be changed in one place without logg
 On every tab of the start page (Mode, the pages of Configuration, Help), `:` opens the command line on the bottom line. `Tab` completes the command you are typing, from the commands of this page, and `Up`/`Down` bring back the commands given here before:
 
 - `:note` (or `:notes`) The login page, as _Note Management_ on the Mode tab; `:file` (or `:browse`) The file browser, as _Text Editor/File Management_. With _Text Editor only_ or _Note Management only_, the mode that is not used is refused
-- `:mode` The Mode tab; `:config` (or `:general`), `:layout`, `:editor` and `:system` The pages of the Configuration tab (`:editor` is the Editor page of Configuration, not the text editor)
-- `:jump` (or `:ju`, `:jmp`) The [Jump menu](Guide-to-main-menu.md#jump-menu)
+- `:mode` The Mode tab; `:config` (or `:general`), `:layout`, `:editor`, `:lists` and `:system` The pages of the Configuration tab (`:editor` is the Editor page of Configuration, not the text editor)
+- `:jump` (or `:ju`, `:jmp`) The [Jump menu](Guide-to-main-menu.md#jump-menu); `:jump name` goes straight to a page of Marbles (`:jump colors`, `:jump help`; `Tab` completes the names, see [Jumping to a page by its name](Guide-to-main-menu.md#bookmarks))
 - `:help` (or `:h`) The help of the start page, as `?`; `:about` The about page; `:quick` (or `:guide`) The quick guide
 - `:scheme` The color schemes; `:logo` The logos; `:snippet` (or `:snip`) The snippet editor; `:completions` (or `:comp`) The completions editor; `:clipboard` The clipboard settings; `:log` The log
 - `:restart` Restart Marbles (asks first); `:reset` Reset all settings (asks first, as on the System page); `:quit`, `:exit` (or `:q`) Exit Marbles (asks first)
@@ -100,6 +106,7 @@ Log in to the selected data file by typing its password and pressing `Enter`.
 - `Up`/`Down` Select a directory: `data` (the data directory itself) or one of the directories in it, shown as `data/notes`
 - `Space` Move the selected data file to another directory: select the directory and press `Enter`
 - `Esc` Clear the password field. When the field is empty: open the options
+- `Ctrl+K` (with the password field empty) The latest files you opened, in a small box: `Enter` or `1` to `9` opens one (a data file is selected here, a text file opens in the editor), `Esc` closes the box
 
 ## Options
 Press `Esc` to show the options in a box. Select one with `j` `k` (or the arrow keys, `gg` `G`) and press `Enter` (or `l`), or press the key shown in front of it:
@@ -111,7 +118,7 @@ Press `Esc` to show the options in a box. Select one with `j` `k` (or the arrow 
 - `N` Create a new data file
 - `X` Rename the selected data file
 - `C` Create a copy of the selected data file
-- `D` Delete the selected data file (you are asked twice; only `Enter` answers, see [Managing files](#managing-files))
+- `D` Delete the selected data file (you are asked twice; only `Enter` answers, see [Managing files](#managing-files)). It goes to the trash, still encrypted, unless _Delete to trash_ is off (see [Managing files](#managing-files)); a data file in the trash is deleted for good
 - `M` Merge two data files into a new, or export a data file as XML (the exported file is not encrypted). `Esc` while typing the name of the new file goes back to the choice of merge or export; the notes that were read, and their passwords, are cleared when you leave
 - `I` Show information about the data file in a box (name, type, size, dates, path and backup directory). Any key closes it
 - `R` Refresh the login page
@@ -134,6 +141,10 @@ The browser shows two panes side by side, each with its own directory. The pane 
 
 In a pane that is narrow, as when the window is 80 columns wide, the type column is left out and long names are shortened. With one pane, or a wide window, all columns are shown.
 
+`:number` numbers the rows of the panes at the left, as `12gg` and `5j` count them (`..` is row 1), and `:nonumber` takes the numbers away (off from the start; setting `filenumbers`, also on the Lists page of [Configuration](#configuration)).
+
+**Columns in the lists:** the favorites, the file history, the directory hotlist and the search results show their rows in columns with lines between them, and the names of the columns in the divider line above the list: _Name_, _Path_ and _Info_ in the favorites (the size, `<DIR>`, _(missing)_, or the number of favorites in a folder) and the search results (_Line_ in place of _Path_ when a text was searched), _Name_, _Path_ and _Opened_ in the history, and _Name_ and _Path_ in the hotlist. Each of these lists can have its rows numbered with `:number`.
+
 The browser starts in the Marbles data directory and remembers the directories of both panes, the file or directory selected in each, the pane that had the focus and whether one or two panes were shown (`browsedir1`, `browsedir2`, `browsesel1`, `browsesel2`, `browsepane` and `browsedual` in the settings file). They are saved however the browser is left (closed, a jump to another page, or exiting Marbles), and also when a file is opened in the editor. The selection is remembered by name: if the file is gone, the first row is selected.
 
 The file browser can also be opened with the command `:browse` when you are logged in to a data file. You can look around and close the browser again without anything else happening, but opening a file logs you out of the data file, and the login page is shown when you close the browser. With **Stay logged into data file (Session)** on (Configuration, General), the data file stays open: closing the browser shows its main menu again, and `:logout` in the browser logs out of it.
@@ -144,11 +155,13 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `/text` Only show the names containing "text". `Esc` shows all again
 - `N` or `:new name` Create a new file in the directory and open it. Without a name (`N` or `:new`) you are asked for it
 - `I` or `:info` (also in the list of favorites) Show information about the selected file or directory: type, size (for a directory: the number of files and directories in it), when it was created and last changed, and the full path. Any key closes the box
-- `V` or `:peek` Peek at the selected file: it is shown read-only in the other pane (with one pane shown, the second pane is shown while you peek). Move and search in it with the keys of the editor (`j` `k`, `gg` `G`, `Ctrl+D`, `/text`, `y` to yank to the clipboard ...); what would change the text is refused. `Enter` opens the file in the editor at the line of the cursor, and `Esc` (or `:q`) goes back to the browser. A large file is shown up to about 2000 lines (100 KB), with a last line telling that there is more. Directories, data files and files that are not text are not peeked at
+- `V` or `:peek` Peek on and off: the selected file is shown read-only in the other pane (with one pane shown, the second pane is shown while you peek), labeled _PEEK_, with the name of the file at its top. The focus stays in the list: the peek follows the selection, so you go through the files with `j` and `k`. A selected directory (on `..`: the directory above) is shown as the names in it, as the pane would show them. `V` or `Esc` ends the peek, and so do the keys and commands that use the other pane (copy, move, `:diff` ...). The file is shown without word wrap (`:wrap` in the peek is for that peek only). A large file is shown up to about 2000 lines (100 KB), with a last line telling that there is more. Data files (they are encrypted) and files that are not text are not shown: the peek tells so
+  - `Tab` while peeking: into the peek, to move and search in it with the keys of the editor (`j` `k`, `gg` `G`, `Ctrl+D`, `/text`, `y` to yank to the clipboard ...); what would change the text is refused. `Enter` opens the file in the editor at the line of the cursor, and `Tab` or `Esc` goes back to the list. On the peek of a directory, `Tab` opens the directory in the other pane, with the focus there (the peek ends, and two panes stay shown)
 - See [Managing files](#managing-files), [Favorites](#favorites), [File history](#file-history) and [Directory hotlist](#directory-hotlist) below for the other keys
 - `B` or `:hotadd` Add the directory shown to the [directory hotlist](#directory-hotlist), whatever file is selected in it. `W` or `:hotlist` shows the hotlist
 - `R` or `:refresh` Refresh: read the directories again (the selection stays)
 - `:path` Copy the full path of the selected file or directory (on `..`: the directory shown) to the system clipboard and/or the paste bin, as set in the [clipboard settings](Guide-to-editor.md#system-clipboard-and-paste-bin)
+- `Ctrl+K` or `:recent` The latest files you opened: a small box with the 9 newest files of the [file history](Guide-to-login-menu.md#file-history), newest first, each with the folder it is in. `j` `k` select, `Enter` opens the selected file and `1` to `9` the file of that number, `Esc` closes the box. A text file opens in the editor where you left it; a data file is selected on the login page. A file that is gone is dimmed. Notes are never in it: they are not files. A text file opens straight in the editor (the browser is there when you close it). Also in the favorites, the history, the hotlist and the search results, on the start page, in the [Jump menu](Guide-to-main-menu.md#jump-menu) and in the [editor](Guide-to-editor.md#other-commands) (in Normal mode)
 - `:book 3` Jump to bookmark 3 of the [Jump menu](Guide-to-main-menu.md#bookmarks) (`:book` alone shows the bookmarks). Also on the start page, and on the pages of the favorites, the history, the hotlist and the search results
 - `:bookmark` Bookmark the selected file or directory (on `..`: the directory shown) on the Bookmarks tab of the [Jump menu](Guide-to-main-menu.md#bookmarks). `:bookmark name` gives it a name to jump to it by (`:book name`), and `:bookmark! name` moves the bookmark with the name here. A data file in the data directory is bookmarked as a data file (a jump to it selects it on the login page)
 - `:diff` Compare two text files: the two marked with `Space`, or (without marks, with two panes) the file selected in each pane. `:diff name` compares the selected file with the file of that name in the directory (or a path). The older file, by the time it was last changed, is the old one, so `+` is what was added since. The comparison is shown as in the editor (see [Comparing](Guide-to-editor.md#comparing)): `n` `N` (or `]c` `[c`) go to the changes, `Enter` opens the file at the line, `Esc` returns here. `:diff -w` does not count blank space. If the line endings or the encodings differ, the line at the top says so (they are not compared). Directories, data files and files that are not text are not compared
@@ -156,6 +169,8 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `:path` and `:name` also put the path or name in the [string memory](Guide-to-editor.md#string-memory) of the editor, as the current string: `p` in the editor (or `CTRL+R` in Insert mode) puts it in the text. This works also when the clipboard and the paste bin are turned off
 - `:match` With two panes: the other pane shows the directory of the pane with the focus (with the same file or directory selected). The focus stays where it is
 - `:cd path` Go to a directory. `:home` Go to the folder of the data files in use (the data directory, or the subfolder of it chosen for the data files)
+- `:trash` Go to the trash (`trash` in the data directory), with what was deleted (see [Managing files](#managing-files))
+- `:protect off` Lift the protection of Marbles' own files for this session, so they can be renamed, moved and deleted; `:protect on` restores it (`:protect` alone tells how it is). See [Managing files](#managing-files)
 - `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` and `completions.txt` (the snippets and the completions of the editor), `favorites.txt`, `history.txt` and `hotlist.txt` (of the file browser), and `jump.txt` and `bookmarks.txt` (of the Jump menu)
 - `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again; `Up` and `Down` bring back the commands given in the file browser before (see [the command line](Guide-to-main-menu.md))
 - `?` Help
@@ -177,7 +192,7 @@ These work on the selected file or directory. Duplicate, copy, move, favorite an
 - `Y` or `:duplicate` Make a copy in the same directory (named `name-copy`)
 - `C` or `:copy` Copy to another directory
 - `M` or `:move` Move to another directory
-- `D` or `:delete` Delete. You are asked first, and for a directory you are told how many files and directories it contains
+- `D` or `:delete` Delete: move to the trash (see below). You are asked first, and for a directory you are told how many files and directories it contains
 - `Space` Mark (or unmark) the selected file or directory and go to the next. A marked one has a `+` in front of its name, and the number marked is shown at the bottom right of the pane. While some are marked, `Y` `C` `M` `P` and `D` work on all the marked ones instead of the selected one: they are duplicated, copied or moved to the directory you select, made favorites (or, if they all are favorites already, removed from the favorites), or deleted after one question that tells how many files and directories are deleted in all. The marks stay while the pane shows the same directory (also with a filter), and `Esc` clears them. If one of them fails, the operation stops there and the message tells which one; those not done stay marked. `X` (rename) and `I` (info) always work on the selected one
 
 Names (of a new file or directory, a new name for one, and the name of a favorites folder) are typed in a box on top of the list: `Enter` accepts, `Esc` cancels. Questions (delete, converting a file that is not UTF-8, copying a data file to the data directory, and removing favorites) are asked in a box too: `Y` or `N` answers at once, or select with `j` `k` and press `Enter`. `Esc` cancels. When something cannot be undone, the question is highlighted as a warning and _No_ is selected first. The question before deleting (files and directories here, a data file on the login page, and an entry of a data file) cannot be answered with `Y`, and only `Enter` answers it: select _Yes_ with `k` (or the arrow key `Up`) and press `Enter`. `Esc`, `Q`, `h` or `Enter` on _No_ cancels. That way text typed by mistake, meant for the editor, is unlikely to answer it: in "today", `d` asks to delete and `y` would have answered yes, and in "dark " the `k` selects _Yes_ but the space does not pick it.
@@ -188,10 +203,11 @@ For copy and move you select where to: after `C` or `M` the browser stays as it 
 
 Things to know:
 
-- **Deleted files cannot be recovered.** They are not moved to a recycle bin.
+- **Deleting goes to the trash**: `trash` in the data directory (not the trash of the system), for all that is deleted in the file browser, and a data file deleted on the login page. It goes with the data directory when Marbles is copied or backed up. Each file or directory gets the time it was deleted in front of its name (`2026-11-05 14.03.11 notes.md`), and `trash.txt` there tells where each came from. `:trash` goes there: to get a file back, select it and move it with `M` (rename it with `X` to take the time away). Deleting in the trash is for good. A data file stays encrypted in the trash and is still a data file: `trash` is shown as a directory on the login page, where you can log in to it. Marbles writes nothing else with your notes to the trash
+- _Delete to trash_ (Configuration, General; setting `deletetotrash`) turned off deletes for good: **deleted files cannot be recovered** then. What cannot be moved to the trash is only deleted for good if you say so
 - Nothing is overwritten. An operation is refused if something with the same name is already in the target directory.
 - A directory cannot be copied or moved into itself.
-- What Marbles is using cannot be renamed, moved or deleted here: the data directory (and the directories it is in), `settings.ini`, the favorites list, the file history, and the data file you are logged in to.
+- What Marbles is using cannot be renamed, moved or deleted here: the data directory (and the directories it is in), `settings.ini`, the favorites list, the file history, and the data file you are logged in to. `:protect off` lifts this for the session (not for the data file you are logged in to): _UNPROTECTED_ shows at the top right, and the question before deleting tells that Marbles uses the file. `:protect on` restores it, and it is on again when Marbles starts.
 - Hidden files are not shown in the browser, but they are included when a directory is copied, moved or deleted.
 
 ### Searching for files
@@ -221,6 +237,7 @@ The files found are shown in a list, with the directory they are in. When you se
 - `P` or `:fav` Add the file to the favorites, or remove it
 - `/text` Only show the files with "text" in the path or the line found. `Esc` shows all again
 - `S` or `:find` Search again
+- `:number` Number the rows at the left, as `12gg` and `5j` count them, and `:nonumber` takes the numbers away again (off from the start). Kept in the settings (`searchnumbers`), and on the Lists page of [Configuration](#configuration)
 - `Esc`, `Q`, `h` or `-` Return to the browser
 
 ### Favorites
@@ -240,6 +257,8 @@ In the list of favorites:
 - `u` or `:undo` Put back the favorite, or the folder with its favorites, that was removed last
 - `A` or `:folder name` Create a folder (see below)
 - `/text` Only show the paths containing "text". `Esc` shows all again
+- `:missing` List the favorites whose file or directory is not there any more, in a box with their full paths; `Enter` selects the one picked in the list. `:prune` removes them all, after asking (`u` puts them back). One on a drive that is not connected (a USB drive, a network share) is listed, but not removed: it is only missing for now. Each drive is looked at once, so a share that does not answer is waited for only once
+- `:number` Number the rows at the left, as `12gg` and `5j` count them, and `:nonumber` takes the numbers away again (off from the start). Kept in the settings (`favoritenumbers`), and on the Lists page of [Configuration](#configuration); the Favorites tab of the Jump menu follows it
 - `?` Help
 - `Esc`, `Q`, `F`, `h` or `-` Return to the browser
 
@@ -272,6 +291,8 @@ The file history lists the files you have opened in the editor from the file bro
 - `I` or `:info` Show information about the file
 - `D` or `:remove` Take the file out of the history (the file itself stays)
 - `X` or `:clear` Clear the file history. You are asked first, in a box on top of the list
+- `:missing` List the files whose file is not there any more, in a box with their full paths; `Enter` selects the one picked in the list. `:prune` removes them all, after asking (they are not put back). One on a drive that is not connected (a USB drive, a network share) is listed, but not removed: it is only missing for now. Each drive is looked at once, so a share that does not answer is waited for only once
+- `:number` Number the rows at the left, as `12gg` and `5j` count them, and `:nonumber` takes the numbers away again (off from the start). Kept in the settings (`historynumbers`), and on the Lists page of [Configuration](#configuration); the History tab of the Jump menu follows it
 - `:name` Copy the name of the file, `:path` its full path, as in the file browser: to the system clipboard and/or the paste bin, as set, and to the string memory (so `p` in the editor puts it in)
 - `/text` Only show the files whose path contains "text". `Esc` shows all again
 - `?` Help, `:` the command line
@@ -289,8 +310,10 @@ The directory hotlist keeps directories you want to go back to. `B` (or `:hotadd
 - `T` or `:top` Move the directory to the top, `E` or `:bottom` to the end
 - `I` or `:info` Show information about the directory
 - `X` or `:rename name` The name the directory is shown with in the hotlist (and the Jump menu), such as "Project docs" for a deep path. Without a name you are asked for it. The directory itself keeps its name; an empty name shows its own name again
-- `D` or `:remove` Take the directory out of the hotlist (the directory itself stays). `u` or `:undo` puts it back
+- `D` or `:remove` Take the directory out of the hotlist (the directory itself stays). `u` or `:undo` puts back what was removed last (one directory, or all that `:prune` removed)
 - `:clear` Clear the hotlist. You are asked first
+- `:missing` List the directories whose directory is not there any more, in a box with their full paths; `Enter` selects the one picked in the list. `:prune` removes them all, after asking (`u` puts them all back). One on a drive that is not connected (a USB drive, a network share) is listed, but not removed: it is only missing for now. Each drive is looked at once, so a share that does not answer is waited for only once
+- `:number` Number the rows at the left, as `12gg` and `5j` count them, and `:nonumber` takes the numbers away again (off from the start). Kept in the settings (`hotlistnumbers`), and on the Lists page of [Configuration](#configuration); the Hotlist tab of the Jump menu follows it
 - `:name` Copy the name the directory is shown with (the name you gave it, or its own), `:path` its full path, as in the file browser (also to the string memory, for `p` in the editor)
 - `/text` Only show the directories whose path contains "text". `Esc` shows all again
 - `?` Help, `:` the command line

@@ -321,8 +321,14 @@ internal static class Init
         ConsoleColors.Monochrome = false;
         SyntaxHighlighter.ColorFiles = true;
         FileExplorer.DualPane = true;
-        TextArea.LineNumbers = false;
-        Logo.AnimateNext(); // Sweep the logo when the login page is first shown
+        FileExplorer.FileNumbers = false;
+        FileOperations.DeleteToTrash = true;
+        FileExplorer.FavoriteNumbers = false;
+        FileExplorer.HistoryNumbers = false;
+        FileExplorer.HotlistNumbers = false;
+        FileExplorer.SearchNumbers = false;
+        JumpMenu.BookmarkNumbers = false;
+        TextArea.LineNumbers = false;        Logo.AnimateNext(); // Sweep the logo when the login page is first shown
         WriteProgressBar(8); // progress
         // Set default colors
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);

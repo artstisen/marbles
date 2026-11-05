@@ -200,4 +200,35 @@ public class MacroTests : IDisposable
         Assert.Equal("play Bullet list", completion.Next("play b", true));
         Assert.Equal("play tidy", new CommandCompletion(CommandContext.Editor).Next("play t", true));
     }
+
+    [Fact]
+    public void AnEditedMacro_IsChecked_AndSavedAsWritten()
+    {
+        // Every line must be understood (comments and empty lines are left out)
+        Assert.Null(MacroBoxes.Check("# Tidy\n\nline start\ninsert \"- \"\ndown 2\n"));
+        var problem = MacroBoxes.Check("line start\ninsrt \"- \"\ndown");
+        Assert.NotNull(problem);
+        Assert.Contains("Line 2", problem);
+
+        // Saved as it was written, with Windows line endings made LF and one new line at the end
+        Assert.Equal(DialogText.Success, MacroFiles.SaveText("tidy", "# Tidy\r\nline start\r\ninsert \"- \"\n\n\n"));
+        Assert.Equal("# Tidy\nline start\ninsert \"- \"\n", MacroFiles.Load("tidy"));
+        var editor = new EditorEngine("x", 40, 10, false) { MacroLoader = MacroFiles.Load };
+        editor.Type(":play tidy<CR>");
+        Assert.Equal("- x", editor.GetText());
+    }
+
+    [Fact]
+    public void TheLinesRecorded_CanBeSeen_WhileRecordingGoesOn()
+    {
+        var editor = Editor("one two\nthree");
+        editor.StartRecording();
+        editor.Type("wdw");
+        Assert.Equal(new[] { "word right", "delete word" }, editor.RecordedLines());
+        // Still recording: more is added, and nothing is written until the macro is saved
+        Assert.True(editor.IsRecording);
+        Assert.Empty(MacroFiles.Names());
+        editor.Type("j");
+        Assert.Equal(new[] { "word right", "delete word", "down" }, editor.StopRecording());
+    }
 }

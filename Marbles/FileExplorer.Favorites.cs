@@ -68,6 +68,23 @@ internal static partial class FileExplorer
 
     private static int FavoritePageSize => Init.LineCount - ListTop - 2;
 
+    // Select the favorite at a place of the whole list: also when the list is filtered, or it is in a closed folder
+    // (the folder is opened)
+    private static void ShowFavoriteAt(int number)
+    {
+        if (number < 0) return;
+        _favoriteFilter = string.Empty;
+        var folder = FileFavorites.FolderOf(number);
+        if (folder != number && FileFavorites.Items[folder] is { IsFolder: true, Collapsed: true } closed)
+        {
+            closed.Collapsed = false;
+            SaveFavoriteList();
+        }
+
+        FilterFavorites();
+        _favoriteIndex = Math.Max(0, _favorites.IndexOf(number));
+    }
+
     private static void FilterFavorites()
     {
         _favorites = new List<int>();
@@ -130,6 +147,14 @@ internal static partial class FileExplorer
                 continue;
             }
 
+            if (RecentBox.IsKey(key))
+            {
+                // The latest files: the one picked is opened in the editor (a count typed before it is dropped)
+                _listCount.Take();
+                RecentBox.Open();
+                continue;
+            }
+
             // A count in front of a key: 5j 5k (5 rows), 5gg 5G (row 5). Esc only drops it
             if (_listCount.Add(key))
             {
@@ -176,10 +201,10 @@ internal static partial class FileExplorer
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read(CommandContext.Favorites);
-                if (command is "jump" or "ju" or "jmp")
+                if (command != null && CommandLine.Name(command) is "jump" or "ju" or "jmp")
                 {
-                    // The Jump menu
-                    Jump.Open();
+                    // The Jump menu (":jump colors": that page at once)
+                    Jump.ToPage(CommandLine.Argument(command));
                     continue;
                 }
 
@@ -187,6 +212,14 @@ internal static partial class FileExplorer
                 {
                     // ":book 3": jump to bookmark 3
                     Jump.ToBookmark(CommandLine.Argument(command));
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) == "recent")
+                {
+                    // The latest files (the list drawn first: the box of commands has just been taken away)
+                    DrawFavorites(true);
+                    RecentBox.Open();
                     continue;
                 }
 
@@ -255,6 +288,19 @@ internal static partial class FileExplorer
                         if (selected < 0 || FileFavorites.Items[selected].IsFolder) break;
                         path = FileFavorites.Items[selected].Path;
                         return FavoriteAction.GoTo;
+                    case "missing":
+                        ShowMissingFavorites();
+                        break;
+                    case "prune":
+                        PruneFavorites();
+                        break;
+                    case "number":
+                    case "nonumber":
+                        // The numbers of the rows on or off (kept in the settings)
+                        FavoriteNumbers = command == "number";
+                        _favoriteMessage = FavoriteNumbers ? DialogText.LineNumbersOn : DialogText.LineNumbersOff;
+                        FileIo.SaveSettings();
+                        break;
                     default:
                         CommandLine.ShowUnknown(command);
                         break;
@@ -691,6 +737,50 @@ internal static partial class FileExplorer
         SaveFavoriteList();
     }
 
+    // The favorites whose file or directory is not there (each drive looked at once by the checker; a favorite that
+    // is gone may have been a directory)
+    private static List<FileFavorites.Favorite> MissingFavorites(MissingPlaces.Checker check) =>
+        FileFavorites.Items.Where(item => !item.IsFolder && check.IsMissing(item.Path)).ToList();
+
+    // ":missing": the missing favorites in a box. The one picked is selected in the list
+    private static void ShowMissingFavorites()
+    {
+        var check = new MissingPlaces.Checker();
+        var missing = MissingFavorites(check);
+        if (missing.Count == 0)
+        {
+            _favoriteMessage = MissingPlaces.NothingMissing;
+            return;
+        }
+
+        // (the list drawn first: the box of commands has just been taken away)
+        DrawFavorites(true);
+        var picked = MissingPlaces.Pick(missing
+            .Select(item => (FavoriteName(item.Path), item.Path, check.OnAbsentDrive(item.Path))).ToList());
+        if (picked >= 0) ShowFavoriteAt(FileFavorites.IndexOf(missing[picked]));
+    }
+
+    // ":prune": take the missing favorites out of the list, after asking (u puts them back). Those on a drive that
+    // is not connected are kept
+    private static void PruneFavorites()
+    {
+        var check = new MissingPlaces.Checker();
+        var (prune, kept) = MissingPlaces.Sort(MissingFavorites(check), item => check.OnAbsentDrive(item.Path));
+        if (prune.Count == 0)
+        {
+            _favoriteMessage = MissingPlaces.NothingToPrune(kept.Count);
+            return;
+        }
+
+        DrawFavorites(true);
+        if (!MissingPlaces.Confirm(DialogText.FavoriteRemoveCaption, prune.Count, kept.Count, true)) return;
+        var count = FileFavorites.RemoveMany(prune);
+        _favoriteMarks.Clear();
+        _favoriteFilter = string.Empty;
+        _favoriteMessage = DialogText.FavoriteRemovedMany(count);
+        SaveFavoriteList();
+    }
+
     // Show information about the file or directory of a favorite
     private static void ShowFavoriteInfo(int number)
     {
@@ -719,6 +809,9 @@ internal static partial class FileExplorer
             SaveFavoriteList();
         }
     }
+
+    // The columns of the lines between the columns of the list (none when it is empty)
+    private static int[] _favoriteLines = Array.Empty<int>();
 
     private static int _shownFavoriteTop = -1;
     private static int _shownFavoriteIndex = -1;
@@ -749,28 +842,45 @@ internal static partial class FileExplorer
         Console.Write(_favorites.Count == 0 && _favoriteFilter.Length == 0
             ? DialogText.FavoritesEmpty
             : DialogText.FavoritesHeader);
-        Tools.SetCursorEx(2, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth - 1));
-
-        // The names in a column, followed by the directories
+        // The columns: the names, the directories they are in, and what they are (size, directory, number of
+        // favorites in a folder), with lines between them and their labels in the divider line
         var nameWidth = 0;
         foreach (var number in _favorites)
         {
             nameWidth = Math.Max(nameWidth, FavoriteLabel(number).Length);
         }
 
-        nameWidth = Math.Min(nameWidth, Init.LineWidth / 2 - 6);
+        nameWidth = Math.Min(nameWidth, Init.LineWidth / 2 - 6 - FavoriteNumberWidth);
+        var infos = _favorites.Select(FavoriteInfo).ToList();
+        var infoWidth = Math.Max(TextMetrics.WidthOf(DialogText.ColumnInfo) + 2,
+            infos.Count == 0 ? 0 : infos.Max(info => TextMetrics.WidthOf(info.Text)));
+        // The lines between the columns: after the name, and before the info
+        var nameLine = 3 + FavoriteNumberWidth + nameWidth + 2;
+        var infoLine = Init.LineWidth - 2 - infoWidth - 1;
+        var columns = _favorites.Count > 0;
+        _favoriteLines = columns ? new[] { nameLine, infoLine } : Array.Empty<int>();
+        Tools.SetCursorEx(2, 0);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Console.Write(new string('-', Init.LineWidth - 1));
+        if (columns)
+        {
+            DrawColumnLabels(2, new[]
+            {
+                (1 + FavoriteNumberWidth, DialogText.ColumnName), (nameLine, DialogText.ColumnPath),
+                (infoLine, DialogText.ColumnInfo)
+            }, _favoriteLines);
+            for (var row = 0; row < FavoritePageSize; row++)
+            {
+                DrawColumnLine(ListTop + row, nameLine);
+                DrawColumnLine(ListTop + row, infoLine);
+            }
+        }
+
         for (var row = 0; row < FavoritePageSize && _favoriteTop + row < _favorites.Count; row++)
         {
             var index = _favoriteTop + row;
             var favorite = FileFavorites.Items[_favorites[index]];
-            var isDirectory = !favorite.IsFolder && Directory.Exists(favorite.Path);
-            var exists = favorite.IsFolder || isDirectory || File.Exists(favorite.Path);
-            var count = favorite.IsFolder ? FileFavorites.FolderCount(_favorites[index]) : 0;
-            var info = favorite.IsFolder ? Lang.F("Favorites: {0}", count) :
-                !exists ? DialogText.FavoriteMissing :
-                isDirectory ? DialogText.DirectoryMark : FileSizeFormatter.FormatSize(new FileInfo(favorite.Path).Length);
+            var (info, isDirectory, exists) = infos[index];
             DrawFavoritePointer(index, index == _favoriteIndex);
             var name = Tools.TruncateString(FavoriteLabel(_favorites[index]) + (isDirectory ? "/" : ""),
                 nameWidth + 1, true);
@@ -806,12 +916,12 @@ internal static partial class FileExplorer
             }
 
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            // The directory it is in (the end of a long path is shown)
+            // The directory it is in (the end of a long path is shown), between the lines
             var directory = favorite.IsFolder
                 ? string.Empty
                 : System.IO.Path.GetDirectoryName(favorite.Path) ?? string.Empty;
-            var column = 3 + nameWidth + 3;
-            var room = Init.LineWidth - column - info.Length - 3;
+            var column = nameLine + 2;
+            var room = infoLine - 1 - column;
             if (room > 8)
             {
                 directory = TextMetrics.KeepEnd(directory, room);
@@ -819,8 +929,9 @@ internal static partial class FileExplorer
                 Console.Write(directory);
             }
 
+            // What it is, at the right (sizes line up)
             if (!exists) ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-            Tools.SetCursorEx(ListTop + row, Init.LineWidth - info.Length - 1);
+            Tools.SetCursorEx(ListTop + row, Init.LineWidth - TextMetrics.WidthOf(info) - 1);
             Console.Write(info);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         }
@@ -828,6 +939,81 @@ internal static partial class FileExplorer
         _shownFavoriteTop = _favoriteTop;
         _shownFavoriteIndex = _favoriteIndex;
         DrawFavoriteStatus();
+    }
+
+    // What the info column shows for an item of the list: the number of favorites in a folder, that a file is
+    // missing, that it is a directory, or the size of the file. And whether it is a directory, and is there
+    private static (string Text, bool IsDirectory, bool Exists) FavoriteInfo(int number)
+    {
+        var favorite = FileFavorites.Items[number];
+        if (favorite.IsFolder)
+        {
+            var count = FileFavorites.FolderCount(number);
+            return (Lang.F("Favorites: {0}", count), false, true);
+        }
+
+        var isDirectory = Directory.Exists(favorite.Path);
+        var exists = isDirectory || File.Exists(favorite.Path);
+        if (!exists) return (DialogText.FavoriteMissing, false, false);
+        if (isDirectory) return (DialogText.DirectoryMark, true, true);
+        try
+        {
+            return (FileSizeFormatter.FormatSize(new FileInfo(favorite.Path).Length), false, true);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return (DialogText.FavoriteMissing, false, false);
+        }
+    }
+
+    /// <summary>
+    /// The labels of the columns of a list, in its divider line (a row of "-"), with a "+" where a line between
+    /// columns meets it. Each label starts at a column (a line, or the left), a blank space in
+    /// </summary>
+    internal static void DrawColumnLabels(int row, IReadOnlyList<(int Column, string Label)> labels,
+        IReadOnlyList<int> lines)
+    {
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        foreach (var line in lines)
+        {
+            Tools.SetCursorEx(row, line);
+            Console.Write("+");
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        foreach (var (column, label) in labels)
+        {
+            Tools.SetCursorEx(row, column + 2);
+            Console.Write(" " + label + " ");
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    /// <summary>
+    /// Where the lines between the columns of a list end: a "+" in a divider line
+    /// </summary>
+    internal static void DrawColumnEnds(int row, IReadOnlyList<int> lines)
+    {
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        foreach (var line in lines)
+        {
+            Tools.SetCursorEx(row, line);
+            Console.Write("+");
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    /// <summary>
+    /// A line between two columns of a list, on a row
+    /// </summary>
+    internal static void DrawColumnLine(int row, int column)
+    {
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(row, column);
+        Console.Write("|");
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
     // What is shown for an item of the list: the name of the file, two blank spaces in if it is in a
@@ -846,11 +1032,16 @@ internal static partial class FileExplorer
         return name.Length > 0 ? name : path;
     }
 
+    // The width of the numbers of the rows (when they are on): the largest number, and a blank space
+    private static int FavoriteNumberWidth => ListNumbers.Width(FavoriteNumbers, _favorites.Count);
+
+    // The selection pointer of a row (and before it the number of the row, when the numbers are on)
     private static void DrawFavoritePointer(int index, bool selected)
     {
         var row = index - _favoriteTop;
         if (row < 0 || row >= FavoritePageSize || index >= _favorites.Count) return;
         Tools.SetCursorEx(ListTop + row, 0);
+        ListNumbers.Write(index, FavoriteNumberWidth, selected);
         ConsoleColors.SetColors(selected
             ? ConsoleColors.ColorPreset.SelectorInverted
             : ConsoleColors.ColorPreset.Normal);
@@ -864,6 +1055,9 @@ internal static partial class FileExplorer
         Tools.SetCursorEx(Init.LineCount - 2, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(new string('-', Init.LineWidth - 1));
+        // Where the lines between the columns end
+        DrawColumnEnds(Init.LineCount - 2, _favoriteLines);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         var status = " " + (_favorites.Count == 0 ? 0 : _favoriteIndex + 1) + "/" + _favorites.Count + " ";
         if (_listCount.Shown.Length > 0) status = " " + _listCount.Shown + status;
         if (_favoriteFilter.Length > 0) status += "/" + _favoriteFilter + " ";

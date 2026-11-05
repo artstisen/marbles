@@ -43,6 +43,7 @@ internal enum EditorRequest
     ClipboardSettings, // ":clipboard": show the clipboard settings
     DocumentInfo, // ":info": show the size, the dates and the path of the text being edited
     Jump, // ":jump", ":ju" or Ctrl+O: show the Jump menu
+    Recent, // Ctrl+K (Normal mode) or ":recent": the latest files, to switch to one
     Rename, // ":rename" or ":title": rename the file (RenameText: the new name, or empty to ask), or the title
             // of the entry
     WrapChanged, // Wrapping of long lines was turned on or off
@@ -480,10 +481,20 @@ internal sealed partial class EditorEngine
         {
             if (Mode == EditorMode.Insert) HandleInsert(new ConsoleKeyInfo('\u001b', ConsoleKey.Escape, false, false, false));
             Buffer.EndStep(Cursor);
+            JumpArgument = string.Empty;
             _request = EditorRequest.Jump;
             RecordMacroCommandDone(true);
             ClampCursor();
             EnsureCursorVisible();
+            return _request;
+        }
+
+        // Ctrl+K in Normal mode: the latest files, to switch to one (in INSERT mode it is the snippets)
+        if (!SingleLine && IsControl(key, ConsoleKey.K) && Mode == EditorMode.Normal && !HasPending)
+        {
+            Buffer.EndStep(Cursor);
+            _request = EditorRequest.Recent;
+            RecordMacroCommandDone(false);
             return _request;
         }
 
@@ -1052,6 +1063,15 @@ internal sealed partial class EditorEngine
             return;
         }
 
+        // ":jump general": a page of Marbles at once, by its name (":jump" alone: the Jump menu)
+        var jumpPage = Regex.Match(command, "^(?:jump|ju|jmp) +(.+)$");
+        if (jumpPage.Success)
+        {
+            JumpArgument = jumpPage.Groups[1].Value.Trim();
+            if (!SingleLine) _request = EditorRequest.Jump;
+            return;
+        }
+
         // ":new name" (":new Title" in an entry): the host makes it and opens it in place of this text
         var newDocument = Regex.Match(command, "^new(?: +(.*))?$");
         if (newDocument.Success)
@@ -1377,7 +1397,11 @@ internal sealed partial class EditorEngine
             case "jump":
             case "ju":
             case "jmp":
+                JumpArgument = string.Empty;
                 if (!SingleLine) _request = EditorRequest.Jump;
+                break;
+            case "recent":
+                if (!SingleLine) _request = EditorRequest.Recent;
                 break;
             case "rename":
             case "title":

@@ -411,6 +411,11 @@ internal static class Bookmarks
     /// </summary>
     internal static int FolderCount(int index) => Folders.FolderCount(index);
 
+    /// <summary>
+    /// The folder a bookmark is in (the bookmark itself if it is not in a folder)
+    /// </summary>
+    internal static int FolderOf(int index) => Folders.FolderOf(index);
+
     #endregion
 
     /// <summary>

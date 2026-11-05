@@ -116,11 +116,41 @@ public partial class TextArea
         /// A comparison: ":w name" saves the text as a file in this directory (null: it is not saved)
         /// </summary>
         internal string? SaveDirectory { get; init; }
+
+        /// <summary>
+        /// Shown without word wrap, whatever the setting is (a peek of the file browser). ":wrap" changes the peek
+        /// only, not the setting
+        /// </summary>
+        internal bool NoWrap { get; init; }
+
+        /// <summary>
+        /// Tab in Normal mode closes it, as Esc does (the peek of the file browser, which Tab went into)
+        /// </summary>
+        internal bool TabCloses { get; init; }
+
+        /// <summary>
+        /// The text can be changed (a macro edited in its box), and ":w" gives it to this, which returns null when
+        /// it was saved, or why not (the text then stays as it is). Esc and ":q" ask about changes that are not
+        /// saved, as in the editor. What would leave the text or open another page is refused (ReadOnlyText)
+        /// </summary>
+        internal Func<string, string?>? SaveText { get; init; }
+
+        /// <summary>
+        /// The text comes from a note of a data file (a macro recorded in a note): yanks go to the clipboard and the
+        /// paste bin only as for a note (setting "clipboardnotes")
+        /// </summary>
+        internal bool FromNote { get; init; }
     }
 
     // Set for a peek: there is no title or mode divider above the text, it is read only, Esc closes it and Enter
     // asks for the file to be opened in the editor
     private readonly PeekOptions? _peek;
+
+    // A peek that can be changed and saved (PeekOptions.SaveText)
+    private bool EditablePeek => _peek?.SaveText != null;
+
+    // The text is that of a note (or comes from one): the clipboard and the paste bin follow "clipboardnotes"
+    private bool NoteText => _saveMode == SaveAsEntry || _peek?.FromNote == true;
 
     /// <summary>
     /// A peek was closed with Enter: the file is to be opened in the editor (at the cursor)
@@ -241,7 +271,7 @@ public partial class TextArea
             MaxCells = width - 3,
             // A peek is narrow: no line numbers
             LineNumbers = LineNumbers && !_singleLine && !readOnly && peek == null,
-            Wrap = WordWrap || _singleLine,
+            Wrap = _singleLine || (WordWrap && peek?.NoWrap != true),
             ScrollOffLines = ScrollOffLines,
             ScrollOff = ScrollOff && !_singleLine && !readOnly ? ScrollOffLines : 0,
             // Words are completed while typing, as set (not in a peek or a line of a dialog)
@@ -264,11 +294,14 @@ public partial class TextArea
 
         // (read also when completing while typing is off: ":surround" uses them)
         if (!_singleLine) Completions.Refresh();
-        // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON) are colored, unless that is turned off
+        // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON ...) are colored, unless that is turned off,
+        // and so is the settings file (as INI) when it is edited from Configuration
         var fileType = peek != null ? peek.Syntax
             : saveMode == SaveAsFile && !_singleLine && !readOnly
                 ? SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName)
-                : SyntaxType.None;
+                : saveMode == SaveAsSettings && !_singleLine && !readOnly
+                    ? SyntaxType.Ini
+                    : SyntaxType.None;
         _engine.CompletionSyntax = fileType;
         if (fileType != SyntaxType.None)
         {
@@ -291,7 +324,7 @@ public partial class TextArea
         // An entry that is read only cannot be changed in the editor
         _engine.ReadOnly = saveMode == SaveAsEntry && !_singleLine && NextEntryReadOnly;
         NextEntryReadOnly = false;
-        if (peek != null)
+        if (peek is { SaveText: null })
         {
             // A peek only shows the file
             _engine.ReadOnly = true;
@@ -416,7 +449,7 @@ public partial class TextArea
                     continue;
                 }
 
-                if (_peek != null && key.Key == ConsoleKey.Enter && _engine.Mode == EditorMode.Normal)
+                if (_peek != null && !EditablePeek && key.Key == ConsoleKey.Enter && _engine.Mode == EditorMode.Normal)
                 {
                     // Enter in a peek: the file in the editor
                     OpenRequested = true;
@@ -425,11 +458,15 @@ public partial class TextArea
 
                 // Esc closes a peek, also when a search is highlighted (a key typed before it is only cancelled). In a
                 // comparison it removes the highlighting first, so "n" "N" go to the changes again
-                if (_peek != null && key.Key == ConsoleKey.Escape && _engine.Mode == EditorMode.Normal &&
-                    !_engine.HasPending && !(_peek.Changes != null && _engine.IsSearchHighlighted)) break;
+                // (one that can be changed closes as the editor does: Esc asks about changes that are not saved)
+                if (_peek != null && !EditablePeek && key.Key == ConsoleKey.Escape &&
+                    _engine.Mode == EditorMode.Normal && !_engine.HasPending &&
+                    !(_peek.Changes != null && _engine.IsSearchHighlighted)) break;
+                if (_peek is { TabCloses: true } && key.Key == ConsoleKey.Tab && _engine.Mode == EditorMode.Normal &&
+                    !_engine.HasPending) break;
 
                 var request = _engine.HandleKey(key);
-                if (_peek != null && request is EditorRequest.Quit or EditorRequest.ForceQuit
+                if (_peek != null && !EditablePeek && request is EditorRequest.Quit or EditorRequest.ForceQuit
                         or EditorRequest.SaveAndQuit)
                 {
                     // Esc or :q closes a peek (nothing was changed)
@@ -446,7 +483,10 @@ public partial class TextArea
 
                 if (_peek != null && request is not (EditorRequest.None or EditorRequest.Clipboard
                         or EditorRequest.PasteBinWrite or EditorRequest.Help or EditorRequest.SyntaxChanged
-                        or EditorRequest.WrapChanged or EditorRequest.ScrollOffChanged))
+                        or EditorRequest.WrapChanged or EditorRequest.ScrollOffChanged) &&
+                    !(EditablePeek && request is EditorRequest.Save or EditorRequest.SaveAndQuit
+                        or EditorRequest.Quit or EditorRequest.ForceQuit or EditorRequest.PasteBinRead
+                        or EditorRequest.StringMemory or EditorRequest.ReplaceDialog or EditorRequest.ClearRegisters))
                 {
                     // What changes the text, saves it, or opens another page is not done in a peek
                     _engine.SetMessage(_peek.ReadOnlyText ?? DialogText.PeekReadOnly, true);
@@ -582,7 +622,7 @@ public partial class TextArea
             case EditorRequest.Clipboard:
             {
                 // Yanked text: to the system clipboard and/or the paste bin (the notes of a data file only if allowed)
-                var (message, isError) = SystemClipboard.Copy(_engine.ClipboardText, _saveMode == SaveAsEntry,
+                var (message, isError) = SystemClipboard.Copy(_engine.ClipboardText, NoteText,
                     !SystemClipboard.EveryYank);
                 if (message.Length > 0) _engine.ShowMessage(message, isError);
                 _shownStatus = null;
@@ -590,7 +630,7 @@ public partial class TextArea
             }
             case EditorRequest.PasteBinWrite:
             {
-                if (_saveMode == SaveAsEntry && !SystemClipboard.FromNotes)
+                if (NoteText && !SystemClipboard.FromNotes)
                 {
                     _engine.ShowMessage(DialogText.ClipboardNotesOff, true);
                     break;
@@ -658,13 +698,13 @@ public partial class TextArea
                 break;
             case EditorRequest.MacroStop:
                 Tools.HideCursor();
-                MacroBoxes.Stop(_engine);
+                MacroBoxes.Stop(_engine, _saveMode == SaveAsEntry, RedrawAll);
                 RedrawAll();
                 break;
             case EditorRequest.MacroList:
                 Tools.HideCursor();
                 DrawStatusLine();
-                MacroBoxes.Pick(_engine);
+                MacroBoxes.Pick(_engine, _saveMode == SaveAsEntry, RedrawAll);
                 RedrawAll();
                 break;
             case EditorRequest.Marks:
@@ -764,13 +804,14 @@ public partial class TextArea
                 break;
             case EditorRequest.Jump when _engine.IsRecording:
             case EditorRequest.JumpToBookmark when _engine.IsRecording:
+            case EditorRequest.Recent when _engine.IsRecording:
                 // Leaving would throw the macro away: it is stopped first (Esc)
                 _engine.SetMessage(Lang.T("Stop recording the macro first (Esc)"), true);
                 break;
             case EditorRequest.Jump:
                 Tools.HideCursor();
-                // Leaving the text asks about changes that are not saved
-                Jump.Open(LeaveForJump, MoveToBookmark);
+                // Leaving the text asks about changes that are not saved (":jump colors": that page at once)
+                Jump.ToPage(_engine.JumpArgument, LeaveForJump, MoveToBookmark);
                 RedrawAll();
                 break;
             case EditorRequest.JumpToBookmark:
@@ -778,6 +819,19 @@ public partial class TextArea
                 Jump.ToBookmark(_engine.BookArgument, LeaveForJump, MoveToBookmark);
                 RedrawAll();
                 break;
+            case EditorRequest.Recent:
+            {
+                // The latest files, without this one: the one picked is opened as a jump (changes are asked about)
+                Tools.HideCursor();
+                DrawStatusLine();
+                var current = _saveMode == SaveAsFile && FileExplorer.CurrentFilePath.Length > 0
+                    ? FileExplorer.CurrentFilePath
+                    : null;
+                var recent = RecentBox.Pick(current);
+                RedrawAll();
+                if (recent != null) Jump.ToPlace(RecentBox.TargetOf(recent), LeaveForJump);
+                break;
+            }
             case EditorRequest.Rename:
                 Tools.HideCursor();
                 RenameDocument();
@@ -831,6 +885,7 @@ public partial class TextArea
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
                 break;
             case EditorRequest.WrapChanged:
+                if (_peek?.NoWrap == true) break;
                 WordWrap = _engine.Wrap;
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
                 break;
@@ -1510,6 +1565,8 @@ public partial class TextArea
     /// <returns>False if the text could not be saved (the reason is shown as a message)</returns>
     private bool Save()
     {
+        // A peek that can be changed is saved by the one that showed it
+        if (_peek?.SaveText is { } saveText) return SaveEditablePeek(saveText);
         // A peek is never saved: it shows another file than the one the editor saves to, and maybe only the start
         // of it (it is read only, so this only guards against a request let through by mistake)
         if (_peek != null) return true;
@@ -1550,6 +1607,24 @@ public partial class TextArea
         _engine.MarkSaved();
         DocumentInfo.HasChanged = false;
         Menu.InitializeSaveIndicator();
+        return true;
+    }
+
+    // The text of a peek that can be changed, to the one that showed it (which can ask for a name in a box: all is
+    // drawn again after it)
+    private bool SaveEditablePeek(Func<string, string?> saveText)
+    {
+        if (!_engine.IsModified) return true;
+        Tools.HideCursor();
+        var problem = saveText(GetText());
+        RedrawAll();
+        if (problem != null)
+        {
+            _engine.SetMessage(problem, true);
+            return false;
+        }
+
+        _engine.MarkSaved();
         return true;
     }
 

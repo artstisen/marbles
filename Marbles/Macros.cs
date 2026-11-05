@@ -585,6 +585,25 @@ internal static class MacroFiles
     internal static bool Exists(string name) => IsValidName(name) && File.Exists(PathOf(name));
 
     /// <summary>
+    /// Save the text of a macro as it was edited (with a new line at its end)
+    /// </summary>
+    /// <returns>DialogText.Success or an error message</returns>
+    internal static string SaveText(string name, string text)
+    {
+        try
+        {
+            Directory.CreateDirectory(Folder);
+            text = TextBuffer.Normalize(text).TrimEnd('\n') + "\n";
+            FileIo.WriteAllBytesSafe(PathOf(name), new UTF8Encoding(false).GetBytes(text));
+            return DialogText.Success;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return e.Message;
+        }
+    }
+
+    /// <summary>
     /// Save a macro: a comment at the top, and its lines
     /// </summary>
     /// <returns>DialogText.Success or an error message</returns>
@@ -610,7 +629,8 @@ internal static class MacroFiles
 
 /// <summary>
 /// The boxes of the macros in the editor: recording starts (with a warning in a note of a data file), the question
-/// when it stops, and the list of macros (":macro")
+/// when it stops (where the steps can be edited before they are saved), the list of macros (":macro"), and the box
+/// a macro is edited in. A macro is written to its file only when it is saved, as before
 /// </summary>
 internal static class MacroBoxes
 {
@@ -637,27 +657,59 @@ internal static class MacroBoxes
     }
 
     /// <summary>
-    /// The Esc that would close the editor, while recording: go on, stop and save, or stop and discard
+    /// The Esc that would close the editor, while recording: go on, stop and save, stop and edit the steps before
+    /// saving them, or stop and discard
     /// </summary>
-    internal static void Stop(EditorEngine engine)
+    /// <param name="engine">The editor that is recording</param>
+    /// <param name="inNote">The editor has a note of a data file (yanks in the box of the macro follow the setting
+    /// for notes)</param>
+    /// <param name="drawBehind">Draws the editor behind the boxes again</param>
+    internal static void Stop(EditorEngine engine, bool inNote, Action drawBehind)
     {
-        var choice = ChoiceBox.Pick(Lang.T("Record a macro"), Lang.T("Stop recording the macro?"), string.Empty,
-            new[] { Lang.T("Resume recording"), Lang.T("Stop and save"), Lang.T("Stop and discard") },
-            new[] { "R", "S", "D" }, 0, false);
-        if (choice == 2)
+        while (true)
         {
-            engine.StopRecording();
-            engine.ShowMessage(Lang.T("The macro is discarded"), false);
+            var choice = ChoiceBox.Pick(Lang.T("Record a macro"), Lang.T("Stop recording the macro?"), string.Empty,
+                new[]
+                {
+                    Lang.T("Resume recording"), Lang.T("Stop and save"), Lang.T("Stop and edit"),
+                    Lang.T("Stop and discard")
+                },
+                new[] { "R", "S", "E", "D" }, 0, false);
+            if (choice == 3)
+            {
+                engine.StopRecording();
+                engine.ShowMessage(Lang.T("The macro is discarded"), false);
+                return;
+            }
+
+            if (choice == 2)
+            {
+                // The steps in the box first: saved (and named) from there, or back to this question
+                if (EditRecorded(engine, inNote, drawBehind)) return;
+                drawBehind();
+                continue;
+            }
+
+            if (choice != 1) return; // Recording goes on
+            // Esc: recording goes on (nothing is lost)
+            var name = AskName();
+            if (name == null) return;
+            var status = MacroFiles.Save(name, engine.StopRecording());
+            engine.ShowMessage(status == DialogText.Success ? Lang.F("Macro saved: {0} (:play {0})", name) : status,
+                status != DialogText.Success);
             return;
         }
+    }
 
-        if (choice != 1) return; // Recording goes on
+    // The name of a macro to save, asked until it is one that can be used (one that is there is replaced after
+    // asking), or null (Esc)
+    private static string? AskName()
+    {
         while (true)
         {
             var name = ChoiceBox.AskText(Lang.T("Save the macro"), DialogText.TypeNameAndPressEnter,
                 DialogText.NameColon, string.Empty);
-            // Esc: recording goes on (nothing is lost)
-            if (name == null) return;
+            if (name == null) return null;
             name = name.Trim();
             if (MacroFiles.NameProblem(name) is { } problem)
             {
@@ -671,30 +723,166 @@ internal static class MacroBoxes
                 continue;
             }
 
-            var status = MacroFiles.Save(name, engine.StopRecording());
-            engine.ShowMessage(status == DialogText.Success ? Lang.F("Macro saved: {0} (:play {0})", name) : status,
-                status != DialogText.Success);
+            return name;
+        }
+    }
+
+    // "Stop and edit": the steps recorded so far in the box, to be changed before the macro is saved. The first save
+    // asks for the name, and stops recording (later ones save under that name); closing without saving goes back
+    // to the question (still recording). Returns true when the macro was saved. Nothing is written before it is
+    // saved, as with "Stop and save"
+    private static bool EditRecorded(EditorEngine engine, bool inNote, Action drawBehind)
+    {
+        string? saved = null;
+        EditInBox(() => saved == null ? Lang.T("New macro (named when saved)") : Lang.F("Macro: {0}", saved),
+            string.Join("\n", engine.RecordedLines()), true, inNote, text =>
+            {
+                if (Check(text) is { } problem) return problem;
+                var name = saved ?? AskName();
+                if (name == null) return Lang.T("Not saved");
+                var lines = TextBuffer.Normalize(text).TrimEnd('\n').Split('\n');
+                var status = MacroFiles.Save(name, lines);
+                if (status != DialogText.Success) return status;
+                if (saved == null) engine.StopRecording();
+                saved = name;
+                return null;
+            }, drawBehind);
+        if (saved == null) return false;
+        engine.ShowMessage(Lang.F("Macro saved: {0} (:play {0})", saved), false);
+        return true;
+    }
+
+    /// <summary>
+    /// Why the text of a macro cannot be saved (the first line that is not understood), or null when it can
+    /// </summary>
+    internal static string? Check(string text)
+    {
+        MacroLanguage.Compile(text, out var error);
+        return error.Length > 0 ? error : null;
+    }
+
+    /// <summary>
+    /// A macro in the box of the macros, to change with the keys of the editor: ":w" saves it (when every line is
+    /// understood), Esc and ":q" close it (asking about changes that are not saved)
+    /// </summary>
+    /// <param name="label">What is edited (the name of the macro), above the text: asked for each time the box is
+    /// drawn, as a macro is named when it is saved</param>
+    /// <param name="text">The text of the macro</param>
+    /// <param name="modified">The text can be saved without changing it (steps recorded)</param>
+    /// <param name="inNote">Opened from a note of a data file: yanks follow the setting for notes</param>
+    /// <param name="save">Saves the text: null when saved, or why not</param>
+    /// <param name="drawBehind">Draws the editor behind the box again</param>
+    private static void EditInBox(Func<string> label, string text, bool modified, bool inNote,
+        Func<string, string?> save, Action drawBehind)
+    {
+        // (on the editor alone: the box of the list or the question is gone)
+        drawBehind();
+        var (left, top, width, height) = DrawEditBox(label);
+        // The state of the page behind (its label "Unsaved") is as it was when the box closes
+        var changed = DocumentInfo.HasChanged;
+        try
+        {
+            _ = new TextArea(left, top, width, height, text, 0, false, false, false, TextArea.SaveAsFile, modified,
+                new TextArea.PeekOptions(SyntaxType.Macro, () =>
+                {
+                    drawBehind();
+                    DrawEditBox(label);
+                })
+                {
+                    SaveText = save,
+                    FromNote = inNote,
+                    Hint = Lang.T("Edit the macro: :w saves it (checked first), Esc closes"),
+                    ReadOnlyText = Lang.T("Not done in the box of the macro")
+                });
+        }
+        finally
+        {
+            DocumentInfo.HasChanged = changed;
+        }
+    }
+
+    // The box of a macro being edited, as big as the list of the macros: what is edited at the top, and the place of
+    // the text below it
+    private static (int Left, int Top, int Width, int Height) DrawEditBox(Func<string> label)
+    {
+        using var box = ConsoleColors.BoxScope();
+        ChoiceBox.Forget();
+        var (top, left, inner, height) = ChoiceBox.DrawFrame(Lang.T("Edit macro"),
+            Init.LineWidth - 6, Math.Max(8, Init.LineCount - 5));
+        Tools.SetCursorEx(top + 2, left + 3);
+        Console.Write(Tools.TruncateString(label(), inner - 4, true));
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+        Tools.SetCursorEx(top + 3, left + 3);
+        Console.Write(new string('-', inner - 4));
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        // From the row below the line to the last row but one, below the label (a blank column at the right)
+        return (left + 3, top + 4, inner - 3, Math.Max(1, height - 4));
+    }
+
+    /// <summary>
+    /// ":macro": the macros in a list, with the text of the selected one below it; Enter plays it, E edits it
+    /// </summary>
+    /// <param name="engine">The editor the macro is played in</param>
+    /// <param name="inNote">The editor has a note of a data file (yanks in the box follow the setting for notes)</param>
+    /// <param name="drawBehind">Draws the editor behind the box again</param>
+    internal static void Pick(EditorEngine engine, bool inNote, Action drawBehind)
+    {
+        var selected = 0;
+        while (true)
+        {
+            var names = MacroFiles.Names();
+            if (names.Count == 0)
+            {
+                engine.ShowMessage(Lang.T("No macros yet: :record starts recording one"), false);
+                return;
+            }
+
+            var edit = -1;
+            var picked = PickListBox.Show(Lang.T("Macros"), names, i => MacroFiles.Load(names[i]) ?? string.Empty,
+                selected, Lang.T("j/k Select | Enter Play | E Edit | / Filter | Esc Close"), (key, i) =>
+                {
+                    if (key.Key != ConsoleKey.E || (key.Modifiers & ConsoleModifiers.Control) != 0) return false;
+                    edit = i;
+                    return true;
+                });
+            if (picked == PickListBox.Reload && edit >= 0)
+            {
+                selected = edit;
+                EditMacro(engine, names[edit], inNote, drawBehind);
+                drawBehind();
+                continue;
+            }
+
+            if (picked < 0) return;
+            // While recording: recorded as "play name"
+            engine.RecordPlay(names[picked]);
+            engine.PlayMacro(names[picked], 1);
             return;
         }
     }
 
-    /// <summary>
-    /// ":macro": the macros in a list, with the text of the selected one below it; Enter plays it
-    /// </summary>
-    internal static void Pick(EditorEngine engine)
+    // E in the list of macros: the macro in the box, to change and save under its name
+    private static void EditMacro(EditorEngine engine, string name, bool inNote, Action drawBehind)
     {
-        var names = MacroFiles.Names();
-        if (names.Count == 0)
+        ChoiceBox.Forget();
+        if (engine.IsRecording)
         {
-            engine.ShowMessage(Lang.T("No macros yet: :record starts recording one"), false);
+            // The keys typed in the box would not be the macro's: "Stop and edit" does it
+            ChoiceBox.Message(Lang.T("Edit macro"), Lang.T("Not while recording: Esc stops it, then Stop and edit"),
+                string.Empty);
             return;
         }
 
-        var picked = PickListBox.Show(Lang.T("Macros"), names, i => MacroFiles.Load(names[i]) ?? string.Empty, 0,
-            Lang.T("j/k Select | Enter Play | / Filter | Esc Close"));
-        if (picked < 0) return;
-        // While recording: recorded as "play name"
-        engine.RecordPlay(names[picked]);
-        engine.PlayMacro(names[picked], 1);
+        // A macro that cannot be read (gone, or kept from it) is not edited as an empty text, which ":w" would save
+        // in its place
+        if (MacroFiles.Load(name) is not { } macro)
+        {
+            ChoiceBox.Message(Lang.T("Edit macro"), Lang.T("The macro could not be read"), name);
+            return;
+        }
+
+        EditInBox(() => Lang.F("Macro: {0}", name), macro, false, inNote,
+            text => Check(text) ?? (MacroFiles.SaveText(name, text) is var status &&
+                                    status != DialogText.Success ? status : null), drawBehind);
     }
 }

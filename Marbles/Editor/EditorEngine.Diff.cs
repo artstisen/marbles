@@ -24,6 +24,11 @@ internal sealed partial class EditorEngine
     internal string BookArgument { get; private set; } = string.Empty;
 
     /// <summary>
+    /// What follows ":jump" (EditorRequest.Jump): the name of a page of Marbles, or empty for the Jump menu
+    /// </summary>
+    internal string JumpArgument { get; private set; } = string.Empty;
+
+    /// <summary>
     /// ":bookmark name": the name the bookmark is given (empty: none), and with "!" the name is moved to it from the
     /// bookmark that has it (EditorRequest.Bookmark)
     /// </summary>

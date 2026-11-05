@@ -211,6 +211,91 @@ public class FileManagementTests : IDisposable
         Assert.Equal(DialogText.FileNotFound, FileOperations.Delete(file));
     }
 
+    [Fact]
+    public void MoveToTrash_KeepsFilesAndDirectories_AndWhereTheyWere()
+    {
+        var trash = In("data", "trash");
+        var file = MakeFile("text", "work", "novel", "chapter 1.md");
+        MakeFile("1", "work", "novel", "notes", "one.md");
+        Assert.Equal(DialogText.Success, FileOperations.MoveToTrash(file, trash, out var trashedFile));
+        Assert.False(File.Exists(file));
+        Assert.Equal("text", File.ReadAllText(trashedFile));
+        Assert.Equal(trash, Path.GetDirectoryName(trashedFile));
+        Assert.Matches(@"^\d{4}-\d\d-\d\d \d\d\.\d\d\.\d\d chapter 1\.md$", Path.GetFileName(trashedFile));
+        // The same name again: a name of its own
+        MakeFile("again", "work", "novel", "chapter 1.md");
+        Assert.Equal(DialogText.Success, FileOperations.MoveToTrash(file, trash, out var again));
+        Assert.NotEqual(trashedFile, again);
+        Assert.Equal("again", File.ReadAllText(again));
+        // A directory, with its content
+        Assert.Equal(DialogText.Success, FileOperations.MoveToTrash(In("work", "novel", "notes"), trash,
+            out var trashedDirectory));
+        Assert.Equal("1", File.ReadAllText(Path.Combine(trashedDirectory, "one.md")));
+        // The list tells where each was
+        var list = File.ReadAllText(Path.Combine(trash, FileOperations.TrashListName));
+        Assert.StartsWith("# ", list);
+        Assert.Contains(Path.GetFileName(trashedFile) + "\t", list);
+        Assert.Contains("\t" + file + "\n", list);
+        Assert.Contains("\t" + In("work", "novel", "notes") + "\n", list);
+        Assert.Equal(DialogText.FileNotFound, FileOperations.MoveToTrash(file, trash, out _));
+    }
+
+    [Fact]
+    public void ADataFileInTheTrash_IsTheSameEncryptedFile_AndStillADataFile()
+    {
+        // The bytes are moved as they are: nothing is decrypted, and the name still ends in .mbls
+        var trash = In("data", "trash");
+        var bytes = new byte[] { 1, 2, 3, 0, 255 };
+        var dataFile = In("data", "work.mbls");
+        Directory.CreateDirectory(Path.GetDirectoryName(dataFile)!);
+        File.WriteAllBytes(dataFile, bytes);
+        Assert.Equal(DialogText.Success, FileOperations.MoveToTrash(dataFile, trash, out var trashed));
+        Assert.Equal(bytes, File.ReadAllBytes(trashed));
+        Assert.EndsWith(" work.mbls", trashed);
+        // Only the data file and the list are in the trash
+        Assert.Equal(new[] { Path.GetFileName(trashed), FileOperations.TrashListName }.Order(StringComparer.Ordinal),
+            Directory.GetFiles(trash).Select(Path.GetFileName).Order(StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void MoveToTrash_IsRefused_ForTheTrashAndWhatHoldsIt()
+    {
+        var trash = In("data", "trash");
+        var inTrash = MakeFile("x", "data", "trash", "old.md");
+        Assert.False(FileOperations.CanTrash(trash, trash));
+        Assert.False(FileOperations.CanTrash(inTrash, trash));
+        Assert.False(FileOperations.CanTrash(In("data"), trash));
+        Assert.True(FileOperations.CanTrash(MakeFile("y", "data", "a.md"), trash));
+        Assert.Equal(DialogText.TrashNotPossible, FileOperations.MoveToTrash(inTrash, trash, out _));
+        Assert.Equal(DialogText.TrashNotPossible, FileOperations.MoveToTrash(In("data"), trash, out _));
+        Assert.True(File.Exists(inTrash));
+    }
+
+    [Theory]
+    [InlineData("chapter 1.md", "chapter 1.md")]
+    [InlineData("a:b?.md", "a_b_.md")]
+    [InlineData("what*is\"it\".txt", "what_is_it_.txt")]
+    [InlineData("back\\slash|pipe<>.md", "back_slash_pipe__.md")]
+    [InlineData("ends with dot.", "ends with dot")]
+    [InlineData("...", "_")]
+    public void AStoredName_CanBeMadeOnEveryFileSystem(string name, string expected)
+    {
+        Assert.Equal(expected, FileOperations.StoredName(name));
+    }
+
+    [Fact]
+    public void AStoredName_IsShortEnoughForATimeToBeAdded()
+    {
+        var stored = FileOperations.StoredName(new string('a', 250) + ".md");
+        Assert.Equal(180, stored.Length);
+        // Counted in bytes, as Linux and macOS count a name: "ø" takes two, and no character is split
+        var danish = FileOperations.StoredName(new string('ø', 150) + ".md");
+        Assert.Equal(90, danish.Length);
+        Assert.True(System.Text.Encoding.UTF8.GetByteCount("2026-10-24 10.00.00 " + danish) <= 255);
+        var emoji = FileOperations.StoredName(new string('a', 179) + "😀");
+        Assert.Equal(179, emoji.Length);
+    }
+
     #endregion
 
     #region Saving

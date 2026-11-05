@@ -6,8 +6,9 @@
 /// Marbles) and Data files. Tab and Shift+Tab go from tab to tab, h and l through all the lists in a row (the
 /// sub-tabs too); B bookmarks the selected place, and the Bookmarks tab has keys to arrange, rename and remove them. A place is picked with the
 /// selection arrow (j/k, gg/G) and Enter; h/l go from tab to tab, "/" filters the list of the tab, I shows
-/// information about the selected place and D takes a place out of the jump history. Only names are shown, not
-/// paths. With one mode only (see StartMenu.Only) the tabs of the other mode are left out
+/// information about the selected place and D takes a place out of the jump history. The places are shown in
+/// columns: the name, the command or when, the directory and the kind. With one mode only (see StartMenu.Only) the
+/// tabs of the other mode are left out
 /// </summary>
 internal static class JumpMenu
 {
@@ -73,6 +74,50 @@ internal static class JumpMenu
     // The cells a row of tabs takes (as TabLayout.SubTabStarts places them)
     private static int TabRowWidth(IEnumerable<string> names) => names.Sum(name => TextMetrics.WidthOf(name) + 4);
 
+    /// <summary>
+    /// The rows of the Bookmarks tab are numbered, as 12gg counts them (setting "bookmarknumbers", off unless turned
+    /// on)
+    /// </summary>
+    internal static bool BookmarkNumbers { get; set; }
+
+    // The rows of a tab are numbered: the bookmarks, and the history, the favorites and the hotlist as in the file
+    // browser (the same settings)
+    private static bool NumbersOn(Tab tab) => tab switch
+    {
+        Tab.Bookmarks => BookmarkNumbers,
+        Tab.History => FileExplorer.HistoryNumbers,
+        Tab.Favorites => FileExplorer.FavoriteNumbers,
+        Tab.Hotlist => FileExplorer.HotlistNumbers,
+        _ => false
+    };
+
+    // ":number" and ":nonumber" on a tab: false on a tab without numbers
+    private static bool SetNumbers(Tab tab, bool on)
+    {
+        switch (tab)
+        {
+            case Tab.Bookmarks: BookmarkNumbers = on; break;
+            case Tab.History: FileExplorer.HistoryNumbers = on; break;
+            case Tab.Favorites: FileExplorer.FavoriteNumbers = on; break;
+            case Tab.Hotlist: FileExplorer.HotlistNumbers = on; break;
+            default: return false;
+        }
+
+        return true;
+    }
+
+    // The place to go to when the menu closes after a command (":jump colors")
+    private static JumpTarget? _jumpTo;
+
+    // What is done after the menu has been drawn again (":missing" and ":prune" show a box over it)
+    private static Action? _afterDraw;
+
+    // Ctrl+K or ":recent": the latest files are shown over the menu when it has been drawn
+    private static bool _openRecent;
+
+    // The filter of the tab is taken away (a missing bookmark picked with ":missing" is shown)
+    private static bool _clearFilter;
+
     // The bookmarks: j k move the selected one while this is on (V)
     private static bool _moving;
 
@@ -127,7 +172,6 @@ internal static class JumpMenu
         row.Bookmark is { IsFolder: false } entry ? Bookmarks.CommandOf(entry) : string.Empty;
 
     private const int MarkWidth = 4; // "FILE", "DIR", "PAGE", "DATA"
-    private const int TimeWidth = 10; // "09:41" today, else "2026-10-12"
 
     /// <summary>
     /// The lists that are shown: with one mode only (see StartMenu.Only) the lists of the other mode are left out
@@ -293,6 +337,10 @@ internal static class JumpMenu
         _ => "FILE"
     };
 
+    // The name of a row, with "(missing)" after a place that is not there any more
+    private static string RowName(Row row) =>
+        row.IsFolder || row.Target.Exists ? row.Name : row.Name + " " + DialogText.FavoriteMissing;
+
     // When a place was jumped to or opened: the time today, else the date
     private static string When(DateTime time) =>
         time == DateTime.MinValue ? string.Empty
@@ -317,6 +365,10 @@ internal static class JumpMenu
         _moving = false;
         _message = string.Empty;
         _select = null;
+        _jumpTo = null;
+        _afterDraw = null;
+        _openRecent = false;
+        _clearFilter = false;
         Marks.Clear();
         // The bookmarks are read once: the rows refer to them (marks, moving)
         Bookmarks.Load();
@@ -324,6 +376,8 @@ internal static class JumpMenu
         {
             var current = tabs[tab];
             _lastTab = current;
+            if (_clearFilter) filters[current] = string.Empty;
+            _clearFilter = false;
             var filter = filters.GetValueOrDefault(current, string.Empty);
             var rows = current == Tab.Bookmarks
                 ? BookmarkRows(filter)
@@ -342,6 +396,24 @@ internal static class JumpMenu
             // screen is cleared, and the page is drawn when the menu closes
             if (Init.ApplyAutoSize()) Tools.ClearScreen();
             var visible = Draw(tabs, tab, filter, rows, selected, ref scroll);
+            if (_afterDraw is { } after)
+            {
+                // A box over the menu (":missing", ":prune"), and the menu drawn again after it
+                _afterDraw = null;
+                after();
+                continue;
+            }
+
+            if (_openRecent)
+            {
+                // The latest files (without the file being edited): the one picked is the place to jump to, and Esc
+                // goes back to the menu
+                _openRecent = false;
+                var editing = FileExplorer.CurrentFilePath;
+                if (RecentBox.Pick(editing.Length > 0 ? editing : null) is { } recent) return RecentBox.TargetOf(recent);
+                continue;
+            }
+
             var message = _message;
             _message = _moving ? DialogText.Moving : string.Empty;
             var key = Keyboard.ReadKey();
@@ -382,6 +454,12 @@ internal static class JumpMenu
             }
 
             if (Jump.IsKey(key)) return null;
+            if (RecentBox.IsKey(key))
+            {
+                _openRecent = true;
+                continue;
+            }
+
             if (key.Key == ConsoleKey.Tab)
             {
                 // The next (Shift: the previous) tab at the top
@@ -477,7 +555,14 @@ internal static class JumpMenu
                     Marks.Clear();
                     break;
                 case ':':
-                    if (RunBookmarkCommand(current, rows, selected, filter)) return null;
+                    if (RunBookmarkCommand(current, rows, selected, filter))
+                    {
+                        // Closed, or a page to go to (":jump colors")
+                        var jump = _jumpTo;
+                        _jumpTo = null;
+                        return jump;
+                    }
+
                     break;
                 case 'v':
                 case 'V':
@@ -622,41 +707,81 @@ internal static class JumpMenu
             }
         }
 
-        // The names of the columns, between divider lines: the name, the kind, and the command that jumps to a
-        // bookmark (Bookmarks) or when it was jumped to or opened (Recent, History)
-        var typeLabel = Lang.T("Type");
-        var markWidth = Math.Max(MarkWidth, TextMetrics.WidthOf(typeLabel));
+        // The columns, with lines between them and their names in the divider line: the name, the command that
+        // jumps to a bookmark (Bookmarks) or when it was jumped to or opened (Recent, History), the directory the
+        // place is in, and its kind. The name is as wide as the longest (at most half the box), so the command is
+        // next to it, also in a wide window; the directory takes the room that is left
         var lastLabel = tabs[tab] == Tab.Bookmarks ? Lang.T("Command")
             : tabs[tab] is Tab.Jumps or Tab.History ? Lang.T("When")
             : string.Empty;
-        var typeColumn = left + width - markWidth - TimeWidth - 2;
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Tools.SetCursorEx(top + 5, left + 4);
-        Console.Write(Tools.TruncateString(Lang.T("Name"), Math.Max(1, typeColumn - left - 6), true));
-        Tools.SetCursorEx(top + 5, typeColumn);
-        Console.Write(typeLabel.PadRight(markWidth) + "  " +
-                      Tools.TruncateString(lastLabel, TimeWidth, false).PadLeft(TimeWidth));
+        var lasts = rows.Select(row => tabs[tab] == Tab.Bookmarks ? BookCommand(row) : When(row.Time)).ToList();
+        var typeLabel = Lang.T("Type");
+        var markWidth = Math.Max(MarkWidth, TextMetrics.WidthOf(typeLabel));
+        // The numbers of the rows (when they are on for the list of the tab): right-aligned, as wide as the largest,
+        // and a blank space; the pointer and the names follow
+        var numbers = ListNumbers.Width(NumbersOn(tabs[tab]), rows.Count);
+        var nameColumn = left + 4 + numbers;
+        var nameWidth = Math.Clamp(rows.Count == 0 ? 0 : rows.Max(row => TextMetrics.WidthOf(RowName(row))),
+            TextMetrics.WidthOf(DialogText.ColumnName) + 2, Math.Max(10, width / 2 - 8 - numbers));
+        var nameLine = nameColumn + nameWidth + 1;
+        var lastWidth = lastLabel.Length == 0 ? 0
+            : Math.Max(TextMetrics.WidthOf(lastLabel) + 2, lasts.Count == 0 ? 0 : lasts.Max(TextMetrics.WidthOf));
+        var lastLine = lastLabel.Length == 0 ? nameLine : nameLine + 2 + lastWidth + 1;
+        // (two cells of room after the kind, so its name is not pressed against the edge of the menu)
+        var typeColumn = left + width - markWidth - 3;
+        var typeLine = typeColumn - 2;
+        var pathColumn = lastLine + 2;
+        var pathWidth = typeLine - 1 - pathColumn;
+        // (no room for the directory: the kind follows at once)
+        if (pathWidth < 8)
+        {
+            pathWidth = 0;
+            typeLine = lastLine;
+        }
+
+        var lines = new List<int> { nameLine };
+        if (lastLabel.Length > 0) lines.Add(lastLine);
+        if (pathWidth > 0) lines.Add(typeLine);
+        var labels = new List<(int, string)> { (nameColumn - 3, DialogText.ColumnName) };
+        if (lastLabel.Length > 0) labels.Add((nameLine, lastLabel));
+        if (pathWidth > 0) labels.Add((lastLine, DialogText.ColumnPath));
+        labels.Add((typeLine, typeLabel));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.TabFrame);
-        Tools.SetCursorEx(top + 6, left + 2);
+        Tools.SetCursorEx(top + 5, left + 2);
         Console.Write(new string('-', Math.Max(0, width - 2)));
+        if (rows.Count > 0) FileExplorer.DrawColumnLabels(top + 5, labels, lines);
 
         // The places
-        var first = top + 7;
+        var first = top + 6;
         var visible = Math.Max(1, top + height - first + 1);
         scroll = Math.Clamp(scroll, Math.Max(0, selected - visible + 1), selected);
-        var nameWidth = Math.Max(10, width - 4 - markWidth - TimeWidth - 4);
         if (rows.Count == 0)
         {
             Tools.SetCursorEx(first, left + 4);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             Console.Write(Tools.TruncateString(Lang.T("Nothing to show"), width - 5, true));
         }
+        else
+        {
+            // The lines between the columns go down to the bottom of the box, also past the last row
+            for (var line = rows.Count - scroll; line < visible; line++)
+            {
+                foreach (var column in lines) FileExplorer.DrawColumnLine(first + line, column);
+            }
+        }
 
         for (var line = 0; line < visible && scroll + line < rows.Count; line++)
         {
             var row = rows[scroll + line];
             var index = scroll + line;
-            Tools.SetCursorEx(first + line, left + 1);
+            if (numbers > 0)
+            {
+                // The number of the row (as 12gg counts the rows)
+                Tools.SetCursorEx(first + line, left + 1);
+                ListNumbers.Write(index, numbers, index == selected);
+            }
+
+            Tools.SetCursorEx(first + line, left + 1 + numbers);
             if (index == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
             else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(index == selected ? (_moving ? "<>" : "->") : "  ");
@@ -664,7 +789,7 @@ internal static class JumpMenu
             // A marked bookmark has a "+" in front
             if (row.Bookmark != null && Marks.Contains(row.Bookmark))
             {
-                Tools.SetCursorEx(first + line, left + 3);
+                Tools.SetCursorEx(first + line, left + 3 + numbers);
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
                 Console.Write("+");
             }
@@ -672,14 +797,13 @@ internal static class JumpMenu
             // The name, in the color of the bookmark or of a favorite (a place that is not there any more is dimmed
             // and marked). A folder is shown with its name and the number of bookmarks in it
             var exists = row.IsFolder || row.Target.Exists;
-            var name = exists ? row.Name : row.Name + " " + DialogText.FavoriteMissing;
-            name = ShortName(name, nameWidth);
-            Tools.SetCursorEx(first + line, left + 4);
+            var name = ShortName(RowName(row), nameWidth);
+            Tools.SetCursorEx(first + line, nameColumn);
             // The bookmark that is moved is highlighted, from the blank space before it (as in the other lists)
             if (_moving && index == selected)
             {
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
-                Tools.SetCursorEx(first + line, left + 3);
+                Tools.SetCursorEx(first + line, left + 3 + numbers);
                 Console.Write(" ");
             }
             else if (row.IsFolder && row.Color == null) ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
@@ -688,14 +812,26 @@ internal static class JumpMenu
             else ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             Console.Write(name);
 
-            // The kind, and when (a bookmark: the command that jumps to it; a folder: nothing)
-            Tools.SetCursorEx(first + line, typeColumn);
+            // The lines between the columns, the command (or when), the directory and the kind (a folder of
+            // bookmarks: only its name)
+            foreach (var column in lines) FileExplorer.DrawColumnLine(first + line, column);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            var last = tabs[tab] == Tab.Bookmarks ? BookCommand(row) : When(row.Time);
-            Console.Write((row.IsFolder ? string.Empty : Mark(row.Target)).PadRight(markWidth) + "  " +
-                          last.PadLeft(TimeWidth));
-        }
+            if (lastLabel.Length > 0)
+            {
+                Tools.SetCursorEx(first + line, nameLine + 2);
+                Console.Write(lasts[index]);
+            }
 
+            if (row.IsFolder) continue;
+            if (pathWidth > 0 && Path.GetDirectoryName(row.Target.FullPath) is { Length: > 0 } directory)
+            {
+                Tools.SetCursorEx(first + line, pathColumn);
+                Console.Write(TextMetrics.KeepEnd(directory, pathWidth));
+            }
+
+            Tools.SetCursorEx(first + line, typeLine + 2);
+            Console.Write(Mark(row.Target));
+        }
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         // With bookmarks marked: what can be done with them
         ChoiceBox.WriteHints(tabs[tab] != Tab.Bookmarks ? DialogText.JumpKeys
@@ -1010,7 +1146,20 @@ internal static class JumpMenu
         if (command == null) return false;
         // A name can follow the command
         if (CommandLine.Name(command) is "folder" or "rename") command = CommandLine.Name(command);
+        if (CommandLine.Name(command) is "jump" or "ju" or "jmp")
+        {
+            // ":jump general": a page of Marbles at once (":jump" alone: the menu is open)
+            return JumpToPage(CommandLine.Argument(command));
+        }
+
         if (command is "q" or "quit" or "close") return true;
+        if (command is "recent")
+        {
+            // The latest files, over the menu when it has been drawn again
+            _openRecent = true;
+            return false;
+        }
+
         if (command is "h" or "help")
         {
             Tools.WriteEditorHelp(false, Tools.HelpTopic.Jump);
@@ -1034,6 +1183,23 @@ internal static class JumpMenu
         if (!Commands.IsKnown(CommandContext.Jump, command))
         {
             CommandLine.ShowUnknown(command);
+            return false;
+        }
+
+        if (command is "number" or "nonumber")
+        {
+            // The numbers of the rows of the list of the tab on or off (kept in the settings, and the same in the
+            // file browser)
+            if (SetNumbers(current, command == "number"))
+            {
+                _message = NumbersOn(current) ? DialogText.LineNumbersOn : DialogText.LineNumbersOff;
+                FileIo.SaveSettings();
+            }
+            else
+            {
+                _message = Lang.T("Line numbers: Bookmarks, History, Favorites, Hotlist");
+            }
+
             return false;
         }
 
@@ -1076,10 +1242,85 @@ internal static class JumpMenu
             case "clearbook":
                 ClearBookmarks();
                 break;
+            case "missing":
+                _afterDraw = ShowMissingBookmarks;
+                break;
+            case "prune":
+                _afterDraw = PruneBookmarks;
+                break;
         }
 
         // (the end of the commands)
         return false;
+    }
+
+    // ":jump general" in the menu. True if the menu is closed for the jump
+    private static bool JumpToPage(string argument)
+    {
+        argument = argument.Trim();
+        if (argument.Length == 0) return false;
+        if (JumpPages.IdOf(argument) is not { } page)
+        {
+            _message = Lang.F("No page named {0}", argument);
+            return false;
+        }
+
+        _jumpTo = new JumpTarget(JumpKind.Page, page);
+        return true;
+    }
+
+    // The bookmarks of files, directories and data files that are not there (each drive looked at once by the
+    // checker). A page of Marbles is always there
+    private static List<Bookmarks.Entry> MissingBookmarks(MissingPlaces.Checker check) => Bookmarks.Items
+        .Where(entry => !entry.IsFolder && entry.Target.Kind is JumpKind.File or JumpKind.Directory or JumpKind.DataFile &&
+                        check.IsMissing(entry.Target.FullPath, entry.Target.Kind != JumpKind.Directory)).ToList();
+
+    // ":missing": the missing bookmarks in a box. The one picked is selected in the list
+    private static void ShowMissingBookmarks()
+    {
+        var check = new MissingPlaces.Checker();
+        var missing = MissingBookmarks(check);
+        if (missing.Count == 0)
+        {
+            _message = MissingPlaces.NothingMissing;
+            return;
+        }
+
+        ChoiceBox.Forget();
+        var picked = MissingPlaces.Pick(missing.Select(entry => (entry.Shown, entry.Target.FullPath,
+            check.OnAbsentDrive(entry.Target.FullPath, entry.Target.Kind != JumpKind.Directory))).ToList());
+        if (picked < 0) return;
+        // Shown, also when it is in a closed folder or the filter hides it
+        var folder = Bookmarks.FolderOf(IndexOf(missing[picked]));
+        if (Bookmarks.Items[folder] is { IsFolder: true, Collapsed: true } closed)
+        {
+            closed.Collapsed = false;
+            SaveBookmarks();
+        }
+
+        _select = missing[picked];
+        _clearFilter = true;
+    }
+
+    // ":prune": take the missing bookmarks out of the list, after asking (u puts them back). Those on a drive that is
+    // not connected are kept
+    private static void PruneBookmarks()
+    {
+        var check = new MissingPlaces.Checker();
+        var (prune, kept) = MissingPlaces.Sort(MissingBookmarks(check),
+            entry => check.OnAbsentDrive(entry.Target.FullPath, entry.Target.Kind != JumpKind.Directory));
+        if (prune.Count == 0)
+        {
+            _message = MissingPlaces.NothingToPrune(kept.Count);
+            return;
+        }
+
+        ChoiceBox.Forget();
+        if (!MissingPlaces.Confirm(Lang.T("Remove bookmarks"), prune.Count, kept.Count, true)) return;
+        var count = Bookmarks.RemoveMany(prune);
+        Marks.Clear();
+        _message = Lang.F("Bookmarks removed: {0} (u: Undo)", count);
+        SaveBookmarks();
     }
 
     private static void SaveBookmarks()

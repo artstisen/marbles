@@ -54,42 +54,42 @@ internal static class Commands
     private static readonly Dictionary<CommandContext, Table> Tables = new()
     {
         [CommandContext.Menu] = new Table(
-            "quit help about guide jump book new browse number import transfer undelete backup defaults scheme " +
+            "quit help about guide jump book recent new browse number import transfer undelete backup defaults scheme " +
             "bw size password restart language clipboard logo config" + Common,
             "q h nu ju jmp" + CommonShort),
         [CommandContext.List] = new Table(
-            "quit close help jump book browse new title delete color transfer size duplicate revert export import info clipboard" +
+            "quit close help jump book recent browse new title delete color transfer size duplicate revert export import info clipboard" +
             " readonly" + Common,
             "q h ro ju jmp" + CommonShort),
         [CommandContext.Files] = new Table(
-            "quit close exit home data help jump book peek diff cd new info mkdir rename copy duplicate move delete favorite favorites history hotlist hotadd bookmark bookmark! refresh logout panes match path name find",
+            "quit close exit home data help jump book peek diff cd new info mkdir rename copy duplicate move delete favorite favorites history hotlist hotadd bookmark bookmark! refresh logout panes match path name find number nonumber recent trash protect",
             "q h fav favs hist hot ju jmp"),
         [CommandContext.FilePicker] = new Table(
-            "quit close home data help cd",
+            "quit close home data help cd number nonumber",
             "q h"),
         [CommandContext.Favorites] = new Table(
-            "quit close help jump book color info remove move top bottom undo folder expand collapse rename goto path name",
+            "quit close help jump book recent color info remove move top bottom undo folder expand collapse rename goto path name missing prune number nonumber",
             "q h u ju jmp"),
         [CommandContext.History] = new Table(
-            "quit close help jump book info goto favorite remove clear path name",
+            "quit close help jump book recent info goto favorite remove clear path name missing prune number nonumber",
             "q h fav ju jmp"),
         [CommandContext.Hotlist] = new Table(
-            "quit close help jump book info remove undo top bottom move rename clear path name",
+            "quit close help jump book recent info remove undo top bottom move rename clear path name missing prune number nonumber",
             "q h u ju jmp"),
         [CommandContext.Search] = new Table(
-            "quit close help jump book find info goto favorite",
+            "quit close help jump book recent find info goto favorite number nonumber",
             "q h fav ju jmp"),
         [CommandContext.Start] = new Table(
-            "note file mode config general layout editor system jump book help about quick scheme logo snippet completions clipboard " +
+            "note file mode config general layout editor lists system jump book recent help about quick scheme logo snippet completions clipboard " +
             "log restart reset quit exit",
             "notes browse ju jmp h guide snip comp q"),
         [CommandContext.Jump] = new Table(
-            "quit close help info folder expand collapse rename color remove move top bottom undo clearbook path name",
-            "q h u"),
+            "quit close help info jump recent folder expand collapse rename color remove move top bottom undo clearbook path name number nonumber missing prune",
+            "q h u ju jmp"),
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
-            "favorite record play macro trim trim! whitespace mark marks delmarks delmarks! clear registers reglist regclear putall vsel vline block ol ul dup duplicate surround pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete diff scrolloff info jump book bookmark bookmark! yankall rename title split only new",
+            "favorite record play macro trim trim! whitespace mark marks delmarks delmarks! clear registers reglist regclear putall vsel vline block ol ul dup duplicate surround pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete diff scrolloff info jump book recent bookmark bookmark! yankall rename title split only new",
             "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw reg sn ju jmp fav sur k")
     };
 

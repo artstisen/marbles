@@ -328,6 +328,51 @@ backup=
     }
 
     [Fact]
+    public void DeleteToTrash_IsOnUnlessTurnedOff_AndSaved()
+    {
+        File.WriteAllText(SettingsFile, LegacySettings);
+        Assert.True(FileIo.LoadSettings());
+        Assert.True(FileOperations.DeleteToTrash);
+        File.WriteAllText(SettingsFile, LegacySettings + "\ndeletetotrash=false\n");
+        Assert.True(FileIo.LoadSettings());
+        Assert.False(FileOperations.DeleteToTrash);
+        FileIo.SaveSettings();
+        Assert.Equal("false", FileIo.ParseSettings(File.ReadAllText(SettingsFile))["deletetotrash"]);
+        Actions.ApplyDefaultSettings();
+        Assert.True(FileOperations.DeleteToTrash);
+    }
+
+    [Fact]
+    public void TheLineNumbersOfTheLists_AreOffUnlessTurnedOn_AndSaved()
+    {
+        File.WriteAllText(SettingsFile, LegacySettings);
+        Assert.True(FileIo.LoadSettings());
+        Assert.False(FileExplorer.FileNumbers);
+        Assert.False(FileExplorer.FavoriteNumbers);
+        Assert.False(JumpMenu.BookmarkNumbers);
+        File.WriteAllText(SettingsFile, LegacySettings + "\nfilenumbers=true\nfavoritenumbers=true\nhistorynumbers=true\n" +
+                                        "hotlistnumbers=true\nsearchnumbers=true\nbookmarknumbers=true\n");
+        Assert.True(FileIo.LoadSettings());
+        Assert.True(FileExplorer.FileNumbers);
+        Assert.True(FileExplorer.FavoriteNumbers);
+        Assert.True(FileExplorer.HistoryNumbers);
+        Assert.True(FileExplorer.HotlistNumbers);
+        Assert.True(FileExplorer.SearchNumbers);
+        Assert.True(JumpMenu.BookmarkNumbers);
+        FileIo.SaveSettings();
+        var saved = FileIo.ParseSettings(File.ReadAllText(SettingsFile));
+        foreach (var list in new[] { "file", "favorite", "history", "hotlist", "search", "bookmark" })
+        {
+            Assert.Equal("true", saved[list + "numbers"]);
+        }
+
+        Actions.ApplyDefaultSettings();
+        Assert.False(FileExplorer.FileNumbers);
+        Assert.False(FileExplorer.SearchNumbers);
+        Assert.False(JumpMenu.BookmarkNumbers);
+    }
+
+    [Fact]
     public void SavedSettings_HaveNoKeyMapping_AndLoadAgain()
     {
         File.WriteAllText(SettingsFile, LegacySettings);
@@ -344,8 +389,10 @@ backup=
         Assert.Equal("Marbles", settings["logo"]);
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(39, settings.Count);
+        Assert.Equal(46, settings.Count);
         Assert.Equal("true", settings["commandlist"]);
+        // Deleting moves to the trash from the start
+        Assert.Equal("true", settings["deletetotrash"]);
         Assert.Equal("false", settings["whitespace"]);
         Assert.Equal("false", settings["marksapostrophe"]);
         Assert.Equal("none", settings["onlymode"]);
@@ -368,6 +415,12 @@ backup=
         Assert.Equal("en", settings["language"]);
         Assert.Equal("false", settings["linenumbers"]);
         Assert.Equal("true", settings["browsedual"]);
+        // The numbers of the rows of the lists are off unless turned on
+        foreach (var list in new[] { "file", "favorite", "history", "hotlist", "search", "bookmark" })
+        {
+            Assert.Equal("false", settings[list + "numbers"]);
+        }
+
         // Completing words is on unless turned off (the settings file has no "autocomplete")
         Assert.Equal("true", settings["autocomplete"]);
         Assert.Equal("false", settings["stayloggedin"]);

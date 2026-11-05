@@ -188,6 +188,17 @@ internal static class FileHistory
     }
 
     /// <summary>
+    /// Take files out of the list by their places (the files themselves are not changed)
+    /// </summary>
+    /// <returns>How many were taken out</returns>
+    internal static int RemoveMany(IEnumerable<int> indexes)
+    {
+        var places = indexes.Where(index => index >= 0 && index < List.Count).Distinct().OrderDescending().ToList();
+        // From the end, so that the places of the others stay
+        foreach (var index in places) List.RemoveAt(index);
+        return places.Count;
+    }
+    /// <summary>
     /// Empty the list
     /// </summary>
     internal static void Clear()

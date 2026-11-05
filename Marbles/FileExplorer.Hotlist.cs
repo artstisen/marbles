@@ -11,7 +11,7 @@ internal static partial class FileExplorer
     private static string _hotlistFilter = string.Empty;
     private static string _hotlistMessage = string.Empty;
     private static bool _hotlistMoving; // V: j k move the selected directory
-    private static (int Index, DirectoryHotlist.Entry Entry)? _hotlistRemoved; // For undo
+    private static List<(int Index, DirectoryHotlist.Entry Entry)>? _hotlistRemoved; // For undo: what was removed last
 
     // B: add the directory shown in the pane with the focus (whatever is selected in it)
     private static void AddToHotlist()
@@ -116,13 +116,20 @@ internal static partial class FileExplorer
                 continue;
             }
 
+            if (RecentBox.IsKey(key))
+            {
+                // The latest files: the one picked is opened in the editor
+                RecentBox.Open();
+                continue;
+            }
+
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read(CommandContext.Hotlist);
-                if (command is "jump" or "ju" or "jmp")
+                if (command != null && CommandLine.Name(command) is "jump" or "ju" or "jmp")
                 {
-                    // The Jump menu
-                    Jump.Open();
+                    // The Jump menu (":jump colors": that page at once)
+                    Jump.ToPage(CommandLine.Argument(command));
                     continue;
                 }
 
@@ -130,6 +137,14 @@ internal static partial class FileExplorer
                 {
                     // ":book 3": jump to bookmark 3
                     Jump.ToBookmark(CommandLine.Argument(command));
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) == "recent")
+                {
+                    // The latest files (the list drawn first: the box of commands has just been taken away)
+                    DrawHotlist(true);
+                    RecentBox.Open();
                     continue;
                 }
 
@@ -179,6 +194,19 @@ internal static partial class FileExplorer
                         break;
                     case "clear":
                         ClearHotlist();
+                        break;
+                    case "missing":
+                        ShowMissingHotlist();
+                        break;
+                    case "prune":
+                        PruneHotlist();
+                        break;
+                    case "number":
+                    case "nonumber":
+                        // The numbers of the rows on or off (kept in the settings)
+                        HotlistNumbers = command == "number";
+                        _hotlistMessage = HotlistNumbers ? DialogText.LineNumbersOn : DialogText.LineNumbersOff;
+                        FileIo.SaveSettings();
                         break;
                     default:
                         CommandLine.ShowUnknown(command);
@@ -379,22 +407,78 @@ internal static partial class FileExplorer
     {
         if (number < 0) return;
         var entry = DirectoryHotlist.Items[number];
-        DirectoryHotlist.RemoveAt(number);
-        _hotlistRemoved = (number, entry);
+        _hotlistRemoved = DirectoryHotlist.RemoveMany([number]);
         EventLog.Add(DialogText.LogFile + "Hotlist remove: " + entry.Path);
         _hotlistMessage = Lang.F("Removed from the hotlist: {0} (u puts it back)", entry.Shown);
         SaveHotlist();
     }
 
+    // u: put back all that was removed last (one directory, or those taken out by ":prune")
     private static void UndoHotlistRemove()
     {
-        if (_hotlistRemoved is not { } removed) return;
+        if (_hotlistRemoved is not { Count: > 0 } removed) return;
         _hotlistRemoved = null;
-        DirectoryHotlist.Insert(removed.Index, removed.Entry);
+        // (one that is in the list again is left out)
+        var back = DirectoryHotlist.PutBack(removed);
+        if (back.Count == 0)
+        {
+            _hotlistMessage = DialogText.FavoriteNothingToUndo;
+            return;
+        }
+
         SaveHotlist();
         _hotlistFilter = string.Empty;
-        _hotlistIndex = Math.Clamp(removed.Index, 0, Math.Max(0, DirectoryHotlist.Items.Count - 1));
-        _hotlistMessage = Lang.F("Back in the hotlist: {0}", removed.Entry.Shown);
+        _hotlistIndex = Math.Max(0, DirectoryHotlist.Items.ToList().IndexOf(back[0]));
+        _hotlistMessage = back.Count == 1
+            ? Lang.F("Back in the hotlist: {0}", back[0].Shown)
+            : Lang.F("Directories put back in the hotlist: {0}", back.Count);
+    }
+
+    // The numbers of the directories of the hotlist that are not there (each drive looked at once by the checker)
+    private static List<int> MissingHotlist(MissingPlaces.Checker check) =>
+        Enumerable.Range(0, DirectoryHotlist.Items.Count)
+            .Where(i => check.IsMissing(DirectoryHotlist.Items[i].Path)).ToList();
+
+    // ":missing": the missing directories in a box. The one picked is selected in the list
+    private static void ShowMissingHotlist()
+    {
+        var check = new MissingPlaces.Checker();
+        var missing = MissingHotlist(check);
+        if (missing.Count == 0)
+        {
+            _hotlistMessage = MissingPlaces.NothingMissing;
+            return;
+        }
+
+        // (the list drawn first: the box of commands has just been taken away)
+        DrawHotlist(true);
+        var picked = MissingPlaces.Pick(missing.Select(i => DirectoryHotlist.Items[i])
+            .Select(entry => (entry.Shown, entry.Path, check.OnAbsentDrive(entry.Path))).ToList());
+        if (picked < 0) return;
+        _hotlistFilter = string.Empty;
+        _hotlistIndex = missing[picked];
+    }
+
+    // ":prune": take the missing directories out of the hotlist, after asking (u puts them back). Those on a drive
+    // that is not connected are kept. Only their number is logged
+    private static void PruneHotlist()
+    {
+        var check = new MissingPlaces.Checker();
+        var (prune, kept) = MissingPlaces.Sort(MissingHotlist(check),
+            i => check.OnAbsentDrive(DirectoryHotlist.Items[i].Path));
+        if (prune.Count == 0)
+        {
+            _hotlistMessage = MissingPlaces.NothingToPrune(kept.Count);
+            return;
+        }
+
+        DrawHotlist(true);
+        if (!MissingPlaces.Confirm(DialogText.CaptionsHotlist, prune.Count, kept.Count, true)) return;
+        _hotlistRemoved = DirectoryHotlist.RemoveMany(prune);
+        EventLog.Add(DialogText.LogFile + "Hotlist prune: " + prune.Count);
+        _hotlistFilter = string.Empty;
+        _hotlistMessage = Lang.F("Directories removed from the hotlist: {0} (u: Undo)", prune.Count);
+        SaveHotlist();
     }
 
     // Empty the list, after asking
@@ -435,6 +519,9 @@ internal static partial class FileExplorer
     private static int _shownHotlistTop = -1;
     private static int _shownHotlistIndex = -1;
 
+    // The columns of the lines between the columns of the list (none when it is empty)
+    private static int[] _hotlistLines = Array.Empty<int>();
+
     private static void DrawHotlist(bool all)
     {
         if (_hotlistIndex < _hotlistTop) _hotlistTop = _hotlistIndex;
@@ -466,15 +553,24 @@ internal static partial class FileExplorer
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(new string('-', Init.LineWidth - 1));
 
-        // The names in a column, followed by the paths
+        // The columns: the names, and the paths (a directory that is gone: "(missing)" at the end), with a line
+        // between them and their labels in the divider line (as in the favorites)
         var nameWidth = 0;
-        for (var row = 0; row < HistoryPageSize && _hotlistTop + row < _hotlistShown.Count; row++)
+        foreach (var number in _hotlistShown)
         {
-            nameWidth = Math.Max(nameWidth,
-                TextMetrics.WidthOf(DirectoryHotlist.Items[_hotlistShown[_hotlistTop + row]].Shown));
+            nameWidth = Math.Max(nameWidth, TextMetrics.WidthOf(DirectoryHotlist.Items[number].Shown));
         }
 
-        nameWidth = Math.Min(nameWidth, Init.LineWidth / 2 - 8);
+        nameWidth = Math.Min(nameWidth, Init.LineWidth / 2 - 8 - HotlistNumberWidth);
+        var nameLine = 3 + HotlistNumberWidth + nameWidth + 2;
+        _hotlistLines = _hotlistShown.Count > 0 ? new[] { nameLine } : Array.Empty<int>();
+        if (_hotlistShown.Count > 0)
+        {
+            DrawColumnLabels(2, new[] { (1 + HotlistNumberWidth, DialogText.ColumnName), (nameLine, DialogText.ColumnPath) },
+                _hotlistLines);
+            for (var row = 0; row < HistoryPageSize; row++) DrawColumnLine(ListTop + row, nameLine);
+        }
+
         for (var row = 0; row < HistoryPageSize && _hotlistTop + row < _hotlistShown.Count; row++)
         {
             var index = _hotlistTop + row;
@@ -488,9 +584,9 @@ internal static partial class FileExplorer
             Console.Write(" " + Tools.TruncateString(entry.Shown, nameWidth + 1, true));
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
 
-            // The path (the end of a long path is shown)
+            // The path (the end of a long path is shown), after the line
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            var column = 3 + nameWidth + 4;
+            var column = nameLine + 2;
             var missing = exists ? string.Empty : DialogText.FavoriteMissing;
             var room = Init.LineWidth - column - TextMetrics.WidthOf(missing) - 3;
             if (room > 8)
@@ -515,11 +611,16 @@ internal static partial class FileExplorer
         DrawHotlistStatus();
     }
 
+    // The width of the numbers of the rows (when they are on)
+    private static int HotlistNumberWidth => ListNumbers.Width(HotlistNumbers, _hotlistShown.Count);
+
+    // The selection pointer of a row (and before it the number of the row, when the numbers are on)
     private static void DrawHotlistPointer(int index, bool selected)
     {
         var row = index - _hotlistTop;
         if (row < 0 || row >= HistoryPageSize || index >= _hotlistShown.Count) return;
         Tools.SetCursorEx(ListTop + row, 0);
+        ListNumbers.Write(index, HotlistNumberWidth, selected);
         ConsoleColors.SetColors(selected
             ? ConsoleColors.ColorPreset.SelectorInverted
             : ConsoleColors.ColorPreset.Normal);
@@ -533,6 +634,8 @@ internal static partial class FileExplorer
         Tools.SetCursorEx(Init.LineCount - 2, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(new string('-', Init.LineWidth - 1));
+        DrawColumnEnds(Init.LineCount - 2, _hotlistLines);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         var status = " " + (_hotlistShown.Count == 0 ? 0 : _hotlistIndex + 1) + "/" + _hotlistShown.Count + " ";
         if (_listCount.Shown.Length > 0) status = " " + _listCount.Shown + status;
         if (_hotlistFilter.Length > 0) status += "/" + _hotlistFilter + " ";

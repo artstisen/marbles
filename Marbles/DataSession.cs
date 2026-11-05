@@ -51,7 +51,7 @@ internal static class DataSession
     /// The start page (a page of Configuration, or the Mode tab) shown while staying logged in: afterwards the main
     /// menu of the data file, or the login page if a data file was chosen there (that logs out)
     /// </summary>
-    /// <param name="configurationPage">The page of Configuration (0 to 3), or -1 for the Mode tab</param>
+    /// <param name="configurationPage">The page of Configuration (0 to 4), or -1 for the Mode tab</param>
     internal static void ShowStartPage(int configurationPage)
     {
         StartMenu.Open(configurationPage);

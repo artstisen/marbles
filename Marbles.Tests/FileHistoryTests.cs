@@ -27,6 +27,16 @@ public class FileHistoryTests : IDisposable
         string.Join(" ", FileHistory.Items.Select(entry => Path.GetFileName(entry.Path)));
 
     [Fact]
+    public void SeveralFiles_AreTakenOutAtOnce()
+    {
+        foreach (var name in new[] { "a", "b", "c", "d", "e" }) FileHistory.Add(In(name + ".md"), DateTime.Now);
+        Assert.Equal("e.md d.md c.md b.md a.md", Names());
+        // (the places in any order, once each, and those that are not in the list left out)
+        Assert.Equal(3, FileHistory.RemoveMany([3, 0, 1, 3, 7]));
+        Assert.Equal("c.md a.md", Names());
+    }
+
+    [Fact]
     public void ThePlaceOfTheCursor_IsALineAndColumn()
     {
         const string text = "one\ntwo three\n\nlast";

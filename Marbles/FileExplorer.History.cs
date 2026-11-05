@@ -47,6 +47,14 @@ internal static partial class FileExplorer
                 continue;
             }
 
+            if (RecentBox.IsKey(key))
+            {
+                // The latest files: the one picked is opened in the editor (a count typed before it is dropped)
+                _listCount.Take();
+                RecentBox.Open();
+                continue;
+            }
+
             // A count in front of a key: 5j 5k (5 rows), 5gg 5G (row 5). Esc only drops it
             if (_listCount.Add(key))
             {
@@ -65,10 +73,10 @@ internal static partial class FileExplorer
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read(CommandContext.History);
-                if (command is "jump" or "ju" or "jmp")
+                if (command != null && CommandLine.Name(command) is "jump" or "ju" or "jmp")
                 {
-                    // The Jump menu
-                    Jump.Open();
+                    // The Jump menu (":jump colors": that page at once)
+                    Jump.ToPage(CommandLine.Argument(command));
                     continue;
                 }
 
@@ -76,6 +84,14 @@ internal static partial class FileExplorer
                 {
                     // ":book 3": jump to bookmark 3
                     Jump.ToBookmark(CommandLine.Argument(command));
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) == "recent")
+                {
+                    // The latest files (the list drawn first: the box of commands has just been taken away)
+                    DrawHistory(true);
+                    RecentBox.Open();
                     continue;
                 }
 
@@ -116,6 +132,19 @@ internal static partial class FileExplorer
                         break;
                     case "clear":
                         ClearHistory();
+                        break;
+                    case "missing":
+                        ShowMissingHistory();
+                        break;
+                    case "prune":
+                        PruneHistory();
+                        break;
+                    case "number":
+                    case "nonumber":
+                        // The numbers of the rows on or off (kept in the settings)
+                        HistoryNumbers = command == "number";
+                        _historyMessage = HistoryNumbers ? DialogText.LineNumbersOn : DialogText.LineNumbersOff;
+                        FileIo.SaveSettings();
                         break;
                     default:
                         CommandLine.ShowUnknown(command);
@@ -302,6 +331,53 @@ internal static partial class FileExplorer
         SaveHistory();
     }
 
+    // The numbers of the files of the history that are not there (each drive looked at once by the checker)
+    private static List<int> MissingHistory(MissingPlaces.Checker check) => Enumerable.Range(0, FileHistory.Items.Count)
+        .Where(i => check.IsMissing(FileHistory.Items[i].Path, true)).ToList();
+
+    // ":missing": the missing files in a box. The one picked is selected in the list
+    private static void ShowMissingHistory()
+    {
+        var check = new MissingPlaces.Checker();
+        var missing = MissingHistory(check);
+        if (missing.Count == 0)
+        {
+            _historyMessage = MissingPlaces.NothingMissing;
+            return;
+        }
+
+        // (the list drawn first: the box of commands has just been taken away)
+        DrawHistory(true);
+        var picked = MissingPlaces.Pick(missing.Select(i => FileHistory.Items[i].Path)
+            .Select(path => (System.IO.Path.GetFileName(path), path, check.OnAbsentDrive(path, true))).ToList());
+        if (picked < 0) return;
+        _historyFilter = string.Empty;
+        FilterHistory();
+        _historyIndex = Math.Max(0, _historyShown.IndexOf(missing[picked]));
+    }
+
+    // ":prune": take the missing files out of the history, after asking. Those on a drive that is not connected are
+    // kept. Only their number is logged
+    private static void PruneHistory()
+    {
+        var check = new MissingPlaces.Checker();
+        var (prune, kept) = MissingPlaces.Sort(MissingHistory(check),
+            i => check.OnAbsentDrive(FileHistory.Items[i].Path, true));
+        if (prune.Count == 0)
+        {
+            _historyMessage = MissingPlaces.NothingToPrune(kept.Count);
+            return;
+        }
+
+        DrawHistory(true);
+        if (!MissingPlaces.Confirm(DialogText.CaptionsFileHistory, prune.Count, kept.Count, false)) return;
+        FileHistory.RemoveMany(prune);
+        EventLog.Add(DialogText.LogFile + "History prune: " + prune.Count);
+        _historyFilter = string.Empty;
+        _historyMessage = Lang.F("Files removed from the history: {0}", prune.Count);
+        SaveHistory();
+    }
+
     // Empty the history, after asking
     private static void ClearHistory()
     {
@@ -343,6 +419,9 @@ internal static partial class FileExplorer
 
     private const int HistoryTimeWidth = 16; // The width of "2026-10-10 20:45"
 
+    // The columns of the lines between the columns of the list (none when it is empty)
+    private static int[] _historyLines = Array.Empty<int>();
+
     private static void DrawHistory(bool all)
     {
         if (_historyIndex < _historyTop) _historyTop = _historyIndex;
@@ -374,15 +453,33 @@ internal static partial class FileExplorer
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(new string('-', Init.LineWidth - 1));
 
-        // The names in a column, followed by the directory and the time the file was opened
+        // The columns: the names (with a * after a favorite), the directories they are in, and the time each was
+        // opened, with lines between them and their labels in the divider line (as in the favorites)
         var nameWidth = 0;
-        for (var row = 0; row < HistoryPageSize && _historyTop + row < _historyShown.Count; row++)
+        foreach (var number in _historyShown)
         {
-            var path = FileHistory.Items[_historyShown[_historyTop + row]].Path;
-            nameWidth = Math.Max(nameWidth, System.IO.Path.GetFileName(path).Length);
+            nameWidth = Math.Max(nameWidth, System.IO.Path.GetFileName(FileHistory.Items[number].Path).Length);
         }
 
-        nameWidth = Math.Min(nameWidth, Init.LineWidth / 2 - 8);
+        nameWidth = Math.Min(nameWidth, Init.LineWidth / 2 - 8 - HistoryNumberWidth);
+        var infoWidth = Math.Max(HistoryTimeWidth, Math.Max(TextMetrics.WidthOf(DialogText.FavoriteMissing),
+            TextMetrics.WidthOf(DialogText.ColumnOpened) + 2));
+        var nameLine = 3 + HistoryNumberWidth + nameWidth + 4;
+        var infoLine = Init.LineWidth - 2 - infoWidth - 1;
+        _historyLines = _historyShown.Count > 0 ? new[] { nameLine, infoLine } : Array.Empty<int>();
+        if (_historyShown.Count > 0)
+        {
+            DrawColumnLabels(2, new[]
+            {
+                (1 + HistoryNumberWidth, DialogText.ColumnName), (nameLine, DialogText.ColumnPath),
+                (infoLine, DialogText.ColumnOpened)
+            }, _historyLines);
+            for (var row = 0; row < HistoryPageSize; row++)
+            {
+                foreach (var line in _historyLines) DrawColumnLine(ListTop + row, line);
+            }
+        }
+
         for (var row = 0; row < HistoryPageSize && _historyTop + row < _historyShown.Count; row++)
         {
             var index = _historyTop + row;
@@ -403,10 +500,10 @@ internal static partial class FileExplorer
                 Console.Write(" *");
             }
 
-            // The directory it is in (the end of a long path is shown)
+            // The directory it is in (the end of a long path is shown), between the lines
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            var column = 3 + nameWidth + 4;
-            var room = Init.LineWidth - column - HistoryTimeWidth - 3;
+            var column = nameLine + 2;
+            var room = infoLine - 1 - column;
             if (room > 8)
             {
                 var directory = System.IO.Path.GetDirectoryName(entry.Path) ?? string.Empty;
@@ -426,11 +523,16 @@ internal static partial class FileExplorer
         DrawHistoryStatus();
     }
 
+    // The width of the numbers of the rows (when they are on)
+    private static int HistoryNumberWidth => ListNumbers.Width(HistoryNumbers, _historyShown.Count);
+
+    // The selection pointer of a row (and before it the number of the row, when the numbers are on)
     private static void DrawHistoryPointer(int index, bool selected)
     {
         var row = index - _historyTop;
         if (row < 0 || row >= HistoryPageSize || index >= _historyShown.Count) return;
         Tools.SetCursorEx(ListTop + row, 0);
+        ListNumbers.Write(index, HistoryNumberWidth, selected);
         ConsoleColors.SetColors(selected
             ? ConsoleColors.ColorPreset.SelectorInverted
             : ConsoleColors.ColorPreset.Normal);
@@ -444,6 +546,8 @@ internal static partial class FileExplorer
         Tools.SetCursorEx(Init.LineCount - 2, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(new string('-', Init.LineWidth - 1));
+        DrawColumnEnds(Init.LineCount - 2, _historyLines);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         var status = " " + (_historyShown.Count == 0 ? 0 : _historyIndex + 1) + "/" + _historyShown.Count + " ";
         if (_listCount.Shown.Length > 0) status = " " + _listCount.Shown + status;
         if (_historyFilter.Length > 0) status += "/" + _historyFilter + " ";

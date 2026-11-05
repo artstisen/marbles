@@ -75,6 +75,28 @@ public class HotlistTests : IDisposable
     }
 
     [Fact]
+    public void SeveralRemoved_ArePutBackInTheirPlaces_ButNotOneThatIsThereAgain()
+    {
+        foreach (var name in new[] { "a", "b", "c", "d", "e", "f" }) DirectoryHotlist.Add(In(name));
+        // (the places in any order, and once each)
+        var removed = DirectoryHotlist.RemoveMany([4, 1, 3, 1, 9]);
+        Assert.Equal(new[] { 1, 3, 4 }, removed.Select(entry => entry.Index));
+        Assert.Equal(new[] { In("a"), In("c"), In("f") }, Paths());
+        Assert.Equal(3, DirectoryHotlist.PutBack(removed).Count);
+        Assert.Equal(new[] { In("a"), In("b"), In("c"), In("d"), In("e"), In("f") }, Paths());
+        // One of them added again before they are put back: it stays where it was added, and the others go back
+        removed = DirectoryHotlist.RemoveMany([1, 3, 4]);
+        DirectoryHotlist.Add(In("d"));
+        var back = DirectoryHotlist.PutBack(removed);
+        Assert.Equal(new[] { In("b"), In("e") }, back.Select(entry => entry.Path));
+        Assert.Equal(new[] { In("a"), In("b"), In("c"), In("e"), In("f"), In("d") }, Paths());
+        // A full list takes none back
+        removed = DirectoryHotlist.RemoveMany([0]);
+        for (var i = 0; DirectoryHotlist.Items.Count < DirectoryHotlist.MaxCount; i++) DirectoryHotlist.Add(In("more" + i));
+        Assert.Empty(DirectoryHotlist.PutBack(removed));
+    }
+
+    [Fact]
     public void ADirectory_CanBeShownWithANameOfItsOwn_KeptAfterATab()
     {
         DirectoryHotlist.Add(In("a"));

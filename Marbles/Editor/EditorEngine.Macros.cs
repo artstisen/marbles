@@ -63,6 +63,11 @@ internal sealed partial class EditorEngine
     }
 
     /// <summary>
+    /// The lines recorded so far, while recording goes on (to edit them before the macro is saved)
+    /// </summary>
+    internal List<string> RecordedLines() => MacroLanguage.ToLines(_macroCommands);
+
+    /// <summary>
     /// A macro played by the host while recording (picked in the list of ":macro"): recorded as "play name"
     /// </summary>
     internal void RecordPlay(string name)

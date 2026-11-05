@@ -488,6 +488,8 @@ internal static class DialogText
     public static string CompleteChooseKeys => Lang.T("Tab Choose");
     public static string CompleteManyKeys => Lang.T("Tab Next | Enter Use");
     public static string PeekHint => Lang.T("Peek: Esc closes, Enter opens the file");
+    public static string PeekFocusHint => Lang.T("Peek: Tab or Esc goes back to the list, Enter opens the file");
+    public static string FilePeekKeys => Lang.T("j/k Peek next | Tab Into peek | l Open | V Esc End peek");
     public static string PeekReadOnly => Lang.T("Peek: read only (Enter opens the file)");
     public static string PeekSelectFile => Lang.T("Select a file to peek at");
     public static string PeekNotText => Lang.T("Not a text file");
@@ -506,6 +508,14 @@ internal static class DialogText
     public static string DeleteDataFileNote => Lang.T("A Marbles data file with your notes. It cannot be recovered");
     public static string DeleteEmptyDirectoryNote => Lang.T("The directory is empty");
     public static string FileItemDeleted => Lang.T("Deleted: ");
+
+    // Deleting to the trash ("trash" in the data directory)
+    public static string TrashNamed => Lang.T("Move \"{0}\" to the trash?");
+    public static string TrashFileNote => Lang.T("It can be found again with :trash");
+    public static string TrashDataFileNote => Lang.T("A Marbles data file with your notes, still encrypted in the trash");
+    public static string TrashNotPossible => Lang.T("It cannot be moved to the trash");
+    public static string FileItemTrashed => Lang.T("Moved to the trash: ");
+    public static string TrashEmpty => Lang.T("The trash is empty");
     public static string FileCopyTo => Lang.T("Copy to: ");
     public static string FileMoveTo => Lang.T("Move to: ");
     public static string FileCopied => Lang.T("Copied to ");
@@ -610,6 +620,12 @@ internal static class DialogText
     public static string FavoriteAdded => Lang.T("Added to the favorites");
     public static string FavoriteRemoved => Lang.T("Removed from the favorites");
     public static string FavoriteMissing => Lang.T("(missing)");
+    // The labels of the columns of the lists of the file browser (favorites, history, hotlist, search results)
+    public static string ColumnName => Lang.T("Name");
+    public static string ColumnPath => Lang.T("Path");
+    public static string ColumnOpened => Lang.T("Opened");
+    public static string ColumnLine => Lang.T("Line");
+    public static string ColumnInfo => Lang.T("Info");
     public static string FavoriteMoveFiltered => Lang.T("Remove the filter (Esc) to move favorites and add folders");
     public static string FavoriteNewFolder => Lang.T("New folder");
     public static string FavoriteNoFolder => Lang.T("(No folder)");

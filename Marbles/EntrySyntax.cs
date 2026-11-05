@@ -3,7 +3,7 @@
 /// <summary>
 /// The syntax highlighting of an entry (Markdown, HTML ...), kept as a tag (one letter) in the options of the entry,
 /// as the favorite, pinned and color tags: "m" Markdown, "w" HTML, "c" CSS, "k" JavaScript, "n" JSON, "x" XML,
-/// "d" Diff, "s" C#, "q" PHP.
+/// "d" Diff, "s" C#, "q" PHP, "g" INI.
 /// The letters are not used by the other tags, so earlier versions of Marbles leave them alone.
 /// </summary>
 internal static class EntrySyntax
@@ -18,7 +18,8 @@ internal static class EntrySyntax
         ('x', SyntaxType.Xml, "XML"),
         ('d', SyntaxType.Diff, "DIFF"),
         ('s', SyntaxType.CSharp, "C#"),
-        ('q', SyntaxType.Php, "PHP")
+        ('q', SyntaxType.Php, "PHP"),
+        ('g', SyntaxType.Ini, "INI")
     };
 
     /// <summary>

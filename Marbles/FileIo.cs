@@ -1316,6 +1316,18 @@ internal static class FileIo
         _tempSettings += "browsepane=" + (FileExplorer.StartPane + 1) + Entries.NewLineChar;
         // Two panes side by side in the file browser (false: one pane)
         _tempSettings += "browsedual=" + (FileExplorer.DualPane ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // The numbers of the rows of the lists (the panes of the file browser, its favorites, history, hotlist and
+        // search results, and the bookmarks of the Jump menu)
+        _tempSettings += "filenumbers=" + (FileExplorer.FileNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // Deleting in the file browser (and a data file on the login page) moves to the trash ("trash" in the data
+        // directory); false: deleted for good
+        _tempSettings += "deletetotrash=" + (FileOperations.DeleteToTrash ? DialogText.BTrue : DialogText.BFalse) +
+                         Entries.NewLineChar;
+        _tempSettings += "favoritenumbers=" + (FileExplorer.FavoriteNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        _tempSettings += "historynumbers=" + (FileExplorer.HistoryNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        _tempSettings += "hotlistnumbers=" + (FileExplorer.HotlistNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        _tempSettings += "searchnumbers=" + (FileExplorer.SearchNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        _tempSettings += "bookmarknumbers=" + (JumpMenu.BookmarkNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Stay logged into the data file while files are edited and pages shown, until logging out
         _tempSettings += "stayloggedin=" + (DataSession.StayLoggedIn ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Complete words while typing in the editor (the lists are in completions.txt)
@@ -1560,6 +1572,15 @@ internal static class FileIo
         FileExplorer.StartPane = Get("browsepane").Trim() == "2" ? 1 : 0;
         // Two panes unless turned off
         FileExplorer.DualPane = Tools.TrimToLower(Get("browsedual")) != DialogText.BFalse;
+        // The numbers of the rows of the lists: off unless turned on
+        FileExplorer.FileNumbers = Tools.TrimToLower(Get("filenumbers")) == DialogText.BTrue;
+        // Deleting to the trash: on unless turned off
+        FileOperations.DeleteToTrash = Tools.TrimToLower(Get("deletetotrash")) != DialogText.BFalse;
+        FileExplorer.FavoriteNumbers = Tools.TrimToLower(Get("favoritenumbers")) == DialogText.BTrue;
+        FileExplorer.HistoryNumbers = Tools.TrimToLower(Get("historynumbers")) == DialogText.BTrue;
+        FileExplorer.HotlistNumbers = Tools.TrimToLower(Get("hotlistnumbers")) == DialogText.BTrue;
+        FileExplorer.SearchNumbers = Tools.TrimToLower(Get("searchnumbers")) == DialogText.BTrue;
+        JumpMenu.BookmarkNumbers = Tools.TrimToLower(Get("bookmarknumbers")) == DialogText.BTrue;
         // Off unless turned on
         DataSession.StayLoggedIn = Tools.TrimToLower(Get("stayloggedin")) == DialogText.BTrue;
         // Completing words while typing: off unless turned on

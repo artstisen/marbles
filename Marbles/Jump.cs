@@ -101,19 +101,34 @@ internal static class JumpPages
 {
     internal static readonly IReadOnlyList<string> Ids = new[]
     {
-        "config/general", "config/layout", "config/editor", "config/system", "schemes", "logos", "clipboard",
-        "snippets", "completions", "help", "about"
+        "config/general", "config/layout", "config/editor", "config/lists", "config/system", "schemes", "logos",
+        "clipboard", "snippets", "completions", "help", "about"
     };
 
+    // The name of a page in ":jump general"
+    private static string NameOf(string id) => id == "schemes" ? "colors" : id[(id.IndexOf('/') + 1)..];
+
     /// <summary>
-    /// The page of the Configuration tab (0 to 3) of a page, or -1 if it is not one
+    /// The names of the pages in ":jump general" (English in all languages, as commands)
+    /// </summary>
+    internal static IEnumerable<string> Names => Ids.Select(NameOf);
+
+    /// <summary>
+    /// The page with a name given to ":jump" (upper and lower case alike), or null if there is none
+    /// </summary>
+    internal static string? IdOf(string name) =>
+        Ids.FirstOrDefault(id => NameOf(id).Equals(name.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// The page of the Configuration tab (0 to 4) of a page, or -1 if it is not one
     /// </summary>
     internal static int ConfigurationPage(string id) => id switch
     {
         "config/general" => 0,
         "config/layout" => 1,
         "config/editor" => 2,
-        "config/system" => 3,
+        "config/lists" => 3,
+        "config/system" => 4,
         _ => -1
     };
 
@@ -127,6 +142,7 @@ internal static class JumpPages
             "config/general" => Lang.F("{0}: {1}", DialogText.StartConfiguration, Lang.T("General")),
             "config/layout" => Lang.F("{0}: {1}", DialogText.StartConfiguration, Lang.T("Layout")),
             "config/editor" => Lang.F("{0}: {1}", DialogText.StartConfiguration, Lang.T("Editor")),
+            "config/lists" => Lang.F("{0}: {1}", DialogText.StartConfiguration, Lang.T("Lists")),
             "config/system" => Lang.F("{0}: {1}", DialogText.StartConfiguration, Lang.T("System")),
             "schemes" => DialogText.CaptionsColorScheme,
             "logos" => DialogText.CaptionsLogos,
@@ -457,6 +473,65 @@ internal static class Jump
 
         if (beforeLeaving != null && !beforeLeaving()) return;
         Remember(target);
+        Pending = target;
+        Navigation.Wait();
+    }
+
+    /// <summary>
+    /// ":jump general": go to a page of Marbles by its name (as if picked in the Jump menu): a page of Configuration
+    /// leaves the page the jump is made from (and the notes, unless staying logged in), the others are opened on top
+    /// of it. ":jump" alone opens the Jump menu. A name that is not known is told about in a box, with the names
+    /// </summary>
+    /// <param name="argument">What follows ":jump"</param>
+    /// <param name="beforeLeaving">As for Open</param>
+    /// <param name="here">As for Open</param>
+    internal static void ToPage(string argument, Func<bool>? beforeLeaving = null, Func<JumpTarget, bool>? here = null)
+    {
+        argument = argument.Trim();
+        if (argument.Length == 0)
+        {
+            Open(beforeLeaving, here);
+            return;
+        }
+
+        if (JumpPages.IdOf(argument) is not { } page)
+        {
+            ChoiceBox.Forget();
+            ChoiceBox.Message(DialogText.CaptionsJump, Lang.F("No page named {0}", argument),
+                string.Join(", ", JumpPages.Names));
+            return;
+        }
+
+        var target = new JumpTarget(JumpKind.Page, page);
+        if (here != null && here(target))
+        {
+            Remember(target);
+            return;
+        }
+
+        if (OpensInPlace(target))
+        {
+            Remember(target);
+            OpenInPlace(target.Target);
+            return;
+        }
+
+        if (beforeLeaving != null && !beforeLeaving()) return;
+        Remember(target);
+        Pending = target;
+        Navigation.Wait();
+    }
+
+    /// <summary>
+    /// Go to a place picked elsewhere than in the Jump menu (the Recent files box). It is not kept in the jump
+    /// history. The page is left as for a jump from the menu (a data file that is logged in to is logged out of, unless
+    /// staying logged in). Returns when the page is not left (beforeLeaving says to stay)
+    /// </summary>
+    /// <param name="target">The place</param>
+    /// <param name="beforeLeaving">Asked before the page is left (false: stay)</param>
+    internal static void ToPlace(JumpTarget target, Func<bool>? beforeLeaving = null)
+    {
+        if (beforeLeaving != null && !beforeLeaving()) return;
         Pending = target;
         Navigation.Wait();
     }

@@ -432,6 +432,11 @@ public static class FileActions
     {
         if (!FileIo.IsCurrentFileValid()) return false;
         _oldFileName = FileIo.GetFileName();
+        // To the trash (still encrypted), unless that is turned off or the data file is in the trash already
+        // (deleting there is for good)
+        var dataFile = Path.GetFullPath(Path.Combine(FileIo.GetDataAndSubFolder(), FileIo.GetFileName()));
+        var toTrash = FileOperations.DeleteToTrash &&
+                      FileOperations.CanTrash(dataFile, FileOperations.TrashDirectory);
         // (only Enter answers the questions: text typed by mistake cannot answer them)
         if (ChoiceBox.ConfirmGuarded(DialogText.DeleteFile, DialogText.DeleteFileYn,
                 DialogText.FileColon + " " + FileIo.GetFileName()))
@@ -439,20 +444,29 @@ public static class FileActions
             // Reconfirm
             if (ChoiceBox.ConfirmGuarded(DialogText.DeleteFile, DialogText.DeleteEntryYnConfirm,
                     DialogText.NameColon + " " + FileIo.GetFileName() + Entries.NewLineCharString + " " +
-                    DialogText.CanNotBeUndone))
+                    (toTrash ? DialogText.TrashFileNote : DialogText.CanNotBeUndone)))
             {
                 // Check if the file exists
                 if (File.Exists(Path.Combine(FileIo.GetDataAndSubFolder(), FileIo.GetFileName())))
                 {
                     try
                     {
-                        // Delete the file
-                        File.Delete(Path.Combine(FileIo.GetDataAndSubFolder(), FileIo.GetFileName()));
-                        // Check that the file is deleted
-                        if (!File.Exists(Path.Combine(FileIo.GetDataAndSubFolder(), FileIo.GetFileName())))
+                        // Delete the file: to the trash, or for good
+                        if (toTrash)
                         {
-                            Menu.StatusMessage(DialogText.FileDeleted, true, true, true, DialogText.DeleteFile,
-                                string.Empty, false);
+                            var result = FileOperations.MoveToTrash(dataFile, FileOperations.TrashDirectory, out _);
+                            if (result != DialogText.Success) throw new IOException(result);
+                        }
+                        else
+                        {
+                            File.Delete(dataFile);
+                        }
+
+                        // Check that the file is deleted
+                        if (!File.Exists(dataFile))
+                        {
+                            Menu.StatusMessage(toTrash ? DialogText.FileItemTrashed + _oldFileName : DialogText.FileDeleted,
+                                true, true, true, DialogText.DeleteFile, string.Empty, false);
                             // And set the filename to the first in the list
                             if (!string.IsNullOrWhiteSpace(FileBrowser.GetFirstDataFileName()))
                             {
@@ -463,7 +477,7 @@ public static class FileActions
                                 // Or set default name
                                 FileIo.SetDefaultFileName();
                             }
-                            Init.Log("Delete file: " + _oldFileName, false);
+                            Init.Log((toTrash ? "Delete file (to the trash): " : "Delete file: ") + _oldFileName, false);
                             return true;
                         }
                     }

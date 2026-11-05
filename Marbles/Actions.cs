@@ -23,6 +23,12 @@ internal static class Actions
                 Jump.Open();
                 Menu.DrawTopMenu(false, true, false);
             }
+            else if (RecentBox.IsKey(_c))
+            {
+                // The latest files: the one picked is opened as a jump (the data file is left as for one)
+                RecentBox.Open();
+                Menu.DrawTopMenu(false, true, false);
+            }
             else if (_c.KeyChar == ':')
             {
                 // Command line
@@ -291,7 +297,7 @@ internal static class Actions
         if (RunCommonCommand(command)) return;
         // Only some commands have something after them (":new Title", ":scheme Name")
         if (CommandLine.Argument(command).Length > 0 && command != "size auto" &&
-            CommandLine.Name(command) is not ("new" or "language" or "scheme" or "logo" or "book"))
+            CommandLine.Name(command) is not ("new" or "language" or "scheme" or "logo" or "book" or "jump" or "ju" or "jmp"))
         {
             CommandLine.ShowUnknown(command);
             Menu.DrawTopMenu(false, true, false);
@@ -316,12 +322,18 @@ internal static class Actions
             case "jump":
             case "ju":
             case "jmp":
-                Jump.Open();
+                // ":jump colors": that page at once
+                Jump.ToPage(CommandLine.Argument(command));
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "book":
                 // ":book 3": jump to bookmark 3
                 Jump.ToBookmark(CommandLine.Argument(command));
+                Menu.DrawTopMenu(false, true, false);
+                break;
+            case "recent":
+                // The latest files, and the menu again (drawing it waits for the next key)
+                RecentBox.Open();
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "config":
@@ -542,12 +554,16 @@ internal static class Actions
             case "jump":
             case "ju":
             case "jmp":
-                // The list is shown again afterwards
-                Jump.Open();
+                // The list is shown again afterwards (":jump colors": that page at once)
+                Jump.ToPage(CommandLine.Argument(command));
                 break;
             case "book":
                 // ":book 3": jump to bookmark 3 (the list is shown again afterwards)
                 Jump.ToBookmark(CommandLine.Argument(command));
+                break;
+            case "recent":
+                // The latest files (the list is shown again afterwards)
+                RecentBox.Open();
                 break;
             case "readonly":
             case "ro":
@@ -1264,8 +1280,14 @@ internal static class Actions
         ConsoleColors.Monochrome = false;
         SyntaxHighlighter.ColorFiles = true;
         FileExplorer.DualPane = true;
-        TextArea.LineNumbers = false;
-        TextArea.WordWrap = true;
+        FileExplorer.FileNumbers = false;
+        FileOperations.DeleteToTrash = true;
+        FileExplorer.FavoriteNumbers = false;
+        FileExplorer.HistoryNumbers = false;
+        FileExplorer.HotlistNumbers = false;
+        FileExplorer.SearchNumbers = false;
+        JumpMenu.BookmarkNumbers = false;
+        TextArea.LineNumbers = false;        TextArea.WordWrap = true;
         TextArea.ShowWhitespace = false;
         EditorEngine.MarksApostrophe = false;
         CommandList.Enabled = true;
@@ -2623,6 +2645,14 @@ internal static class Actions
         {
             // The Jump menu, and the list again
             Jump.Open();
+            ExitNumericSelect(pageNumber, _resultIndex);
+            return;
+        }
+
+        if (RecentBox.IsKey(_c))
+        {
+            // The latest files, and the list again
+            RecentBox.Open();
             ExitNumericSelect(pageNumber, _resultIndex);
             return;
         }

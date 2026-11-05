@@ -98,8 +98,9 @@ public class JumpTests : IDisposable
     [Fact]
     public void ThePages_OfTheConfigurationTab_AreLeft_TheOthersOpenOnTop()
     {
-        Assert.Equal(new[] { 0, 1, 2, 3 }, new[] { "config/general", "config/layout", "config/editor", "config/system" }
-            .Select(JumpPages.ConfigurationPage));
+        Assert.Equal(new[] { 0, 1, 2, 3, 4 },
+            new[] { "config/general", "config/layout", "config/editor", "config/lists", "config/system" }
+                .Select(JumpPages.ConfigurationPage));
         Assert.Equal(-1, JumpPages.ConfigurationPage("schemes"));
         foreach (var page in new[] { "schemes", "logos", "clipboard", "snippets", "completions", "help", "about" })
         {
@@ -108,7 +109,7 @@ public class JumpTests : IDisposable
 
         Assert.False(Jump.OpensInPlace(new JumpTarget(JumpKind.Page, "config/system")));
         Assert.False(Jump.OpensInPlace(new JumpTarget(JumpKind.File, In("a.md"))));
-        Assert.Equal(11, JumpPages.Ids.Count);
+        Assert.Equal(12, JumpPages.Ids.Count);
         Assert.All(JumpPages.Ids, id => Assert.NotEqual(id, JumpPages.Label(id)));
     }
 
@@ -179,5 +180,31 @@ public class JumpTests : IDisposable
         Assert.Equal(EditorRequest.Jump, editor.HandleKey(new ConsoleKeyInfo('\u000f', ConsoleKey.O, false, false, true)));
         Assert.Equal(EditorMode.Normal, editor.Mode);
         Assert.Equal("one two", editor.Buffer.GetText());
+    }
+
+    [Fact]
+    public void JumpWithAName_FindsThePage()
+    {
+        // ":jump colors", ":jump general" ...: the names are English, upper and lower case alike
+        Assert.Equal(new[]
+        {
+            "general", "layout", "editor", "lists", "system", "colors", "logos", "clipboard", "snippets", "completions",
+            "help", "about"
+        }, JumpPages.Names);
+        Assert.Equal("schemes", JumpPages.IdOf("colors"));
+        Assert.Equal("config/lists", JumpPages.IdOf("Lists"));
+        Assert.Equal("config/general", JumpPages.IdOf(" general "));
+        Assert.Null(JumpPages.IdOf("schemes"));
+        Assert.Null(JumpPages.IdOf("menu"));
+        // Tab after ":jump " completes the names
+        CommandCompletion.Arguments["jump"] = () => JumpPages.Names;
+        Assert.Equal("jump colors", new CommandCompletion(CommandContext.Start).Next("jump co", true));
+        CommandCompletion.Arguments.Remove("jump");
+        // In the editor: the name is given to the host with the request ("jump" alone: the menu)
+        var editor = new EditorEngine("text", 40, 10, false);
+        Assert.Equal(EditorRequest.Jump, editor.Type(":jump colors<CR>"));
+        Assert.Equal("colors", editor.JumpArgument);
+        Assert.Equal(EditorRequest.Jump, editor.Type(":ju<CR>"));
+        Assert.Equal(string.Empty, editor.JumpArgument);
     }
 }

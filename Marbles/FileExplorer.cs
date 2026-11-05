@@ -44,6 +44,18 @@ internal static partial class FileExplorer
     /// </summary>
     internal static bool DualPane { get; set; } = true;
 
+    /// <summary>
+    /// The rows of the panes are numbered, as 12gg counts them ("..": 1). Settings "filenumbers", "favoritenumbers",
+    /// "historynumbers", "hotlistnumbers" and "searchnumbers" for the panes, the favorites, the history, the hotlist
+    /// and the search results (the favorites, the history and the hotlist also in the Jump menu), off unless turned on
+    /// </summary>
+    internal static bool FileNumbers { get; set; }
+
+    internal static bool FavoriteNumbers { get; set; }
+    internal static bool HistoryNumbers { get; set; }
+    internal static bool HotlistNumbers { get; set; }
+    internal static bool SearchNumbers { get; set; }
+
     // A list of the content of a directory
     private sealed class Pane
     {
@@ -237,6 +249,8 @@ internal static partial class FileExplorer
         }
         finally
         {
+            // A jump from a peek (Ctrl+O, Ctrl+K): the panes as they were before it
+            ForgetPeek();
             if (mode == BrowseMode.Edit)
             {
                 _browsing = false;
@@ -286,8 +300,17 @@ internal static partial class FileExplorer
     private static string? BrowseLoop(BrowseMode mode, string? jumpFile, (int Line, int Column)? jumpAt)
     {
         Init.ApplyAutoSize();
-        Draw(true);
-        if (Tools.TakeRedrawRequest()) Draw(true);
+        // A jump to a text file: the browser is only the way to the editor, so it is drawn when the editor is closed
+        // (or when the file could not be opened), not shown for a moment before the editor. A data file is selected
+        // over the browser (it can ask to copy the data file to the data directory)
+        var straightToEditor = mode == BrowseMode.Edit && jumpFile != null && File.Exists(jumpFile) &&
+                               !jumpFile.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase);
+        if (!straightToEditor)
+        {
+            Draw(true);
+            if (Tools.TakeRedrawRequest()) Draw(true);
+        }
+
         if (mode == BrowseMode.Edit && jumpFile != null && File.Exists(jumpFile))
         {
             var info = new FileInfo(jumpFile);
@@ -335,10 +358,25 @@ internal static partial class FileExplorer
                 continue;
             }
 
+            // A key that uses the other pane (copy, move, compare ...) ends the peek first
+            if (_peeking && !KeepsPeek(key)) StopPeek();
             if (_mode == BrowseMode.Edit && _pending == null && Jump.IsKey(key))
             {
                 // The Jump menu
                 Jump.Open();
+            }
+            else if (_mode == BrowseMode.Edit && _pending == null && RecentBox.IsKey(key))
+            {
+                // The latest files: the one picked is opened in the editor
+                RecentBox.Open();
+            }
+            else if (_peeking && key.Key == ConsoleKey.Escape)
+            {
+                StopPeek();
+            }
+            else if (_peeking && key.Key == ConsoleKey.Tab)
+            {
+                FocusPeek();
             }
             else if (_pending != null && key.Key is ConsoleKey.Escape or ConsoleKey.Q)
             {
@@ -355,6 +393,8 @@ internal static partial class FileExplorer
                 var command = CommandLine.Read(':', false,
                     _mode == BrowseMode.Edit ? CommandContext.Files : CommandContext.FilePicker);
                 var name = command == null ? string.Empty : CommandLine.Name(command).ToLowerInvariant();
+                // A command ends the peek first (":peek" ends it itself)
+                if (_peeking && command != null && name != "peek") StopPeek();
                 if (_pending != null && command != null && name is not ("cd" or "home" or "data" or "h" or "help" or "panes"))
                 {
                     // Only going to a directory while the place to copy or move to is selected
@@ -401,9 +441,29 @@ internal static partial class FileExplorer
                     // the data files are in a subfolder of it
                     ChangeDirectory(System.IO.Path.GetFullPath(FileIo.GetDataDirectoryName()), null);
                 }
+                else if (name is "trash" && _mode == BrowseMode.Edit)
+                {
+                    // The trash in the data directory: what was deleted (deleting there is for good, M moves a file
+                    // back)
+                    if (Directory.Exists(FileOperations.TrashDirectory))
+                    {
+                        ChangeDirectory(FileOperations.TrashDirectory, null);
+                    }
+                    else
+                    {
+                        _message = DialogText.TrashEmpty;
+                    }
+                }
                 else if (name is "h" or "help")
                 {
                     Tools.WriteEditorHelp(false, Tools.HelpTopic.Files);
+                }
+                else if (name is "number" or "nonumber")
+                {
+                    // The numbers of the rows of the panes on or off (kept in the settings)
+                    FileNumbers = name == "number";
+                    _message = FileNumbers ? DialogText.LineNumbersOn : DialogText.LineNumbersOff;
+                    FileIo.SaveSettings();
                 }
                 else if (name == "cd" && command != null)
                 {
@@ -566,6 +626,8 @@ internal static partial class FileExplorer
             if (Tools.TakeRedrawRequest()) Draw(true);
         }
 
+        // (Shown again with the panes as they were)
+        StopPeek();
         return _picked;
     }
 
@@ -688,6 +750,33 @@ internal static partial class FileExplorer
         pane.Index = Math.Max(0, select == null ? 0 : items.FindIndex(i => i.Name == select || i.Path == select));
         pane.Top = 0;
         return true;
+    }
+
+    // The names in a directory for the peek, as a pane would show them (LoadItems, without a filter): directories
+    // first (ending in "/"), then the files, both sorted by name, at most "count" lines. When it cannot be read: why
+    private static List<string> PeekContents(string directory, int count)
+    {
+        try
+        {
+            var info = new DirectoryInfo(directory);
+            var names = info.EnumerateDirectories().Where(d => IsShown(d, string.Empty))
+                .OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase).Select(d => d.Name + "/").ToList();
+            if (_mode != BrowseMode.PickDirectory)
+            {
+                names.AddRange(info.EnumerateFiles().Where(f => IsShown(f, string.Empty))
+                    .OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).Select(f => f.Name));
+            }
+
+            if (names.Count == 0) return new List<string> { Lang.T("(empty)") };
+            if (names.Count <= count) return names;
+            var shown = names.Take(count).ToList();
+            shown[^1] = Lang.F("... and {0} more", names.Count - count + 1);
+            return shown;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return new List<string> { e.Message };
+        }
     }
 
     private static bool IsShown(FileSystemInfo info, string filter)
@@ -1310,9 +1399,10 @@ internal static partial class FileExplorer
                 for (var number = 0; number < Panes.Length; number++) DrawPaneHeader(number);
             }
 
-            // Move the selection pointers
+            // Move the selection pointers (not in the pane the peek is on)
             for (var number = 0; number < shown.Length; number++)
             {
+                if (IsPeekPane(number)) continue;
                 var pane = shown[number];
                 DrawPointer(number, pane.ShownIndex, false);
                 DrawPointer(number, pane.Index, true);
@@ -1321,6 +1411,8 @@ internal static partial class FileExplorer
 
             _shownActive = _active;
             DrawStatus();
+            // The peek follows the selection
+            DrawPeek(false);
             return;
         }
 
@@ -1329,11 +1421,21 @@ internal static partial class FileExplorer
         // While the place to copy or move to is selected, the label stands out
         Menu.WriteModeLabel(_caption, string.Empty, 0, _pending != null);
         Menu.WriteNameInTopBar(false);
+        if (Unprotected && _mode == BrowseMode.Edit)
+        {
+            // Marbles' own files can be renamed, moved and deleted (":protect off"): told at the top right
+            var marker = " " + Lang.T("UNPROTECTED") + " ";
+            Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - TextMetrics.WidthOf(marker) - 1));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.WarningInverted);
+            Console.Write(marker);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        }
+
         for (var number = 0; number < shown.Length; number++)
         {
             var pane = shown[number];
             DrawPaneHeader(number);
-            for (var row = 0; row < PageSize && pane.Top + row < pane.Items.Count; row++)
+            for (var row = 0; row < PageSize && pane.Top + row < pane.Items.Count && !IsPeekPane(number); row++)
             {
                 DrawItem(number, pane, pane.Top + row);
             }
@@ -1359,7 +1461,11 @@ internal static partial class FileExplorer
         _shownActive = _active;
         _shownDual = IsDual;
         DrawStatus();
+        DrawPeek(true);
     }
+
+    // The pane the peek is shown on, instead of its list (the one without the focus)
+    private static bool IsPeekPane(int number) => _peeking && IsDual && number != _active;
 
     // The pane that is drawn as a number (a single pane is always the first)
     private static Pane ShownPane(int number) => IsDual ? Panes[number] : ActivePane;
@@ -1371,12 +1477,17 @@ internal static partial class FileExplorer
     {
         var pane = ShownPane(number);
         var (left, width) = PaneArea(number);
+        // The pane with the peek is labeled so, with the name of the file it shows, or the path of the directory. The
+        // focus is in the peek while Tab has gone into it
+        var peek = IsPeekPane(number);
+        var focused = peek ? _peekFocused : HasFocus(number) && !_peekFocused;
         // The directory (the end of a long path is shown)
         var room = width - 2;
-        var path = pane.Directory.Length == 0 ? DialogText.Drives : pane.Directory;
+        var path = peek ? PeekedDirectory() ?? (SelectedItem() is { IsDirectory: false } item ? item.Name : string.Empty)
+            : pane.Directory.Length == 0 ? DialogText.Drives : pane.Directory;
         path = TextMetrics.KeepEnd(path, room);
         Tools.SetCursorEx(1, left);
-        ConsoleColors.SetColors(HasFocus(number)
+        ConsoleColors.SetColors(focused
             ? ConsoleColors.ColorPreset.HeaderColor
             : ConsoleColors.ColorPreset.Divider);
         Console.Write(" " + path.PadRight(room));
@@ -1388,16 +1499,17 @@ internal static partial class FileExplorer
         // The label of the pane: highlighted on the one with the focus (in the attention color while the place to
         // copy or move to is selected, as the label at the top)
         Tools.SetCursorEx(2, left + 2);
-        if (HasFocus(number))
+        var label = peek ? Lang.T("PEEK") : Lang.F("PANE {0}", number + 1);
+        if (focused)
         {
             ConsoleColors.SetColors(_pending != null
                 ? ConsoleColors.ColorPreset.AttentionInverted
                 : ConsoleColors.ColorPreset.HighlightInverted);
-            Console.Write(" " + Lang.F("PANE {0}", number + 1) + " ");
+            Console.Write(" " + label + " ");
         }
         else
         {
-            Console.Write(" " + Lang.F("PANE {0}", number + 1).ToLowerInvariant() + " ");
+            Console.Write(" " + label.ToLowerInvariant() + " ");
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -1421,7 +1533,7 @@ internal static partial class FileExplorer
         var typeColumn = sizeEnd - 1 - SizeColumnWidth - TypeColumnWidth;
         var nameEnd = showType ? typeColumn - 1 : sizeEnd - SizeColumnWidth - 1;
         var name = Tools.TruncateString(item.Name + (item.IsDirectory && item.Name != ParentName ? "/" : ""),
-            Math.Max(4, nameEnd - (left + 3) - 2), true);
+            Math.Max(4, nameEnd - (left + 3) - 2 - ListNumbers.Width(FileNumbers, pane.Items.Count)), true);
         var nameColors = item.IsDirectory ? ConsoleColors.ColorPreset.HeaderColor :
             isDataFile ? ConsoleColors.ColorPreset.Favorites : ConsoleColors.ColorPreset.Normal;
         if (item.Path.Length > 0 && pane.Marks.Contains(item.Path))
@@ -1476,14 +1588,16 @@ internal static partial class FileExplorer
         return Tools.TruncateString(extension[1..].ToUpperInvariant(), TypeColumnWidth, true);
     }
 
-    // Draw (or remove) the selection pointer in front of an item of a pane, leaving the cursor after it.
-    // In the pane without the focus the pointer is not highlighted
+    // Draw (or remove) the selection pointer in front of an item of a pane, leaving the cursor after it (and before
+    // it the number of the row, when the numbers are on). In the pane without the focus the pointer is not
+    // highlighted, nor its number
     private static void DrawPointer(int number, int index, bool selected)
     {
         var pane = ShownPane(number);
         var row = index - pane.Top;
         if (row < 0 || row >= PageSize || index >= pane.Items.Count) return;
         Tools.SetCursorEx(ListTop + row, PaneArea(number).Left);
+        ListNumbers.Write(index, ListNumbers.Width(FileNumbers, pane.Items.Count), selected && HasFocus(number));
         ConsoleColors.SetColors(!selected ? ConsoleColors.ColorPreset.Normal :
             HasFocus(number) ? ConsoleColors.ColorPreset.SelectorInverted : ConsoleColors.ColorPreset.Divider);
         Console.Write(selected ? "->" : "  ");
@@ -1502,6 +1616,7 @@ internal static partial class FileExplorer
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             Console.Write(new string('-', IsDual && number == 0 ? width : Math.Min(width, Init.LineWidth - left)));
             if (IsDual && number == 0) Console.Write('+');
+            if (IsPeekPane(number)) continue;
             var status = " " + (pane.Items.Count == 0 ? 0 : pane.Index + 1) + "/" + pane.Items.Count + " ";
             if (pane.Filter.Length > 0) status += "/" + pane.Filter + " ";
             // A count being typed (5j), below the pane it moves in
@@ -1528,6 +1643,7 @@ internal static partial class FileExplorer
                     .Replace("{0}", _pending.IsMove ? DialogText.FileMoveHere : DialogText.FileCopyHere),
                 // What can be done with the marked files and directories
                 _ when ActivePane.Marks.Count > 0 => DialogText.FileMarkedKeys,
+                _ when _peeking => DialogText.FilePeekKeys,
                 _ => IsDual ? DialogText.FileBrowserDualKeys : DialogText.FileBrowserKeys
             });
         }

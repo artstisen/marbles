@@ -31,7 +31,7 @@ internal static partial class FileExplorer
                 CopySelected();
                 break;
             case ConsoleKey.V:
-                PeekSelected();
+                TogglePeek();
                 break;
             case ConsoleKey.Y:
                 DuplicateSelected();
@@ -71,14 +71,25 @@ internal static partial class FileExplorer
             case "jump":
             case "ju":
             case "jmp":
-                Jump.Open();
+                // ":jump colors": that page at once
+                Jump.ToPage(argument);
                 break;
             case "book":
                 // ":book 3": jump to bookmark 3
                 Jump.ToBookmark(argument);
                 break;
+            case "recent":
+                // The latest files, to open one (the browser drawn first: the box of commands has just been taken away)
+                Draw(true);
+                RecentBox.Open();
+                Draw(true);
+                break;
             case "peek":
-                PeekSelected();
+                TogglePeek();
+                break;
+            case "protect":
+                // ":protect off" (on): Marbles' own files can be renamed, moved and deleted, for this session
+                ProtectCommand(argument);
                 break;
             case "diff":
                 CompareFiles(argument);
@@ -187,38 +198,78 @@ internal static partial class FileExplorer
                item.Name.EndsWith(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase);
     }
 
-    // Why a file or directory cannot be renamed, moved or deleted here (null if it can): it is used by Marbles
+    /// <summary>
+    /// The protection of Marbles' own files is lifted (":protect off"): the data directory, settings.ini, the
+    /// favorites and the history can be renamed, moved and deleted. For this session only: it is on again when
+    /// Marbles starts. The data file that is logged in to stays protected
+    /// </summary>
+    internal static bool Unprotected { get; private set; }
+
+    // ":protect" (on, off, or how it is): the protection of the files Marbles uses
+    private static void ProtectCommand(string argument)
+    {
+        switch (argument.Trim().ToLowerInvariant())
+        {
+            case "off":
+                Unprotected = true;
+                EventLog.Add(DialogText.LogFile + "Protection of Marbles' files: off");
+                _message = Lang.T("Marbles' own files can be renamed, moved and deleted (until :protect on)");
+                break;
+            case "on":
+                Unprotected = false;
+                EventLog.Add(DialogText.LogFile + "Protection of Marbles' files: on");
+                _message = Lang.T("Marbles' own files are protected again");
+                break;
+            default:
+                _message = Unprotected
+                    ? Lang.T("Protection is off: Marbles' own files can be changed (:protect on)")
+                    : Lang.T("Protection is on: Marbles' own files are kept (:protect off lifts it)");
+                break;
+        }
+    }
+
+    // Why a file or directory cannot be renamed, moved or deleted here (null if it can): it is used by Marbles,
+    // unless the protection is lifted (":protect off"). The data file that is logged in to (and the directories it is
+    // in) is always kept: the notes are saved to it
     private static string? Protection(Item item)
     {
+        if (HoldsOpenDataFile(item)) return DialogText.FileUsedByMarbles;
+        return Unprotected || !UsedByMarbles(item) ? null : DialogText.FileUsedByMarbles;
+    }
+
+    // The data file that is logged in to, or a directory it is in
+    private static bool HoldsOpenDataFile(Item item)
+    {
+        if (Mode.CurrentMode == Mode.SelectedMode.Login || !DataSession.IsLoggedIn) return false;
+        var loggedIn = System.IO.Path.GetFullPath(
+            System.IO.Path.Combine(FileIo.GetDataAndSubFolder(), FileIo.GetFileName()));
+        return item.IsDirectory
+            ? FileOperations.IsInside(loggedIn, item.Path)
+            : FileOperations.SamePath(item.Path, loggedIn);
+    }
+
+    // What the question before deleting tells about a file or directory Marbles uses, and what follows
+    private static string UsedByMarblesNote(Item item)
+    {
+        return item.IsDirectory
+            ? Lang.F("Marbles uses this ({0}): its settings and lists are in it.", item.Name)
+            : Lang.F("Marbles uses this file ({0}): a new one is made when it is needed.", item.Name);
+    }
+
+    // True for a file or directory that Marbles uses: the data directory and the directories it is in (the settings
+    // and the lists would be gone), the settings, the favorites and the history
+    private static bool UsedByMarbles(Item item)
+    {
         var dataDirectory = System.IO.Path.GetFullPath(FileIo.GetDataDirectoryName());
-        // The data file that is logged in to
-        var loggedIn = Mode.CurrentMode != Mode.SelectedMode.Login && DataSession.IsLoggedIn
-            ? System.IO.Path.Combine(FileIo.GetDataAndSubFolder(), FileIo.GetFileName())
-            : null;
         if (item.IsDirectory)
         {
-            // The data directory, the directories it is in, and the directory of the data file logged in to (and
-            // those it is in): the data file would be gone when the notes are saved
             return FileOperations.SamePath(item.Path, dataDirectory) ||
-                   FileOperations.IsInside(dataDirectory, item.Path) ||
-                   (loggedIn != null && FileOperations.IsInside(System.IO.Path.GetFullPath(loggedIn), item.Path))
-                ? DialogText.FileUsedByMarbles
-                : null;
+                   FileOperations.IsInside(dataDirectory, item.Path);
         }
 
-        if (FileOperations.SamePath(item.Path, System.IO.Path.Combine(dataDirectory, FileIo.SettingsFileName)) ||
-            FileOperations.SamePath(item.Path, FileFavorites.FilePath) ||
-            FileOperations.SamePath(item.Path, FileHistory.FilePath))
-        {
-            return DialogText.FileUsedByMarbles;
-        }
-
-        if (loggedIn != null && FileOperations.SamePath(item.Path, loggedIn))
-        {
-            return DialogText.FileUsedByMarbles;
-        }
-
-        return null;
+        return FileOperations.SamePath(item.Path, System.IO.Path.Combine(dataDirectory, FileIo.SettingsFileName)) ||
+               FileOperations.SamePath(item.Path, FileFavorites.FilePath) ||
+               FileOperations.SamePath(item.Path, FileHistory.FilePath);
     }
 
     private static bool IsProtected(Item item)
@@ -528,10 +579,196 @@ internal static partial class FileExplorer
         return kept + "\n" + DialogText.PeekMore;
     }
 
-    // ":peek" or V: the selected file shown read-only in the other pane (two panes are shown for it, if one is
-    // shown). Enter opens it in the editor where the cursor is; Esc goes back to the browser
-    private static void PeekSelected()
+    // Peek (V or ":peek"): the selected file is shown read-only in the other pane (two panes are shown for it, if
+    // one is shown), and the focus stays in the list: the peek follows the selection, so files are gone through
+    // with j and k. Tab goes into the peek (to scroll and search in it; Tab or Esc goes back to the list, Enter opens
+    // the file in the editor where the cursor is). A directory (also "..") is shown as the names in it, and Tab
+    // opens it in the other pane instead. V or Esc ends the peek, and so do the keys that use the other pane. A data
+    // file is never shown (it is encrypted): the peek tells so
+    private static bool _peeking;
+    private static bool _peekWasDual;
+
+    // The file the peek shows (null: it is drawn again)
+    private static string? _peekShownPath;
+
+    // The focus is in the peek (it draws itself)
+    private static bool _peekFocused;
+
+    // V or ":peek": the peek on or off
+    private static void TogglePeek()
     {
+        if (_peeking)
+        {
+            StopPeek();
+            return;
+        }
+
+        if (SelectedItem() == null && PeekedDirectory() == null)
+        {
+            _message = DialogText.PeekSelectFile;
+            return;
+        }
+
+        _peekWasDual = DualPane;
+        DualPane = true;
+        _peeking = true;
+        _peekShownPath = null;
+    }
+
+    // The other pane shows its list again
+    private static void StopPeek()
+    {
+        if (!_peeking) return;
+        _peeking = false;
+        _peekShownPath = null;
+        DualPane = _peekWasDual;
+        Reload(OtherPane);
+    }
+
+    // The peek is ended without drawing or reading anything (the browser is left: a jump, or a data file selected),
+    // so the setting of the panes is as it was
+    private static void ForgetPeek()
+    {
+        if (!_peeking) return;
+        _peeking = false;
+        _peekFocused = false;
+        _peekShownPath = null;
+        DualPane = _peekWasDual;
+    }
+
+    // The keys that keep the peek: moving in the list and going into directories (the peek follows), Tab (into the
+    // peek), V and Esc (end it), and what does not use the other pane (marks, info, filter, commands, help, Jump menu,
+    // the latest files)
+    private static bool KeepsPeek(ConsoleKeyInfo key) =>
+        key.Key is ConsoleKey.J or ConsoleKey.K or ConsoleKey.DownArrow or ConsoleKey.UpArrow or ConsoleKey.PageDown
+            or ConsoleKey.PageUp or ConsoleKey.Home or ConsoleKey.End or ConsoleKey.H or ConsoleKey.L
+            or ConsoleKey.LeftArrow or ConsoleKey.RightArrow or ConsoleKey.Enter or ConsoleKey.Backspace or ConsoleKey.Tab
+            or ConsoleKey.Escape or ConsoleKey.V or ConsoleKey.Spacebar or ConsoleKey.I or ConsoleKey.R ||
+        key.KeyChar is 'g' or 'G' or '-' or ':' or '/' or '?' || Jump.IsKey(key) || RecentBox.IsKey(key) ||
+        Keyboard.IsControl(key, ConsoleKey.D) || Keyboard.IsControl(key, ConsoleKey.F) ||
+        Keyboard.IsControl(key, ConsoleKey.U) || Keyboard.IsControl(key, ConsoleKey.B);
+
+    /// <summary>
+    /// The directory the peek shows: the selected directory, or on ".." the directory above (null: a file is
+    /// selected, or a drive, or ".." at the root of a drive)
+    /// </summary>
+    private static string? PeekedDirectory()
+    {
+        if (ActivePane.Directory.Length == 0 || ActivePane.Items.Count == 0) return null;
+        var item = ActivePane.Items[Math.Clamp(ActivePane.Index, 0, ActivePane.Items.Count - 1)];
+        if (item.Name == ParentName) return Directory.GetParent(ActivePane.Directory)?.FullName;
+        return item.IsDirectory ? item.Path : null;
+    }
+
+    // The peek of the selected file, in the other pane (when the selection has changed, or all is drawn again). A
+    // directory is shown as the names in it; a file that is not text, or a data file, is told about
+    private static void DrawPeek(bool all)
+    {
+        if (!_peeking || _peekFocused || !IsDual) return;
+        var item = SelectedItem();
+        var directory = PeekedDirectory();
+        var path = directory ?? item?.Path ?? string.Empty;
+        if (!all && path == _peekShownPath) return;
+        try
+        {
+            // While keys are waiting (j held down), the peek is drawn when they have been handled
+            if (Console.KeyAvailable)
+            {
+                _peekShownPath = null;
+                return;
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // Keys cannot be asked about (input from a file): drawn now
+        }
+
+        _peekShownPath = path;
+        // The title of the pane: the name of the file
+        DrawPaneHeader(1 - _active);
+        var (left, width) = PaneArea(1 - _active);
+        string? note = null;
+        TextFile? file = null;
+        if (directory != null)
+        {
+            // What is in it, as the pane will show it when Tab opens it there: directories first (ending in "/")
+            DrawPeekLines(left, width, PeekContents(directory, PageSize), false);
+            return;
+        }
+
+        if (item == null || item.IsDirectory)
+        {
+            note = DialogText.PeekSelectFile;
+        }
+        else if (IsDataFile(item))
+        {
+            // Encrypted: never read here
+            note = DialogText.PeekDataFile;
+        }
+        else
+        {
+            try
+            {
+                file = TextFile.Load(item.Path);
+                // A file with zero bytes in it is not text
+                if (file.Text.Contains('\0'))
+                {
+                    note = DialogText.PeekNotText;
+                    file = null;
+                }
+            }
+            catch (Exception e) when (e is not NavigationException)
+            {
+                note = e.Message;
+            }
+        }
+
+        if (file == null || item == null)
+        {
+            // The pane is cleared, with the note on its first row
+            DrawPeekLines(left, width, new[] { note ?? string.Empty }, true);
+            return;
+        }
+
+        // Read only: the text is drawn, and no key is read
+        _ = new TextArea(left, ListTop, width, PageSize, PeekText(file.Text), 0, false, true, false,
+            TextArea.SaveAsFile, false,
+            new TextArea.PeekOptions(SyntaxHighlighter.TypeOfFile(item.Name), () => Draw(true))
+            {
+                NoWrap = true
+            });
+        Tools.HideCursor();
+    }
+
+    // Lines in the pane of the peek, from its first row (the rest of the pane is cleared): a note is dimmed
+    private static void DrawPeekLines(int left, int width, IReadOnlyList<string> lines, bool dimmed)
+    {
+        for (var row = 0; row < PageSize; row++)
+        {
+            Tools.SetCursorEx(ListTop + row, left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(new string(' ', width));
+            if (row >= lines.Count) continue;
+            Tools.SetCursorEx(ListTop + row, left + 1);
+            if (dimmed) ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            Console.Write(Tools.TruncateString(lines[row], width - 2, true));
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    // Tab while peeking: the focus goes into the peek, to scroll and search in it (as in the editor). Tab or Esc goes
+    // back to the list, Enter opens the file in the editor where the cursor is. The peek of a directory is not gone
+    // into: the directory is opened in the other pane instead, with the focus there
+    private static void FocusPeek()
+    {
+        var directory = PeekedDirectory();
+        if (directory != null)
+        {
+            OpenPeekedDirectory(directory);
+            return;
+        }
+
         var item = SelectedItem();
         if (item == null || item.IsDirectory)
         {
@@ -550,30 +787,33 @@ internal static partial class FileExplorer
         {
             file = TextFile.Load(item.Path);
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not NavigationException)
         {
             _message = e.Message;
             return;
         }
 
-        // A file with zero bytes in it is not text
         if (file.Text.Contains('\0'))
         {
             _message = DialogText.PeekNotText;
             return;
         }
 
-        var wasDual = DualPane;
-        DualPane = true;
+        _peekFocused = true;
         try
         {
-            // The pane next to the one with the file: the peek is shown on its list, below its label
-            var pane = 1 - _active;
-            var (left, width) = PaneArea(pane);
-            Draw(true);
+            // The title of the peek is highlighted, that of the list not
+            DrawPaneHeader(0);
+            DrawPaneHeader(1);
+            var (left, width) = PaneArea(1 - _active);
             var syntax = SyntaxHighlighter.TypeOfFile(item.Name);
             var textArea = new TextArea(left, ListTop, width, PageSize, PeekText(file.Text), 0, false, false, false,
-                TextArea.SaveAsFile, false, new TextArea.PeekOptions(syntax, () => Draw(true)));
+                TextArea.SaveAsFile, false, new TextArea.PeekOptions(syntax, () => Draw(true))
+                {
+                    NoWrap = true,
+                    TabCloses = true,
+                    Hint = DialogText.PeekFocusHint
+                });
             Tools.HideCursor();
             if (textArea.OpenRequested)
             {
@@ -587,9 +827,36 @@ internal static partial class FileExplorer
         }
         finally
         {
-            DualPane = wasDual;
-            if (!wasDual) Reload(OtherPane);
+            _peekFocused = false;
+            _peekShownPath = null;
         }
+    }
+
+    // The directory of the peek in the other pane, with its first item selected and the focus there. The peek ends,
+    // and two panes stay shown (":panes" shows one again). A directory that cannot be read is told about, and the peek
+    // goes on
+    private static void OpenPeekedDirectory(string directory)
+    {
+        var pane = OtherPane;
+        var (previous, filter) = (pane.Directory, pane.Filter);
+        pane.Directory = directory;
+        pane.Filter = string.Empty;
+        if (!LoadItems(pane, null))
+        {
+            (pane.Directory, pane.Filter) = (previous, filter);
+            var message = _message;
+            LoadItems(pane, null);
+            _message = message;
+            return;
+        }
+
+        // The first file or directory, below ".."
+        if (pane.Items.Count > 1 && pane.Items[0].Name == ParentName) pane.Index = 1;
+        pane.ShownTop = -1;
+        _peeking = false;
+        _peekShownPath = null;
+        DualPane = true;
+        _active = 1 - _active;
     }
 
     // ":path": the full path of the selected file or directory (on ".." the directory shown) to the clipboard and/or
@@ -883,16 +1150,20 @@ internal static partial class FileExplorer
     {
         var items = MarkedOrSelected();
         if (items.Count == 0 || AnyProtected(items)) return;
-        if (!ConfirmDelete(items)) return;
+        // To the trash, unless that is turned off, or it is the trash or what is in it (deleting there is for
+        // good), or a directory the trash is in
+        var trash = FileOperations.TrashDirectory;
+        var toTrash = FileOperations.DeleteToTrash && items.All(item => FileOperations.CanTrash(item.Path, trash));
+        if (!ConfirmDelete(items, toTrash)) return;
 
         string? failed = null;
         Item? failedItem = null;
         var done = 0;
+        var trashed = 0;
         var favoritesChanged = false;
         foreach (var item in items)
         {
-            var result = FileOperations.Delete(item.Path);
-            LogOperation(item.IsDirectory ? "Delete directory" : "Delete", item.Path, result);
+            var result = DeleteItem(item, toTrash, out var wasTrashed);
             if (result != DialogText.Success)
             {
                 failed = Failure(items, item, result);
@@ -901,17 +1172,59 @@ internal static partial class FileExplorer
             }
 
             done++;
+            if (wasTrashed) trashed++;
             if (FileFavorites.PathDeleted(item.Path)) favoritesChanged = true;
         }
 
-        Finish(failed ?? DialogText.Success, failedItem?.Path,
-            items.Count == 1 ? DialogText.FileItemDeleted + items[0].Name : Lang.F("Deleted: {0}", done));
+        string message;
+        if (items.Count == 1)
+        {
+            message = (trashed == 1 ? DialogText.FileItemTrashed : DialogText.FileItemDeleted) + items[0].Name;
+        }
+        else
+        {
+            message = trashed == done ? Lang.F("Moved to the trash: {0}", done) : Lang.F("Deleted: {0}", done);
+        }
+
+        Finish(failed ?? DialogText.Success, failedItem?.Path, message);
         if (favoritesChanged) SaveFavorites();
     }
 
-    // Ask before deleting, in a box on top of the list, telling what is deleted. Only Enter answers: text typed by
-    // mistake cannot answer it
-    private static bool ConfirmDelete(List<Item> items)
+    // Delete one file or directory: to the trash, or for good. One that cannot be moved to the trash is only
+    // deleted for good if the user says so. (The path in the trash is not logged: the log already tells the path the
+    // file had, as for deleting)
+    private static string DeleteItem(Item item, bool toTrash, out bool trashed)
+    {
+        trashed = false;
+        var kind = item.IsDirectory ? "Delete directory" : "Delete";
+        if (toTrash)
+        {
+            var result = FileOperations.MoveToTrash(item.Path, FileOperations.TrashDirectory, out _, ShowProgress);
+            LogOperation(kind + " (to the trash)", item.Path, result);
+            if (result == DialogText.Success)
+            {
+                trashed = true;
+                return result;
+            }
+
+            if (result == DialogText.FileCanceled || result == DialogText.FileNotFound) return result;
+            Draw(true);
+            if (!ChoiceBox.ConfirmGuarded(item.IsDirectory ? DialogText.DeleteDirectory : DialogText.DeleteFile,
+                    Lang.F("\"{0}\" could not be moved to the trash. Delete it for good?",
+                        Tools.TruncateString(item.Name, 40, true)), result))
+            {
+                return result;
+            }
+        }
+
+        var deleted = FileOperations.Delete(item.Path);
+        LogOperation(kind, item.Path, deleted);
+        return deleted;
+    }
+
+    // Ask before deleting, in a box on top of the list, telling what is deleted and whether it goes to the trash.
+    // Only Enter answers: text typed by mistake cannot answer it
+    private static bool ConfirmDelete(List<Item> items, bool toTrash)
     {
         if (items.Count == 1)
         {
@@ -920,18 +1233,38 @@ internal static partial class FileExplorer
             if (item.IsDirectory)
             {
                 var (files, directories) = FileOperations.Count(item.Path);
-                note = files + directories == 0
-                    ? DialogText.DeleteEmptyDirectoryNote
-                    : Lang.F("With all its content (files: {0}, directories: {1}). They cannot be recovered", files,
-                        directories);
+                if (files + directories == 0)
+                {
+                    note = DialogText.DeleteEmptyDirectoryNote;
+                }
+                else if (toTrash)
+                {
+                    note = Lang.F("With all its content (files: {0}, directories: {1})", files, directories);
+                }
+                else
+                {
+                    note = Lang.F("With all its content (files: {0}, directories: {1}). They cannot be recovered",
+                        files, directories);
+                }
+
+                if (toTrash) note += ". " + DialogText.TrashFileNote;
+            }
+            else if (IsDataFile(item))
+            {
+                note = toTrash
+                    ? DialogText.TrashDataFileNote + ". " + DialogText.TrashFileNote
+                    : DialogText.DeleteDataFileNote;
             }
             else
             {
-                note = IsDataFile(item) ? DialogText.DeleteDataFileNote : DialogText.DeleteFileNote;
+                note = toTrash ? DialogText.TrashFileNote : DialogText.DeleteFileNote;
             }
 
+            // A file or directory Marbles uses (the protection lifted): told first
+            if (UsedByMarbles(item)) note = UsedByMarblesNote(item) + " " + note;
+            var name = Tools.TruncateString(item.Name, 40, true);
             return ChoiceBox.ConfirmGuarded(item.IsDirectory ? DialogText.DeleteDirectory : DialogText.DeleteFile,
-                DialogText.DeleteNamed.Replace("{0}", Tools.TruncateString(item.Name, 40, true)), note);
+                (toTrash ? DialogText.TrashNamed : DialogText.DeleteNamed).Replace("{0}", name), note);
         }
 
         // All the files and directories, with the content of the directories
@@ -949,7 +1282,19 @@ internal static partial class FileExplorer
             allDirectories += directories + 1;
         }
 
-        var note2 = Lang.F("In all, files: {0}, directories: {1}. They cannot be recovered.", allFiles, allDirectories);
+        // Files or directories Marbles uses among them (the protection lifted): told first
+        var used = items.FirstOrDefault(UsedByMarbles);
+        var usedNote = used == null ? string.Empty : UsedByMarblesNote(used) + " ";
+        if (toTrash)
+        {
+            var trashNote = usedNote + Lang.F("In all, files: {0}, directories: {1}.", allFiles, allDirectories) +
+                            " " + DialogText.TrashFileNote;
+            return ChoiceBox.ConfirmGuarded(DialogText.DeleteMarkedCaption,
+                Lang.F("Move the marked files and directories to the trash ({0})?", items.Count), trashNote);
+        }
+
+        var note2 = usedNote +
+                    Lang.F("In all, files: {0}, directories: {1}. They cannot be recovered.", allFiles, allDirectories);
         if (items.Any(IsDataFile)) note2 += " " + DialogText.DeleteDataFilesNote;
         return ChoiceBox.ConfirmGuarded(DialogText.DeleteMarkedCaption,
             Lang.F("Delete the marked files and directories ({0})?", items.Count), note2);

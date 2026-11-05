@@ -124,6 +124,11 @@ internal sealed class TabFrame
     /// </summary>
     internal Func<TabResult>? Commands { get; init; }
 
+    /// <summary>
+    /// Ctrl+K: the latest files (RecentBox), on every page of the frame (null: the key is the page's)
+    /// </summary>
+    internal Action? OnRecentKey { get; init; }
+
     internal ITabPage Page => _pages[Selected].Page;
 
     private TabArea _area;
@@ -206,6 +211,14 @@ internal sealed class TabFrame
                 continue;
             }
 
+            if (OnRecentKey != null && RecentBox.IsKey(key) && !page.CapturesKeys)
+            {
+                // The latest files, on every tab and sub-tab
+                OnRecentKey();
+                full = true;
+                continue;
+            }
+
             if (key.KeyChar == '?' && !page.CapturesKeys)
             {
                 Tools.WriteEditorHelp(false, page.Help);
@@ -233,6 +246,11 @@ internal sealed class TabFrame
     }
 
     // Draw all: what is above, the tabs, the frame, the sub-tabs, the page and its keys
+    /// <summary>
+    /// Draw the frame and its page again (before a box is shown over it, from a command)
+    /// </summary>
+    internal void Redraw() => Draw();
+
     private void Draw()
     {
         Init.ApplyAutoSize();

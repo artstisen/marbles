@@ -3,7 +3,7 @@
 /// <summary>
 /// The page shown when Marbles starts, in a frame with three tabs (TabFrame): Mode, where the user selects what
 /// to use Marbles for (notes: the login page, or editing text files: the file browser), Configuration, with the
-/// settings on four pages (the sub-tabs General, Layout, Editor and System), and Help (the help and the about
+/// settings on five pages (the sub-tabs General, Layout, Editor, Lists and System), and Help (the help and the about
 /// page). Tab goes from page to page.
 /// The setting "startmode" tells if the page is shown at startup, or if Marbles goes directly to one of the two.
 /// The setting "onlymode" makes Marbles a text editor only or a note application only (for running one of each):
@@ -80,7 +80,7 @@ internal static class StartMenu
     // True to show the choices whatever the setting is
     private static bool _showChoices;
 
-    // The page of the Configuration tab to show first (0 to 3), or -1 for the Mode tab
+    // The page of the Configuration tab to show first (0 to 4), or -1 for the Mode tab
     private static int _showConfiguration = -1;
 
     // The row of the tabs (below the logo)
@@ -130,12 +130,12 @@ internal static class StartMenu
     /// Show the choices before the login page is shown again
     /// </summary>
     /// <param name="configurationPage">Show a page of the Configuration tab first (0 General, 1 Layout, 2 Editor,
-    /// 3 System), or -1 for the Mode tab</param>
+    /// 3 Lists, 4 System), or -1 for the Mode tab</param>
     internal static void Open(int configurationPage = -1)
     {
         Pending = true;
         _showChoices = true;
-        _showConfiguration = Math.Clamp(configurationPage, -1, 3);
+        _showConfiguration = Math.Clamp(configurationPage, -1, PageCount - 1);
     }
 
     /// <summary>
@@ -165,8 +165,13 @@ internal static class StartMenu
             },
             new TabItem(() => DialogText.StartModeTab, mode),
             new TabItem(() => DialogText.StartConfiguration, new SettingsPage(0), new SettingsPage(1),
-                new SettingsPage(2), new SettingsPage(3)),
-            new TabItem(() => Lang.T("Help"), new HelpPage())) { Commands = ReadCommand };
+                new SettingsPage(2), new SettingsPage(3), new SettingsPage(4)),
+            new TabItem(() => Lang.T("Help"), new HelpPage()))
+        {
+            Commands = ReadCommand,
+            // Ctrl+K on every tab: the latest files (the one picked is opened as a jump)
+            OnRecentKey = () => RecentBox.Open()
+        };
         if (_showConfiguration >= 0) frame.Selected = 1 + _showConfiguration;
         _showConfiguration = -1;
         // Returns when notes are chosen, or a data file was selected in the file browser
@@ -214,17 +219,26 @@ internal static class StartMenu
             case "editor":
                 ShowPage(3);
                 break;
-            case "system":
+            case "lists":
                 ShowPage(4);
+                break;
+            case "system":
+                ShowPage(5);
                 break;
             case "jump":
             case "ju":
             case "jmp":
-                Marbles.Jump.Open();
+                // ":jump colors": that page at once
+                Marbles.Jump.ToPage(CommandLine.Argument(command));
                 break;
             case "book":
                 // ":book 3": jump to bookmark 3
                 Marbles.Jump.ToBookmark(CommandLine.Argument(command));
+                break;
+            case "recent":
+                // The latest files, to open one (the page drawn first: the box of commands has just been taken away)
+                _frame?.Redraw();
+                RecentBox.Open();
                 break;
             case "help":
             case "h":
@@ -287,7 +301,7 @@ internal static class StartMenu
         return TabResult.Redraw;
     }
 
-    // Go to a page of the frame (0 Mode, 1 to 4 the pages of Configuration)
+    // Go to a page of the frame (0 Mode, 1 to 5 the pages of Configuration)
     private static void ShowPage(int page)
     {
         if (_frame != null) _frame.Selected = page;
@@ -331,11 +345,18 @@ internal static class StartMenu
         EditorOnly,
         NotesOnly,
         CommandList,
+        DeleteToTrash,
         SyntaxColors,
         Spell,
         Snippets,
         AutoComplete,
         Completions,
+        FileNumbers,
+        FavoriteNumbers,
+        HistoryNumbers,
+        HotlistNumbers,
+        SearchNumbers,
+        BookmarkNumbers,
         Reset,
         EditSettings,
         Restart,
@@ -356,6 +377,7 @@ internal static class StartMenu
         settings.Add(Setting.EditorOnly);
         settings.Add(Setting.NotesOnly);
         settings.Add(Setting.CommandList);
+        settings.Add(Setting.DeleteToTrash);
         settings.Add(Setting.Language);
         // Layout
         settings.Add(Setting.AutoSize);
@@ -377,6 +399,18 @@ internal static class StartMenu
         settings.Add(Setting.Snippets);
         settings.Add(Setting.AutoComplete);
         settings.Add(Setting.Completions);
+        // Lists: the numbers of the rows of each list, in the order of the lists (those of the file browser are left
+        // out with Note Management only)
+        if (Only != OnlyMode.Notes)
+        {
+            settings.Add(Setting.FileNumbers);
+            settings.Add(Setting.FavoriteNumbers);
+            settings.Add(Setting.HistoryNumbers);
+            settings.Add(Setting.HotlistNumbers);
+            settings.Add(Setting.SearchNumbers);
+        }
+
+        settings.Add(Setting.BookmarkNumbers);
         // System
         settings.Add(Setting.Reset);
         settings.Add(Setting.EditSettings);
@@ -420,10 +454,17 @@ internal static class StartMenu
             Setting.Snippets => indent + Lang.T("Snippet editor (Enter: Open)"),
             Setting.AutoComplete => Check(Marbles.Completions.Enabled) + Lang.T("Complete words while typing"),
             Setting.Completions => indent + Lang.T("Completions editor (Enter: Open)"),
+            Setting.FileNumbers => Check(FileExplorer.FileNumbers) + Lang.T("Line numbers in file browser"),
+            Setting.FavoriteNumbers => Check(FileExplorer.FavoriteNumbers) + Lang.T("Line numbers in Favorites"),
+            Setting.HistoryNumbers => Check(FileExplorer.HistoryNumbers) + Lang.T("Line numbers in History"),
+            Setting.HotlistNumbers => Check(FileExplorer.HotlistNumbers) + Lang.T("Line numbers in Hotlist"),
+            Setting.SearchNumbers => Check(FileExplorer.SearchNumbers) + Lang.T("Line numbers in Search results"),
+            Setting.BookmarkNumbers => Check(JumpMenu.BookmarkNumbers) + Lang.T("Line numbers in Bookmarks"),
             Setting.Info => indent + DialogText.FileInfo,
             Setting.EditorOnly => Check(Only == OnlyMode.Editor) + Lang.T("Text Editor only"),
             Setting.NotesOnly => Check(Only == OnlyMode.Notes) + Lang.T("Note Management only"),
             Setting.CommandList => Check(Marbles.CommandList.Enabled) + Lang.T("List the commands above the command line"),
+            Setting.DeleteToTrash => Check(FileOperations.DeleteToTrash) + Lang.T("Delete to trash (:trash in file browser)"),
             Setting.EditSettings => indent + Lang.F("Edit {0}", FileIo.SettingsFileName),
             Setting.Restart => indent + DialogText.ConfigRestart,
             Setting.ViewLog => indent + DialogText.ConfigViewLog,
@@ -439,15 +480,16 @@ internal static class StartMenu
             : Lang.F("Spell checker: {0}", SpellChecker.Languages);
     }
 
-    private const int PageCount = 4;
+    private const int PageCount = 5;
 
-    // The settings are shown on four pages: General, Layout, Editor and System
+    // The settings are shown on five pages: General, Layout, Editor, Lists and System
     private static int PageOf(Setting setting)
     {
         return setting switch
         {
             Setting.StartSelect or Setting.StartNotes or Setting.StartEditor or Setting.StartFavorites
                 or Setting.StayLoggedIn or Setting.EditorOnly or Setting.NotesOnly or Setting.CommandList
+                or Setting.DeleteToTrash
                 or Setting.Language => 0,
             Setting.AutoSize or Setting.Size or Setting.Monochrome or Setting.ColorScheme or Setting.Logo
                 or Setting.LogoAnimation or Setting.Corners => 1,
@@ -455,7 +497,9 @@ internal static class StartMenu
                 or Setting.ScrollOff or Setting.Clipboard
                 or Setting.SyntaxColors or Setting.Spell or Setting.Snippets or Setting.AutoComplete
                 or Setting.Completions => 2,
-            _ => 3
+            Setting.FileNumbers or Setting.FavoriteNumbers or Setting.HistoryNumbers or Setting.HotlistNumbers
+                or Setting.SearchNumbers or Setting.BookmarkNumbers => 3,
+            _ => 4
         };
     }
 
@@ -467,6 +511,7 @@ internal static class StartMenu
             0 => Lang.T("General"),
             1 => Lang.T("Layout"),
             2 => Lang.T("Editor"),
+            3 => Lang.T("Lists"),
             _ => Lang.T("System")
         };
     }
@@ -1004,6 +1049,27 @@ internal static class StartMenu
                 break;
             case Setting.CommandList:
                 Marbles.CommandList.Enabled = !Marbles.CommandList.Enabled;
+                break;
+            case Setting.DeleteToTrash:
+                FileOperations.DeleteToTrash = !FileOperations.DeleteToTrash;
+                break;
+            case Setting.FileNumbers:
+                FileExplorer.FileNumbers = !FileExplorer.FileNumbers;
+                break;
+            case Setting.FavoriteNumbers:
+                FileExplorer.FavoriteNumbers = !FileExplorer.FavoriteNumbers;
+                break;
+            case Setting.HistoryNumbers:
+                FileExplorer.HistoryNumbers = !FileExplorer.HistoryNumbers;
+                break;
+            case Setting.HotlistNumbers:
+                FileExplorer.HotlistNumbers = !FileExplorer.HotlistNumbers;
+                break;
+            case Setting.SearchNumbers:
+                FileExplorer.SearchNumbers = !FileExplorer.SearchNumbers;
+                break;
+            case Setting.BookmarkNumbers:
+                JumpMenu.BookmarkNumbers = !JumpMenu.BookmarkNumbers;
                 break;
             case Setting.SyntaxColors:
                 SyntaxHighlighter.ColorFiles = !SyntaxHighlighter.ColorFiles;

@@ -384,6 +384,178 @@ internal static class FileOperations
     }
 
     /// <summary>
+    /// The trash: the directory "trash" in the data directory, for all that is deleted in the file browser (and the
+    /// data files deleted on the login page). It goes with the data directory when Marbles is copied or backed up. A
+    /// data file stays encrypted in it; Marbles writes no other file with notes in it
+    /// </summary>
+    internal const string TrashName = "trash"; // English: the name of a directory
+
+    /// <summary>
+    /// The trash directory, for tests
+    /// </summary>
+    internal static string? TrashOverride { get; set; }
+
+    /// <summary>
+    /// The trash directory (it is made when the first file is moved to it)
+    /// </summary>
+    internal static string TrashDirectory =>
+        Path.GetFullPath(TrashOverride ?? Path.Combine(FileIo.GetDataDirectoryName(), TrashName));
+
+    /// <summary>
+    /// Deleting in the file browser and on the login page moves to the trash (setting "deletetotrash", on unless
+    /// turned off). Off: the files are deleted at once and cannot be recovered
+    /// </summary>
+    internal static bool DeleteToTrash { get; set; } = true;
+
+    /// <summary>
+    /// The list in the trash of what was moved there: one line for each, with its name in the trash, when it was
+    /// deleted and where it was
+    /// </summary>
+    internal const string TrashListName = "trash.txt"; // English: the name of a file
+
+    /// <summary>
+    /// True if a file or directory can be moved to the trash: not the trash itself, something in it (deleting
+    /// there is for good), or a directory the trash is in
+    /// </summary>
+    internal static bool CanTrash(string path, string trashDirectory)
+    {
+        return !SamePath(path, trashDirectory) && !IsInside(path, trashDirectory) && !IsInside(trashDirectory, path);
+    }
+
+    // The part of a directory copied before the copying stopped (it can be deleted in the trash if it stays)
+    private static void RemovePartialCopy(string target)
+    {
+        if (!Directory.Exists(target)) return;
+        try
+        {
+            Directory.Delete(target, true);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // Left in the trash: it can be deleted there
+        }
+    }
+
+    /// <summary>
+    /// A name for a file in the trash: one that can be made on every file system, also FAT and exFAT on a memory
+    /// stick (no : ? * " &lt; &gt; | \ / or control characters, no blank space or dot at the end), and short enough to
+    /// have the time added: at most maxBytes in UTF-8, as Linux and macOS count a name (255 bytes; a letter like "ø"
+    /// takes two), never splitting a character. The real name is kept in the list of the trash
+    /// </summary>
+    internal static string StoredName(string name, int maxBytes = 180)
+    {
+        var chars = name.Select(c => c is ':' or '?' or '*' or '"' or '<' or '>' or '|' or '\\' or '/' ||
+                                     char.IsControl(c)
+            ? '_'
+            : c).ToArray();
+        var stored = new string(chars);
+        var end = 0;
+        var bytes = 0;
+        while (end < stored.Length)
+        {
+            var length = char.IsSurrogatePair(stored, end) ? 2 : 1;
+            var size = System.Text.Encoding.UTF8.GetByteCount(stored.AsSpan(end, length));
+            if (bytes + size > maxBytes) break;
+            bytes += size;
+            end += length;
+        }
+
+        stored = stored[..end].TrimEnd(' ', '.');
+        return stored.Length > 0 ? stored : "_";
+    }
+
+    /// <summary>
+    /// Move a file or directory to the trash, under a name of its own there that starts with the time
+    /// ("2026-10-22 14.03.11 chapter 1.md"), and add where it was to the list in the trash. The trash is made if
+    /// it is not there. A data file keeps its extension, so it is still a data file in the trash
+    /// </summary>
+    /// <param name="path">The file or directory</param>
+    /// <param name="trashDirectory">The trash</param>
+    /// <param name="trashedPath">Where it is in the trash</param>
+    /// <param name="progress">Called with the name of each file when the files have to be copied (the trash is
+    /// on another drive). Returns false to cancel</param>
+    internal static string MoveToTrash(string path, string trashDirectory, out string trashedPath,
+        Func<string, bool>? progress = null)
+    {
+        trashedPath = string.Empty;
+        var isDirectory = Directory.Exists(path) && !File.Exists(path);
+        if (!isDirectory && !File.Exists(path)) return DialogText.FileNotFound;
+        if (!CanTrash(path, trashDirectory)) return DialogText.TrashNotPossible;
+        var deleted = DateTime.Now;
+        var name = deleted.ToString("yyyy-MM-dd HH.mm.ss ", System.Globalization.CultureInfo.InvariantCulture) +
+                   StoredName(Path.GetFileName(Trimmed(path)));
+        try
+        {
+            Directory.CreateDirectory(trashDirectory);
+            var target = UniquePath(trashDirectory, name);
+            if (!isDirectory)
+            {
+                // (to another drive the file is copied, and the original removed)
+                File.Move(path, target, false);
+            }
+            else
+            {
+                try
+                {
+                    Directory.Move(path, target);
+                }
+                catch (IOException e) when (!IsLink(path) && !Directory.Exists(target) &&
+                                            IsOtherDrive(e, path, trashDirectory))
+                {
+                    // As when it is moved to another drive: the original is removed when all of it is copied. A
+                    // copy that stops (a file that cannot be read, a full disk) is removed again: the original stays
+                    bool copied;
+                    try
+                    {
+                        copied = CopyDirectory(path, target, progress);
+                    }
+                    catch
+                    {
+                        RemovePartialCopy(target);
+                        throw;
+                    }
+
+                    if (!copied)
+                    {
+                        RemovePartialCopy(target);
+                        return DialogText.FileCanceled;
+                    }
+
+                    Directory.Delete(path, true);
+                }
+            }
+
+            trashedPath = target;
+        }
+        catch (Exception e)
+        {
+            return e.Message;
+        }
+
+        try
+        {
+            // LF on all systems. The list is only for finding where it was (added to: never emptied)
+            var list = Path.Combine(trashDirectory, TrashListName);
+            var line = Path.GetFileName(trashedPath) + "\t" +
+                       deleted.ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture) +
+                       "\t" + Path.GetFullPath(path) + "\n";
+            if (!File.Exists(list))
+            {
+                // English: the list is read by people, in any language
+                line = "# Marbles: what was moved to the trash (name in the trash, when, where it was)\n" + line;
+            }
+
+            File.AppendAllText(list, line, new System.Text.UTF8Encoding(false));
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // It is in the trash: the list is only a help to find where it came from
+        }
+
+        return DialogText.Success;
+    }
+
+    /// <summary>
     /// Delete a file, or a directory with all its content. This cannot be undone
     /// </summary>
     internal static string Delete(string path)

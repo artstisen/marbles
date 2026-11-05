@@ -285,6 +285,35 @@ public class SyntaxTests
 
     #endregion
 
+    #region INI
+
+    [Theory]
+    [InlineData("; DIMENSIONS", "############")]
+    [InlineData("  # note", "..######")]
+    [InlineData("[Section] ; c", "WWWWWWWWW.###")]
+    [InlineData("linewidth=100", "NNNNNNNNN.999")]
+    [InlineData("autosize = true", "NNNNNNNN...WWWW")]
+    [InlineData("language=en", "NNNNNNNN.SS")]
+    [InlineData("file=", "NNNN.")]
+    [InlineData("subdir=C:\\Notes ", "NNNNNN.SSSSSSSS.")]
+    [InlineData("just text", ".........")]
+    public void Ini_Lines(string line, string expected)
+    {
+        Assert.Equal(expected, Style(SyntaxType.Ini, line));
+    }
+
+    [Fact]
+    public void Ini_IsAKindOfText_ForTheSyntaxCommand()
+    {
+        Assert.Equal(SyntaxType.Ini, SyntaxHighlighter.ParseType("ini"));
+        Assert.Equal("INI", SyntaxHighlighter.Name(SyntaxType.Ini));
+        // A note remembers it with the letter "g"
+        Assert.Equal(SyntaxType.Ini, EntrySyntax.Get(EntrySyntax.Set("f", SyntaxType.Ini)));
+        Assert.Equal("INI", EntrySyntax.ShortName(SyntaxType.Ini));
+    }
+
+    #endregion
+
     #region Kinds of text
 
     [Theory]
@@ -301,6 +330,9 @@ public class SyntaxTests
     [InlineData("feed.xml", nameof(SyntaxType.Xml))]
     [InlineData("icon.SVG", nameof(SyntaxType.Xml))]
     [InlineData("notes.md", nameof(SyntaxType.Markdown))]
+    [InlineData("settings.ini", nameof(SyntaxType.Ini))]
+    [InlineData("app.CFG", nameof(SyntaxType.Ini))]
+    [InlineData(".editorconfig", nameof(SyntaxType.Ini))]
     [InlineData("notes.txt", nameof(SyntaxType.None))]
     [InlineData("json", nameof(SyntaxType.None))]
     public void TheKindOfAFile_IsToldByItsName(string name, string expected)

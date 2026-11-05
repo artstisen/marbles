@@ -183,6 +183,43 @@ internal static class DirectoryHotlist
     }
 
     /// <summary>
+    /// Take directories out of the list by their places (the directories themselves are not changed)
+    /// </summary>
+    /// <returns>Those taken out, with the places they had, from the top: for PutBack</returns>
+    internal static List<(int Index, Entry Entry)> RemoveMany(IEnumerable<int> indexes)
+    {
+        var removed = indexes.Where(index => index >= 0 && index < List.Count).Distinct().Order()
+            .Select(index => (Index: index, Entry: List[index])).ToList();
+        // From the end, so that the places of the others stay
+        for (var i = removed.Count - 1; i >= 0; i--) List.RemoveAt(removed[i].Index);
+        return removed;
+    }
+
+    /// <summary>
+    /// Put directories taken out (RemoveMany) back in the places they had. One that is in the list again, or that
+    /// does not fit (the list is full), is left out, and the ones after it come one place higher
+    /// </summary>
+    /// <returns>Those put back</returns>
+    internal static List<Entry> PutBack(IReadOnlyList<(int Index, Entry Entry)> removed)
+    {
+        var back = new List<Entry>();
+        var skipped = 0;
+        foreach (var (index, entry) in removed)
+        {
+            if (Contains(entry.Path) || List.Count >= MaxCount)
+            {
+                skipped++;
+                continue;
+            }
+
+            List.Insert(Math.Clamp(index - skipped, 0, List.Count), entry);
+            back.Add(entry);
+        }
+
+        return back;
+    }
+
+    /// <summary>
     /// Move a directory to another place in the list
     /// </summary>
     /// <returns>Where it is now</returns>

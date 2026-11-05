@@ -15,11 +15,12 @@ internal enum SyntaxType
     Diff, // A comparison (":diff"), and .diff and .patch files
     Macro, // A macro of the editor (.macro files, see MacroLanguage)
     CSharp,
-    Php // HTML with PHP in it (and PHP alone, from "<?php")
+    Php, // HTML with PHP in it (and PHP alone, from "<?php")
+    Ini // Settings files: [sections], names = values and comments (settings.ini)
 }
 
 /// <summary>
-/// The coloring of text in the editor by what it is: Markdown, HTML, CSS, JavaScript, JSON, XML, C# or PHP.
+/// The coloring of text in the editor by what it is: Markdown, HTML, CSS, JavaScript, JSON, XML, C#, PHP or INI.
 /// Each kind has a class of its own that finds the styles of a line (MarkdownHighlighter, HtmlHighlighter ...).
 /// This class picks the one to use, and tells what kind a file is from its name.
 ///
@@ -52,6 +53,7 @@ internal static class SyntaxHighlighter
                 or ".csproj" or ".props" or ".targets" or ".resx" => SyntaxType.Xml,
             ".diff" or ".patch" => SyntaxType.Diff,
             ".macro" => SyntaxType.Macro,
+            ".ini" or ".cfg" or ".conf" or ".editorconfig" => SyntaxType.Ini,
             _ => SyntaxType.None
         };
     }
@@ -73,6 +75,7 @@ internal static class SyntaxHighlighter
             "xml" => SyntaxType.Xml,
             "diff" or "patch" => SyntaxType.Diff,
             "macro" => SyntaxType.Macro,
+            "ini" => SyntaxType.Ini,
             _ => SyntaxType.None
         };
     }
@@ -91,6 +94,7 @@ internal static class SyntaxHighlighter
             SyntaxType.Xml => "XML",
             SyntaxType.Diff => "Diff",
             SyntaxType.Macro => "Macro",
+            SyntaxType.Ini => "INI",
             _ => string.Empty
         };
     }
@@ -144,9 +148,59 @@ internal static class SyntaxHighlighter
             case SyntaxType.Macro:
                 MacroLanguage.Scan(line, styles);
                 break;
+            case SyntaxType.Ini:
+                ScanIni(line, styles);
+                break;
         }
 
         return Array.Exists(styles, style => style != SyntaxStyle.None) ? styles : null;
+    }
+
+    // A line of a settings file: a comment (starting with ";" or "#"), a [section], or "name=value": the name, and
+    // the value as a number, a word for on or off (true, false, yes, no, on, off), or else as text
+    private static void ScanIni(string line, SyntaxStyle[] styles)
+    {
+        var start = 0;
+        while (start < line.Length && char.IsWhiteSpace(line[start])) start++;
+        if (start == line.Length) return;
+        if (line[start] is ';' or '#')
+        {
+            Array.Fill(styles, SyntaxStyle.Comment, start, line.Length - start);
+            return;
+        }
+
+        if (line[start] == '[')
+        {
+            var end = line.IndexOf(']', start);
+            end = end < 0 ? line.Length : end + 1;
+            Array.Fill(styles, SyntaxStyle.Keyword, start, end - start);
+            // A comment after it
+            var rest = end;
+            while (rest < line.Length && char.IsWhiteSpace(line[rest])) rest++;
+            if (rest < line.Length && line[rest] is ';' or '#') Array.Fill(styles, SyntaxStyle.Comment, rest, line.Length - rest);
+            return;
+        }
+
+        var equals = line.IndexOf('=', start);
+        if (equals < 0) return;
+        // The name (without the blank space before the "=")
+        var nameEnd = equals;
+        while (nameEnd > start && char.IsWhiteSpace(line[nameEnd - 1])) nameEnd--;
+        Array.Fill(styles, SyntaxStyle.Name, start, nameEnd - start);
+        // The value (without the blank space around it)
+        var valueStart = equals + 1;
+        while (valueStart < line.Length && char.IsWhiteSpace(line[valueStart])) valueStart++;
+        var valueEnd = line.Length;
+        while (valueEnd > valueStart && char.IsWhiteSpace(line[valueEnd - 1])) valueEnd--;
+        if (valueEnd <= valueStart) return;
+        var value = line[valueStart..valueEnd];
+        var style = double.TryParse(value, System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out _)
+            ? SyntaxStyle.Number
+            : value.ToLowerInvariant() is "true" or "false" or "yes" or "no" or "on" or "off"
+                ? SyntaxStyle.Keyword
+                : SyntaxStyle.String;
+        Array.Fill(styles, style, valueStart, valueEnd - valueStart);
     }
 
     // A line of a unified diff: the lines naming the files (before the first "@@"), "@@" lines, and the lines

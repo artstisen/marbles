@@ -40,7 +40,7 @@ public class CommandTests
     public void Tab_WithNothingTyped_GoesThroughAllTheCommands()
     {
         var names = Commands.Names(CommandContext.Search);
-        Assert.Equal(new[] { "book", "close", "favorite", "find", "goto", "help", "info", "jump", "quit" }, names);
+        Assert.Equal(new[] { "book", "close", "favorite", "find", "goto", "help", "info", "jump", "nonumber", "number", "quit", "recent" }, names);
         Assert.Equal(string.Join(" ", names) + "  book", Tabs(CommandContext.Search, "", names.Count + 2));
     }
 
@@ -62,12 +62,13 @@ public class CommandTests
         Assert.Equal("collapse", completion.Next("co", true));
         // A letter is removed and another typed
         Assert.Equal("collapse", completion.Next("col", true));
-        Assert.Equal("remove", completion.Next("r", true));
+        Assert.Equal("recent", completion.Next("r", true));
+        Assert.Equal("remove", completion.Next("recent", true));
         Assert.Equal("rename", completion.Next("remove", true));
         Assert.Equal("r", completion.Next("rename", true));
         // The same text typed again after the command line was opened anew
         completion.Reset();
-        Assert.Equal("remove", completion.Next("r", true));
+        Assert.Equal("recent", completion.Next("r", true));
     }
 
     [Fact]

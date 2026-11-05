@@ -49,4 +49,15 @@ public class ListCountTests
     {
         Assert.Equal(expected, ListCount.Row(count, rows, first));
     }
+
+    [Theory]
+    [InlineData(true, 9, 2)]
+    [InlineData(true, 10, 3)]
+    [InlineData(true, 120, 4)]
+    [InlineData(true, 0, 0)]
+    [InlineData(false, 50, 0)]
+    public void TheNumbersOfTheRows_AreAsWideAsTheLargest_AndABlankSpace(bool on, int count, int width)
+    {
+        Assert.Equal(width, ListNumbers.Width(on, count));
+    }
 }

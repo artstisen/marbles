@@ -310,6 +310,14 @@ internal static class Tools
             {
                 ShowLoginOptions();
             }
+            else if (enableShortcuts && RecentBox.IsKey(_keyInfo) && !FileActions.IsLockedForMove() &&
+                     _pass.Length == 0)
+            {
+                // The latest files (with the password field empty, as Esc): the one picked is opened as a jump, a
+                // data file is selected here
+                RecentBox.Open();
+                LoginRoutine(true);
+            }
             else if (key == ConsoleKey.Enter)
             {
                 if (enableShortcuts && FileActions.IsLockedForMove())
@@ -1493,8 +1501,10 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut(":note :file", Lang.T("The login page/The file browser"), false));
             _shortcutList.Add(new Shortcut(":mode :config", Lang.T("The Mode tab/Configuration (General)"), false));
-            _shortcutList.Add(new Shortcut(":layout :editor", Lang.T("The pages of Configuration (and :system)"), false));
+            _shortcutList.Add(new Shortcut(":layout :editor", Lang.T("The pages of Configuration (and :lists, :system)"), false));
             _shortcutList.Add(new Shortcut(":jump :help", Lang.T("The Jump menu/The help (this list)"), false));
+            _shortcutList.Add(new Shortcut(":jump name", Lang.T("Go to a page of Marbles (Tab lists the names)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K :recent", Lang.T("The latest files: Enter or 1-9 opens one"), false));
             _shortcutList.Add(new Shortcut(":about :quick", Lang.T("About/The quick guide"), false));
             _shortcutList.Add(new Shortcut(":scheme :logo", Lang.T("Color schemes/Logos"), false));
             _shortcutList.Add(new Shortcut(":snip :clipboard", Lang.T("Snippet editor/Clipboard settings"), false));
@@ -1502,7 +1512,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":log :restart", Lang.T("View log/Restart Marbles"), false));
             _shortcutList.Add(new Shortcut(":reset", DialogText.ConfigReset, false));
             _shortcutList.Add(new Shortcut(":q :exit", Lang.T("Exit Marbles (asks first)"), false));
-            _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("The pages General, Layout, Editor and System"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("The pages General, Layout, Editor, Lists and System"), false));
             _shortcutList.Add(new Shortcut("j k 1-9 0", Lang.T("Select a setting (or the number of its row)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Startup"), Lang.T("Text Editor can start in the favorites list"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Stay logged in"), Lang.T("Files and pages keep the data file open"), false));
@@ -1521,6 +1531,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Layout"), Lang.T("Classic ASCII corners: + instead of . and '"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("View log"), Lang.T("/text only shows lines containing \"text\""), false));
             _shortcutList.Add(new Shortcut("  " + FileIo.SettingsFileName, Lang.T("Edit the settings file (saved: Marbles restarts)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Lists"), Lang.T("Line numbers in the lists (also :number in a list)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Help"), Lang.T("The tab Help: all the keys, guides and About"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionLogin, true));
             _shortcutList.Add(new Shortcut("Enter", Lang.T("Log in with the password typed"), false));
@@ -1528,6 +1539,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Up Down", Lang.T("Select a directory"), false));
             _shortcutList.Add(new Shortcut("Space", Lang.T("Move the data file to another directory"), false));
             _shortcutList.Add(new Shortcut("Esc", Lang.T("Clear the password. When empty: Options"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K", Lang.T("The latest files (password empty): open one"), false));
             _shortcutList.Add(new Shortcut("Esc F", Lang.T("Browse and edit text files"), false));
             _shortcutList.Add(new Shortcut("Esc T", Lang.T("Select mode (notes/text editor/startup)"), false));
             _shortcutList.Add(new Shortcut("Esc S", Lang.T("Configuration"), false));
@@ -1544,6 +1556,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMainMenu, true));
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K :recent", Lang.T("The latest files: Enter or 1-9 opens one"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select an item (on into the next tab)"), false));
             _shortcutList.Add(new Shortcut("l Enter Space", Lang.T("Open the selected item (Space: also on/off)"), false));
             _shortcutList.Add(new Shortcut("Tab", Lang.T("The next tab (Shift: back)"), false));
@@ -1569,6 +1582,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionMenus, true));
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K :recent", Lang.T("The latest files: Enter or 1-9 opens one"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
             _shortcutList.Add(new Shortcut("Enter Space", Lang.T("Edit the selected entry"), false));
             _shortcutList.Add(new Shortcut("1-9 0 :12", Lang.T("Select by number (0 is the 10th)"), false));
@@ -1602,6 +1616,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFiles, true));
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K :recent", Lang.T("The latest files: Enter or 1-9 opens one"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last"), false));
             _shortcutList.Add(new Shortcut("5j 5k 5gg 5G", Lang.T("With a count: 5 rows down/up, to row 5"), false));
@@ -1612,17 +1627,20 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Tab", Lang.T("Go to the other pane"), false));
             _shortcutList.Add(new Shortcut("T :panes", Lang.T("Show two panes or one"), false));
             _shortcutList.Add(new Shortcut(":match", Lang.T("The other pane shows this directory too"), false));
+            _shortcutList.Add(new Shortcut(":number :nonumber", Lang.T("Number the rows (as 12gg counts them), or not"), false));
             _shortcutList.Add(new Shortcut("N :new name", Lang.T("Create a new file and open it"), false));
             _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
             _shortcutList.Add(new Shortcut("A :mkdir name", Lang.T("Create a new directory"), false));
             _shortcutList.Add(new Shortcut("X :rename name", Lang.T("Rename the file or directory"), false));
             _shortcutList.Add(new Shortcut("Space", Lang.T("Mark/Unmark: Y C M P D work on the marked"), false));
-            _shortcutList.Add(new Shortcut("V :peek", Lang.T("Peek: the file read-only in the other pane"), false));
+            _shortcutList.Add(new Shortcut("V :peek", Lang.T("Peek on/off: the file in the other pane, j/k the next"), false));
+            _shortcutList.Add(new Shortcut("  Tab", Lang.T("Peeking: into the peek, to scroll (Tab: back)"), false));
+            _shortcutList.Add(new Shortcut("  Tab", Lang.T("Peeking at a directory: open it in other pane"), false));
             _shortcutList.Add(new Shortcut("Y :duplicate", Lang.T("Make a copy in the same directory"), false));
             _shortcutList.Add(new Shortcut("C :copy", Lang.T("Copy: go to the directory, then S (Esc cancels)"), false));
             _shortcutList.Add(new Shortcut("M :move", Lang.T("Move: go to the directory, then S (Esc cancels)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Two panes"), Lang.T("C and M go to the other pane: S copies to it"), false));
-            _shortcutList.Add(new Shortcut("D :delete", Lang.T("Delete (asks first, cannot be undone)"), false));
+            _shortcutList.Add(new Shortcut("D :delete", Lang.T("Delete to the trash (asks first)"), false));
             _shortcutList.Add(new Shortcut("P :fav", Lang.T("Add to/Remove from the favorites (*)"), false));
             _shortcutList.Add(new Shortcut("F :favorites", Lang.T("Show the favorites"), false));
             _shortcutList.Add(new Shortcut("O :history", Lang.T("Show the files opened before (file history)"), false));
@@ -1641,6 +1659,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":cd path", Lang.T("Go to a directory"), false));
             _shortcutList.Add(new Shortcut(":home", Lang.T("Go to the folder of the data files in use"), false));
             _shortcutList.Add(new Shortcut(":data", Lang.T("Go to the data directory (settings, snippets ...)"), false));
+            _shortcutList.Add(new Shortcut(":trash", Lang.T("Go to the trash (what was deleted)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Trash"), Lang.T("M moves back, D there deletes for good"), false));
+            _shortcutList.Add(new Shortcut(":protect off on", Lang.T("Lift/restore the protection of Marbles' files (this session)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut("Esc Q :q", Lang.T("Close the file browser"), false));
@@ -1653,6 +1674,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionSearch, true));
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K :recent", Lang.T("The latest files: Enter or 1-9 opens one"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Name"), Lang.T("Part of the name, or with * and ? (*.md)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Text in files"), Lang.T("Text files containing the text"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Regular expr."), Lang.T("Name and text are regular expressions"), false));
@@ -1664,12 +1686,14 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("P :fav", Lang.T("Add to/Remove from the favorites (*)"), false));
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show the files with \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut("S :find", Lang.T("Search again"), false));
+            _shortcutList.Add(new Shortcut(":number :nonumber", Lang.T("Number the rows (as 12gg counts them), or not"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut("Esc Q h -", Lang.T("Back to the file browser"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionFavorites, true));
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K :recent", Lang.T("The latest files: Enter or 1-9 opens one"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
             _shortcutList.Add(new Shortcut("5j 5k 5gg 5G", Lang.T("With a count: 5 rows down/up, to row 5"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file (a directory: go to it)"), false));
@@ -1694,6 +1718,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("P D :remove", Lang.T("Remove the favorite or folder (files stay)"), false));
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut("u :undo", Lang.T("Put back what was removed last"), false));
+            _shortcutList.Add(new Shortcut(":missing", Lang.T("List the entries whose file or folder is gone"), false));
+            _shortcutList.Add(new Shortcut(":prune", Lang.T("Remove missing (asks; drives not connected stay)"), false));            _shortcutList.Add(new Shortcut(":number :nonumber", Lang.T("Number the rows (as 12gg counts them), or not"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
             _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
             _shortcutList.Add(new Shortcut("Esc Q F h -", Lang.T("Back to the file browser"), false));
@@ -1701,6 +1727,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionHistory, true));
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K :recent", Lang.T("The latest files: Enter or 1-9 opens one"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
             _shortcutList.Add(new Shortcut("5j 5k 5gg 5G", Lang.T("With a count: 5 rows down/up, to row 5"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file in the editor"), false));
@@ -1709,6 +1736,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
             _shortcutList.Add(new Shortcut("D :remove", Lang.T("Take the file out of the history (it stays)"), false));
             _shortcutList.Add(new Shortcut("X :clear", Lang.T("Clear the file history (asks first)"), false));
+            _shortcutList.Add(new Shortcut(":missing", Lang.T("List the entries whose file or folder is gone"), false));
+            _shortcutList.Add(new Shortcut(":prune", Lang.T("Remove missing (asks; drives not connected stay)"), false));            _shortcutList.Add(new Shortcut(":number :nonumber", Lang.T("Number the rows (as 12gg counts them), or not"), false));
             _shortcutList.Add(new Shortcut(":path :name", Lang.T("Copy the path/the name shown (also p in the editor)"), false));
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
@@ -1718,6 +1747,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionHotlist, true));
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K :recent", Lang.T("The latest files: Enter or 1-9 opens one"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
             _shortcutList.Add(new Shortcut("5j 5k 5gg 5G", Lang.T("With a count: 5 rows down/up, to row 5"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Go to the directory (in the pane with the focus)"), false));
@@ -1729,6 +1759,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("D :remove", Lang.T("Take it out of the hotlist (the directory stays)"), false));
             _shortcutList.Add(new Shortcut("u :undo", Lang.T("Put back what was removed last"), false));
             _shortcutList.Add(new Shortcut(":clear", Lang.T("Clear the hotlist (asks first)"), false));
+            _shortcutList.Add(new Shortcut(":missing", Lang.T("List the entries whose file or folder is gone"), false));
+            _shortcutList.Add(new Shortcut(":prune", Lang.T("Remove missing (asks; drives not connected stay)"), false));            _shortcutList.Add(new Shortcut(":number :nonumber", Lang.T("Number the rows (as 12gg counts them), or not"), false));
             _shortcutList.Add(new Shortcut(":path :name", Lang.T("Copy the path/the name shown (also p in the editor)"), false));
             _shortcutList.Add(new Shortcut("/text", Lang.T("Only show paths containing \"text\" (Esc: all)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("Command line (Tab completes the command)"), false));
@@ -1737,7 +1769,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("The list"), Lang.F("At most {0} directories, kept in hotlist.txt", DirectoryHotlist.MaxCount), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionJump, true));
             _shortcutList.Add(new Shortcut(":jump :ju :jmp", Lang.T("Open the Jump menu (from most places)"), false));
+            _shortcutList.Add(new Shortcut(":jump name", Lang.T("Go to a page of Marbles (Tab lists the names)"), false));
             _shortcutList.Add(new Shortcut("Ctrl+O", Lang.T("Open the Jump menu (from most places)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K :recent", Lang.T("The latest files: Enter or 1-9 opens one"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tabs"), Lang.T("Bookmarks, Recent, File browser, Marbles, Data files"), false));
             _shortcutList.Add(new Shortcut("  " + DialogText.CaptionsFiles, Lang.T("Its lists: History, Favorites, Hotlist"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select a place"), false));
@@ -1758,6 +1792,9 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("A :folder", Lang.T("Bookmarks: new folder (Enter opens/closes it)"), false));
             _shortcutList.Add(new Shortcut("Space M", Lang.T("Bookmarks: mark several/move them to a folder"), false));
             _shortcutList.Add(new Shortcut(":expand :collapse", Lang.T("Bookmarks: open/close all the folders"), false));
+            _shortcutList.Add(new Shortcut(":missing :prune", Lang.T("Bookmarks: list/remove those whose place is gone"), false));
+            _shortcutList.Add(new Shortcut(":number", Lang.T("Number the rows of the tab (:nonumber: not)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Columns"), Lang.T("Name, Command or When, Path and Type"), false));
             _shortcutList.Add(new Shortcut("u :clearbook", Lang.T("Bookmarks: put back the removed/clear (asks first)"), false));
             _shortcutList.Add(new Shortcut(":", Lang.T("A command (on the Bookmarks tab)"), false));
             _shortcutList.Add(new Shortcut("  Up Down", Lang.T("Earlier commands of this page (until logout)"), false));
@@ -1824,6 +1861,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionEditor, true));
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+K :recent", Lang.T("Normal mode: the latest files, Enter opens one"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Modes"), true));
             _shortcutList.Add(new Shortcut("Esc", Lang.T("Normal mode (navigate and give commands)"), false));
             _shortcutList.Add(new Shortcut("i a", Lang.T("Insert mode before/after the cursor"), false));
@@ -1982,14 +2020,16 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  $0 (css)", Lang.T("Snippets: the cursor goes to $0, (css) first in css"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Macros"), true));
             _shortcutList.Add(new Shortcut(":record", Lang.T("Record a macro (Esc in NORMAL mode stops it)"), false));
+            _shortcutList.Add(new Shortcut("  E", Lang.T("When it stops: edit the steps, then save"), false));
             _shortcutList.Add(new Shortcut(":play name 3", Lang.T("Play a macro (3 times); Tab completes the name"), false));
             _shortcutList.Add(new Shortcut(":macro", Lang.T("The macros in a list: Enter plays one"), false));
+            _shortcutList.Add(new Shortcut("  E", Lang.T("In the list: edit the macro (:w saves, Esc closes)"), false));
             _shortcutList.Add(new Shortcut("  macros/*.macro", Lang.T("A file for each macro, which can be edited"), false));
             _shortcutList.Add(new Shortcut(":complete", Lang.T("Complete words while typing on/off"), false));
             _shortcutList.Add(new Shortcut(":complete on/off", Lang.T("Turn completing on/off"), false));
             _shortcutList.Add(new Shortcut(":complete edit", Lang.T("Edit the file of completions (completions.txt)"), false));
             _shortcutList.Add(new Shortcut(":syntax", Lang.T("Colors on/off (on in the files of a known kind)"), false));
-            _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md css js json xml cs php)"), false));
+            _shortcutList.Add(new Shortcut(":syntax html", Lang.T("Color as html (or md css js json xml cs php ini)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Entries"), Lang.T("Remember their colors (shown as MD, HTML ...)"), false));
             _shortcutList.Add(new Shortcut(":number :nu", Lang.T("Line numbers on/off"), false));
             _shortcutList.Add(new Shortcut(":split", Lang.T("Two panes on/off (Tab: go to the other)"), false));
