@@ -158,6 +158,21 @@ internal static class ClipboardPage
                     return;
                 }
 
+                // Never a directory, a data file or a file of Marbles: the paste bin would write over it
+                if (SystemClipboard.RefusedPasteBin(path) is { } refused)
+                {
+                    ChoiceBox.Message(Lang.T("Paste bin file"), refused, path);
+                    return;
+                }
+
+                // A file with text in it that is not the paste bin already: the next yank replaces its text
+                if (SystemClipboard.IsOtherFileWithText(path) &&
+                    !ChoiceBox.Confirm(Lang.T("Paste bin file"), Lang.T("Use this file as the paste bin?"),
+                        Lang.T("It has text in it, which the next copy replaces"), true))
+                {
+                    return;
+                }
+
                 SystemClipboard.PasteBinFile = path;
                 break;
             }

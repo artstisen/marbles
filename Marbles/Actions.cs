@@ -1808,6 +1808,8 @@ internal static class Actions
         _resultPages.Clear();
         // The places of the marks in the notes
         EntryMarks.Clear();
+        // The text of the last note edited, or the title asked for last
+        _tempText = string.Empty;
     }
 
 

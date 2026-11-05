@@ -71,6 +71,24 @@ public partial class TextArea
     internal (int Index, bool OtherLeft)? SplitPlace =>
         _otherPane == null ? null : (_otherPane.Engine.GetCursorIndex(), _otherPane.Left < _left);
 
+    // A split that could not be made again when the editor was opened (an error): one pane, in the whole width
+    private void UndoSplit()
+    {
+        if (_wholeWidth == 0) return;
+        try
+        {
+            _otherPane?.Engine.Detach();
+        }
+        catch (Exception e) when (e is not NavigationException)
+        {
+            // The pane is dropped all the same
+        }
+
+        _otherPane = null;
+        _engine.InSplit = false;
+        SetPlace(_wholeLeft, _wholeWidth);
+    }
+
     // Opened split, as it was when it was closed: the other pane at its cursor, at the left or the right
     private void RestoreSplit(int index, bool otherLeft)
     {

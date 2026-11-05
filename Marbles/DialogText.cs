@@ -420,6 +420,8 @@ internal static class DialogText
     public static string ClipboardNote => Lang.T("The system clipboard is reached through the terminal (OSC 52): it works in Windows Terminal, iTerm2, kitty, WezTerm and tmux, also over SSH, but not in the console of a Raspberry Pi or the Terminal of macOS. There the paste bin file can be used: other programs can read it, and :pbread puts its text in the editor.");
     public static string ClipboardAllOff => Lang.T("The clipboard is off (:clipboard)");
     public static string ClipboardNotesOff => Lang.T("Not allowed from notes (:clipboard)");
+    public static string PasteBinNotDataFile => Lang.T("A data file cannot be the paste bin");
+    public static string PasteBinNotThisFile => Lang.T("This file of Marbles cannot be the paste bin");
     public static string CopiedToClipboard => Lang.T("Copied to the clipboard");
     public static string CopiedToPasteBin => Lang.T("Copied to the paste bin");
     public static string CopiedToBoth => Lang.T("Copied (clipboard, paste bin)");
@@ -482,6 +484,7 @@ internal static class DialogText
     public static string DiffDataFile => Lang.T("Data files are not compared");
     public static string DiffReplaceNote => Lang.T("The file is replaced by the comparison.");
     public static string WriteCopyNotHere => Lang.T(":w name saves a comparison (:diff) as a file");
+    public static string DiffNoteNotSaved => Lang.T("A comparison of a note is not saved (it would be unencrypted)");
     public static string CompleteOn => Lang.T("Completing words: on");
     public static string CompleteOff => Lang.T("Completing words: off");
     public static string CompleteOneKeys => Lang.T("Tab Complete");

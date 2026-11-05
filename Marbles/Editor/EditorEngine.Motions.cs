@@ -442,9 +442,11 @@ internal sealed partial class EditorEngine
 
                 var forward = key == 'n' ? _searchForward : !_searchForward;
                 var pos = Cursor;
+                // One time limit for all the jumps of a count ("99999n")
+                var deadline = SearchDeadline();
                 while (n-- > 0)
                 {
-                    if (FindNext(pos, forward, out pos)) continue;
+                    if (FindNext(pos, forward, out pos, deadline)) continue;
                     if (!_searchTimedOut) SetError(Lang.T("Pattern not found: ") + _lastSearch);
                     return false;
                 }

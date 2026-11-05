@@ -93,6 +93,32 @@ backup=
         Assert.Equal(LegacySettings, File.ReadAllText(SettingsFile + FileIo.UnreadSettingsExtension));
     }
 
+    [Theory]
+    [InlineData("notes.mbls", false)]
+    [InlineData("Work.MBLS", false)]
+    [InlineData("settings.ini", false)]
+    [InlineData("macros/x.macro", false)]
+    [InlineData("", false)]
+    [InlineData("clip.txt", true)]
+    public void ThePasteBinFile_IsNotADataFileOrAFileOfMarbles(string file, bool taken)
+    {
+        File.WriteAllText(SettingsFile, LegacySettings + "\npastebinfile=" + file + "\n");
+        try
+        {
+            Assert.True(FileIo.LoadSettings());
+            // (a file that cannot be the paste bin: the default one is used)
+            Assert.Equal(taken ? file : SystemClipboard.DefaultPasteBinFile, SystemClipboard.PasteBinFile);
+            // A directory neither
+            File.WriteAllText(SettingsFile, LegacySettings + "\npastebinfile=" + _workDirectory + "\n");
+            Assert.True(FileIo.LoadSettings());
+            Assert.Equal(SystemClipboard.DefaultPasteBinFile, SystemClipboard.PasteBinFile);
+        }
+        finally
+        {
+            SystemClipboard.SetDefaults();
+        }
+    }
+
     [Fact]
     public void ANumberInOtherDigits_IsNotASetting()
     {

@@ -1157,6 +1157,117 @@ internal static class Tools
         return text;
     }
 
+    #region The alternate screen
+
+    // The terminal shows Marbles on its alternate screen (as "less" and "vim" do): what was there before comes back
+    // when Marbles is left, and nothing Marbles showed (notes) is left in the scrollback of the terminal
+    private static bool _alternateScreen;
+    private static readonly object TerminalLock = new();
+
+    /// <summary>
+    /// Show Marbles on the alternate screen of the terminal (not when the output goes to a file or a pipe). It is
+    /// left on every way out (ExitApplication, the end of the process, SIGTERM and SIGHUP)
+    /// </summary>
+    internal static void EnterAlternateScreen()
+    {
+        if (!UsesAlternateScreen()) return;
+        lock (TerminalLock)
+        {
+            if (_alternateScreen) return;
+            if (!WriteTerminal(AlternateScreenOn)) return;
+            _alternateScreen = true;
+        }
+
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => LeaveAlternateScreen();
+        AppDomain.CurrentDomain.UnhandledException += (_, _) => LeaveAlternateScreen();
+    }
+
+    /// <summary>
+    /// Leave the alternate screen: the terminal shows what it showed before Marbles was started
+    /// </summary>
+    internal static void LeaveAlternateScreen()
+    {
+        lock (TerminalLock)
+        {
+            if (!_alternateScreen) return;
+            _alternateScreen = false;
+            WriteTerminal(AlternateScreenOff);
+        }
+    }
+
+    // Left for Ctrl+Z, to be shown again after "fg"
+    private static bool _alternateScreenSuspended;
+
+    /// <summary>
+    /// Ctrl+Z (Linux, macOS): the shell is shown on the screen it was on, not on the page of Marbles
+    /// </summary>
+    internal static void SuspendAlternateScreen()
+    {
+        lock (TerminalLock)
+        {
+            if (!_alternateScreen) return;
+            _alternateScreen = false;
+            _alternateScreenSuspended = true;
+            WriteTerminal(AlternateScreenOff);
+        }
+    }
+
+    /// <summary>
+    /// "fg" after Ctrl+Z: Marbles is on the alternate screen again (the page is drawn again after)
+    /// </summary>
+    internal static void ResumeAlternateScreen()
+    {
+        lock (TerminalLock)
+        {
+            if (!_alternateScreenSuspended) return;
+            _alternateScreenSuspended = false;
+            _alternateScreen = WriteTerminal(AlternateScreenOn);
+        }
+    }
+
+    /// <summary>
+    /// Clear the scrollback of the terminal (at logout: no note can be scrolled back to)
+    /// </summary>
+    internal static void ClearScrollback()
+    {
+        if (UsesAlternateScreen()) WriteTerminal(ClearScrollbackSequence);
+    }
+
+    internal const string AlternateScreenOn = "\u001b[?1049h";
+    internal const string AlternateScreenOff = "\u001b[?1049l";
+    internal const string ClearScrollbackSequence = "\u001b[3J";
+
+    // Only on Linux and macOS, in a terminal (not to a file or a pipe). On Windows the console clears all of its
+    // buffer when the screen is cleared (Console.Clear), and Marbles never scrolls it, so nothing of it is left to
+    // scroll back to; and the size of the window and its buffer, which Marbles can set there, is kept as it is
+    private static bool UsesAlternateScreen() =>
+        UsesAlternateScreen(OperatingSystem.IsWindows(), Console.IsOutputRedirected,
+            Environment.GetEnvironmentVariable("TERM"));
+
+    /// <summary>
+    /// True if the alternate screen is used: on Linux and macOS, when the output is a terminal that is not the
+    /// "dumb" one
+    /// </summary>
+    internal static bool UsesAlternateScreen(bool windows, bool outputRedirected, string? term) =>
+        !windows && !outputRedirected && term != "dumb";
+
+    // An escape sequence to the terminal (false if it could not be written: the terminal is gone)
+    private static bool WriteTerminal(string sequence)
+    {
+        try
+        {
+            Console.Out.Write(sequence);
+            Console.Out.Flush();
+            return true;
+        }
+        catch (Exception e) when (e is IOException or ObjectDisposedException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    #endregion
+
     internal static void ClearScreen()
     {
         // The screen is cleared with the background of the color scheme (also when a box is drawn on it again after)
@@ -1173,6 +1284,8 @@ internal static class Tools
             ClearScreen();
         }
 
+        // Nothing of the notes to scroll back to in the terminal
+        ClearScrollback();
         ClearLineMemory();
         CommandHistory.Clear();
         Entries.ClearAllEntries(true);
@@ -1184,6 +1297,12 @@ internal static class Tools
         Entries.ClearSessionEntryIdList();
         Encryptor.RemoveKey();
         Actions.ClearAtLogout();
+        // Text from the notes kept by the editor and the command lines: the find and replace texts of ":replace",
+        // the block yanked last, the argument of the last command (":new Title") and a ":new" not yet opened
+        ReplaceDialog.ForgetTexts();
+        EditorEngine.ForgetBlockRegister();
+        CommandLine.ForgetLastArgument();
+        TextArea.TakeNewDocumentRequest();
         ForgetPasswords();
         FileIo.ResetBackupFailureNotice();
         FileIo.ForgetKnownVersion();
@@ -1227,6 +1346,8 @@ internal static class Tools
         // Exit the application reverting to the original console colors
         ConsoleColors.Reset();
         Console.Clear();
+        // The terminal shows again what it showed before Marbles was started
+        LeaveAlternateScreen();
         Console.WriteLine(DialogText.ApplicationExit);
         Environment.Exit(0);
     }
@@ -1816,6 +1937,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Notes"), Lang.T("Copying out of a data file is off until allowed"), false));
             _shortcutList.Add(new Shortcut("  OSC 52", Lang.T("Windows Terminal, iTerm2, kitty, WezTerm, tmux, SSH"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Paste bin"), Lang.T("For terminals without OSC 52 (Raspberry Pi)"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Paste bin file"), Lang.T("Not a data file or a file of Marbles"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionColorScheme, true));
             _shortcutList.Add(new Shortcut("Tab", Lang.T("Next tab: Schemes, Colors, Preview"), false));
             _shortcutList.Add(new Shortcut("l h", Lang.T("Colors: the next/previous page (Page 1 to 5)"), false));
@@ -2046,6 +2168,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Comparison"), Lang.T("n N ]c [c: the next/previous change"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Enter: open at the line, Esc: close"), false));
             _shortcutList.Add(new Shortcut(":w name.diff", Lang.T("Save a comparison as a file"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Notes"), Lang.T("A comparison of a note is not saved"), false));
             _shortcutList.Add(new Shortcut(":rename :title", Lang.T("Rename the file, or change the title of the entry"), false));
             _shortcutList.Add(new Shortcut(":%y :%d :2,9d", Lang.T("Yank all/Delete all/Delete line 2 to 9"), false));
             _shortcutList.Add(new Shortcut(":clear", Lang.T("Clear all"), false));

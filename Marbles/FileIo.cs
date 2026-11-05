@@ -1232,7 +1232,7 @@ internal static class FileIo
 
     #region Settings
 
-    private static string GetSettingsFolderAndFileName()
+    internal static string GetSettingsFolderAndFileName()
     {
         return
             Path.Combine(DataDirectory,
@@ -1492,7 +1492,10 @@ internal static class FileIo
         SystemClipboard.FromNotes = Tools.TrimToLower(Get("clipboardnotes")) == DialogText.BTrue;
         SystemClipboard.PasteBinAppend = Tools.TrimToLower(Get("pastebinappend")) == DialogText.BTrue;
         var pasteBinFile = Get("pastebinfile").Trim();
-        SystemClipboard.PasteBinFile = pasteBinFile.Length > 0 ? pasteBinFile : SystemClipboard.DefaultPasteBinFile;
+        // (a data file, a directory or a file of Marbles is not taken: the paste bin would write over it)
+        SystemClipboard.PasteBinFile = pasteBinFile.Length > 0 && SystemClipboard.RefusedPasteBin(pasteBinFile) == null
+            ? pasteBinFile
+            : SystemClipboard.DefaultPasteBinFile;
         Snippets.Sort = Snippets.ParseSort(Get("snipsort"));
         var language = Tools.TrimToLower(Get("language"));
         Lang.Missing = null;

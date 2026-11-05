@@ -25,9 +25,11 @@ internal static class DiffView
     /// <param name="ignoreSpace">Lines that differ only in blank space are the same</param>
     /// <param name="note">Shown after the numbers of the changes (the line endings differ ...), or empty</param>
     /// <param name="message">When the comparison is not shown: why (the texts are the same ...)</param>
+    /// <param name="fromNote">The texts are those of a note: yanks and ":pb" follow "clipboardnotes", and the
+    /// comparison is not saved as a file (it would be unencrypted)</param>
     /// <returns>The place to open, or null if the view was closed (or not shown)</returns>
     internal static Place? Show(string oldText, string newText, string oldName, string newName,
-        string saveDirectory, bool ignoreSpace, string note, out string message)
+        string saveDirectory, bool ignoreSpace, string note, out string message, bool fromNote = false)
     {
         message = string.Empty;
         var oldLines = TextBuffer.Normalize(oldText).Split('\n');
@@ -64,7 +66,8 @@ internal static class DiffView
                 Hint = DialogText.DiffHint,
                 ReadOnlyText = DialogText.DiffReadOnly,
                 Changes = unified.Changes,
-                SaveDirectory = saveDirectory
+                SaveDirectory = fromNote ? null : saveDirectory,
+                FromNote = fromNote
             });
         Tools.HideCursor();
         if (!textArea.OpenRequested) return null;

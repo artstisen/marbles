@@ -149,7 +149,9 @@ internal static class FileSearch
             {
                 var isDirectory = (entry.Attributes & FileAttributes.Directory) != 0;
                 // A link to a directory is not followed, so the search cannot go in circles
-                if (isDirectory && options.Subfolders && (entry.Attributes & FileAttributes.ReparsePoint) == 0)
+                // (nor the folders of the system on Linux and macOS, with devices and files without an end)
+                if (isDirectory && options.Subfolders && (entry.Attributes & FileAttributes.ReparsePoint) == 0 &&
+                    !IsSystemDirectory(entry.FullName, !OperatingSystem.IsWindows()))
                 {
                     subDirectories.Add(entry.FullName);
                 }
@@ -178,6 +180,20 @@ internal static class FileSearch
         return outcome;
     }
 
+    // The folders of the system on Linux and macOS that are not searched (as subfolders): "/dev" with the devices,
+    // "/proc" and "/sys" with files that tell a length of 0 and never end, or wait
+    private static readonly string[] SystemDirectories = ["/dev", "/proc", "/sys"];
+
+    /// <summary>
+    /// True for a folder of the system that the search does not go into (on Linux and macOS: "/dev", "/proc",
+    /// "/sys")
+    /// </summary>
+    internal static bool IsSystemDirectory(string path, bool unix)
+    {
+        if (!unix) return false;
+        var trimmed = path.Length > 1 ? path.TrimEnd('/') : path;
+        return SystemDirectories.Contains(trimmed, StringComparer.Ordinal);
+    }
     // Find the first line of a text file with a match. False if there is none, or the file is not a text file
     // that can be opened (too large, not text, a Marbles data file)
     private static bool FindText(string path, Regex pattern, Result result)
@@ -186,6 +202,8 @@ internal static class FileSearch
         string text;
         try
         {
+            // An empty file has nothing to find (and a special file, which tells a length of 0, is never opened)
+            if (new FileInfo(path).Length == 0) return false;
             text = TextFile.Load(path).Text;
         }
         catch

@@ -35,3 +35,6 @@ publish/
 
 # Inspection report of the JetBrains ReSharper command line tools (made locally)
 /rider-report.xml
+
+# Code review before a release (kept locally)
+/Code-review-v1.5.4.md

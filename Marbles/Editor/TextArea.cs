@@ -287,107 +287,139 @@ public partial class TextArea
         CommandCompletion.Arguments["macro"] = MacroFiles.Names;
         // Tab after ":surround " completes the completions that can surround text, of the kind of text edited (not
         // for a line of a dialog or a peek, which would take the place of the editor's)
+        // The ones before are put back when the editor is closed: this text area (and its text) is not kept by them
+        CommandCompletion.Arguments.TryGetValue("surround", out var surroundBefore);
+        CommandCompletion.Arguments.TryGetValue("sur", out var surBefore);
         if (!_singleLine && peek == null)
         {
             CommandCompletion.Arguments["surround"] = SurroundWords;
             CommandCompletion.Arguments["sur"] = SurroundWords;
         }
 
-        // (read also when completing while typing is off: ":surround" uses them)
-        if (!_singleLine) Completions.Refresh();
-        // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON ...) are colored, unless that is turned off,
-        // and so is the settings file (as INI) when it is edited from Configuration
-        var fileType = peek != null ? peek.Syntax
-            : saveMode == SaveAsFile && !_singleLine && !readOnly
-                ? SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName)
-                : saveMode == SaveAsSettings && !_singleLine && !readOnly
-                    ? SyntaxType.Ini
-                    : SyntaxType.None;
-        _engine.CompletionSyntax = fileType;
-        if (fileType != SyntaxType.None)
+        try
         {
-            _engine.SyntaxDefault = fileType;
-            if (SyntaxHighlighter.ColorFiles) _engine.Syntax = fileType;
+            // (read also when completing while typing is off: ":surround" uses them)
+            if (!_singleLine) Completions.Refresh();
+            // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON ...) are colored, unless that is turned off,
+            // and so is the settings file (as INI) when it is edited from Configuration
+            var fileType = peek != null ? peek.Syntax
+                : saveMode == SaveAsFile && !_singleLine && !readOnly
+                    ? SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName)
+                    : saveMode == SaveAsSettings && !_singleLine && !readOnly
+                        ? SyntaxType.Ini
+                        : SyntaxType.None;
+            _engine.CompletionSyntax = fileType;
+            if (fileType != SyntaxType.None)
+            {
+                _engine.SyntaxDefault = fileType;
+                if (SyntaxHighlighter.ColorFiles) _engine.Syntax = fileType;
+            }
+
+            // Yanks go to the clipboard as set (every yank, or only with "+ in front)
+            _engine.ClipboardEveryYank = SystemClipboard.EveryYank;
+
+            // An entry is colored as set for the entry (a tag in its options)
+            if (saveMode == SaveAsEntry && !_singleLine && NextEntrySyntax != SyntaxType.None)
+            {
+                _engine.CompletionSyntax = NextEntrySyntax;
+                _engine.SyntaxDefault = NextEntrySyntax;
+                _engine.Syntax = NextEntrySyntax;
+            }
+
+            NextEntrySyntax = SyntaxType.None;
+            // An entry that is read only cannot be changed in the editor
+            _engine.ReadOnly = saveMode == SaveAsEntry && !_singleLine && NextEntryReadOnly;
+            NextEntryReadOnly = false;
+            if (peek is { SaveText: null })
+            {
+                // A peek only shows the file
+                _engine.ReadOnly = true;
+                _engine.ReadOnlyMessage = peek.ReadOnlyText ?? DialogText.PeekReadOnly;
+                _engine.ChangeLines = peek.Changes;
+                // A comparison is colored, also when colors are turned off for files
+                if (peek.Changes != null) _engine.Syntax = peek.Syntax;
+            }
+
+            if (scrollToEnd)
+            {
+                _engine.CursorToEnd();
+            }
+            else if (!_singleLine && recallCursorIndex > 0)
+            {
+                _engine.SetCursorIndex(recallCursorIndex);
+            }
+
+            if (_readOnly)
+            {
+                // Clear the area and show the text with some rows of context below the recalled cursor position
+                Array.Fill(_shownCells, width - 1);
+                _engine.ShowRowsBelowCursor(5);
+                Draw();
+                return;
+            }
+
+            if (_singleLine) Array.Fill(_shownCells, width - 1);
+            DocumentInfo.HasChanged = false;
+            Menu.InitializeSaveIndicator();
+            if (modified)
+            {
+                _engine.MarkModified();
+                UpdateChangeIndicator();
+            }
+
+            if (openSearchDialog && !_engine.Buffer.IsEmpty)
+            {
+                _engine.OpenSearch();
+            }
+
+            if (_peek != null)
+            {
+                // The pane is cleared where the text is written, and the keys of a peek are told
+                Array.Fill(_shownCells, width - 1);
+                _engine.SetMessage(_peek.Hint ?? DialogText.PeekHint, false);
+            }
+            else if (!_singleLine && !_readOnly)
+            {
+                // Split as it was when it was closed
+                if (split is { } place)
+                {
+                    try
+                    {
+                        RestoreSplit(place.Index, place.OtherLeft);
+                    }
+                    catch (Exception e) when (e is not NavigationException)
+                    {
+                        // Opened in one pane: the split could not be made again
+                        UndoSplit();
+                    }
+                }
+
+                // Once, until the first key: where the keys are found (the top row has no room for it)
+                _engine.SetMessage(DialogText.EditorHelpHint, false);
+            }
+
+
+            // (a page of its own, also when it is opened from a box: the note of a bookmark in the Jump menu; a field of one
+            // row is a part of its box)
+            using var outside = _singleLine ? null : ConsoleColors.OutsideBox();
+            // (drawn first in the loop, so an error there is handled as one after a key: the text is not lost)
+            MainLoop();
         }
-
-        // Yanks go to the clipboard as set (every yank, or only with "+ in front)
-        _engine.ClipboardEveryYank = SystemClipboard.EveryYank;
-
-        // An entry is colored as set for the entry (a tag in its options)
-        if (saveMode == SaveAsEntry && !_singleLine && NextEntrySyntax != SyntaxType.None)
+        finally
         {
-            _engine.CompletionSyntax = NextEntrySyntax;
-            _engine.SyntaxDefault = NextEntrySyntax;
-            _engine.Syntax = NextEntrySyntax;
+            if (!_singleLine && peek == null)
+            {
+                RestoreCompletion("surround", surroundBefore);
+                RestoreCompletion("sur", surBefore);
+            }
         }
+    }
 
-        NextEntrySyntax = SyntaxType.None;
-        // An entry that is read only cannot be changed in the editor
-        _engine.ReadOnly = saveMode == SaveAsEntry && !_singleLine && NextEntryReadOnly;
-        NextEntryReadOnly = false;
-        if (peek is { SaveText: null })
-        {
-            // A peek only shows the file
-            _engine.ReadOnly = true;
-            _engine.ReadOnlyMessage = peek.ReadOnlyText ?? DialogText.PeekReadOnly;
-            _engine.ChangeLines = peek.Changes;
-            // A comparison is colored, also when colors are turned off for files
-            if (peek.Changes != null) _engine.Syntax = peek.Syntax;
-        }
-
-        if (scrollToEnd)
-        {
-            _engine.CursorToEnd();
-        }
-        else if (!_singleLine && recallCursorIndex > 0)
-        {
-            _engine.SetCursorIndex(recallCursorIndex);
-        }
-
-        if (_readOnly)
-        {
-            // Clear the area and show the text with some rows of context below the recalled cursor position
-            Array.Fill(_shownCells, width - 1);
-            _engine.ShowRowsBelowCursor(5);
-            Draw();
-            return;
-        }
-
-        if (_singleLine) Array.Fill(_shownCells, width - 1);
-        DocumentInfo.HasChanged = false;
-        Menu.InitializeSaveIndicator();
-        if (modified)
-        {
-            _engine.MarkModified();
-            UpdateChangeIndicator();
-        }
-
-        if (openSearchDialog && !_engine.Buffer.IsEmpty)
-        {
-            _engine.OpenSearch();
-        }
-
-        if (_peek != null)
-        {
-            // The pane is cleared where the text is written, and the keys of a peek are told
-            Array.Fill(_shownCells, width - 1);
-            _engine.SetMessage(_peek.Hint ?? DialogText.PeekHint, false);
-        }
-        else if (!_singleLine && !_readOnly)
-        {
-            // Split as it was when it was closed
-            if (split is { } place) RestoreSplit(place.Index, place.OtherLeft);
-            // Once, until the first key: where the keys are found (the top row has no room for it)
-            _engine.SetMessage(DialogText.EditorHelpHint, false);
-        }
-
-
-        // (a page of its own, also when it is opened from a box: the note of a bookmark in the Jump menu; a field of one
-        // row is a part of its box)
-        using var outside = _singleLine ? null : ConsoleColors.OutsideBox();
-        DrawReadOnlyLabel();
-        Draw();
-        MainLoop();
+    // A completion of the arguments of a command put back as it was before this text area was opened
+    private static void RestoreCompletion(string command, Func<IEnumerable<string>>? before)
+    {
+        if (before != null) CommandCompletion.Arguments[command] = before;
+        else CommandCompletion.Arguments.Remove(command);
     }
 
     /// <summary>
@@ -437,111 +469,206 @@ public partial class TextArea
 
     private void MainLoop()
     {
-        try
+        var first = true;
+        while (true)
         {
-            while (!_exit)
+            try
             {
-                var key = ReadKey();
-                if (FollowsWindow && IsCancelKey(key))
+                if (first)
                 {
-                    // Ctrl+C that comes as a key (some terminals send it so): as the signal, it does not close
-                    _engine.SetMessage(DialogText.CancelKeyHint, false);
+                    first = false;
+                    DrawReadOnlyLabel();
                     Draw();
-                    continue;
                 }
 
-                if (_peek != null && !EditablePeek && key.Key == ConsoleKey.Enter && _engine.Mode == EditorMode.Normal)
-                {
-                    // Enter in a peek: the file in the editor
-                    OpenRequested = true;
-                    break;
-                }
-
-                // Esc closes a peek, also when a search is highlighted (a key typed before it is only cancelled). In a
-                // comparison it removes the highlighting first, so "n" "N" go to the changes again
-                // (one that can be changed closes as the editor does: Esc asks about changes that are not saved)
-                if (_peek != null && !EditablePeek && key.Key == ConsoleKey.Escape &&
-                    _engine.Mode == EditorMode.Normal && !_engine.HasPending &&
-                    !(_peek.Changes != null && _engine.IsSearchHighlighted)) break;
-                if (_peek is { TabCloses: true } && key.Key == ConsoleKey.Tab && _engine.Mode == EditorMode.Normal &&
-                    !_engine.HasPending) break;
-
-                var request = _engine.HandleKey(key);
-                if (_peek != null && !EditablePeek && request is EditorRequest.Quit or EditorRequest.ForceQuit
-                        or EditorRequest.SaveAndQuit)
-                {
-                    // Esc or :q closes a peek (nothing was changed)
-                    break;
-                }
-
-                if (_peek?.SaveDirectory != null && request == EditorRequest.WriteCopy)
-                {
-                    // ":w name" in a comparison
-                    SaveComparison(_peek.SaveDirectory);
-                    Draw();
-                    continue;
-                }
-
-                if (_peek != null && request is not (EditorRequest.None or EditorRequest.Clipboard
-                        or EditorRequest.PasteBinWrite or EditorRequest.Help or EditorRequest.SyntaxChanged
-                        or EditorRequest.WrapChanged or EditorRequest.ScrollOffChanged) &&
-                    !(EditablePeek && request is EditorRequest.Save or EditorRequest.SaveAndQuit
-                        or EditorRequest.Quit or EditorRequest.ForceQuit or EditorRequest.PasteBinRead
-                        or EditorRequest.StringMemory or EditorRequest.ReplaceDialog or EditorRequest.ClearRegisters))
-                {
-                    // What changes the text, saves it, or opens another page is not done in a peek
-                    _engine.SetMessage(_peek.ReadOnlyText ?? DialogText.PeekReadOnly, true);
-                    Draw();
-                    continue;
-                }
-
-                if (_engine.ReadOnly && request is EditorRequest.ClearAll or EditorRequest.PasteBinRead or EditorRequest.Snippets or EditorRequest.StringMemory)
-                {
-                    // Read only: what would only insert or clear text is not opened
-                    _engine.SetMessage(DialogText.EditorReadOnly, true);
-                }
-                else if (request != EditorRequest.None)
-                {
-                    HandleRequest(request);
-                    if (_engine.IsRecording && request is EditorRequest.Snippets or EditorRequest.PasteBinRead
-                            or EditorRequest.ReplaceDialog or EditorRequest.StringMemory or EditorRequest.SpellSuggest)
-                    {
-                        _engine.ShowMessage(Lang.T("Not recorded in the macro"), true);
-                    }
-                    _engine.ReportReadOnly();
-                }
-
-                if (_exit) break;
-                UpdateChangeIndicator();
-                // When more keys are waiting (as when pasting text) they are all handled before drawing
-                if (IsKeyWaiting()) continue;
-                Draw();
-                // The text could not be drawn (the window was made smaller): drawn again as the window is now
-                if (FollowsWindow && Tools.TakeRedrawRequest()) FitToWindow();
+                RunKeys();
+                break;
             }
-
-            // The key typed right after the Esc that closed it (a peek): for the page shown now
-            if (_keyAfterEscape is { } left)
+            catch (Exception ex) when (ex is not NavigationException)
             {
-                _keyAfterEscape = null;
-                Keyboard.PushBack(left);
-            }
-        }
-        catch (Exception ex) when (ex is not NavigationException)
-        {
-            Tools.HideCursor();
-            Tools.ActionUnsupported(ex.Message);
-            // Offer to save before closing
-            Canceled = true;
-            if (!_singleLine && _engine.IsModified &&
-                Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn, string.Empty, true) == 1)
-            {
-                Save();
-                Canceled = false;
+                // An error that was not expected: the changes are offered to be saved (back to the editor to go on)
+                if (!RecoverFromError(ex)) break;
             }
         }
 
         Tools.HideCursor();
+    }
+
+    // After an unexpected error: the error is told, and changes that are not saved are offered to be saved until
+    // they are, or the user answers No (thrown away). Cancel or Esc goes back to the editor (if it cannot be drawn
+    // again, the question is asked again). True: back to the editor
+    private bool RecoverFromError(Exception error)
+    {
+        Canceled = true;
+        try
+        {
+            Tools.HideCursor();
+            Tools.ActionUnsupported(error.Message);
+        }
+        catch (Exception e) when (e is not NavigationException)
+        {
+            // The question below is what matters
+        }
+
+        if (_singleLine || !_engine.IsModified || (_peek != null && !EditablePeek)) return false;
+        var note = Lang.T("Esc: back to the text. No: the changes are lost");
+        while (true)
+        {
+            byte answer;
+            var asked = true;
+            try
+            {
+                answer = Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn, note, true);
+            }
+            catch (Exception e) when (e is not NavigationException)
+            {
+                // Nothing can be asked: saved, rather than lost
+                answer = 1;
+                asked = false;
+            }
+
+            if (answer == 2) return false;
+            if (answer == 1)
+            {
+                var problem = TrySave();
+                if (problem == null)
+                {
+                    Canceled = false;
+                    return false;
+                }
+
+                // (not saved, and nothing can be asked: there is nothing more to do)
+                if (!asked) return false;
+                note = Lang.F("Not saved: {0}", problem);
+                continue;
+            }
+
+            try
+            {
+                RedrawAll();
+                Canceled = false;
+                _exit = false;
+                return true;
+            }
+            catch (Exception e) when (e is not NavigationException)
+            {
+                note = Lang.F("The text cannot be shown again: {0}", e.Message);
+            }
+        }
+    }
+
+    // Save after an error: null when it was saved, else why not (an error in the save itself is caught)
+    private string? TrySave()
+    {
+        try
+        {
+            if (Save()) return null;
+            return _engine.Message.Length > 0 ? _engine.Message : DialogText.ChangesNotSaved;
+        }
+        catch (Exception e) when (e is not NavigationException)
+        {
+            return e.Message;
+        }
+    }
+
+    // The keys typed in the editor, until it is closed
+    private void RunKeys()
+    {
+        while (!_exit)
+        {
+            var key = ReadKey();
+            if (FollowsWindow && IsCancelKey(key))
+            {
+                // Ctrl+C that comes as a key (some terminals send it so): as the signal, it does not close
+                _engine.SetMessage(DialogText.CancelKeyHint, false);
+                Draw();
+                continue;
+            }
+
+            if (_peek != null && !EditablePeek && key.Key == ConsoleKey.Enter && _engine.Mode == EditorMode.Normal)
+            {
+                // Enter in a peek: the file in the editor
+                OpenRequested = true;
+                break;
+            }
+
+            // Esc closes a peek, also when a search is highlighted (a key typed before it is only cancelled). In a
+            // comparison it removes the highlighting first, so "n" "N" go to the changes again
+            // (one that can be changed closes as the editor does: Esc asks about changes that are not saved)
+            if (_peek != null && !EditablePeek && key.Key == ConsoleKey.Escape &&
+                _engine.Mode == EditorMode.Normal && !_engine.HasPending &&
+                !(_peek.Changes != null && _engine.IsSearchHighlighted)) break;
+            if (_peek is { TabCloses: true } && key.Key == ConsoleKey.Tab && _engine.Mode == EditorMode.Normal &&
+                !_engine.HasPending) break;
+
+            var request = _engine.HandleKey(key);
+            if (_peek != null && !EditablePeek && request is EditorRequest.Quit or EditorRequest.ForceQuit
+                    or EditorRequest.SaveAndQuit)
+            {
+                // Esc or :q closes a peek (nothing was changed)
+                break;
+            }
+
+            if (_peek is { FromNote: true, Changes: not null } && request == EditorRequest.WriteCopy)
+            {
+                // ":w name" in a comparison of a note: refused, the file would hold the note unencrypted
+                _engine.ShowMessage(DialogText.DiffNoteNotSaved, true);
+                Draw();
+                continue;
+            }
+
+            if (_peek?.SaveDirectory != null && request == EditorRequest.WriteCopy)
+            {
+                // ":w name" in a comparison
+                SaveComparison(_peek.SaveDirectory);
+                Draw();
+                continue;
+            }
+
+            if (_peek != null && request is not (EditorRequest.None or EditorRequest.Clipboard
+                    or EditorRequest.PasteBinWrite or EditorRequest.Help or EditorRequest.SyntaxChanged
+                    or EditorRequest.WrapChanged or EditorRequest.ScrollOffChanged) &&
+                !(EditablePeek && request is EditorRequest.Save or EditorRequest.SaveAndQuit
+                    or EditorRequest.Quit or EditorRequest.ForceQuit or EditorRequest.PasteBinRead
+                    or EditorRequest.StringMemory or EditorRequest.ReplaceDialog or EditorRequest.ClearRegisters))
+            {
+                // What changes the text, saves it, or opens another page is not done in a peek
+                _engine.SetMessage(_peek.ReadOnlyText ?? DialogText.PeekReadOnly, true);
+                Draw();
+                continue;
+            }
+
+            if (_engine.ReadOnly && request is EditorRequest.ClearAll or EditorRequest.PasteBinRead or EditorRequest.Snippets or EditorRequest.StringMemory)
+            {
+                // Read only: what would only insert or clear text is not opened
+                _engine.SetMessage(DialogText.EditorReadOnly, true);
+            }
+            else if (request != EditorRequest.None)
+            {
+                HandleRequest(request);
+                if (_engine.IsRecording && request is EditorRequest.Snippets or EditorRequest.PasteBinRead
+                        or EditorRequest.ReplaceDialog or EditorRequest.StringMemory or EditorRequest.SpellSuggest)
+                {
+                    _engine.ShowMessage(Lang.T("Not recorded in the macro"), true);
+                }
+                _engine.ReportReadOnly();
+            }
+
+            if (_exit) break;
+            UpdateChangeIndicator();
+            // When more keys are waiting (as when pasting text) they are all handled before drawing
+            if (IsKeyWaiting()) continue;
+            Draw();
+            // The text could not be drawn (the window was made smaller): drawn again as the window is now
+            if (FollowsWindow && Tools.TakeRedrawRequest()) FitToWindow();
+        }
+
+        // The key typed right after the Esc that closed it (a peek): for the page shown now
+        if (_keyAfterEscape is { } left)
+        {
+            _keyAfterEscape = null;
+            Keyboard.PushBack(left);
+        }
     }
 
     private static bool IsKeyWaiting()
@@ -1069,7 +1196,7 @@ public partial class TextArea
             : FileIo.GetDataDirectoryName();
         Tools.HideCursor();
         var place = DiffView.Show(saved, GetText(), Lang.F("{0} (saved)", name), Lang.F("{0} (edited)", name),
-            directory, _engine.DiffIgnoreSpace, string.Empty, out var message);
+            directory, _engine.DiffIgnoreSpace, string.Empty, out var message, NoteText);
         if (message.Length > 0)
         {
             _engine.ShowMessage(message, false);
@@ -1085,6 +1212,13 @@ public partial class TextArea
     // A file that is there is replaced if the user wants that
     private void SaveComparison(string directory)
     {
+        if (NoteText)
+        {
+            // Never a note's text unencrypted on disk
+            _engine.ShowMessage(DialogText.DiffNoteNotSaved, true);
+            return;
+        }
+
         string path;
         try
         {
@@ -1731,6 +1865,9 @@ public partial class TextArea
         }
 
         Tools.HideCursor();
+        // (each redraw has its time for highlighting the matches of the search)
+        _engine.StartHighlighting();
+        _otherPane?.Engine.StartHighlighting();
         DrawRows();
         DrawOtherPane();
         if (_readOnly) return;

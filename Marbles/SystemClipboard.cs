@@ -58,6 +58,82 @@ internal static class SystemClipboard
         return Path.GetFullPath(Path.IsPathRooted(file) ? file : Path.Combine(FileIo.GetDataDirectoryName(), file));
     }
 
+    /// <summary>
+    /// Why a file cannot be the paste bin, or null if it can: a directory, a data file (".mbls", or the copy of an
+    /// old one, ".legacy"), or a file of Marbles itself (the settings, the lists, the snippets, the completions,
+    /// and the files in the folders of the macros, color schemes, logos, languages, spell files and the trash).
+    /// Writing the paste bin would replace it. The path is also compared with the links in it followed
+    /// </summary>
+    /// <param name="file">The paste bin file as set (a path that is not a full path is in the data directory)</param>
+    internal static string? RefusedPasteBin(string file)
+    {
+        string path;
+        try
+        {
+            if (file.Trim().Length == 0) return DialogText.PasteBinNotThisFile;
+            path = FullPath(file);
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or IOException or
+                                      System.Security.SecurityException)
+        {
+            return e.Message;
+        }
+
+        if (Directory.Exists(path)) return Lang.F("{0} is a directory", Path.GetFileName(path));
+        var real = FileOperations.RealPath(path);
+        foreach (var candidate in new[] { path, real })
+        {
+            var extension = Path.GetExtension(candidate);
+            if (extension.Equals(FileIo.GetFileNameExtension(), StringComparison.OrdinalIgnoreCase) ||
+                extension.Equals(".legacy", StringComparison.OrdinalIgnoreCase))
+            {
+                return DialogText.PasteBinNotDataFile;
+            }
+        }
+
+        string[] files =
+        [
+            FileIo.GetSettingsFolderAndFileName(), FileFavorites.FilePath, FileHistory.FilePath, Bookmarks.FilePath,
+            DirectoryHotlist.FilePath, Completions.FilePath, Snippets.FilePath, JumpHistory.FilePath
+        ];
+        var folders = new List<string>
+        {
+            MacroFiles.Folder, ColorSchemes.Directory, Logos.Directory, FileOperations.TrashDirectory,
+            SpellChecker.DirectoryName
+        };
+        folders.AddRange(Lang.Folders().Select(folder => folder.Path));
+        foreach (var candidate in new[] { path, real })
+        {
+            if (files.Any(own => FileOperations.SamePath(candidate, own) ||
+                                 FileOperations.SamePath(candidate, FileOperations.RealPath(own))) ||
+                folders.Any(folder => FileOperations.IsInside(candidate, folder) ||
+                                      FileOperations.IsInside(candidate, FileOperations.RealPath(folder))))
+            {
+                return DialogText.PasteBinNotThisFile;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// True if a file that is to be the paste bin is there with something in it, and is not the paste bin already
+    /// </summary>
+    internal static bool IsOtherFileWithText(string file)
+    {
+        try
+        {
+            var path = FullPath(file);
+            return !FileOperations.SamePath(FileOperations.RealPath(path), FileOperations.RealPath(PasteBinPath)) &&
+                   File.Exists(path) && new FileInfo(path).Length > 0;
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or IOException or
+                                      UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
     internal static void SetDefaults()
     {
         Osc52 = true;
@@ -167,6 +243,8 @@ internal static class SystemClipboard
     {
         try
         {
+            // Checked again when it is written: a data file or a file of Marbles is never written over
+            if (RefusedPasteBin(PasteBinFile) is { } refused) return refused;
             var path = PasteBinPath;
             var directory = Path.GetDirectoryName(path);
             if (directory != null && !Directory.Exists(directory)) return DialogText.DirectoryNotFound;
@@ -224,6 +302,7 @@ internal static class SystemClipboard
     {
         try
         {
+            if (RefusedPasteBin(PasteBinFile) is { } refused) return refused;
             var path = PasteBinPath;
             if (File.Exists(path)) FileIo.WriteAllBytesSafe(path, []);
             return DialogText.Success;

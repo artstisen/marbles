@@ -18,6 +18,11 @@ internal sealed partial class EditorEngine
     // by all editors, like the string memory
     private static string _blockRegister = string.Empty;
 
+    /// <summary>
+    /// Forget the block yanked last (at logout: it can be from a note)
+    /// </summary>
+    internal static void ForgetBlockRegister() => _blockRegister = string.Empty;
+
     // Start Visual, Visual Line or Visual Block mode at the cursor
     private void StartVisual(EditorMode mode)
     {
@@ -281,6 +286,10 @@ internal sealed partial class EditorEngine
         if (Buffer.RefuseIfReadOnly()) return;
         var lines = _blockRegister.Split(TextBuffer.NewLine);
         var width = lines.Max(TextMetrics.WidthOf);
+        // What is put in: each line padded to the widest, as many times as the count (the limit of "p")
+        var size = 0L;
+        foreach (var line in lines) size += (line.Length + Math.Max(0, width - TextMetrics.WidthOf(line)) + 1L) * count;
+        if (TooMuchToPut(size)) return;
         var column = ColumnOf(Cursor.Line, Cursor.Col) +
                      (after && CurrentLine.Length > 0 ? CellsAt(Cursor) : 0);
         var top = Cursor.Line;

@@ -1878,9 +1878,10 @@ internal sealed partial class EditorEngine
 
     private static readonly TimeSpan SearchTimeout = TimeSpan.FromSeconds(2);
 
-    // The most time a search or a replacement of many lines takes in all (each line has SearchTimeout): many slow
-    // lines would else take minutes
-    private const long CommandTimeoutMilliseconds = 10_000;
+    // The most time a search or a replacement takes in all (each match has SearchTimeout): many slow lines, or very
+    // many matches on one line, would else take minutes. It can be set shorter (for testing)
+    internal static long CommandTimeoutMilliseconds { get; set; } = DefaultCommandTimeoutMilliseconds;
+    internal const long DefaultCommandTimeoutMilliseconds = 10_000;
 
     // Stop a search of many lines that has gone on too long (as a line that took too long does)
     private static void CheckDeadline(long deadline)
@@ -1890,6 +1891,16 @@ internal sealed partial class EditorEngine
 
     // Highlighting runs on every line shown, at every redraw: a pattern that is slow there turns it off quickly
     private static readonly TimeSpan HighlightTimeout = TimeSpan.FromMilliseconds(100);
+
+    // The time the highlighting of all the lines of one redraw may take (in ticks of a TimeSpan): past it, the
+    // highlighting is turned off, as for a line that is too slow
+    private static readonly long HighlightBudget = TimeSpan.FromMilliseconds(250).Ticks;
+    private long _highlightSpent;
+
+    /// <summary>
+    /// A redraw starts: the highlighting of the search matches has its time again (HighlightBudget)
+    /// </summary>
+    internal void StartHighlighting() => _highlightSpent = 0;
     private Regex? _searchRegex;
     private Regex? _highlightRegex;
 
@@ -1941,7 +1952,7 @@ internal sealed partial class EditorEngine
         SetSearch(pattern);
         _searchForward = forward;
         HighlightSearch = true;
-        if (FindNext(Cursor, forward, out var found))
+        if (FindNext(Cursor, forward, out var found, SearchDeadline()))
         {
             var from = Cursor;
             Cursor = found;
@@ -1953,16 +1964,22 @@ internal sealed partial class EditorEngine
         }
     }
 
+    // The time a search (of all its lines, and all the jumps of a count: "5n") must end by
+    private static long SearchDeadline() => Environment.TickCount64 + CommandTimeoutMilliseconds;
+
     /// <summary>
     /// Find the next match of the last search (the search wraps around the document)
     /// </summary>
-    private bool FindNext(TextPos from, bool forward, out TextPos found)
+    /// <param name="from">Where the search starts</param>
+    /// <param name="forward">Down the text, else up</param>
+    /// <param name="found">The match found</param>
+    /// <param name="deadline">The time it stops by (SearchDeadline: one for all the jumps of a count)</param>
+    private bool FindNext(TextPos from, bool forward, out TextPos found, long deadline)
     {
         found = from;
         _searchTimedOut = false;
         if (_searchRegex == null) return false;
         var count = Buffer.LineCount;
-        var deadline = Environment.TickCount64 + CommandTimeoutMilliseconds;
         try
         {
             // The line of the cursor is searched twice: first after the cursor and last before it
@@ -1978,6 +1995,8 @@ internal sealed partial class EditorEngine
                     // is inside is passed over as a whole, like Vim does
                     foreach (Match match in _searchRegex.Matches(line))
                     {
+                        // (also between the matches: a long line can have very many)
+                        CheckDeadline(deadline);
                         if (i == 0 && match.Index <= from.Col) continue;
                         if (i == count && match.Index > from.Col) break;
                         index = match.Index;
@@ -1989,6 +2008,7 @@ internal sealed partial class EditorEngine
                     // The last match on the line (before the cursor when on its line)
                     foreach (Match match in _searchRegex.Matches(line))
                     {
+                        CheckDeadline(deadline);
                         if (i == 0 && match.Index >= from.Col) break;
                         index = match.Index;
                     }
@@ -2017,8 +2037,10 @@ internal sealed partial class EditorEngine
     /// </summary>
     internal const int SearchCountLimit = 9999;
 
-    // Counting all the matches of a search stops after this long (the count is not shown then)
+    // Counting all the matches of a search stops after this long in all (the count is not shown then): it is done
+    // again after every change of the text
     private const long SearchCountMilliseconds = 200;
+
 
     // The matches of the search, counted once for a text and a search (not at every redraw): where they start, in
     // the order of the text (at most SearchCountLimit + 1), the text and its version and the search counted
@@ -2062,13 +2084,16 @@ internal sealed partial class EditorEngine
         _countedMatches.Clear();
         _countedRegex = null;
         var deadline = Environment.TickCount64 + SearchCountMilliseconds;
+        // (the pattern of the highlighting: one match that is slow stops it soon, not after the time of a search)
+        var regex = _highlightRegex ?? _searchRegex!;
         try
         {
             for (var line = 0; line < Buffer.LineCount && _countedMatches.Count <= SearchCountLimit; line++)
             {
-                if (Environment.TickCount64 > deadline) throw new RegexMatchTimeoutException();
-                foreach (Match match in _searchRegex!.Matches(Buffer[line]))
+                CheckDeadline(deadline);
+                foreach (Match match in regex.Matches(Buffer[line]))
                 {
+                    CheckDeadline(deadline);
                     _countedMatches.Add(new TextPos(line, match.Index));
                     if (_countedMatches.Count > SearchCountLimit) break;
                 }
@@ -2123,23 +2148,38 @@ internal sealed partial class EditorEngine
     internal IEnumerable<(int Start, int End)> SearchMatches(int line)
     {
         if (!HighlightSearch || _highlightRegex == null) yield break;
-        MatchCollection matches;
+        // The matches are all found here, so a timeout is caught. All the lines of a redraw together have a time
+        // too (HighlightBudget), checked at each match: a long line can have very many
+        var found = new List<(int Start, int End)>();
+        var spent = _highlightSpent;
+        var tooSlow = spent > HighlightBudget;
+        var start = System.Diagnostics.Stopwatch.GetTimestamp();
         try
         {
-            matches = _highlightRegex.Matches(Buffer[line]);
-            _ = matches.Count; // The matches are found here, so a timeout is caught
+            for (var match = tooSlow ? null : _highlightRegex.Match(Buffer[line]);
+                 match is { Success: true };
+                 match = match.NextMatch())
+            {
+                if (match.Length > 0) found.Add((match.Index, match.Index + match.Length));
+                if (spent + System.Diagnostics.Stopwatch.GetElapsedTime(start).Ticks <= HighlightBudget) continue;
+                tooSlow = true;
+                break;
+            }
         }
         catch (RegexMatchTimeoutException)
+        {
+            tooSlow = true;
+        }
+
+        _highlightSpent = spent + System.Diagnostics.Stopwatch.GetElapsedTime(start).Ticks;
+        if (tooSlow)
         {
             // Too slow to be shown on every line at every redraw: the highlighting is turned off (n still works)
             HighlightSearch = false;
             yield break;
         }
 
-        foreach (Match match in matches)
-        {
-            if (match.Length > 0) yield return (match.Index, match.Index + match.Length);
-        }
+        foreach (var match in found) yield return match;
     }
 
     // The ":s" command: "/pattern/replacement/flags" where the separator can be any punctuation character.
@@ -2211,6 +2251,15 @@ internal sealed partial class EditorEngine
         var deadline = Environment.TickCount64 + CommandTimeoutMilliseconds;
         // The lines changed, to put back if the replacing has to stop (the line, its text before, and after)
         var done = new List<(int Line, string Before, string After)>();
+        var matches = 0;
+        // Each match is replaced and counted, and the time is checked at each (a long line can have very many)
+        string Evaluate(Match match)
+        {
+            CheckDeadline(deadline);
+            matches++;
+            return match.Result(replacement);
+        }
+
         try
         {
             // From the bottom, as a replacement with a line break changes the numbers of the lines after it
@@ -2218,10 +2267,10 @@ internal sealed partial class EditorEngine
             {
                 CheckDeadline(deadline);
                 var line = Buffer[i];
-                var matches = regex.Matches(line).Count;
+                matches = 0;
+                var changed = regex.Replace(line, Evaluate, global ? -1 : 1);
                 if (matches == 0) continue;
-                var changed = regex.Replace(line, replacement, global ? -1 : 1);
-                substitutions += global ? matches : 1;
+                substitutions += matches;
                 lines++;
                 if (changed == line) continue;
                 Delete(new TextPos(i, 0), new TextPos(i, line.Length));

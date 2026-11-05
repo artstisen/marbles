@@ -49,7 +49,7 @@ internal static class Lang
     /// </summary>
     internal static string[]? FoldersOverride { get; set; }
 
-    private static IEnumerable<(string Path, Source From)> Folders()
+    internal static IEnumerable<(string Path, Source From)> Folders()
     {
         if (FoldersOverride != null)
         {

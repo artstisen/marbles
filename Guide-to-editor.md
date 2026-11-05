@@ -20,6 +20,7 @@ Typed on the command line: press `:`, type the command and press `Enter`. A box 
 - `:e` (or `:reload`) Text files: read the file from disk again, when it has been changed by another program. If you have changes that are not saved it is not done; `:e!` reads the file anyway and drops your changes. What was done before cannot be undone afterwards
 - `:help` Show the list of keys
 - `Ctrl+C` does not close the editor (so a note or a file that is not saved is not lost): it tells how to close it. Where the terminal has a selection, `Ctrl+C` still copies it. `Ctrl+\` (Linux, macOS) and `Ctrl+Break` (Windows) do not stop Marbles either
+- After an error that was not expected, the editor tells it and asks whether to save the changes: **Yes** saves them (a save that fails is told, and asked again), **No** closes the editor without them, and `Esc` (Cancel) goes back to the text
 
 `Esc` first leaves what you are in the middle of: Insert or Visual mode, a command that is half typed, or the highlighting of search matches. When there is nothing to leave, it closes the editor.
 
@@ -104,7 +105,7 @@ A yanked or deleted block is pasted as a block with `p` (after the cursor) or `P
 
 While the matches are highlighted, the status line shows which match the cursor is on and how many there are: `[2/12]`, or `[-/12]` when the cursor is not at the start of a match. The matches are counted again when the text changes, up to 9999 (`[>9999]` above that); when counting them takes too long, the count is not shown.
 
-The text you search for is a regular expression: `/\d+` finds numbers and `/cat|dog` finds either word. A search that takes too long is stopped (2 seconds on a line, 10 seconds in all); a `:s` that is stopped changes nothing. A search in lowercase ignores case; with an uppercase letter in it the search matches case. A letter after a backslash does not count: `/\Sfoo` still ignores case, as `\S`, `\W` and `\D` are classes.
+The text you search for is a regular expression: `/\d+` finds numbers and `/cat|dog` finds either word. A search that takes too long is stopped (10 seconds in all, also on one long line with very many matches, and for all the jumps of a count such as `5n`); a `:s` that is stopped changes nothing. When finding the matches to highlight them, or to count them for the status line, takes too long, the highlighting is turned off and the count is not shown. A search in lowercase ignores case; with an uppercase letter in it the search matches case. A letter after a backslash does not count: `/\Sfoo` still ignores case, as `\S`, `\W` and `\D` are classes.
 
 ## Replace
 The easy way is `:replace`, which shows a box to fill in:
@@ -154,7 +155,7 @@ The comparison is shown read only, as a unified diff (as `git diff` shows one): 
 - `]c` `[c` Go to the next/previous change (also after a search)
 - `Enter` Open the file at the line of the cursor (in the editor: go to the line in the text). A line removed opens the old file there
 - `Esc` (or `:q`) Close the comparison. The keys for moving and searching are those of the editor; the text cannot be changed
-- `:w name.diff` Save the comparison as a file, in the directory of the file (a file that is there is replaced if you want that). A `.diff` or `.patch` file is colored as a comparison when it is opened in the editor
+- `:w name.diff` Save the comparison as a file, in the directory of the file (a file that is there is replaced if you want that). A `.diff` or `.patch` file is colored as a comparison when it is opened in the editor. A comparison of a note is not saved (the file would not be encrypted), and text yanked in it goes to the clipboard and the paste bin only as from a note (_Also from the notes of a data file_)
 - `:diff -w` Compare without counting blank space: lines that differ only in their indentation or spaces are the same
 
 If too many lines differ (more than 2000), the comparison is not shown.
@@ -396,6 +397,8 @@ Only yanks go out, never text that is deleted. By default every yank goes out. I
 - `:clipboard` The clipboard settings (also in the main menu, and on the Configuration page of the start page): the system clipboard (OSC 52) on or off, the paste bin on or off, every yank or only with `"+`, also from the notes of a data file, the paste bin file, and whether text is added to it or replaces it. `h` `l` change the choice of a row, `Enter` or `Space` change a setting. The settings are `osc52`, `pastebin`, `clipboardyank` (`all`, the default, or `plus`), `clipboardnotes`, `pastebinappend` and `pastebinfile` in the settings file
 
 The paste bin is not encrypted: text from a note written to it can be read by anyone with access to the file. Empty it with `:pbclear` when it is not needed any more.
+
+The paste bin file cannot be a directory, a data file (`.mbls`) or one of the files of Marbles (`settings.ini`, the lists, the snippets, the completions, and the files in the folders of the macros, color schemes, logos, languages, spell files and the trash): the next yank would write over it. Such a file is refused when it is set, and a `pastebinfile` in the settings file that names one is not used (the paste bin is `paste-bin.txt` in the data directory then). A file with text in it that is not the paste bin already is asked about first, as the next yank replaces its text.
 
 ## Other commands
 - `:ts` Insert an ISO timestamp (YYYY-MM-DD HH:MM:SS)

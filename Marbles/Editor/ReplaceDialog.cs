@@ -18,6 +18,15 @@ internal static class ReplaceDialog
     internal static bool MatchCase { get; private set; }
     internal static bool IsRegex { get; private set; }
 
+    /// <summary>
+    /// Forget the texts to find and to replace with (at logout: they can be from a note). How to match is kept
+    /// </summary>
+    internal static void ForgetTexts()
+    {
+        Find = string.Empty;
+        Replacement = string.Empty;
+    }
+
     private const int RowFind = 0;
     private const int RowReplacement = 1;
     private const int RowMatchCase = 2;

@@ -14,6 +14,11 @@ internal static class CommandLine
     internal static string LastArgument { get; private set; } = string.Empty;
 
     /// <summary>
+    /// Forget the argument of the last command (at logout: it can be a title, ":new Title")
+    /// </summary>
+    internal static void ForgetLastArgument() => LastArgument = string.Empty;
+
+    /// <summary>
     /// Let the user type a command
     /// </summary>
     /// <param name="context">Where the command is typed: Tab completes to the commands of that place</param>

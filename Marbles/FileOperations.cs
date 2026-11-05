@@ -47,13 +47,12 @@ internal static class FileOperations
     /// <summary>
     /// A path with the links in it followed, so the same place is written the same way: on Linux and macOS a
     /// directory can be a link to another (on macOS "/var" and "/tmp" are links into "/private"), and the current
-    /// directory is told with the links followed. The parts that are not there are kept as they are. On Windows,
-    /// the full path
+    /// directory is told with the links followed; on Windows a junction or a symbolic link is followed too. The
+    /// parts that are not there are kept as they are
     /// </summary>
     internal static string RealPath(string path)
     {
         var full = Path.GetFullPath(path);
-        if (OperatingSystem.IsWindows()) return full;
         try
         {
             var root = Path.GetPathRoot(full) ?? string.Empty;
@@ -64,7 +63,9 @@ internal static class FileOperations
                 var next = Path.Combine(current, parts[i]);
                 FileSystemInfo item = Directory.Exists(next) ? new DirectoryInfo(next) : new FileInfo(next);
                 if (!item.Exists) return Path.Combine(new[] { current }.Concat(parts[i..]).ToArray());
-                current = item.LinkTarget != null && item.ResolveLinkTarget(true) is { } target
+                // (a mount point of a whole volume on Windows, "\\?\Volume{...}\", is kept as it is)
+                current = item.LinkTarget != null && item.ResolveLinkTarget(true) is { } target &&
+                          !target.FullName.StartsWith(@"\\?\", StringComparison.Ordinal)
                     ? Path.GetFullPath(target.FullName)
                     : next;
             }
@@ -246,10 +247,7 @@ internal static class FileOperations
         var isDirectory = Directory.Exists(source) && !File.Exists(source);
         if (!isDirectory && !File.Exists(source)) return DialogText.FileNotFound;
         if (!Directory.Exists(targetDirectory)) return DialogText.DirectoryNotFound;
-        if (isDirectory && (SamePath(targetDirectory, source) || IsInside(targetDirectory, source)))
-        {
-            return DialogText.FileIntoItself;
-        }
+        if (isDirectory && IntoItself(source, targetDirectory, true)) return DialogText.FileIntoItself;
 
         var sourceDirectory = Path.GetDirectoryName(Trimmed(source)) ?? string.Empty;
         var target = SamePath(sourceDirectory, targetDirectory)
@@ -260,9 +258,9 @@ internal static class FileOperations
         {
             if (!isDirectory)
             {
-                File.Copy(source, target, false);
+                CopyFile(new FileInfo(source), target);
             }
-            else if (!CopyDirectory(source, target, progress))
+            else if (!CopyDirectory(source, target, progress, RealPath(target)))
             {
                 // Canceled: remove what was copied
                 Directory.Delete(target, true);
@@ -288,14 +286,65 @@ internal static class FileOperations
         return DialogText.Success;
     }
 
-    private static bool CopyDirectory(string source, string target, Func<string, bool>? progress)
+    /// <summary>
+    /// True if a directory would be copied or moved into itself: the target directory is the directory or inside
+    /// it, as written or with the links followed (a junction or a link that leads into the directory)
+    /// </summary>
+    /// <param name="source">The directory copied or moved</param>
+    /// <param name="targetDirectory">The directory it is copied or moved to</param>
+    /// <param name="followSource">A source that is a link is followed too (a copy copies what it points to; a
+    /// move moves only the link)</param>
+    internal static bool IntoItself(string source, string targetDirectory, bool followSource)
+    {
+        if (SamePath(targetDirectory, source) || IsInside(targetDirectory, source)) return true;
+        string realSource;
+        if (followSource || !IsLink(source))
+        {
+            realSource = RealPath(source);
+        }
+        else
+        {
+            // The link itself, in the real place of its directory
+            var trimmed = Trimmed(source);
+            var parent = Path.GetDirectoryName(trimmed);
+            realSource = parent == null ? trimmed : Path.Combine(RealPath(parent), Path.GetFileName(trimmed));
+        }
+
+        var realTarget = RealPath(targetDirectory);
+        return SamePath(realTarget, realSource) || IsInside(realTarget, realSource);
+    }
+
+    // A file copied. On Linux and macOS a file with a length of 0 is not opened: it may be a special file (a FIFO,
+    // a device) that waits or never ends. An empty file is made instead
+    private static void CopyFile(FileInfo file, string target)
+    {
+        if (OperatingSystem.IsWindows() || file.Length > 0)
+        {
+            file.CopyTo(target, false);
+            return;
+        }
+
+        new FileStream(target, FileMode.CreateNew).Dispose();
+        try
+        {
+            File.SetLastWriteTimeUtc(target, file.LastWriteTimeUtc);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // The time is not important
+        }
+    }
+
+    // A directory copied with what is in it. A directory that is the copy itself, or inside it (reached through a
+    // junction or a link above the source), is not copied again: that would go on until the disk is full
+    private static bool CopyDirectory(string source, string target, Func<string, bool>? progress, string realTarget)
     {
         Directory.CreateDirectory(target);
         var info = new DirectoryInfo(source);
         foreach (var file in info.EnumerateFiles())
         {
             if (progress != null && !progress(file.Name)) return false;
-            file.CopyTo(Path.Combine(target, file.Name), false);
+            CopyFile(file, Path.Combine(target, file.Name));
         }
 
         foreach (var directory in info.EnumerateDirectories())
@@ -306,7 +355,12 @@ internal static class FileOperations
                 // A link is copied as a link: what it points to is not followed
                 Directory.CreateSymbolicLink(copy, directory.LinkTarget);
             }
-            else if (!CopyDirectory(directory.FullName, copy, progress))
+            else if (RealPath(directory.FullName) is var real &&
+                     (SamePath(real, realTarget) || IsInside(real, realTarget)))
+            {
+                // The copy itself, reached through a link: not copied into itself
+            }
+            else if (!CopyDirectory(directory.FullName, copy, progress, realTarget))
             {
                 return false;
             }
@@ -333,10 +387,7 @@ internal static class FileOperations
         if (!Directory.Exists(targetDirectory)) return DialogText.DirectoryNotFound;
         var sourceDirectory = Path.GetDirectoryName(Trimmed(source)) ?? string.Empty;
         if (SamePath(sourceDirectory, targetDirectory)) return DialogText.FileAlreadyThere;
-        if (isDirectory && (SamePath(targetDirectory, source) || IsInside(targetDirectory, source)))
-        {
-            return DialogText.FileIntoItself;
-        }
+        if (isDirectory && IntoItself(source, targetDirectory, false)) return DialogText.FileIntoItself;
 
         var target = Path.Combine(targetDirectory, name);
         if (Exists(target)) return DialogText.ErrorFileAlreadyExist;
@@ -502,7 +553,7 @@ internal static class FileOperations
                     bool copied;
                     try
                     {
-                        copied = CopyDirectory(path, target, progress);
+                        copied = CopyDirectory(path, target, progress, RealPath(target));
                     }
                     catch
                     {

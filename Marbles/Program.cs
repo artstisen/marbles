@@ -21,6 +21,9 @@ class Program
             Environment.Exit(1);
         }
 
+        // Shown on the alternate screen of the terminal (Linux, macOS): nothing is left in its scrollback, and what
+        // was there before comes back at the end (the answers above are written as usual)
+        Tools.EnterAlternateScreen();
         Init.RunInitialization();
         if (Lang.Missing != null)
         {

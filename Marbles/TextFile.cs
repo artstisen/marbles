@@ -64,14 +64,45 @@ internal sealed class TextFile
     /// <exception cref="InvalidDataException">The file is too large or is not a text file</exception>
     internal static TextFile Load(string path)
     {
-        if (new FileInfo(path).Length > MaxSize)
-        {
-            throw new InvalidDataException(DialogText.FileTooLarge);
-        }
-
-        var file = Read(File.ReadAllBytes(path));
+        var file = Read(ReadBytes(path, MaxSize));
         file.Path = path;
         return file;
+    }
+
+    /// <summary>
+    /// The bytes of a file, at most "maxSize" of them. A file with a length of 0 is not opened: it is empty, or it
+    /// is a special file on Linux and macOS (/dev/zero, /dev/tty, a FIFO, a socket, the files in /proc), which
+    /// never ends or waits for input when it is read. The file is read through a stream, which stops after
+    /// "maxSize" + 1 bytes, so a file that grows while it is read (or tells a wrong length) cannot fill the memory.
+    /// It may be open for writing in another program (a log)
+    /// </summary>
+    /// <exception cref="InvalidDataException">The file is larger than "maxSize"</exception>
+    internal static byte[] ReadBytes(string path, long maxSize)
+    {
+        var length = new FileInfo(path).Length;
+        if (length > maxSize) throw new InvalidDataException(DialogText.FileTooLarge);
+        if (length == 0) return [];
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.SequentialScan);
+        var buffer = new byte[Math.Min(length, maxSize) + 1];
+        var read = 0;
+        while (true)
+        {
+            if (read == buffer.Length)
+            {
+                // More than told: read on, up to the limit
+                if (buffer.Length > maxSize) throw new InvalidDataException(DialogText.FileTooLarge);
+                Array.Resize(ref buffer, (int)Math.Min((long)buffer.Length * 2, maxSize + 1));
+            }
+
+            var count = stream.Read(buffer, read, buffer.Length - read);
+            if (count == 0) break;
+            read += count;
+        }
+
+        if (read > maxSize) throw new InvalidDataException(DialogText.FileTooLarge);
+        if (read < buffer.Length) Array.Resize(ref buffer, read);
+        return buffer;
     }
 
     /// <summary>
