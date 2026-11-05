@@ -596,30 +596,23 @@ internal static partial class FileExplorer
             Math.Max(caption.Length + 4, choices.Max(choice => choice.Length) + 6));
         var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
         var first = 0;
+        using var box = ConsoleColors.BoxScope();
         Tools.HideCursor();
+        ChoiceBox.DrawBox(top - 1, left, inner, rows, caption);
         while (true)
         {
             // The list scrolls if there are more folders than rows
             if (selected < first) first = selected;
             if (selected >= first + rows) first = selected - rows + 1;
-            ChoiceBox.DrawTitleTab(top - 1, left, inner, caption);
             for (var row = 0; row < rows; row++)
             {
                 var number = first + row;
-                Tools.SetCursorEx(top + 1 + row, left);
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-                Console.Write("| ");
+                Tools.SetCursorEx(top + 1 + row, left + 2);
                 if (number == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
                 Console.Write(number == selected ? "->" : "  ");
                 ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 Console.Write(" " + Tools.TruncateString(choices[number], inner - 5, true).PadRight(inner - 4));
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-                Console.Write('|');
             }
-
-            Tools.SetCursorEx(top + 1 + rows, left);
-            Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
 
             var key = Console.ReadKey(true);
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q) return -1;

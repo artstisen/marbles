@@ -23,6 +23,11 @@ internal enum ColorItem
     TabFrames, // The frames with tabs (null: the color of the dividers)
     TabCorner, // The left side, corner and top of the tab shown in a frame with tabs (null: the tab frames)
     BoxBorders, // The borders of the boxes on top of a page (null: the color of the dividers)
+    BoxCorner, // The left side and the top of a box (null: the box borders)
+    BoxBackground, // The background of a box (null: the background)
+    BoxText, // The text in a box (null: the text in frames with tabs)
+    BoxTitle, // The background of the title of a box (null: as the tab shown; the box when it is not highlighted)
+    BoxTitleText, // The title of a box (null: as the tab shown)
     Tab, // The background of the tab shown (null: the color of the tab frames)
     TabText, // The text of the tab shown when it is highlighted (null: the color of TabShown)
     TabShown, // The name of the tab shown when it is not highlighted (null: the text)
@@ -35,6 +40,20 @@ internal enum ColorItem
     Selector, // The background of the selection arrow "->" (null: the highlight)
     SelectorText, // The arrow itself (null: the text of the highlight)
     FrameText, // The text in frames with tabs and in boxes, not the highlighted text (null: the text)
+
+    // The command line and the box of commands above it (null: the colors they had before they had their own)
+    CommandLine, // The background of the command line, and of the "/" of the filters (null: the highlight)
+    CommandLineText, // The text typed on it (null: the text of the highlight)
+    CommandBorders, // The borders of the box of commands (null: the box borders)
+    CommandCorner, // The left side and the top of the box of commands (null: its borders)
+    CommandBox, // The background of the box (null: the background)
+    CommandBoxText, // The names of the commands, and what the command typed does (null: the text)
+    CommandTyped, // The part of the names that is typed (null: the accent)
+    CommandWhole, // The background of a name typed whole (null: the selector)
+    CommandWholeText, // The name typed whole (null: the text of the selector)
+    CommandHints, // The keys of the box, "+12 more" and "No command starts with that" (null: the dividers)
+    CommandError, // The background of "Not a command" (null: attention)
+    CommandErrorText, // The text of "Not a command" (null: the text of attention)
 
     // The colors of colored text in the editor (null: the color each has from the start, see SyntaxDefault).
     // 1 keywords, tags and selectors (bold and list marks in Markdown), 2 names of attributes and properties
@@ -82,6 +101,11 @@ internal sealed class ColorScheme
     internal ConsoleColor? TabFrames { get; set; }
     internal ConsoleColor? TabCorner { get; set; }
     internal ConsoleColor? BoxBorders { get; set; }
+    internal ConsoleColor? BoxCorner { get; set; }
+    internal ConsoleColor? BoxBackground { get; set; }
+    internal ConsoleColor? BoxText { get; set; }
+    internal ConsoleColor? BoxTitle { get; set; }
+    internal ConsoleColor? BoxTitleText { get; set; }
     internal ConsoleColor? Tab { get; set; }
     internal ConsoleColor? TabText { get; set; }
     internal ConsoleColor? TabShown { get; set; }
@@ -94,6 +118,18 @@ internal sealed class ColorScheme
     internal ConsoleColor? Selector { get; set; }
     internal ConsoleColor? SelectorText { get; set; }
     internal ConsoleColor? FrameText { get; set; }
+    internal ConsoleColor? CommandLine { get; set; }
+    internal ConsoleColor? CommandLineText { get; set; }
+    internal ConsoleColor? CommandBorders { get; set; }
+    internal ConsoleColor? CommandCorner { get; set; }
+    internal ConsoleColor? CommandBox { get; set; }
+    internal ConsoleColor? CommandBoxText { get; set; }
+    internal ConsoleColor? CommandTyped { get; set; }
+    internal ConsoleColor? CommandWhole { get; set; }
+    internal ConsoleColor? CommandWholeText { get; set; }
+    internal ConsoleColor? CommandHints { get; set; }
+    internal ConsoleColor? CommandError { get; set; }
+    internal ConsoleColor? CommandErrorText { get; set; }
 
     internal const int SyntaxCount = 12;
 
@@ -110,6 +146,11 @@ internal sealed class ColorScheme
     internal ConsoleColor TabFrameColor => TabFrames ?? Dividers;
     internal ConsoleColor TabCornerColor => TabCorner ?? TabFrameColor;
     internal ConsoleColor BoxBorderColor => BoxBorders ?? Dividers;
+    internal ConsoleColor BoxCornerColor => BoxCorner ?? BoxBorderColor;
+    internal ConsoleColor BoxBackgroundColor => BoxBackground ?? BackgroundColor;
+    internal ConsoleColor BoxTextColor => BoxText ?? FrameTextColor;
+    internal ConsoleColor BoxTitleColor => BoxTitle ?? (TabHighlight ? TabColor : BoxBackgroundColor);
+    internal ConsoleColor BoxTitleTextColor => BoxTitleText ?? (TabHighlight ? TabTextColor : TabShownColor);
     internal ConsoleColor TabColor => Tab ?? TabFrameColor;
     internal ConsoleColor TabTextColor => TabText ?? TabShownColor;
     internal ConsoleColor TabShownColor => TabShown ?? Text;
@@ -122,6 +163,26 @@ internal sealed class ColorScheme
     internal ConsoleColor SelectorColor => Selector ?? Highlight;
     internal ConsoleColor SelectorTextColor => SelectorText ?? HighlightText;
     internal ConsoleColor FrameTextColor => FrameText ?? Text;
+    internal ConsoleColor CommandLineColor => CommandLine ?? Highlight;
+    internal ConsoleColor CommandLineTextColor => CommandLineText ?? HighlightText;
+    internal ConsoleColor CommandBorderColor => CommandBorders ?? BoxBorderColor;
+    internal ConsoleColor CommandCornerColor => CommandCorner ?? CommandBorderColor;
+    internal ConsoleColor CommandBoxColor => CommandBox ?? BackgroundColor;
+    internal ConsoleColor CommandBoxTextColor => CommandBoxText ?? Text;
+    internal ConsoleColor CommandTypedColor => CommandTyped ?? Accent;
+    internal ConsoleColor CommandWholeColor => CommandWhole ?? SelectorColor;
+    internal ConsoleColor CommandWholeTextColor => CommandWholeText ?? SelectorTextColor;
+    internal ConsoleColor CommandHintsColor => CommandHints ?? Dividers;
+    internal ConsoleColor CommandErrorColor => CommandError ?? Attention;
+    internal ConsoleColor CommandErrorTextColor => CommandErrorText ?? AttentionText;
+
+    /// <summary>
+    /// The color of text in a box: a color that cannot be seen on the background of the box has the text of the box
+    /// </summary>
+    internal ConsoleColor TextInBox(ConsoleColor color) => color == BoxBackground ? BoxTextColor : color;
+
+    // True for the colors of the command line and its box
+    internal static bool IsCommand(ColorItem item) => item is >= ColorItem.CommandLine and <= ColorItem.CommandErrorText;
 
     // True for the colors of colored text (Syntax 1 to 12), with the number of the color (from 0)
     private static bool IsSyntax(ColorItem item, out int number)
@@ -177,10 +238,11 @@ internal sealed class ColorScheme
     /// </summary>
     internal static bool CanBeDefault(ColorItem item) =>
         item is ColorItem.Background or ColorItem.TabFrames or ColorItem.TabCorner or ColorItem.BoxBorders
-            or ColorItem.Tab
+            or ColorItem.BoxCorner or ColorItem.BoxBackground or ColorItem.BoxText or ColorItem.BoxTitle
+            or ColorItem.BoxTitleText or ColorItem.Tab
             or ColorItem.TabText or ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints
             or ColorItem.Unsaved or ColorItem.UnsavedText or ColorItem.LineNumbers or ColorItem.CurrentLineNumber
-            or ColorItem.FrameText || IsSyntax(item, out _);
+            or ColorItem.FrameText || IsCommand(item) || IsSyntax(item, out _);
 
     internal ConsoleColor? Get(ColorItem item)
     {
@@ -203,6 +265,11 @@ internal sealed class ColorScheme
             ColorItem.TabFrames => TabFrames,
             ColorItem.TabCorner => TabCorner,
             ColorItem.BoxBorders => BoxBorders,
+            ColorItem.BoxCorner => BoxCorner,
+            ColorItem.BoxBackground => BoxBackground,
+            ColorItem.BoxText => BoxText,
+            ColorItem.BoxTitle => BoxTitle,
+            ColorItem.BoxTitleText => BoxTitleText,
             ColorItem.Tab => Tab,
             ColorItem.TabText => TabText,
             ColorItem.TabShown => TabShown,
@@ -214,6 +281,18 @@ internal sealed class ColorScheme
             ColorItem.CurrentLineNumber => CurrentLineNumber,
             ColorItem.Selector => Selector,
             ColorItem.FrameText => FrameText,
+            ColorItem.CommandLine => CommandLine,
+            ColorItem.CommandLineText => CommandLineText,
+            ColorItem.CommandBorders => CommandBorders,
+            ColorItem.CommandCorner => CommandCorner,
+            ColorItem.CommandBox => CommandBox,
+            ColorItem.CommandBoxText => CommandBoxText,
+            ColorItem.CommandTyped => CommandTyped,
+            ColorItem.CommandWhole => CommandWhole,
+            ColorItem.CommandWholeText => CommandWholeText,
+            ColorItem.CommandHints => CommandHints,
+            ColorItem.CommandError => CommandError,
+            ColorItem.CommandErrorText => CommandErrorText,
             _ => SelectorText
         };
     }
@@ -230,6 +309,11 @@ internal sealed class ColorScheme
             ColorItem.TabFrames => TabFrameColor,
             ColorItem.TabCorner => TabCornerColor,
             ColorItem.BoxBorders => BoxBorderColor,
+            ColorItem.BoxCorner => BoxCornerColor,
+            ColorItem.BoxBackground => BoxBackgroundColor,
+            ColorItem.BoxText => BoxTextColor,
+            ColorItem.BoxTitle => BoxTitleColor,
+            ColorItem.BoxTitleText => BoxTitleTextColor,
             ColorItem.Tab => TabColor,
             ColorItem.TabText => TabTextColor,
             ColorItem.TabShown => TabShownColor,
@@ -242,6 +326,18 @@ internal sealed class ColorScheme
             ColorItem.Selector => SelectorColor,
             ColorItem.SelectorText => SelectorTextColor,
             ColorItem.FrameText => FrameTextColor,
+            ColorItem.CommandLine => CommandLineColor,
+            ColorItem.CommandLineText => CommandLineTextColor,
+            ColorItem.CommandBorders => CommandBorderColor,
+            ColorItem.CommandCorner => CommandCornerColor,
+            ColorItem.CommandBox => CommandBoxColor,
+            ColorItem.CommandBoxText => CommandBoxTextColor,
+            ColorItem.CommandTyped => CommandTypedColor,
+            ColorItem.CommandWhole => CommandWholeColor,
+            ColorItem.CommandWholeText => CommandWholeTextColor,
+            ColorItem.CommandHints => CommandHintsColor,
+            ColorItem.CommandError => CommandErrorColor,
+            ColorItem.CommandErrorText => CommandErrorTextColor,
             _ => Get(item)!.Value
         };
     }
@@ -276,6 +372,11 @@ internal sealed class ColorScheme
             case ColorItem.TabFrames: TabFrames = color; break;
             case ColorItem.TabCorner: TabCorner = color; break;
             case ColorItem.BoxBorders: BoxBorders = color; break;
+            case ColorItem.BoxCorner: BoxCorner = color; break;
+            case ColorItem.BoxBackground: BoxBackground = color; break;
+            case ColorItem.BoxText: BoxText = color; break;
+            case ColorItem.BoxTitle: BoxTitle = color; break;
+            case ColorItem.BoxTitleText: BoxTitleText = color; break;
             case ColorItem.Tab: Tab = color; break;
             case ColorItem.TabText: TabText = color; break;
             case ColorItem.TabShown: TabShown = color; break;
@@ -287,6 +388,18 @@ internal sealed class ColorScheme
             case ColorItem.CurrentLineNumber: CurrentLineNumber = color; break;
             case ColorItem.Selector: Selector = color; break;
             case ColorItem.FrameText: FrameText = color; break;
+            case ColorItem.CommandLine: CommandLine = color; break;
+            case ColorItem.CommandLineText: CommandLineText = color; break;
+            case ColorItem.CommandBorders: CommandBorders = color; break;
+            case ColorItem.CommandCorner: CommandCorner = color; break;
+            case ColorItem.CommandBox: CommandBox = color; break;
+            case ColorItem.CommandBoxText: CommandBoxText = color; break;
+            case ColorItem.CommandTyped: CommandTyped = color; break;
+            case ColorItem.CommandWhole: CommandWhole = color; break;
+            case ColorItem.CommandWholeText: CommandWholeText = color; break;
+            case ColorItem.CommandHints: CommandHints = color; break;
+            case ColorItem.CommandError: CommandError = color; break;
+            case ColorItem.CommandErrorText: CommandErrorText = color; break;
             default: SelectorText = color; break;
         }
     }
@@ -313,6 +426,30 @@ internal sealed class ColorScheme
     /// </summary>
     internal bool Allowed(ColorItem item, ConsoleColor color)
     {
+        if (!AllowedOnItsOwn(item, color)) return false;
+        // The command line and the boxes: no text there gets the color it is on (also when it follows the color
+        // that is changed). What was already so is not made the reason
+        var before = TextPairs();
+        var changed = Clone();
+        changed.Set(item, color);
+        var after = changed.TextPairs();
+        return !after.Where((pair, i) => pair.Text == pair.On && before[i].Text != before[i].On).Any();
+    }
+
+    // The colors of the command line and the boxes, as shown: each text and what it is on
+    private (ConsoleColor Text, ConsoleColor On)[] TextPairs() =>
+        new[]
+        {
+            (CommandLineTextColor, CommandLineColor), (CommandWholeTextColor, CommandWholeColor),
+            (CommandErrorTextColor, CommandErrorColor), (CommandBorderColor, CommandBoxColor),
+            (CommandCornerColor, CommandBoxColor),
+            (CommandBoxTextColor, CommandBoxColor), (CommandTypedColor, CommandBoxColor),
+            (CommandHintsColor, CommandBoxColor), (BoxBorderColor, BoxBackgroundColor),
+            (BoxCornerColor, BoxBackgroundColor), (BoxTextColor, BoxBackgroundColor), (BoxTitleTextColor, BoxTitleColor)
+        };
+
+    private bool AllowedOnItsOwn(ColorItem item, ConsoleColor color)
+    {
         if (item == ColorItem.Background) return OnBackground.All(text => Shown(text) != color);
         // The text of the focused tab is also the text of the highlight, when that has no text color of its own
         if (item == ColorItem.TabShown && TabText == null && color == TabColor) return false;
@@ -338,12 +475,21 @@ internal sealed class ColorScheme
         ("attention", ColorItem.Attention), ("attentiontext", ColorItem.AttentionText),
         ("warning", ColorItem.Warning), ("warningtext", ColorItem.WarningText),
         ("tabframes", ColorItem.TabFrames), ("tabcorner", ColorItem.TabCorner),
-        ("boxborders", ColorItem.BoxBorders), ("tab", ColorItem.Tab),
+        ("boxborders", ColorItem.BoxBorders), ("boxcorner", ColorItem.BoxCorner),
+        ("boxbackground", ColorItem.BoxBackground), ("boxtext", ColorItem.BoxText), ("boxtitle", ColorItem.BoxTitle),
+        ("boxtitletext", ColorItem.BoxTitleText), ("tab", ColorItem.Tab),
         ("tabtext", ColorItem.TabText), ("tabshown", ColorItem.TabShown), ("othertabs", ColorItem.OtherTabs),
         ("keyhints", ColorItem.KeyHints), ("unsaved", ColorItem.Unsaved), ("unsavedtext", ColorItem.UnsavedText),
         ("linenumbers", ColorItem.LineNumbers), ("currentline", ColorItem.CurrentLineNumber),
         ("selector", ColorItem.Selector), ("selectortext", ColorItem.SelectorText),
         ("frametext", ColorItem.FrameText),
+        ("commandline", ColorItem.CommandLine), ("commandlinetext", ColorItem.CommandLineText),
+        ("commandborders", ColorItem.CommandBorders), ("commandcorner", ColorItem.CommandCorner),
+        ("commandbox", ColorItem.CommandBox),
+        ("commandboxtext", ColorItem.CommandBoxText), ("commandtyped", ColorItem.CommandTyped),
+        ("commandwhole", ColorItem.CommandWhole), ("commandwholetext", ColorItem.CommandWholeText),
+        ("commandhints", ColorItem.CommandHints), ("commanderror", ColorItem.CommandError),
+        ("commanderrortext", ColorItem.CommandErrorText),
         ("syntax1", ColorItem.Syntax1), ("syntax2", ColorItem.Syntax2), ("syntax3", ColorItem.Syntax3),
         ("syntax4", ColorItem.Syntax4), ("syntax5", ColorItem.Syntax5), ("syntax6", ColorItem.Syntax6),
         ("syntax7", ColorItem.Syntax7), ("syntax8", ColorItem.Syntax8), ("syntax9", ColorItem.Syntax9),
@@ -447,7 +593,7 @@ internal sealed class ColorScheme
     private static readonly string[] BuiltInNames =
     {
         DefaultName, "Deep Blue", "Marbles Quest", "Tasty Bytes", "Yellow Monochrome", "Green Monochrome", "Ice Warp",
-        "Gray Box"
+        "Gray Box", "Bright Typist"
     };
 
     private static ColorScheme ReadBuiltIn(string name)

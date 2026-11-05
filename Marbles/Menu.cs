@@ -429,8 +429,8 @@ internal static class Menu
     /// <returns>The number of the choice (0 to 4, in that order), or -1 if the box was closed</returns>
     internal static int LeaveChoice()
     {
-        // In the color of text in frames and boxes
-        using var frameText = ConsoleColors.FrameTextScope();
+        // In the colors of boxes
+        using var box = ConsoleColors.BoxScope();
 
         // The order is the one of the switch in Actions (the Options of the main menu)
         var choices = new[]
@@ -448,31 +448,24 @@ internal static class Menu
         var left = Math.Max(0, (Init.LineWidth - inner - 2) / 2);
         var top = MenuTabRow + 6;
         // The box, on top of the menu, with the tab of its title above it
-        ChoiceBox.DrawTitleTab(top - 1, left, inner, DialogText.CaptionsOptions);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-        for (var row = 0; row < choices.Length + 2; row++)
+        ChoiceBox.DrawBox(top - 1, left, inner, choices.Length + 2, DialogText.CaptionsOptions);
+        for (var row = 1; row <= choices.Length; row++)
         {
-            Tools.SetCursorEx(top + 1 + row, left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
+            Tools.SetCursorEx(top + 1 + row, left + 1);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             // The number, the key, and the choice
-            var text = row >= 1 && row <= choices.Length
-                ? "   " + row + " " + keys[row - 1] + " .... " + choices[row - 1]
-                : string.Empty;
-            Console.Write(text + new string(' ', Math.Max(0, inner - TextMetrics.WidthOf(text))));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
+            Console.Write("   " + row + " " + keys[row - 1] + " .... " + choices[row - 1]);
         }
 
-        Tools.SetCursorEx(top + choices.Length + 3, left);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
-        // The keys of the box
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.Write(new string(' ', Init.LineWidth - 1));
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        WriteKeyHints(DialogText.LeaveKeys);
+        // The keys of the box, on the bottom line
+        using (ConsoleColors.OutsideBox())
+        {
+            Tools.SetCursorEx(Init.LineCount - 1, 0);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(new string(' ', Init.LineWidth - 1));
+            Tools.SetCursorEx(Init.LineCount - 1, 0);
+            WriteKeyHints(DialogText.LeaveKeys);
+        }
 
         var selected = 0;
         while (true)
@@ -628,8 +621,8 @@ internal static class Menu
 
     public static void FloatingMenu(string caption, List<Shortcut> shortcuts, int top, int left, bool dockRight)
     {
-        // In the color of text in frames and boxes
-        using var frameText = ConsoleColors.FrameTextScope();
+        // In the colors of boxes
+        using var box = ConsoleColors.BoxScope();
 
         // Return if list is null or empty
         if (shortcuts.Count == 0)
@@ -656,21 +649,17 @@ internal static class Menu
             left = Init.LineWidth - (menuWidth + 2);
         }
 
-        // The title in a tab above the top line (on the row above the one given)
-        ChoiceBox.DrawTitleTab(top - 1, left, menuWidth, caption);
+        // The box, with its title in a tab above the top line (on the row above the one given)
+        ChoiceBox.DrawBox(top - 1, left, menuWidth, shortcuts.Count, caption);
         Tools.SetCursorEx(top, left);
 
 
-        // Iterate and draw menu and menu items
+        // Iterate and draw menu items
         foreach (var t in shortcuts)
         {
             Tools.CursorReturn();
             Tools.CursorDown();
-            Tools.CursorRight(left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write("|" + new string(' ', menuWidth) + "|");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Tools.CursorReturn();
             Tools.CursorRight(left + 2);
             if (t.GetDescription() == "-")
             {
@@ -684,12 +673,6 @@ internal static class Menu
             }
         }
 
-        // Write menu bottom
-        Tools.CursorReturn();
-        Tools.CursorDown();
-        Tools.CursorRight(left);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', menuWidth) + AsciiStyles.GetBottomCorner());
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         LoadCursorPosition();
     }

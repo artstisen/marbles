@@ -147,6 +147,7 @@ internal sealed partial class EditorEngine
     {
         Message = message;
         MessageIsError = isError;
+        MessageIsCommandError = false;
     }
 
     /// <summary>
@@ -174,6 +175,11 @@ internal sealed partial class EditorEngine
 
 
     internal bool MessageIsError { get; private set; }
+
+    /// <summary>
+    /// The error is a command that is not known (shown in the colors of command errors)
+    /// </summary>
+    internal bool MessageIsCommandError { get; private set; }
 
     /// <summary>
     /// True when the matches of the last search are highlighted
@@ -363,6 +369,7 @@ internal sealed partial class EditorEngine
     {
         Message = message;
         MessageIsError = isError;
+        MessageIsCommandError = false;
     }
 
     /// <summary>
@@ -436,6 +443,7 @@ internal sealed partial class EditorEngine
     {
         Message = string.Empty;
         MessageIsError = false;
+        MessageIsCommandError = false;
         _request = EditorRequest.None;
         _keepDesiredCell = false;
         if (!Buffer.IsStepOpen) _stepCursor = Cursor;
@@ -589,6 +597,13 @@ internal sealed partial class EditorEngine
     {
         Message = message;
         MessageIsError = true;
+        MessageIsCommandError = false;
+    }
+
+    private void SetCommandError(string message)
+    {
+        SetError(message);
+        MessageIsCommandError = true;
     }
 
     #endregion
@@ -1141,7 +1156,7 @@ internal sealed partial class EditorEngine
             }
             else
             {
-                SetError(Lang.T("Not an editor command: ") + command);
+                SetCommandError(Lang.T("Not an editor command: ") + command);
             }
 
             return;
@@ -1424,7 +1439,7 @@ internal sealed partial class EditorEngine
                 ApplyOperatorToLines('y', 0, Buffer.LineCount - 1);
                 break;
             default:
-                SetError(Lang.T("Not an editor command: ") + command);
+                SetCommandError(Lang.T("Not an editor command: ") + command);
                 break;
         }
     }

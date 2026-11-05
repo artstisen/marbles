@@ -235,7 +235,7 @@ In the list of favorites:
 - `l` or `Enter` Open the file in the editor (closing the editor returns to the list). A directory: go to it in the browser
 - `B` or `:goto` Show the file in the browser: its directory is opened with the file selected, where it can be renamed, copied, moved or deleted
 - `V` Move the selected favorite or folder: it is marked `<>` and highlighted, and follows `j` `k` up and down the list until you press `Esc` (or `Enter`, `V`); `3j` moves it 3 steps
-- `C` or `:color` Pick a text color for the favorite from the list of 16 colors
+- `C` or `:color` Pick a text color for the favorite from the list of 16 colors (a letter picks one at once: `A` Black ... `U` White, `X` _[Default]_; see the [list of colors](Guide-to-main-menu.md#the-list-of-colors))
 - `P`, `D` or `:remove` Remove it from the favorites (the file itself stays where it is)
 - `u` or `:undo` Put back the favorite, or the folder with its favorites, that was removed last
 - `A` or `:folder name` Create a folder (see below)

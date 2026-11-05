@@ -51,7 +51,7 @@ internal static class ConsoleColors
     {
         var value = (int)color;
         if (value < 8) return null;
-        return "\u001b[" +((background ? 100 : 90) + Ansi[value - 8]) + "m";
+        return "\u001b[" + ((background ? 100 : 90) + Ansi[value - 8]) + "m";
     }
 
     /// <summary>
@@ -108,6 +108,13 @@ internal static class ConsoleColors
     internal static bool IsBackgroundColor(ConsoleColor color) => color == Current.BackgroundColor;
 
     /// <summary>
+    /// True if text in this color cannot be seen where it is written: in a box on its background, else on the
+    /// background of the color scheme in use
+    /// </summary>
+    internal static bool IsHidden(ConsoleColor color) =>
+        color == (_inBox ? Current.BoxBackgroundColor : Current.BackgroundColor);
+
+    /// <summary>
     /// True to show everything in black and white, whatever the colors of the color scheme are
     /// (setting "monochrome"). The color scheme is kept, and is used again when this is turned off
     /// </summary>
@@ -131,6 +138,8 @@ internal static class ConsoleColors
         TabFrame, // The frames with tabs
         TabCorner, // The left side, corner and top of the tab shown
         BoxBorder, // The borders of the boxes on top of a page
+        BoxCorner, // The left side and the top of a box
+        BoxText, // The text in a box
         TabShown, // The name of the tab shown, when the tab is not highlighted
         OtherTabs, // The names of the tabs not shown
         KeyHint, // The keys on the bottom line: what they do
@@ -139,14 +148,26 @@ internal static class ConsoleColors
         LineNumber, // The line numbers of the editor
         CurrentLineNumber, // The number of the line the cursor is on
         SelectorInverted, // The selection arrow "->" of lists, menus and settings
-        FrameText // The text in frames with tabs and in boxes
+        FrameText, // The text in frames with tabs and in boxes
+        CommandLineInverted, // The command line, and the "/" of the filters
+        CommandBorder, // The borders of the box of commands above the command line
+        CommandCorner, // The left side and the top of the box of commands
+        CommandText, // The names of the commands in the box (and the background of the box)
+        CommandTyped, // The part of the names that is typed
+        CommandWholeInverted, // A name typed whole
+        CommandHint, // The keys of the box, and what it says when no command fits
+        CommandErrorInverted // "Not a command"
     }
 
-    // The colors of text on the normal background: the background of the color scheme, or that of the terminal
+    // The colors of text on the normal background: the background of the color scheme, or that of the terminal. In a
+    // box the background of the box, if it has one
     private static void SetNormalBackground(ColorScheme scheme)
     {
         Reset();
-        if (scheme.Background is { } background) SetBackground(background);
+        if ((_inBox ? scheme.BoxBackground ?? scheme.Background : scheme.Background) is { } background)
+        {
+            SetBackground(background);
+        }
     }
 
     // The colors used when everything is shown in black and white
@@ -158,6 +179,7 @@ internal static class ConsoleColors
             case ColorPreset.Favorites:
             case ColorPreset.Accent:
             case ColorPreset.EditorTitle:
+            case ColorPreset.CommandTyped:
                 Reset();
                 SetForeground(ConsoleColor.White);
                 break;
@@ -168,6 +190,9 @@ internal static class ConsoleColors
             case ColorPreset.HighlightInverted:
             case ColorPreset.AttentionInverted:
             case ColorPreset.WarningInverted:
+            case ColorPreset.CommandLineInverted:
+            case ColorPreset.CommandWholeInverted:
+            case ColorPreset.CommandErrorInverted:
                 SetBackground(ConsoleColor.Gray);
                 SetForeground(ConsoleColor.Black);
                 break;
@@ -195,16 +220,56 @@ internal static class ConsoleColors
             return;
         }
 
-        // In a frame with tabs or a box the normal text has the color of text there
-        SetStyle(Current, preset == ColorPreset.Normal && _inFrame ? ColorPreset.FrameText : preset);
+        // In a box or a frame with tabs the normal text has the color of text there
+        SetStyle(Current, preset != ColorPreset.Normal ? preset
+            : _inBox ? ColorPreset.BoxText
+            : _inFrame ? ColorPreset.FrameText : preset);
     }
 
-    // True while the text in a frame with tabs or a box is written
+    // True while the text in a frame with tabs is written
     private static bool _inFrame;
+
+    // True while a box is shown: the text is written on its background
+    private static bool _inBox;
+
+    /// <summary>
+    /// While the scope is open (until it is disposed), what is written is in a box on top of a page: on the background
+    /// of the box, with the normal text in the color of the text in boxes. The highlighted text keeps its colors. The
+    /// normal colors are set when it opens and when it is disposed, for text written without setting them
+    /// </summary>
+    internal static IDisposable BoxScope()
+    {
+        var before = _inBox;
+        _inBox = true;
+        SetColors(ColorPreset.Normal);
+        return new BoxState(before);
+    }
+
+    /// <summary>
+    /// While the scope is open, what is written is not in the box that is shown: the bottom line, the command line,
+    /// the screen when it is cleared, and a page opened from the box
+    /// </summary>
+    internal static IDisposable OutsideBox()
+    {
+        var before = _inBox;
+        _inBox = false;
+        SetColors(ColorPreset.Normal);
+        return new BoxState(before);
+    }
+
+    // Puts back what was before the scope when it is disposed
+    private sealed class BoxState(bool before) : IDisposable
+    {
+        public void Dispose()
+        {
+            _inBox = before;
+            SetColors(ColorPreset.Normal);
+        }
+    }
 
     /// <summary>
     /// While the scope is open (until it is disposed), the normal text is written in the color of the text in
-    /// frames with tabs and in boxes ("Tab text" of the color scheme). The highlighted text keeps its colors.
+    /// frames with tabs ("Tab text" of the color scheme). The highlighted text keeps its colors.
     /// The normal colors are set when it opens and when it is disposed, for text written without setting them
     /// </summary>
     internal static IDisposable FrameTextScope()
@@ -265,10 +330,56 @@ internal static class ConsoleColors
                 SetBackground(scheme.Warning);
                 SetForeground(scheme.WarningText);
                 return;
+            case ColorPreset.CommandLineInverted:
+                SetBackground(scheme.CommandLineColor);
+                SetForeground(scheme.CommandLineTextColor);
+                return;
+            case ColorPreset.CommandWholeInverted:
+                SetBackground(scheme.CommandWholeColor);
+                SetForeground(scheme.CommandWholeTextColor);
+                return;
+            case ColorPreset.CommandErrorInverted:
+                SetBackground(scheme.CommandErrorColor);
+                SetForeground(scheme.CommandErrorTextColor);
+                return;
+            case ColorPreset.CommandBorder or ColorPreset.CommandCorner or ColorPreset.CommandText
+                or ColorPreset.CommandTyped
+                or ColorPreset.CommandHint:
+                // On the background of the box of commands
+                if (scheme.CommandBox is { } box)
+                {
+                    Reset();
+                    SetBackground(box);
+                }
+                else
+                {
+                    SetNormalBackground(scheme);
+                }
+
+                SetForeground(preset switch
+                {
+                    ColorPreset.CommandBorder => scheme.CommandBorderColor,
+                    ColorPreset.CommandCorner => scheme.CommandCornerColor,
+                    ColorPreset.CommandTyped => scheme.CommandTypedColor,
+                    ColorPreset.CommandHint => scheme.CommandHintsColor,
+                    _ => scheme.CommandBoxTextColor
+                });
+                return;
+            case ColorPreset.BoxBorder or ColorPreset.BoxCorner or ColorPreset.BoxText:
+                // On the background of a box (the preview of a box is drawn on any page)
+                Reset();
+                if ((scheme.BoxBackground ?? scheme.Background) is { } boxBackground) SetBackground(boxBackground);
+                SetForeground(preset switch
+                {
+                    ColorPreset.BoxBorder => scheme.BoxBorderColor,
+                    ColorPreset.BoxCorner => scheme.BoxCornerColor,
+                    _ => scheme.BoxTextColor
+                });
+                return;
         }
 
         SetNormalBackground(scheme);
-        SetForeground(preset switch
+        var text = preset switch
         {
             ColorPreset.HeaderColor => scheme.Logo,
             ColorPreset.Divider => scheme.Dividers,
@@ -277,7 +388,6 @@ internal static class ConsoleColors
             ColorPreset.EditorTitle => scheme.EditorTitle,
             ColorPreset.TabFrame => scheme.TabFrameColor,
             ColorPreset.TabCorner => scheme.TabCornerColor,
-            ColorPreset.BoxBorder => scheme.BoxBorderColor,
             ColorPreset.TabShown => scheme.TabShownColor,
             ColorPreset.OtherTabs => scheme.OtherTabsColor,
             ColorPreset.KeyHint => scheme.KeyHintsColor,
@@ -285,7 +395,8 @@ internal static class ConsoleColors
             ColorPreset.CurrentLineNumber => scheme.CurrentLineNumberColor,
             ColorPreset.FrameText => scheme.FrameTextColor,
             _ => scheme.Text
-        });
+        };
+        SetForeground(_inBox ? scheme.TextInBox(text) : text);
     }
 
     /// <summary>
@@ -300,7 +411,7 @@ internal static class ConsoleColors
             // No colors: text with a color of its own is shown brighter
             SetForeground(ConsoleColor.White);
         }
-        else if (!IsBackgroundColor(color))
+        else if (!IsHidden(color))
         {
             SetForeground(color);
         }
@@ -323,10 +434,10 @@ internal static class ConsoleColors
     }
 
     /// <summary>
-    /// Write in the colors of the tab shown in a frame with tabs, and of the titles of boxes (with preview: the
-    /// colors being edited). Highlighted: the background of the highlight (by default the color of the tab frames)
-    /// with the text in the color of the focused tab. When the highlight is off, that color on the normal
-    /// background. In black and white the highlight is inverted
+    /// Write in the colors of the tab shown in a frame with tabs (with preview: the colors being edited). Highlighted:
+    /// the background of the highlight (by default the color of the tab frames) with the text in the color of the
+    /// focused tab. When the highlight is off, that color on the normal background. In black and white the highlight
+    /// is inverted
     /// </summary>
     internal static void SetTabColors(bool preview = false)
     {
@@ -346,6 +457,24 @@ internal static class ConsoleColors
 
         SetBackground(scheme.TabColor);
         SetForeground(scheme.TabTextColor);
+    }
+
+    /// <summary>
+    /// Write in the colors of the title of a box (with preview: the colors being edited): those of the tab shown,
+    /// unless it has colors of its own
+    /// </summary>
+    internal static void SetBoxTitleColors(bool preview = false)
+    {
+        var scheme = preview ? Preview : Current;
+        if ((Monochrome && !preview) || (scheme.BoxTitle == null && scheme.BoxTitleText == null))
+        {
+            SetTabColors(preview);
+            return;
+        }
+
+        if (scheme.BoxTitle == null && !scheme.TabHighlight) SetStyle(scheme, ColorPreset.BoxText);
+        else SetBackground(scheme.BoxTitleColor);
+        SetForeground(scheme.BoxTitleTextColor);
     }
 
     #endregion

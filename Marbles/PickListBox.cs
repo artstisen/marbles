@@ -37,8 +37,8 @@ internal static class PickListBox
     internal static int Show(string caption, IReadOnlyList<string> rows, Func<int, string> preview, int selected,
         string hints, Func<ConsoleKeyInfo, int, bool>? extraKey = null)
     {
-        // In the color of text in frames and boxes
-        using var frameText = ConsoleColors.FrameTextScope();
+        // In the colors of boxes
+        using var box = ConsoleColors.BoxScope();
 
         var filter = string.Empty;
         var filtering = false;

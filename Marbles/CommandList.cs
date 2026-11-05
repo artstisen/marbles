@@ -120,9 +120,10 @@ internal sealed class CommandList
 
         var top = Init.LineCount - 1 - Height;
         if (top < 1) return;
-        // The frame: its top with the name of the box, and its sides
+        // The frame: its top with the name of the box, and its sides (the top and the left side in the color of the
+        // corner)
         Tools.SetCursorEx(top, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandCorner);
         var title = "-- " + Lang.T("Commands") + " ";
         Console.Write(AsciiStyles.GetTopCorner() + title + new string('-', Math.Max(0, width - 2 - TextMetrics.WidthOf(title))) +
                       AsciiStyles.GetTopCorner());
@@ -131,7 +132,7 @@ internal sealed class CommandList
         for (var row = 0; row < _rows; row++)
         {
             Tools.SetCursorEx(top + 1 + row, 0);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandCorner);
             Console.Write("| ");
             var used = 0;
             if (row < lines.Count)
@@ -146,15 +147,15 @@ internal sealed class CommandList
             else if (row == 0 && !text.Contains(' '))
             {
                 // Nothing starts with what is typed (after a space: what follows has no list, nothing is said)
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandHint);
                 var none = Tools.TruncateString(Lang.T("No command starts with that"), inner, true);
                 Console.Write(none);
                 used = TextMetrics.WidthOf(none);
             }
 
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandText);
             Console.Write(new string(' ', Math.Max(0, inner - used)));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandBorder);
             Console.Write(" |");
         }
 
@@ -165,14 +166,14 @@ internal sealed class CommandList
             : null;
         var bottom = help != null ? ":" + described + "  " + help : Lang.T("Tab completes, Enter runs, Esc cancels");
         Tools.SetCursorEx(top + 1 + _rows, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandCorner);
         Console.Write("| ");
         ConsoleColors.SetColors(help != null
-            ? ConsoleColors.ColorPreset.Normal
-            : ConsoleColors.ColorPreset.Divider);
+            ? ConsoleColors.ColorPreset.CommandText
+            : ConsoleColors.ColorPreset.CommandHint);
         var line = Tools.TruncateString(bottom, inner, true);
         Console.Write(line + new string(' ', Math.Max(0, inner - TextMetrics.WidthOf(line))));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandBorder);
         Console.Write(" |");
         // The bottom, just above the command line
         Tools.SetCursorEx(top + 2 + _rows, 0);
@@ -190,20 +191,20 @@ internal sealed class CommandList
         if (whole || more)
         {
             ConsoleColors.SetColors(whole
-                ? ConsoleColors.ColorPreset.SelectorInverted
-                : ConsoleColors.ColorPreset.Divider);
+                ? ConsoleColors.ColorPreset.CommandWholeInverted
+                : ConsoleColors.ColorPreset.CommandHint);
             Console.Write(shown);
         }
         else
         {
             var match = Math.Min(typed.Length, shown.Length);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Accent);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandTyped);
             Console.Write(shown[..match]);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandText);
             Console.Write(shown[match..]);
         }
 
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandText);
         var width = TextMetrics.WidthOf(shown);
         Console.Write(new string(' ', Math.Max(0, cell - width)));
         return cell;

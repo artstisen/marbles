@@ -49,6 +49,7 @@ internal static class FileSearchDialog
         _top = Math.Max(2, (Init.LineCount - Height - 1) / 2 + 1);
         _left = Math.Max(0, (Init.LineWidth - Width) / 2);
         _message = string.Empty;
+        using var box = ConsoleColors.BoxScope();
         Tools.HideCursor();
         DrawFrame(directory);
         var selected = RowName;
@@ -112,20 +113,8 @@ internal static class FileSearchDialog
 
     private static void DrawFrame(string directory)
     {
-        ChoiceBox.DrawTitleTab(_top - 1, _left, InnerWidth, DialogText.SearchCaption);
+        ChoiceBox.DrawBox(_top - 1, _left, InnerWidth, Height - 2, DialogText.SearchCaption);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-        for (var row = 1; row < Height - 1; row++)
-        {
-            Tools.SetCursorEx(_top + row, _left);
-            Console.Write('|');
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(new string(' ', InnerWidth));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
-        }
-
-        Tools.SetCursorEx(_top + Height - 1, _left);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', InnerWidth) + AsciiStyles.GetBottomCorner());
         // Where the search starts (the end of a long path is shown)
         var room = InnerWidth - 4 - DialogText.SearchIn.Length;
         directory = TextMetrics.KeepEnd(directory, room);

@@ -67,6 +67,7 @@ internal static class ReplaceDialog
         _hasSelection = hasSelection;
         _scope = hasSelection ? Scope.SelectedLines : Scope.WholeText;
         scope = _scope;
+        using var box = ConsoleColors.BoxScope();
         Tools.HideCursor();
         DrawFrame();
         var selected = RowFind;
@@ -154,20 +155,8 @@ internal static class ReplaceDialog
 
     private static void DrawFrame()
     {
-        ChoiceBox.DrawTitleTab(_top - 1, _left, InnerWidth, DialogText.ReplaceCaption);
+        ChoiceBox.DrawBox(_top - 1, _left, InnerWidth, Height - 2, DialogText.ReplaceCaption);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-        for (var row = 1; row < Height - 1; row++)
-        {
-            Tools.SetCursorEx(_top + row, _left);
-            Console.Write('|');
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(new string(' ', InnerWidth));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
-        }
-
-        Tools.SetCursorEx(_top + Height - 1, _left);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', InnerWidth) + AsciiStyles.GetBottomCorner());
         Tools.SetCursorEx(_top + Height - 2, _left + 2);
         Console.Write(DialogText.ReplaceKeys);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

@@ -45,6 +45,8 @@ internal static class CommandLine
     /// <returns>The text, or null if canceled or empty</returns>
     internal static string? Read(char prefix, bool isCommand, CommandContext? context = null)
     {
+        // (the bottom line, also when a box is shown)
+        using var outside = ConsoleColors.OutsideBox();
         var command = string.Empty;
         var completion = context == null ? null : new CommandCompletion(context.Value);
         // Up and Down: the commands given here before
@@ -54,8 +56,8 @@ internal static class CommandLine
         var list = context != null && prefix == Prefix && CommandList.Enabled ? new CommandList(context.Value) : null;
         // The whole line is highlighted while typing
         WriteLine(prefix == Prefix ? DialogText.CommandPrompt : prefix.ToString(),
-            ConsoleColors.ColorPreset.HighlightInverted, true);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            ConsoleColors.ColorPreset.CommandLineInverted, true);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandLineInverted);
         Tools.ShowCursor();
         var left = Console.CursorLeft; // Where the text starts
 
@@ -65,7 +67,7 @@ internal static class CommandLine
         {
             if (list == null) return;
             list.Draw(command);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.CommandLineInverted);
             Tools.SetCursorEx(Init.LineCount - 1, left + TextMetrics.WidthOf(command));
         }
 
@@ -167,7 +169,7 @@ internal static class CommandLine
     /// </summary>
     internal static void ShowUnknown(string command)
     {
-        WriteLine(" " + DialogText.NotACommand(command) + " ", ConsoleColors.ColorPreset.AttentionInverted, false);
+        WriteLine(" " + DialogText.NotACommand(command) + " ", ConsoleColors.ColorPreset.CommandErrorInverted, false);
         Console.Write(" ");
         Keyboard.AwaitAnyKey();
     }

@@ -61,6 +61,8 @@ internal static class SnippetBox
 
     private static Result ShowList(string selection, SyntaxType syntax, bool fromNote)
     {
+        // In the colors of boxes
+        using var box = ConsoleColors.BoxScope();
         var filter = string.Empty;
         var filtering = false;
         var view = Snippets.View(filter, Snippets.Sort, syntax);

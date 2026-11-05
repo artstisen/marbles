@@ -52,16 +52,20 @@ public class ColorSchemeTests : IDisposable
             // Read again (as a scheme of your own made from it): the same
             Assert.Equal(WithoutComments(scheme.Serialize()),
                 WithoutComments(ColorScheme.Parse(scheme.Serialize(), scheme.Name).Serialize()));
-            // No color follows another when one of them is changed (the background is that of the terminal)
+            // No color follows another when one of them is changed (the background is that of the terminal, and
+            // the background of the box of commands is that background)
             foreach (var item in new[]
                      {
                          ColorItem.TabFrames, ColorItem.TabCorner, ColorItem.BoxBorders, ColorItem.Tab, ColorItem.TabText,
                          ColorItem.TabShown, ColorItem.OtherTabs, ColorItem.KeyHints, ColorItem.Unsaved,
                          ColorItem.UnsavedText, ColorItem.LineNumbers, ColorItem.CurrentLineNumber, ColorItem.FrameText
-                     })
+                     }.Concat(Enum.GetValues<ColorItem>().Where(item =>
+                         ColorScheme.IsCommand(item) && item != ColorItem.CommandBox)))
             {
                 Assert.True(scheme.Get(item) != null, scheme.Name + ": " + item);
             }
+
+            Assert.Equal(scheme.Background, scheme.CommandBox);
         }
     }
 
@@ -71,25 +75,28 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(new[]
         {
             "Default", "Deep Blue", "Marbles Quest", "Tasty Bytes", "Yellow Monochrome", "Green Monochrome",
-            "Ice Warp", "Gray Box"
+            "Ice Warp", "Gray Box", "Bright Typist"
         }, ColorScheme.BuiltIn.Select(scheme => scheme.Name));
         Assert.Equal(ConsoleColor.DarkBlue, ColorScheme.BuiltIn[1].Background);
         Assert.Equal(ConsoleColor.DarkGray, ColorScheme.BuiltIn[7].Background);
-        Assert.All(ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Deep Blue" or "Gray Box")),
+        // A light scheme: black text on white
+        Assert.Equal(ConsoleColor.White, ColorScheme.BuiltIn[8].Background);
+        Assert.Equal(ConsoleColor.Black, ColorScheme.BuiltIn[8].Text);
+        Assert.All(ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Deep Blue" or "Gray Box" or "Bright Typist")),
             scheme => Assert.Null(scheme.Background));
-        // The default scheme: white box borders, the focused tab cyan (not highlighted) with a gray corner, the
-        // other tabs dark gray, and the logo of Marbles
+        // The default scheme: white box borders, the focused tab cyan on black and highlighted, with a white corner,
+        // the other tabs dark gray, and the logo of Marbles
         var standard = ColorScheme.BuiltIn[0];
         Assert.Equal(ConsoleColor.White, standard.BoxBorderColor);
-        Assert.Equal(ConsoleColor.Gray, standard.TabCornerColor);
+        Assert.Equal(ConsoleColor.White, standard.TabCornerColor);
         Assert.Equal(ConsoleColor.White, standard.CurrentLineNumberColor);
         Assert.Equal("Marbles", standard.UseLogo);
         Assert.NotNull(Logos.Load(standard.UseLogo));
         Assert.Equal(ConsoleColor.DarkGray, standard.TabFrameColor);
-        Assert.Equal(ConsoleColor.DarkCyan, standard.TabColor);
+        Assert.Equal(ConsoleColor.Black, standard.TabColor);
         Assert.Equal(ConsoleColor.Cyan, standard.TabShownColor);
         Assert.Equal(ConsoleColor.DarkGray, standard.OtherTabsColor);
-        Assert.False(standard.TabHighlight);
+        Assert.True(standard.TabHighlight);
         // In the others (but Tasty Bytes, with colors of its own) the new colors are those of the dividers, and
         // the tab is highlighted
         Assert.All(ColorScheme.BuiltIn.Skip(1).Where(scheme => scheme.Name != "Tasty Bytes"), scheme =>
@@ -124,8 +131,8 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(ConsoleColor.White, read.Text);
         Assert.Equal(ColorScheme.BuiltIn[0].Logo, read.Logo);
         Assert.Null(read.Background);
-        // As the default scheme: no highlight of the focused tab
-        Assert.False(read.TabHighlight);
+        // As the default scheme: the focused tab is highlighted
+        Assert.True(read.TabHighlight);
     }
 
     [Fact]
@@ -156,6 +163,54 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(ConsoleColor.White, scheme.Text);
         scheme.Set(ColorItem.TabFrames, null);
         Assert.Null(scheme.TabFrames);
+    }
+
+    [Fact]
+    public void TheColorsOfTheCommandLine_HaveTheColorsTheyHadBefore_UntilTheyAreSet()
+    {
+        var scheme = Following();
+        Assert.Equal(scheme.Highlight, scheme.CommandLineColor);
+        Assert.Equal(scheme.HighlightText, scheme.CommandLineTextColor);
+        Assert.Equal(scheme.BoxBorderColor, scheme.CommandBorderColor);
+        Assert.Equal(scheme.BackgroundColor, scheme.CommandBoxColor);
+        Assert.Equal(scheme.Text, scheme.CommandBoxTextColor);
+        Assert.Equal(scheme.Accent, scheme.CommandTypedColor);
+        Assert.Equal(scheme.SelectorColor, scheme.CommandWholeColor);
+        Assert.Equal(scheme.SelectorTextColor, scheme.CommandWholeTextColor);
+        Assert.Equal(scheme.Dividers, scheme.CommandHintsColor);
+        Assert.Equal(scheme.Attention, scheme.CommandErrorColor);
+        Assert.Equal(scheme.AttentionText, scheme.CommandErrorTextColor);
+        Assert.Contains("commandline=default\n", scheme.Serialize());
+
+        // Set: kept apart from the color it followed, and read again
+        scheme.Set(ColorItem.CommandLine, ConsoleColor.DarkGreen);
+        scheme.Set(ColorItem.CommandBox, ConsoleColor.DarkBlue);
+        Assert.Equal(ConsoleColor.DarkBlue, scheme.Highlight);
+        var read = ColorScheme.Parse(scheme.Serialize(), "X");
+        Assert.Equal(ConsoleColor.DarkGreen, read.CommandLineColor);
+        Assert.Equal(ConsoleColor.DarkBlue, read.CommandBoxColor);
+        Assert.Null(read.CommandTyped);
+    }
+
+    [Fact]
+    public void TheColorsOfTheCommandLine_CannotHideTheirText()
+    {
+        var scheme = Following();
+        // The command line on the text typed on it, and the other way
+        Assert.False(scheme.Allowed(ColorItem.CommandLine, scheme.CommandLineTextColor));
+        Assert.False(scheme.Allowed(ColorItem.CommandLineText, scheme.CommandLineColor));
+        Assert.True(scheme.Allowed(ColorItem.CommandLine, ConsoleColor.DarkGreen));
+        // The box: no text on it in its color
+        scheme.Set(ColorItem.CommandBox, ConsoleColor.DarkBlue);
+        Assert.False(scheme.Allowed(ColorItem.CommandTyped, ConsoleColor.DarkBlue));
+        Assert.False(scheme.Allowed(ColorItem.CommandBox, scheme.CommandHintsColor));
+        // A color they follow: not changed to hide them
+        Assert.False(scheme.Allowed(ColorItem.Accent, ConsoleColor.DarkBlue));
+        scheme.Set(ColorItem.CommandBox, null);
+        Assert.True(scheme.Allowed(ColorItem.Accent, ConsoleColor.DarkBlue));
+        scheme.Set(ColorItem.CommandError, ConsoleColor.Red);
+        Assert.False(scheme.Allowed(ColorItem.AttentionText, ConsoleColor.Red));
+        Assert.True(scheme.Allowed(ColorItem.Attention, ConsoleColor.Magenta));
     }
 
     [Fact]
@@ -219,7 +274,7 @@ public class ColorSchemeTests : IDisposable
         var read = ColorScheme.Parse(scheme.Serialize(), "Mine");
         Assert.Equal("Reflections", read.UseLogo);
         Assert.Equal("Reflections", read.Clone().UseLogo);
-        Assert.All(ColorScheme.BuiltIn.Skip(2).Where(builtIn => builtIn.Name is not ("Tasty Bytes" or "Gray Box" or "Marbles Quest")),
+        Assert.All(ColorScheme.BuiltIn.Skip(2).Where(builtIn => builtIn.Name is not ("Tasty Bytes" or "Gray Box" or "Marbles Quest" or "Bright Typist")),
             builtIn => Assert.Equal(string.Empty, builtIn.UseLogo));
         Assert.DoesNotContain("uselogo", ColorScheme.BuiltIn[6].Serialize());
         Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.BuiltIn[6].Serialize(), "X").UseLogo);
@@ -230,7 +285,7 @@ public class ColorSchemeTests : IDisposable
     [Fact]
     public void TheSelector_KeepsItsColors_WhenTheHighlightIsChanged()
     {
-        foreach (var builtIn in ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Tasty Bytes" or "Deep Blue" or "Gray Box")))
+        foreach (var builtIn in ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Tasty Bytes" or "Deep Blue" or "Gray Box" or "Bright Typist")))
         {
             // From the start the colors of the highlight, as colors of its own
             Assert.Equal(builtIn.Highlight, builtIn.Selector);
@@ -405,7 +460,7 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(DialogText.Success, ColorSchemes.Save(mine));
         Assert.True(File.Exists(Path.Combine(_directory, "My scheme.txt")));
         Assert.Equal(new[] { "My scheme" }, ColorSchemes.CustomNames());
-        Assert.Equal(9, ColorSchemes.AllNames().Count);
+        Assert.Equal(ColorScheme.BuiltIn.Count + 1, ColorSchemes.AllNames().Count);
         Assert.Equal(ConsoleColor.Red, ColorSchemes.Load("my scheme")!.Logo);
         Assert.True(ColorSchemes.Exists("My scheme"));
         Assert.Equal(DialogText.Success, ColorSchemes.Delete("My scheme"));

@@ -348,6 +348,9 @@ public partial class TextArea
         }
 
 
+        // (a page of its own, also when it is opened from a box: the note of a bookmark in the Jump menu; a field of one
+        // row is a part of its box)
+        using var outside = _singleLine ? null : ConsoleColors.OutsideBox();
         DrawReadOnlyLabel();
         Draw();
         MainLoop();
@@ -1381,25 +1384,20 @@ public partial class TextArea
 
     private void DrawBox(int firstRow, int left, int inner, string caption, List<string> rows, int selected)
     {
+        using var box = ConsoleColors.BoxScope();
         var column = _left + left;
         // The tab of the title on the first row, the box below it
-        ChoiceBox.DrawTitleTab(_top + firstRow, column, inner, caption);
+        ChoiceBox.DrawBox(_top + firstRow, column, inner, rows.Count, caption);
         firstRow++;
         for (var i = 0; i < rows.Count; i++)
         {
-            Tools.SetCursorEx(_top + firstRow + 1 + i, column);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
+            Tools.SetCursorEx(_top + firstRow + 1 + i, column + 1);
             ConsoleColors.SetColors(i == selected
                 ? ConsoleColors.ColorPreset.HighlightInverted
                 : ConsoleColors.ColorPreset.Normal);
             Console.Write(" " + rows[i] + new string(' ', inner - 1 - TextMetrics.WidthOf(rows[i])));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
         }
 
-        Tools.SetCursorEx(_top + firstRow + 1 + rows.Count, column);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
@@ -1463,55 +1461,44 @@ public partial class TextArea
 
         // The tab of the title, the frame and the question
         var frameRow = firstRow + 1;
-        ChoiceBox.DrawTitleTab(_top + firstRow, column, inner, DialogText.Save);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-        for (var row = 1; row < frameHeight - 1; row++)
-        {
-            Tools.SetCursorEx(_top + frameRow + row, column);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(new string(' ', inner));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
-        }
-
-        Tools.SetCursorEx(_top + frameRow + frameHeight - 1, column);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-        Tools.SetCursorEx(_top + frameRow + 1, column + 2);
-        Console.Write(" " + DialogText.SaveQuestion + " ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-
         var selected = 0;
         var result = 0;
-        while (true)
+        using (ConsoleColors.BoxScope())
         {
-            for (var i = 0; i < choices.Length; i++)
-            {
-                Tools.SetCursorEx(_top + frameRow + 3 + i, column + 2);
-                if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
-                Console.Write(i == selected ? "->" : "  ");
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                Console.Write(" " + choices[i]);
-            }
+            ChoiceBox.DrawBox(_top + firstRow, column, inner, frameHeight - 2, DialogText.Save);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+            Tools.SetCursorEx(_top + frameRow + 1, column + 2);
+            Console.Write(" " + DialogText.SaveQuestion + " ");
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
 
-            var key = Console.ReadKey(true);
-            if (key.Key == ConsoleKey.Escape) break;
-            if (key.Key == ConsoleKey.Y) result = 1;
-            if (key.Key == ConsoleKey.N) result = 2;
-            if (key.Key == ConsoleKey.E) result = 4;
-            if (key.Key == ConsoleKey.Enter) result = results[selected];
-            if (result != 0 || key.Key == ConsoleKey.Enter) break;
-            if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow) selected = (selected + 1) % choices.Length;
-            if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+            while (true)
             {
-                selected = (selected + choices.Length - 1) % choices.Length;
-            }
+                for (var i = 0; i < choices.Length; i++)
+                {
+                    Tools.SetCursorEx(_top + frameRow + 3 + i, column + 2);
+                    if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
+                    Console.Write(i == selected ? "->" : "  ");
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+                    Console.Write(" " + choices[i]);
+                }
 
-            // gg and G: the first and the last choice
-            if (key.KeyChar == 'G') selected = choices.Length - 1;
-            if (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g') selected = 0;
+                var key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Escape) break;
+                if (key.Key == ConsoleKey.Y) result = 1;
+                if (key.Key == ConsoleKey.N) result = 2;
+                if (key.Key == ConsoleKey.E) result = 4;
+                if (key.Key == ConsoleKey.Enter) result = results[selected];
+                if (result != 0 || key.Key == ConsoleKey.Enter) break;
+                if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow) selected = (selected + 1) % choices.Length;
+                if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
+                {
+                    selected = (selected + choices.Length - 1) % choices.Length;
+                }
+
+                // gg and G: the first and the last choice
+                if (key.KeyChar == 'G') selected = choices.Length - 1;
+                if (key.KeyChar == 'g' && Console.ReadKey(true).KeyChar == 'g') selected = 0;
+            }
         }
 
         // The rows that were covered are written again when the editor is drawn
@@ -2307,7 +2294,8 @@ public partial class TextArea
         }
 
         var filler = new string(commandLine ? ' ' : '-', Math.Max(0, available - TextMetrics.WidthOf(text)));
-        var status = label + gap + StyleMarker + text + StyleMarker + filler + right + _engine.MessageIsError;
+        var status = label + gap + StyleMarker + text + StyleMarker + filler + right + _engine.MessageIsError +
+                     _engine.MessageIsCommandError;
         if (status == _shownStatus) return;
         _shownStatus = status;
 
@@ -2324,10 +2312,12 @@ public partial class TextArea
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Console.Write(gap);
         ConsoleColors.SetColors(commandLine
-            ? ConsoleColors.ColorPreset.HighlightInverted
-            : _engine.MessageIsError
-                ? ConsoleColors.ColorPreset.AttentionInverted
-                : ConsoleColors.ColorPreset.Normal);
+            ? ConsoleColors.ColorPreset.CommandLineInverted
+            : _engine.MessageIsCommandError
+                ? ConsoleColors.ColorPreset.CommandErrorInverted
+                : _engine.MessageIsError
+                    ? ConsoleColors.ColorPreset.AttentionInverted
+                    : ConsoleColors.ColorPreset.Normal);
         Console.Write(text);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(filler + right);

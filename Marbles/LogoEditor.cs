@@ -154,7 +154,6 @@ internal static class LogoEditor
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Tools.SetCursorEx(gridTop - 2, gridLeft);
         Console.Write(EditorPage.Ruler());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
         Tools.SetCursorEx(gridTop - 1, gridLeft - 1);
         Console.Write(AsciiStyles.GetTopCorner() + new string('-', LogoArt.Width) + AsciiStyles.GetTopCorner());
         for (var row = 0; row < LogoArt.Rows; row++)

@@ -56,8 +56,8 @@ internal static class ChoiceBox
     internal static int Pick(string caption, string question, string note, IReadOnlyList<string> choices,
         IReadOnlyList<string> keys, int selected, bool warning, bool guarded = false)
     {
-        // In the color of text in frames and boxes
-        using var frameText = ConsoleColors.FrameTextScope();
+        // In the colors of boxes
+        using var box = ConsoleColors.BoxScope();
 
         var keyWidth = keys.Max(TextMetrics.WidthOf);
         var widest = Math.Max(TextMetrics.WidthOf(caption) + 4,
@@ -137,8 +137,8 @@ internal static class ChoiceBox
     internal static int PickOption(string caption, IReadOnlyList<string> options, IReadOnlyList<string> keys,
         int tabRow, int left)
     {
-        // In the color of text in frames and boxes
-        using var frameText = ConsoleColors.FrameTextScope();
+        // In the colors of boxes
+        using var box = ConsoleColors.BoxScope();
 
         var keyWidth = keys.Max(TextMetrics.WidthOf);
         var inner = Math.Clamp(Math.Max(TextMetrics.WidthOf(caption) + 4,
@@ -147,22 +147,16 @@ internal static class ChoiceBox
         tabRow = Math.Max(0, Math.Min(tabRow, Init.LineCount - 2 - (options.Count + 2)));
         var top = tabRow + 1;
         Tools.HideCursor();
-        DrawTitleTab(tabRow, left, inner, caption);
+        DrawBox(tabRow, left, inner, options.Count, caption);
         for (var number = 0; number < options.Count; number++)
         {
-            Tools.SetCursorEx(top + 1 + number, left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
+            Tools.SetCursorEx(top + 1 + number, left + 1);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             var text = "    " + keys[number].PadRight(keyWidth) + " .... " +
                        Tools.TruncateString(options[number], inner - keyWidth - 11, true);
             Console.Write(text + new string(' ', Math.Max(0, inner - TextMetrics.WidthOf(text))));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
         }
 
-        Tools.SetCursorEx(top + options.Count + 1, left);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         WriteHints(DialogText.ChoiceKeys);
         var selected = 0;
@@ -207,8 +201,8 @@ internal static class ChoiceBox
     /// </summary>
     internal static void Message(string caption, string message, string note)
     {
-        // In the color of text in frames and boxes
-        using var frameText = ConsoleColors.FrameTextScope();
+        // In the colors of boxes
+        using var box = ConsoleColors.BoxScope();
 
         var inner = Math.Clamp(Math.Max(Math.Max(TextMetrics.WidthOf(message), TextMetrics.WidthOf(caption)) + 4,
             MinInner), 10, Init.LineWidth - 6);
@@ -222,9 +216,13 @@ internal static class ChoiceBox
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(DialogText.HitAnyKeyToContinue);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        Console.Write(new string(' ', Init.LineWidth - 1));
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
+        using (ConsoleColors.OutsideBox())
+        {
+            Tools.SetCursorEx(Init.LineCount - 1, 0);
+            Console.Write(new string(' ', Init.LineWidth - 1));
+            Tools.SetCursorEx(Init.LineCount - 1, 0);
+        }
+
         Console.ReadKey(true);
     }
 
@@ -238,8 +236,8 @@ internal static class ChoiceBox
     /// <returns>The text typed (trimmed), or null if canceled or empty</returns>
     internal static string? AskText(string caption, string prompt, string label, string text)
     {
-        // In the color of text in frames and boxes
-        using var frameText = ConsoleColors.FrameTextScope();
+        // In the colors of boxes
+        using var box = ConsoleColors.BoxScope();
 
         var (fieldTop, fieldLeft, fieldWidth) = DrawField(caption, prompt, label);
         var textArea = new TextArea(fieldLeft, fieldTop, fieldWidth, 1, text, 0, text.Length > 0, false, false, 0);
@@ -254,8 +252,8 @@ internal static class ChoiceBox
     /// <returns>The key typed, or null if canceled</returns>
     internal static string? AskSecret(string caption, string prompt, string label)
     {
-        // In the color of text in frames and boxes
-        using var frameText = ConsoleColors.FrameTextScope();
+        // In the colors of boxes
+        using var box = ConsoleColors.BoxScope();
 
         var (fieldTop, fieldLeft, _) = DrawField(caption, prompt, label);
         Tools.SetCursorEx(fieldTop, fieldLeft + 1);
@@ -289,8 +287,8 @@ internal static class ChoiceBox
     /// <param name="width">The width inside the box (0: the width of the screen)</param>
     internal static void ShowRows(string caption, IReadOnlyList<(string Label, string Value)> rows, int width = 0)
     {
-        // In the color of text in frames and boxes
-        using var frameText = ConsoleColors.FrameTextScope();
+        // In the colors of boxes
+        using var box = ConsoleColors.BoxScope();
 
         var inner = width > 0 ? Math.Min(width, Init.LineWidth - 6) : Init.LineWidth - 6;
         // The labels take the width of the longest (translated) label
@@ -330,8 +328,8 @@ internal static class ChoiceBox
 
     /// <summary>
     /// The top of a box with its title in a tab, as the tabs of a frame with tabs (TabFrame): the tab on the row
-    /// above the top line of the box, with its left side going on as the left side of the box. The title has the
-    /// colors of the tab shown.
+    /// above the top line of the box, with its left side going on as the left side of the box. The title has its
+    /// own colors (by default those of the tab shown), and the rest the color of the corner of the box.
     ///
     ///   .---------.
     ///   | Caption '-----------.
@@ -341,21 +339,50 @@ internal static class ChoiceBox
     /// <param name="left">The column of the left side of the box</param>
     /// <param name="inner">The width inside the box</param>
     /// <param name="caption">The title</param>
-    internal static void DrawTitleTab(int tabRow, int left, int inner, string caption)
+    private static void DrawTitleTab(int tabRow, int left, int inner, string caption)
     {
         var top = AsciiStyles.GetTopCorner();
         var bottom = AsciiStyles.GetBottomCorner();
         caption = Tools.TruncateString(caption.Trim(), Math.Max(1, inner - 4), true);
         var width = TextMetrics.WidthOf(caption);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxCorner);
         Tools.SetCursorEx(tabRow, left);
         Console.Write(top + new string('-', width + 2) + top);
         Tools.SetCursorEx(tabRow + 1, left);
         Console.Write('|');
-        ConsoleColors.SetTabColors();
+        ConsoleColors.SetBoxTitleColors();
         Console.Write(" " + caption + " ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxCorner);
         Console.Write(bottom + new string('-', Math.Max(0, inner - width - 3)) + top);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+    }
+
+    /// <summary>
+    /// Draw a box: its title in a tab, its sides and a blank inside. All boxes on top of a page are drawn with this
+    /// </summary>
+    /// <param name="tabRow">The row of the top of the tab (the top line of the box is the row below it)</param>
+    /// <param name="left">The column of the left side of the box</param>
+    /// <param name="inner">The width inside the box</param>
+    /// <param name="height">The rows inside the box</param>
+    /// <param name="caption">The title</param>
+    internal static void DrawBox(int tabRow, int left, int inner, int height, string caption)
+    {
+        DrawTitleTab(tabRow, left, inner, caption);
+        var top = tabRow + 1;
+        for (var row = 0; row < height; row++)
+        {
+            Tools.SetCursorEx(top + 1 + row, left);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxCorner);
+            Console.Write('|');
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(new string(' ', inner));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+            Console.Write('|');
+        }
+
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
+        Tools.SetCursorEx(top + height + 1, left);
+        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
@@ -380,22 +407,7 @@ internal static class ChoiceBox
         var top = tabRow + 1;
         _shown = (tabRow, left, left + inner + 1, top + height + 1);
         Tools.HideCursor();
-        DrawTitleTab(tabRow, left, inner, caption);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-        for (var row = 0; row < height; row++)
-        {
-            Tools.SetCursorEx(top + 1 + row, left);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(new string(' ', inner));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.BoxBorder);
-            Console.Write('|');
-        }
-
-        Tools.SetCursorEx(top + height + 1, left);
-        Console.Write(AsciiStyles.GetBottomCorner() + new string('-', inner) + AsciiStyles.GetBottomCorner());
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        DrawBox(tabRow, left, inner, height, caption);
         return (top, left, inner, height);
     }
 
@@ -424,6 +436,7 @@ internal static class ChoiceBox
     // The keys of a box, on the bottom line
     internal static void WriteHints(string hints)
     {
+        using var outside = ConsoleColors.OutsideBox();
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Console.Write(new string(' ', Init.LineWidth - 1));

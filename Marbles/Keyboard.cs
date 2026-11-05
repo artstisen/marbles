@@ -248,9 +248,10 @@ class Shortcut
 
     public void WriteShortcut(bool newLine, bool useMargin)
     {
+        // In the colors of the quick guide: the headings in the color of headings, the keys in the accent color
         if (_isHeadline)
         {
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
             if (useMargin)
             {
                 Console.Write(new string(Margin, 1) + _description);
@@ -263,14 +264,11 @@ class Shortcut
         }
         else
         {
-            if (useMargin)
-            {
-                Console.Write(new string(Margin, 4) + _key + " ");
-            }
-            else
-            {
-                Console.Write(_key + " ");
-            }
+            if (useMargin) Console.Write(new string(Margin, 4));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Accent);
+            Console.Write(_key);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Console.Write(" ");
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             Console.Write(_divider);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
