@@ -4,11 +4,13 @@
     python tools/langfile.py pl path/to/pl.txt     (a file somewhere else, such as the folder lang)
 
 Every text given to Lang.T or Lang.F in the code (and the names listed in Lang.Names) is written to the file of
-the language, in the order it appears in the code, with the translation already in the file. German is
-built into the program (Marbles/Lang/de.txt); the other languages are files of the folder lang next to the program
-(Marbles/Lang/External/pl.txt in the source). A new language gets a new file. A new text
-gets an empty translation (it is shown in English until it is translated), and a text that is no longer in the
-code is left out. Run it after changing texts, then fill in the empty translations.
+the language, in the order it appears in the code, with the translation already in the file. The languages are
+files of the folder lang next to the program (Marbles/Lang/External/pl.txt in the source); English is built in. A
+new language gets a new file. A new text gets an empty translation (it is shown in English until it is
+translated), and a text that is no longer in the code is left out. Run it after changing texts, then fill in the
+empty translations.
+It also writes the texts of the code to Marbles/Lang/texts.txt, which is built into the program: how much of a
+language file is translated is counted from it.
 Needs Python 3 only. The tests (LangTests) check the files against the code in the same way.
 """
 import io
@@ -22,16 +24,14 @@ LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
 NAMES = {'da': 'Dansk', 'de': 'Deutsch', 'nb': 'Norsk bokmål', 'sv': 'Svenska', 'es': 'Español', 'fr': 'Français',
          'it': 'Italiano', 'pl': 'Polski', 'nl': 'Nederlands', 'fi': 'Suomi'}
 
-BUILT_IN = ('de',)  # Built into the program (Marbles/Lang); the others are files of the folder lang
+TEXTS = os.path.join(ROOT, 'Lang', 'texts.txt')  # The texts of the code, built into the program
 
 
 def language_path(code, given=None):
-    """Where the file of a language is: the path given, Marbles/Lang/xx.txt for a built-in language, else
-    Marbles/Lang/External/xx.txt (published in the folder lang next to the program)"""
+    """Where the file of a language is: the path given, else Marbles/Lang/External/xx.txt (published in the folder
+    lang next to the program)"""
     if given:
         return given
-    if code in BUILT_IN:
-        return os.path.join(ROOT, 'Lang', code + '.txt')
     return os.path.join(ROOT, 'Lang', 'External', code + '.txt')
 
 
@@ -127,6 +127,20 @@ def make(code, given=None):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     io.open(path, 'w', encoding='utf-8', newline='\n').write('\n'.join(out) + '\n')
     print(f'{path}: {missing} not translated')
+    write_texts()
+
+
+def write_texts():
+    """Write the texts of the code to Marbles/Lang/texts.txt (as a language file, with the English texts only)"""
+    out = ['# Marbles: the texts of this version, in English. Built into the program, where it counts how much of a',
+           '# language file is translated. Made by tools/langfile.py: do not change it by hand.']
+    current = None
+    for source, text in code_texts():
+        if source != current:
+            out += ['', '# ' + source]
+            current = source
+        out.append('en: ' + quote(text))
+    io.open(TEXTS, 'w', encoding='utf-8', newline='\n').write('\n'.join(out) + '\n')
 
 
 if __name__ == '__main__':

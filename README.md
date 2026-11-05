@@ -25,7 +25,7 @@ All your notes are kept in a single encrypted file that is easy to back up and c
 **At home in any terminal**
 - Pure 7-bit ASCII interface that works with any monospaced font
 - Color schemes and logos, which you can edit and make your own
-- English and German built in, and nine more languages as files that can be changed or added to
+- English built in, and ten more languages as files that can be changed or added to
 - Runs on Windows, Linux (also Raspberry Pi) and macOS, as a single file with nothing else to install
 
 **Also for files**
@@ -35,7 +35,7 @@ All your notes are kept in a single encrypted file that is easy to back up and c
 ## Getting started
 1. Download the build for your platform from the [releases page](https://github.com/artstisen/marbles/releases), and unzip it into a directory of your choice.
 2. Start `Marbles` (or `Marbles.exe` on Windows) in your terminal.
-3. Choose **Note Management** on the start page. The first time, you create the password of your data file. Keep it safe: your notes cannot be recovered without it.
+3. Marbles starts in **Note Management**, at the login page of your data file. The first time, you create the password of your data file. Keep it safe: your notes cannot be recovered without it.
 4. Press `?` on any page to see its keys, or open the Quick guide from the start page.
 
 See the [guide to installation](Guide-to-installation.md) for the builds and the details.
@@ -90,7 +90,7 @@ Inside Marbles, press `?` for the list of keys.
 | Core code base | Agnostic: no OS-specific logic, .NET handles the differences between the platforms |
 | Box drawing | Classic ASCII |
 | Console I/O encoding | UTF-8 |
-| Languages | English and German built in; Danish, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (the commands and keys are the same in all languages). The language files are also a pack of their own on the releases page (`Marbles-languages-1.5.3.zip`) |
+| Languages | English built in; Danish, German, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (the commands and keys are the same in all languages). The language files are also a pack of their own on the releases page (`Marbles-languages-1.5.3.zip`) |
 | Date/time format | ISO 8601 |
 | File encryption | AES-256-GCM, with the key derived from the password using PBKDF2-HMAC-SHA256 |
 | Software license | [MIT](LICENSE) |
@@ -109,7 +109,9 @@ dotnet run --project Marbles
 `AGENTS.md` has the rules for working on the code (for people and for coding agents).
 
 ## Tools used
-- Code editor: Marbles
+- Written in C#, a single binary file, no dependencies, runs in the terminal you already use
+- CLI tools: JetBrains Command Line Tools, .NET CLI compiler, PowerShell, and GitHub CLI
+- Agentic tools: Claude Opus 5.5 (scripting/testing/code review)
+- Code editor: Blyant with syntax highlighting, code completion, and code snippets
 - Programming language: C# 14
 - Framework: .NET 10
-- Claude Opus 5.5: Scripting/testing/code review (as of Marbles v1.5.0)

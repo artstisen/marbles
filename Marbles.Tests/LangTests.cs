@@ -102,23 +102,18 @@ public class LangTests : IDisposable
         return value[1..^1].Replace("\\n", "\n");
     }
 
-    // A language file as it is in the source: built in (Lang/xx.txt), or a file of the folder lang (Lang/External)
+    // The folder of the language files in the source (published as the folder lang next to the program)
+    private static string LanguageFolder() => Path.Combine(SourceDirectory(), "Lang", "External");
+
+    // A language file as it is in the source
     private static string? SourceFile(string code)
     {
-        foreach (var folder in new[] { "Lang", Path.Combine("Lang", "External") })
-        {
-            var path = Path.Combine(SourceDirectory(), folder, code + ".txt");
-            if (File.Exists(path)) return File.ReadAllText(path);
-        }
-
-        return null;
+        var path = Path.Combine(LanguageFolder(), code + ".txt");
+        return File.Exists(path) ? File.ReadAllText(path) : null;
     }
 
     // All the language files of the source
-    private static readonly string[] Translated = new[] { "Lang", Path.Combine("Lang", "External") }
-        .Select(folder => Path.Combine(SourceDirectory(), folder))
-        .Where(Directory.Exists)
-        .SelectMany(folder => Directory.GetFiles(folder, "*.txt"))
+    private static readonly string[] Translated = Directory.GetFiles(LanguageFolder(), "*.txt")
         .Select(path => Path.GetFileNameWithoutExtension(path)!)
         .OrderBy(code => code, StringComparer.Ordinal).ToArray();
 
@@ -131,6 +126,18 @@ public class LangTests : IDisposable
     {
         Assert.Contains("da", Translated);
         Assert.Contains("de", Translated);
+    }
+
+    // The texts built into the program, which count how much of a language file is translated, are the texts of
+    // the code
+    [Fact]
+    public void TheTextsBuiltIn_AreTheTextsOfTheCode()
+    {
+        var texts = (Lang.ReadTexts() ?? string.Empty).Split('\n').Select(line => line.TrimEnd('\r'))
+            .Where(line => line.StartsWith("en: ", StringComparison.Ordinal)).Select(line => Value(line[3..])).ToList();
+        var source = SourceTexts();
+        Assert.True(texts.Count == source.Count && texts.All(source.Contains),
+            "Lang/texts.txt is not the texts of the code: python tools/langfile.py de brings it up to date");
     }
 
     [Theory]
@@ -193,7 +200,7 @@ public class LangTests : IDisposable
     }
 
     [Theory]
-    [InlineData("de")] // Built in: the texts of this version are counted from it
+    [InlineData("de")]
     [InlineData("da")]
     public void TheGermanAndDanishFiles_AreComplete(string code)
     {
@@ -220,7 +227,7 @@ public class LangTests : IDisposable
         Assert.False(Lang.Set("xx"));
         Assert.Equal(Lang.English, Lang.Current);
         Assert.Equal("File deleted", DialogText.FileDeleted);
-        Assert.Equal("de", Lang.Next(true));
+        Assert.Equal(Lang.Available[1].Code, Lang.Next(true));
         Assert.Equal(Lang.Available[^1].Code, Lang.Next(false));
     }
 

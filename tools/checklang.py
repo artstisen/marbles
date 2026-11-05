@@ -18,11 +18,10 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Marbles')
 
 
 def language_path(code, given=None):
-    """The file of a language: the path given, built in (Marbles/Lang), or of the folder lang (Marbles/Lang/External)"""
+    """The file of a language: the path given, else the one of the folder lang (Marbles/Lang/External)"""
     if given:
         return given
-    built_in = os.path.join(ROOT, 'Lang', code + '.txt')
-    return built_in if os.path.exists(built_in) else os.path.join(ROOT, 'Lang', 'External', code + '.txt')
+    return os.path.join(ROOT, 'Lang', 'External', code + '.txt')
 
 
 def unquote(value):

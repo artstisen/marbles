@@ -13,24 +13,14 @@ namespace Marbles;
 /// A text that is not in the file of the language is shown in English. Commands, keys, the names of the editor
 /// modes, the settings file and the log are always English.
 ///
-/// German is built into the program (Marbles/Lang/de.txt). The other languages are files in a folder
-/// "lang": next to the program (published with it, from Marbles/Lang/External), or in the data directory. A file
-/// there can also replace a built-in one (to change a translation), and a new language is added by putting its file
-/// there: it is found by its name, "pl.txt", and named by its first line ("# Marbles: Polski (pl)"). A file in the
-/// data directory is used before one next to the program, which is used before the one built in.
+/// English is built into the program. The other languages are files in a folder "lang": next to the program
+/// (published with it, from Marbles/Lang/External), or in the data directory. A new language is added by putting its
+/// file there: it is found by its name, "pl.txt", and named by its first line ("# Marbles: Polski (pl)"). A file in
+/// the data directory is used before one next to the program (to change a translation).
 /// </summary>
 internal static class Lang
 {
     internal const string English = "en";
-
-    /// <summary>
-    /// The languages built into the program, in the order they are offered: code and name (in the language itself)
-    /// </summary>
-    internal static readonly (string Code, string Name)[] Languages =
-    {
-        (English, "English"),
-        ("de", "Deutsch")
-    };
 
     /// <summary>
     /// The name of the folders with language files (next to the program, and in the data directory)
@@ -49,10 +39,9 @@ internal static class Lang
 
     /// <summary>
     /// A language that can be used: its code, its name (in the language itself), where its file is, and how much of
-    /// it is translated (null for a built-in file, which is complete). Replaced: a file in a folder is used instead
-    /// of the one built in
+    /// it is translated (null for English, which is built in)
     /// </summary>
-    internal sealed record Language(string Code, string Name, Source From, int? Percent = null, bool Replaced = false);
+    internal sealed record Language(string Code, string Name, Source From, int? Percent = null);
 
     /// <summary>
     /// The folders with language files, the one used first first: "lang" in the data directory, and next to the
@@ -108,8 +97,8 @@ internal static class Lang
     private static Language[]? _available;
 
     /// <summary>
-    /// The languages that can be used: English, the built-in ones, and those with a file in a folder "lang" (in the
-    /// order of their names). They are found once; Refresh finds them again
+    /// The languages that can be used: English, and those with a file in a folder "lang" (in the order of their
+    /// names). They are found once; Refresh finds them again
     /// </summary>
     internal static Language[] Available => _available ??= Discover();
 
@@ -124,22 +113,7 @@ internal static class Lang
 
     private static Language[] Discover()
     {
-        var found = new List<Language>();
-        foreach (var (code, name) in Languages)
-        {
-            if (code == English)
-            {
-                found.Add(new Language(code, name, Source.BuiltIn));
-                continue;
-            }
-
-            // A file in a folder replaces the one built in
-            var file = FindFile(code);
-            found.Add(file == null
-                ? new Language(code, name, Source.BuiltIn)
-                : new Language(code, name, file.Value.From, PercentOf(ReadText(file.Value.Path), code), true));
-        }
-
+        var found = new List<Language> { new(English, "English", Source.BuiltIn) }; // English: its name
         var added = new List<Language>();
         foreach (var (folder, from) in Folders())
         {
@@ -177,20 +151,20 @@ internal static class Lang
     }
 
     // The file of a language in a folder "lang" (the data directory first), or null
-    private static (string Path, Source From)? FindFile(string code)
+    private static string? FindFile(string code)
     {
-        foreach (var (folder, from) in Folders())
+        foreach (var (folder, _) in Folders())
         {
             var path = Path.Combine(folder, code + ".txt");
             try
             {
-                if (File.Exists(path)) return (path, from);
+                if (File.Exists(path)) return path;
                 // The code is in lowercase, the name of the file can be in other letters ("PL.txt", "pt-BR.txt"):
                 // where file names are case-sensitive (Linux) it is found by comparing the names
                 if (!Directory.Exists(folder)) continue;
                 var named = Directory.EnumerateFiles(folder, "*.txt").FirstOrDefault(file =>
                     string.Equals(Path.GetFileNameWithoutExtension(file), code, StringComparison.OrdinalIgnoreCase));
-                if (named != null) return (named, from);
+                if (named != null) return named;
             }
             catch
             {
@@ -230,14 +204,15 @@ internal static class Lang
         return code;
     }
 
-    // The texts of this version of Marbles: those of the built-in German file, which has them all
+    // The texts of this version of Marbles: the list built into the program (Marbles/Lang/texts.txt, made by
+    // tools/langfile.py)
     private static HashSet<string>? _reference;
 
     // How much of the texts of this version is translated in a file (0 to 100)
     private static int PercentOf(string? content, string code)
     {
         if (content == null) return 0;
-        _reference ??= new HashSet<string>(EnglishTexts(ReadBuiltIn("de") ?? string.Empty), StringComparer.Ordinal);
+        _reference ??= new HashSet<string>(EnglishTexts(ReadTexts() ?? string.Empty), StringComparer.Ordinal);
         if (_reference.Count == 0) return 100;
         var texts = Parse(content, code);
         var translated = _reference.Count(texts.ContainsKey);
@@ -327,22 +302,21 @@ internal static class Lang
     }
 
     /// <summary>
-    /// The language file to use: one in a folder "lang" (the data directory first), else the one built into the
-    /// program. Null if there is none
+    /// The language file to use: the one in a folder "lang" (the data directory first). Null if there is none
     /// </summary>
     internal static string? ReadFile(string code)
     {
-        if (FindFile(code) is { } file && ReadText(file.Path) is { } text) return text;
-        return ReadBuiltIn(code);
+        return FindFile(code) is { } path ? ReadText(path) : null;
     }
 
     /// <summary>
-    /// The language file built into the program, or null if there is none
+    /// The texts of this version of Marbles, built into the program (written as a language file, with the English
+    /// texts only), or null if they are not there
     /// </summary>
-    internal static string? ReadBuiltIn(string code)
+    internal static string? ReadTexts()
     {
         var assembly = Assembly.GetExecutingAssembly();
-        using var stream = assembly.GetManifestResourceStream("Marbles.Lang." + code + ".txt");
+        using var stream = assembly.GetManifestResourceStream("Marbles.Lang.texts.txt");
         if (stream == null) return null;
         using var reader = new StreamReader(stream, Encoding.UTF8);
         return reader.ReadToEnd();

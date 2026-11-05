@@ -209,7 +209,7 @@ backup=
         }
         finally
         {
-            StartMenu.Mode = StartMenu.StartMode.Select;
+            StartMenu.Mode = StartMenu.StartMode.Notes;
             StartMenu.Only = StartMenu.OnlyMode.None;
         }
     }
@@ -218,8 +218,8 @@ backup=
     [InlineData("startmode=notes", "Notes")]
     [InlineData("startmode= Editor ", "Editor")]
     [InlineData("startmode=select", "Select")]
-    [InlineData("startmode=other", "Select")]
-    [InlineData("", "Select")]
+    [InlineData("startmode=other", "Notes")]
+    [InlineData("", "Notes")] // The default
     public void StartMode_IsLoadedAndSaved(string setting, string expected)
     {
         File.WriteAllText(SettingsFile, LegacySettings + "\n" + setting + "\n");
@@ -233,7 +233,7 @@ backup=
         }
         finally
         {
-            StartMenu.Mode = StartMenu.StartMode.Select;
+            StartMenu.Mode = StartMenu.StartMode.Notes;
         }
     }
 
@@ -376,7 +376,8 @@ backup=
         Assert.Equal(string.Empty, settings["browsesel2"]);
         Assert.Equal("true", settings["syntaxcolors"]);
         Assert.Equal("false", settings["monochrome"]);
-        Assert.Equal("select", settings["startmode"]);
+        // Starting in Note Management unless set otherwise (the settings file has no "startmode")
+        Assert.Equal("notes", settings["startmode"]);
 
         Init.SetDefaultOutputDimensions();
         Assert.True(FileIo.LoadSettings());

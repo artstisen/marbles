@@ -2,7 +2,7 @@
 
 /// <summary>
 /// Language files in a folder "lang" (next to the program, or in the data directory): they are found by
-/// themselves, named by their first line, replace a built-in language, and the data directory is used first
+/// themselves, named by their first line, and the data directory is used first. Only English is built in
 /// </summary>
 [Collection("Static state")]
 public class LangFolderTests : IDisposable
@@ -76,10 +76,10 @@ public class LangFolderTests : IDisposable
         var polish = Assert.Single(Lang.Available, language => language.Code == "pl");
         Assert.Equal("Polski", polish.Name);
         Assert.Equal(Lang.Source.ProgramFolder, polish.From);
-        Assert.False(polish.Replaced);
         Assert.InRange(polish.Percent ?? -1, 0, 5);
-        // English and the built-in languages first
-        Assert.Equal(new[] { "en", "de" }, Lang.Available.Take(2).Select(language => language.Code));
+        // English first, and only the languages with a file: German is a file too
+        Assert.Equal(new[] { "en", "pl" }, Lang.Available.Select(language => language.Code));
+        Assert.False(Lang.Set("de"));
 
         Assert.True(Lang.Set("pl"));
         Assert.Equal("Plik usunięty", Lang.T("File deleted"));
@@ -89,7 +89,7 @@ public class LangFolderTests : IDisposable
     }
 
     [Fact]
-    public void TheDataDirectory_IsUsedFirst_AndAFileReplacesABuiltInLanguage()
+    public void TheDataDirectory_IsUsedFirst()
     {
         System.IO.File.WriteAllText(Path.Combine(_program, "pl.txt"), File("pl", "Polski", ("File deleted", "Program")));
         System.IO.File.WriteAllText(Path.Combine(_data, "pl.txt"), File("pl", "Polski", ("File deleted", "Data")));
@@ -99,15 +99,9 @@ public class LangFolderTests : IDisposable
         Assert.True(Lang.Set("pl"));
         Assert.Equal("Data", Lang.T("File deleted"));
 
-        var german = Lang.Available.Single(language => language.Code == "de");
-        Assert.True(german.Replaced);
-        Assert.Equal(Lang.Source.DataFolder, german.From);
+        Assert.Equal(Lang.Source.DataFolder, Lang.Available.Single(language => language.Code == "de").From);
         Assert.True(Lang.Set("de"));
         Assert.Equal("Meine Datei ist weg", Lang.T("File deleted"));
-        // The built-in file is still there to compare with
-        Assert.NotNull(Lang.ReadBuiltIn("de"));
-        // Danish is a file of the folder lang, not built in
-        Assert.Null(Lang.ReadBuiltIn("da"));
     }
 
     [Fact]
@@ -125,6 +119,21 @@ public class LangFolderTests : IDisposable
         Assert.Contains("pt-br", codes);
         // Without a first line naming it: its code
         Assert.Equal("nl", Lang.Available.Single(language => language.Code == "nl").Name);
+    }
+
+    [Fact]
+    public void AFileWithAllTheTexts_IsTranslatedInFull()
+    {
+        // The texts of this version are built in: a file with all of them translated is complete
+        var texts = (Lang.ReadTexts() ?? string.Empty).Split('\n').Select(line => line.TrimEnd('\r'))
+            .Where(line => line.StartsWith("en: \"", StringComparison.Ordinal))
+            .Select(line => line[5..^1].Replace("\\n", "\n")).ToList();
+        Assert.True(texts.Count > 1000);
+        System.IO.File.WriteAllText(Path.Combine(_program, "pl.txt"),
+            File("pl", "Polski", texts.Select(text => (text, "x")).ToArray()));
+        Lang.Refresh();
+        Assert.Equal(100, Lang.Available.Single(language => language.Code == "pl").Percent);
+        Assert.Null(Lang.Available[0].Percent);
     }
 
     [Fact]

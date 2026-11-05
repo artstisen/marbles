@@ -315,7 +315,7 @@ internal static class Init
         AsciiStyles.ResetAsciiStyle();
         Logo.Animation = Logo.AnimationSpeed.Fast;
         AutoSize = true;
-        StartMenu.Mode = StartMenu.StartMode.Select;
+        StartMenu.Mode = StartMenu.StartMode.Notes;
         StartMenu.StartInFavorites = false;
         StartMenu.Only = StartMenu.OnlyMode.None;
         ConsoleColors.Monochrome = false;

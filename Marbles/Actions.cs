@@ -487,12 +487,10 @@ internal static class Actions
         FileIo.SaveSettings();
     }
 
-    // A language in the list: its name and code, "(lang)" when a file in a folder "lang" replaces the one built in,
-    // and how much of a file in a folder is translated
+    // A language in the list: its name and code, and how much of its file is translated
     private static string LanguageChoice(Lang.Language language)
     {
         var text = language.Name + " (" + language.Code + ")";
-        if (language.Replaced) text += " (" + Lang.FolderName + ")"; // English: the name of the folder
         if (language.Percent is { } percent) text += "  " + percent + "%";
         return text;
     }
@@ -1279,7 +1277,7 @@ internal static class Actions
         ConsoleColors.Use(ColorScheme.Default);
         Logo.Current = LogoArt.BuiltIn;
         Logo.Animation = Logo.AnimationSpeed.Fast;
-        StartMenu.Mode = StartMenu.StartMode.Select;
+        StartMenu.Mode = StartMenu.StartMode.Notes;
         StartMenu.StartInFavorites = false;
         StartMenu.Only = StartMenu.OnlyMode.None;
         SystemClipboard.SetDefaults();

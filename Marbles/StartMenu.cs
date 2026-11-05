@@ -21,7 +21,7 @@ internal static class StartMenu
     /// <summary>
     /// What happens when Marbles starts (setting "startmode")
     /// </summary>
-    internal static StartMode Mode { get; set; } = StartMode.Select;
+    internal static StartMode Mode { get; set; } = StartMode.Notes;
 
     internal enum OnlyMode
     {
@@ -111,7 +111,8 @@ internal static class StartMenu
         {
             "notes" => StartMode.Notes,
             "editor" => StartMode.Editor,
-            _ => StartMode.Select
+            "select" => StartMode.Select,
+            _ => StartMode.Notes // The default: Marbles is first of all for notes
         };
     }
 

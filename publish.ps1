@@ -3,8 +3,8 @@
 #               and is started with:  dotnet Marbles.dll
 #   win-x64 ... A self-contained single file for each platform. The .NET runtime is included in the file,
 #               so nothing has to be installed to run it.
-#   languages   The language file pack: a zip with the language files (lang), the German file built into
-#               Marbles (built-in) and a read-me, to be downloaded on its own
+#   languages   The language file pack: a zip with the language files (lang) and a read-me, to be downloaded
+#               on its own
 # Each version is also packed for a release in "publish/release", named by the version of Marbles: a zip for
 # Windows and the portable version (Marbles-1.5.3-win-x64.zip), and a tar.gz for Linux and macOS
 # (Marbles-1.5.3-linux-x64.tar.gz), where the program is marked as one that can be run. Each has a folder "Marbles"
@@ -95,9 +95,8 @@ foreach ($platform in $Platforms) {
         # The zip is named by the version of Marbles (Marbles-languages-1.5.3.zip)
         $lang = Join-Path $PSScriptRoot "Marbles/Lang"
         $staging = Join-Path ([System.IO.Path]::GetTempPath()) ("marbles-languages-" + [guid]::NewGuid().ToString("N"))
-        New-Item -ItemType Directory -Force (Join-Path $staging "lang"), (Join-Path $staging "built-in") | Out-Null
+        New-Item -ItemType Directory -Force (Join-Path $staging "lang") | Out-Null
         Copy-Item (Join-Path $lang "External/*.txt") (Join-Path $staging "lang")
-        Copy-Item (Join-Path $lang "*.txt") (Join-Path $staging "built-in")
         Copy-Item (Join-Path $lang "Pack/README.txt") $staging
         New-Item -ItemType Directory -Force $folder | Out-Null
         $pack = Join-Path $folder "Marbles-languages-$version.zip"
