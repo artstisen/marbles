@@ -27,3 +27,7 @@ publish/
 
 # Spelling dictionaries (supplied by the user, not part of the source)
 /spell/
+
+# Working lists for bringing features over from Blyant (kept locally)
+/Blyant-to-Marbles.md
+/Blyant-not-ported.md
