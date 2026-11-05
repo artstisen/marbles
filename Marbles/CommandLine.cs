@@ -49,12 +49,27 @@ internal static class CommandLine
         var completion = context == null ? null : new CommandCompletion(context.Value);
         // Up and Down: the commands given here before
         var recall = context == null ? null : new CommandRecall(context.Value);
+        // The commands of the place in a box above the line, narrowed while typing (the page draws again what it
+        // covered when the command line is closed)
+        var list = context != null && prefix == Prefix && CommandList.Enabled ? new CommandList(context.Value) : null;
         // The whole line is highlighted while typing
         WriteLine(prefix == Prefix ? DialogText.CommandPrompt : prefix.ToString(),
             ConsoleColors.ColorPreset.HighlightInverted, true);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
         Tools.ShowCursor();
         var left = Console.CursorLeft; // Where the text starts
+
+        // The list for what is typed, and the cursor back at the end of the text (where it is counted, not asked:
+        // asking the terminal is slow on Linux and macOS)
+        void ShowList()
+        {
+            if (list == null) return;
+            list.Draw(command);
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.HighlightInverted);
+            Tools.SetCursorEx(Init.LineCount - 1, left + TextMetrics.WidthOf(command));
+        }
+
+        ShowList();
 
         // Show another text on the line instead of the one typed (counted in columns, and only when it fits)
         void Replace(string text)
@@ -83,6 +98,7 @@ internal static class CommandLine
                     // Complete the command. Tab again: the next command that starts the same (Shift+Tab: the previous)
                     Replace(completion?.Next(command, (key.Modifiers & ConsoleModifiers.Shift) == 0) ?? command);
                     recall?.Reset();
+                    ShowList();
                     continue;
                 }
 
@@ -93,6 +109,7 @@ internal static class CommandLine
                     {
                         Replace(recalled);
                         completion?.Reset();
+                        ShowList();
                     }
 
                     continue;
@@ -124,6 +141,7 @@ internal static class CommandLine
                     Tools.SetCursorEx(Console.CursorTop, Math.Max(left, Console.CursorLeft - cells));
                     Console.Write(new string(' ', cells));
                     Tools.SetCursorEx(Console.CursorTop, Math.Max(left, Console.CursorLeft - cells));
+                    ShowList();
                 }
                 else if (!char.IsControl(key.KeyChar) && key.KeyChar != '\0' &&
                          TextMetrics.WidthOf(command) + 2 < VisibleWidth() - left)
@@ -131,12 +149,14 @@ internal static class CommandLine
                     command += key.KeyChar;
                     recall?.Reset();
                     Console.Write(key.KeyChar);
+                    ShowList();
                 }
             }
         }
         finally
         {
             Tools.HideCursor();
+            list?.Clear();
             // Remove the highlighted line
             WriteLine(string.Empty, ConsoleColors.ColorPreset.Normal, false);
         }

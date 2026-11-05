@@ -36,11 +36,25 @@ internal static class ChoiceBox
     }
 
     /// <summary>
+    /// Ask before deleting (files, notes, data files), so that text typed by mistake (the keys of a word meant for
+    /// the editor) cannot answer yes: no letter answers in this box (Y does nothing). No is selected from the start,
+    /// j/k (or the arrow keys) select, only Enter picks, and Esc is no
+    /// </summary>
+    /// <returns>True for yes</returns>
+    internal static bool ConfirmGuarded(string caption, string question, string note)
+    {
+        return Pick(caption, question, note, new[] { DialogText.ChoiceYes, DialogText.ChoiceNo },
+            new[] { string.Empty, string.Empty }, 1, true, true) == 0;
+    }
+
+    /// <summary>
     /// Pick one of a few choices. The key of each choice is shown in front of it and picks it at once
     /// </summary>
+    /// <param name="guarded">No letter picks a choice, and only Enter picks the selected one (j/k and the
+    /// arrow keys select, Esc, Q and h cancel); no keys are shown in front of the choices</param>
     /// <returns>The number of the choice, or -1 if the box was closed with Esc</returns>
     internal static int Pick(string caption, string question, string note, IReadOnlyList<string> choices,
-        IReadOnlyList<string> keys, int selected, bool warning)
+        IReadOnlyList<string> keys, int selected, bool warning, bool guarded = false)
     {
         // In the color of text in frames and boxes
         using var frameText = ConsoleColors.FrameTextScope();
@@ -59,8 +73,10 @@ internal static class ChoiceBox
         for (var number = 0; number < choices.Count; number++)
         {
             Tools.SetCursorEx(top + 1 + choiceTop + number, left + 1);
-            Console.Write("   " + keys[number].PadRight(keyWidth) + " .... " +
-                          Tools.TruncateString(choices[number], width - keyWidth - 11, true));
+            Console.Write(guarded
+                ? "   " + Tools.TruncateString(choices[number], width - 5, true)
+                : "   " + keys[number].PadRight(keyWidth) + " .... " +
+                  Tools.TruncateString(choices[number], width - keyWidth - 11, true));
         }
 
         WriteHints(DialogText.ChoiceKeys);
@@ -78,6 +94,18 @@ internal static class ChoiceBox
 
             Tools.SetCursorEx(Init.LineCount - 1, 0);
             var key = Console.ReadKey(true);
+            if (guarded)
+            {
+                // No letter picks a choice, and only Enter picks the selected one (not Space or l), so a word
+                // typed by mistake cannot answer Yes: in "dark ", the k selects Yes, and the space would pick it
+                var move = Keyboard.ToNavigationKey(key).Key;
+                if (key.Key is ConsoleKey.Escape or ConsoleKey.Q || move == ConsoleKey.LeftArrow) return -1;
+                if (key.Key == ConsoleKey.Enter) return selected;
+                if (move == ConsoleKey.DownArrow) selected = Math.Min(selected + 1, choices.Count - 1);
+                if (move == ConsoleKey.UpArrow) selected = Math.Max(selected - 1, 0);
+                continue;
+            }
+
             var navigation = Keyboard.ToNavigationKey(key).Key;
             if (key.Key is ConsoleKey.Escape or ConsoleKey.Q || navigation == ConsoleKey.LeftArrow) return -1;
             if (key.Key is ConsoleKey.Enter or ConsoleKey.Spacebar || navigation == ConsoleKey.RightArrow)

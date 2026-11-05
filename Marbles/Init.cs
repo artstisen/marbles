@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Marbles;
 
@@ -9,13 +10,14 @@ internal static class Init
     // Standard line count (row count)
     internal const byte MinLineCount = 23; // Default
     private const byte MaxLineCount = 255; // Default
-    // Standard line width (column count)
-    internal const byte MinLineWidth = 80; // Default
+    // Standard line width (column count): 79, so a window of 80x24 (the size of a classic terminal) is enough, as
+    // one column and one row of the window are not used (ApplyAutoSize)
+    internal const byte MinLineWidth = 79; // Default
     private const byte MaxLineWidth = 255; // Default
     internal static byte LineWidth { get; private set; }
     internal static byte LineCount { get; private set; }
 
-    // Set "artificial buffer size" according to general guidelines (80x23)
+    // Set "artificial buffer size" according to general guidelines (79x23: a window of 80x24)
     // -the actual console buffer is not touched but must be set manually by the user (cross platform compat)
     // -this buffer is used to calculate the output width and height across the entire application.
     internal static void SetDefaultOutputDimensions()
@@ -26,9 +28,9 @@ internal static class Init
 
   
     /// <summary>
-    /// Use the size of the terminal window as the output dimensions (setting "autosize")
+    /// Use the size of the terminal window as the output dimensions (setting "autosize", on unless turned off)
     /// </summary>
-    internal static bool AutoSize { get; set; }
+    internal static bool AutoSize { get; set; } = true;
 
     /// <summary>
     /// Set the output dimensions from the size of the terminal window if AutoSize is on.
@@ -38,7 +40,7 @@ internal static class Init
     /// <returns>True if the dimensions were changed</returns>
     internal static bool ApplyAutoSize()
     {
-        if (!AutoSize) return false;
+        if (!AutoSize) return CheckFixedSize();
         int width, height;
         try
         {
@@ -56,6 +58,46 @@ internal static class Init
         if (width == LineWidth && height == LineCount) return false;
         LineWidth = (byte)width;
         LineCount = (byte)height;
+        return true;
+    }
+
+    // The size of the window when the user chose to keep dimensions that do not fit it (it is not asked again
+    // until the window has another size), and the question is being asked
+    private static (int Width, int Height)? _keptForWindow;
+    private static bool _askingSize;
+
+    /// <summary>
+    /// Dimensions of their own (automatic size off) that do not fit the window, with its last column and row
+    /// unused (a window of 80 columns and dimensions of 80), are told about before the page is drawn, and the user
+    /// can let them follow the window (Tools.WindowTooSmall). Once for a size of the window
+    /// </summary>
+    /// <returns>True if the question was asked (the page is drawn again)</returns>
+    private static bool CheckFixedSize()
+    {
+        if (_askingSize || !Tools.IsWindowTooSmall()) return false;
+        (int, int) window;
+        try
+        {
+            window = (Console.WindowWidth, Console.WindowHeight);
+        }
+        catch
+        {
+            return false;
+        }
+
+        if (_keptForWindow == window) return false;
+        _askingSize = true;
+        try
+        {
+            Tools.WindowTooSmall();
+        }
+        finally
+        {
+            _askingSize = false;
+        }
+
+        // Kept as they are (the window was not made larger, and automatic size was not chosen)
+        if (!AutoSize && Tools.IsWindowTooSmall()) _keptForWindow = window;
         return true;
     }
 
@@ -212,6 +254,33 @@ internal static class Init
     internal static bool UsingDefaultSettings { get; set; }
     private static int _initLines; // The number of lines logged by the initialization that is running
 
+    private static bool _watchingKeys;
+    private static PosixSignalRegistration? _continueSignal;
+
+    // Ctrl+C does not close Marbles (a note or a file that is not saved would be lost): the signal is cancelled,
+    // and the editor tells how to close it. Ctrl+C stays a signal (not a key, as TreatControlCAsInput would make it),
+    // so the terminal still copies a selection with it. After Ctrl+Z and "fg" (Linux, macOS) the page is drawn again
+    private static void WatchSignals()
+    {
+        if (_watchingKeys) return;
+        _watchingKeys = true;
+        Console.CancelKeyPress += (_, e) =>
+        {
+            // Ctrl+\ (Linux, macOS) and Ctrl+Break (Windows) would stop Marbles at once: they are cancelled too
+            e.Cancel = true;
+            if (e.SpecialKey == ConsoleSpecialKey.ControlC) Tools.NoteCancelKey();
+        };
+        if (OperatingSystem.IsWindows()) return;
+        try
+        {
+            _continueSignal = PosixSignalRegistration.Create(PosixSignal.SIGCONT, _ => Tools.NoteContinued());
+        }
+        catch (Exception e) when (e is PlatformNotSupportedException or IOException)
+        {
+            // Not drawn again until a key is pressed
+        }
+    }
+
     public static void RunInitialization()
     {
         _initLines = 0;
@@ -245,7 +314,7 @@ internal static class Init
         Entries.ResetRecallId();
         AsciiStyles.ResetAsciiStyle();
         Logo.Animation = Logo.AnimationSpeed.Fast;
-        AutoSize = false;
+        AutoSize = true;
         StartMenu.Mode = StartMenu.StartMode.Select;
         StartMenu.StartInFavorites = false;
         StartMenu.Only = StartMenu.OnlyMode.None;
@@ -258,7 +327,7 @@ internal static class Init
         // Set default colors
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Reset);
         WriteProgressBar(9); // progress
-        //Console.TreatControlCAsInput = true; // Prevent console from exiting when pressing CTRL+C // DOES AFFECT COPY/PASTE HENCE COMMENTED OUT
+        WatchSignals();
         // Set default buffer-size
         Log(DialogText.InitDimensions, true);
         WriteProgressBar(10); // progress
@@ -309,6 +378,9 @@ internal static class Init
             }
         }
         FileBrowser.ResolveSubFolderIndex(); // Update subfolder index for selection
+        // Completing words is on: the file of completions is made if there is none, so it is ready (a file that is
+        // there is never written over)
+        if (Completions.Enabled) Completions.EnsureFile();
         WriteProgressBar(15); // progress
         // Update output dimensions if set by user
         ApplyAutoSize();

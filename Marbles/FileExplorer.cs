@@ -10,6 +10,9 @@
 internal static partial class FileExplorer
 {
     private const int ListTop = 3; // The first row of the list
+
+    // A count typed in front of a key in the file browser and its lists (favorites, history, hotlist, search results)
+    private static readonly ListCount _listCount = new();
     private const string ParentName = "..";
     private const string CopyNameSuffix = "-utf8";
 
@@ -98,14 +101,20 @@ internal static partial class FileExplorer
     // A jump: the directory to show, and the file to open in the editor when the browser is shown
     private static string? _jumpDirectory;
     private static string? _jumpFile;
+    private static (int Line, int Column)? _jumpAt; // Where in the file (a bookmark made in the editor)
+
+    // The file is opened at this line and column (not where it was left)
+    private static (int Line, int Column)? _openAtCaret;
 
     /// <summary>
-    /// Open the file browser in the directory of a file, and the file in the editor (a jump)
+    /// Open the file browser in the directory of a file, and the file in the editor (a jump), at a line and column
+    /// (null: where the cursor was left)
     /// </summary>
-    internal static void RunAtFile(string path)
+    internal static void RunAtFile(string path, (int Line, int Column)? at = null)
     {
         _jumpDirectory = System.IO.Path.GetDirectoryName(path);
         _jumpFile = path;
+        _jumpAt = at;
         Run();
     }
 
@@ -210,6 +219,7 @@ internal static partial class FileExplorer
 
         // A jump: the directory of the jump, and the file opened in the editor
         var jumpFile = _jumpFile;
+        var jumpAt = _jumpAt;
         if (mode == BrowseMode.Edit && _jumpDirectory != null && System.IO.Directory.Exists(_jumpDirectory))
         {
             StartPaneIn(ActivePane, _jumpDirectory);
@@ -217,12 +227,13 @@ internal static partial class FileExplorer
 
         _jumpDirectory = null;
         _jumpFile = null;
+        _jumpAt = null;
         // The places of the panes are saved however the browser is left: closed, a jump (to another page),
         // logging in from it, or exiting Marbles (Tools.ExitApplication)
         _browsing = mode == BrowseMode.Edit;
         try
         {
-            return BrowseLoop(mode, jumpFile);
+            return BrowseLoop(mode, jumpFile, jumpAt);
         }
         finally
         {
@@ -272,7 +283,7 @@ internal static partial class FileExplorer
         return pane.Items[pane.Index].Name;
     }
 
-    private static string? BrowseLoop(BrowseMode mode, string? jumpFile)
+    private static string? BrowseLoop(BrowseMode mode, string? jumpFile, (int Line, int Column)? jumpAt)
     {
         Init.ApplyAutoSize();
         Draw(true);
@@ -280,7 +291,10 @@ internal static partial class FileExplorer
         if (mode == BrowseMode.Edit && jumpFile != null && File.Exists(jumpFile))
         {
             var info = new FileInfo(jumpFile);
-            if (Open(new Item(info.Name, info.FullName, false, info.Length))) return _picked;
+            _openAtCaret = jumpAt;
+            var close = Open(new Item(info.Name, info.FullName, false, info.Length));
+            _openAtCaret = null;
+            if (close) return _picked;
             LoadItems(info.Name);
             Draw(true);
         }
@@ -290,12 +304,37 @@ internal static partial class FileExplorer
             // Starting in the favorites list is the same as pressing F (closing the list shows the file browser)
             var key = _openFavorites && _mode == BrowseMode.Edit
                 ? new ConsoleKeyInfo('F', ConsoleKey.F, true, false, false)
-                : Console.ReadKey(true);
+                : Keyboard.ReadKey();
             _openFavorites = false;
+            // The window was resized (or Marbles went on after Ctrl+Z): all is drawn again, with the message (nothing
+            // on the disk changed: the panes are not read again)
+            if (Keyboard.IsRedraw(key))
+            {
+                Init.ApplyAutoSize();
+                Draw(true);
+                if (Tools.TakeRedrawRequest()) Draw(true);
+                continue;
+            }
+
             // Moving the selection only redraws the selection pointer (unless the list has to scroll)
             var redraw = true;
             var hadMessage = _message.Length > 0;
             _message = string.Empty;
+            // A count in front of a key, in the pane with the focus: 5j 5k (5 rows), 5gg 5G (row 5), shown below the
+            // pane. Esc only drops it. Other keys do what they do once
+            if (_listCount.Add(key))
+            {
+                Draw(hadMessage);
+                continue;
+            }
+
+            var count = _listCount.Take();
+            if (count != null && key.Key == ConsoleKey.Escape)
+            {
+                Draw(hadMessage);
+                continue;
+            }
+
             if (_mode == BrowseMode.Edit && _pending == null && Jump.IsKey(key))
             {
                 // The Jump menu
@@ -326,9 +365,13 @@ internal static partial class FileExplorer
 
                 if (command != null)
                 {
-                    // File names and paths are logged, but not something typed that is not a command
-                    EventLog.Add(DialogText.LogFilesCommand + ": :" +
-                                 (Commands.IsKnown(CommandContext.Files, name) ? command : "(not a command)"));
+                    // File names and paths are logged, but not something typed that is not a command, nor the
+                    // name of a bookmark (:bookmark name, :book name: logged by the command's name only)
+                    if (name.StartsWith("book", StringComparison.Ordinal))
+                        EventLog.AddCommand(DialogText.LogFilesCommand, command);
+                    else
+                        EventLog.Add(DialogText.LogFilesCommand + ": :" +
+                                     (Commands.IsKnown(CommandContext.Files, name) ? command : "(not a command)"));
                 }
 
                 if (name is "q" or "quit" or "close")
@@ -401,12 +444,12 @@ internal static partial class FileExplorer
             }
             else if (key.KeyChar == 'G')
             {
-                ActivePane.Index = ActivePane.Items.Count - 1;
+                ActivePane.Index = ListCount.Row(count, ActivePane.Items.Count, false);
                 redraw = false;
             }
             else if (key.KeyChar == 'g')
             {
-                if (Console.ReadKey(true).KeyChar == 'g') ActivePane.Index = 0;
+                if (Console.ReadKey(true).KeyChar == 'g') ActivePane.Index = ListCount.Row(count, ActivePane.Items.Count, true);
                 redraw = false;
             }
             else if (key.Key is ConsoleKey.Escape or ConsoleKey.Q)
@@ -428,12 +471,12 @@ internal static partial class FileExplorer
             }
             else if (key.Key is ConsoleKey.J or ConsoleKey.DownArrow)
             {
-                ActivePane.Index++;
+                ActivePane.Index = Math.Min(ActivePane.Index + (count ?? 1), Math.Max(0, ActivePane.Items.Count - 1));
                 redraw = false;
             }
             else if (key.Key is ConsoleKey.K or ConsoleKey.UpArrow)
             {
-                ActivePane.Index--;
+                ActivePane.Index = Math.Max(0, ActivePane.Index - (count ?? 1));
                 redraw = false;
             }
             else if (key.Key == ConsoleKey.PageDown || Keyboard.IsControl(key, ConsoleKey.D) ||
@@ -745,9 +788,22 @@ internal static partial class FileExplorer
         return copy;
     }
 
+    // Where the file being opened is opened (a line found, a peek, a bookmark), taken for this file only: the places
+    // are cleared at once, as a jump away from the editor leaves through Navigation.Wait, past the code that would
+    // clear them after Open, and the next file opened would get them
+    private static (int Index, bool Found, (int Line, int Column)? Caret) TakeOpenPlace()
+    {
+        var place = (_openAtIndex, _openAtFound, _openAtCaret);
+        _openAtIndex = 0;
+        _openAtFound = false;
+        _openAtCaret = null;
+        return place;
+    }
+
     // Open a text file in the editor
     private static void Edit(TextFile file, bool modified)
     {
+        var openPlace = TakeOpenPlace();
         // The places of the browser are saved before the editor is opened, should Marbles not be closed as usual
         if (_browsing) RememberPanes();
         // Staying logged in: the data file stays open (the mode it was in comes back when the editor is closed)
@@ -762,9 +818,14 @@ internal static partial class FileExplorer
         {
             // The line found by a search, or else where the cursor was when the file was closed last time (a
             // favorite first, then the history)
-            var cursorIndex = _openAtIndex;
+            var (cursorIndex, openAtFound, openAtCaret) = openPlace;
             (int Index, bool OtherLeft)? split = null;
-            if (!_openAtFound && CaretOfFile(file.Path) is { } caret)
+            if (openAtCaret is { } at)
+            {
+                // A bookmark made in the editor: where it was made
+                cursorIndex = CaretPosition.IndexOf(_file?.Text ?? string.Empty, at.Line, at.Column);
+            }
+            else if (!openAtFound && CaretOfFile(file.Path) is { } caret)
             {
                 cursorIndex = CaretPosition.IndexOf(_file?.Text ?? string.Empty, caret.Line, caret.Column);
                 // Closed in a split: opened split again
@@ -776,6 +837,7 @@ internal static partial class FileExplorer
                 Tools.ClearScreen();
                 Actions.DrawEditFileMenu();
                 TextArea.NextSplit = split;
+                TextArea.NextMarks = SessionMarks.GetValueOrDefault(file.Path);
                 var textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
                     Init.LineCount - 3, _file?.Text ?? string.Empty, cursorIndex, false, false, false, TextArea.SaveAsFile, modified);
                 textArea.ClearUndoRedoCache();
@@ -882,6 +944,11 @@ internal static partial class FileExplorer
     /// <summary>
     /// Keep where the cursor is in the file being edited, when the editor is left by a jump
     /// </summary>
+    // The marks of the files closed in this session ("ma"), by their paths: set again when a file is opened. In
+    // memory only
+    private static readonly Dictionary<string, Dictionary<char, TextPos>> SessionMarks =
+        new(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+
     internal static void KeepCaretOfCurrentFile(TextArea textArea)
     {
         if (_file != null) KeepCaret(_file.Path, textArea);
@@ -891,6 +958,8 @@ internal static partial class FileExplorer
     // it is one
     private static void KeepCaret(string path, TextArea textArea)
     {
+        // The marks, while Marbles runs
+        SessionMarks[path] = textArea.CopyMarks();
         var text = textArea.GetText();
         var (line, column) = CaretPosition.Of(text, textArea.GetCursorIndex());
         // Closed in a split: where the cursor of the other pane was, and on which side
@@ -1434,6 +1503,8 @@ internal static partial class FileExplorer
             if (IsDual && number == 0) Console.Write('+');
             var status = " " + (pane.Items.Count == 0 ? 0 : pane.Index + 1) + "/" + pane.Items.Count + " ";
             if (pane.Filter.Length > 0) status += "/" + pane.Filter + " ";
+            // A count being typed (5j), below the pane it moves in
+            if (pane == ActivePane && _listCount.Shown.Length > 0) status = " " + _listCount.Shown + status;
             if (pane.Marks.Count > 0) status = " " + Lang.F("{0} marked", pane.Marks.Count) + " -" + status;
             status = Tools.TruncateString(status, Math.Max(4, width - 6), true);
             Tools.SetCursorEx(Init.LineCount - 2, left + width - status.Length - 2);

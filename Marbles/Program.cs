@@ -74,6 +74,8 @@ class Program
     // screen, the screen is drawn and control returns here (see Navigation)
     private static void MainLoop()
     {
+        // Tab after ":book " completes the names of the bookmarks, on every page
+        CommandCompletion.Arguments["book"] = Bookmarks.NamesToComplete;
         var starting = true;
         while (true)
         {
@@ -97,7 +99,10 @@ class Program
                 }
                 else
                 {
-                    Actions.HandleKey(Console.ReadKey(true));
+                    var key = Keyboard.ReadKey();
+                    // The window was resized (or Marbles went on after Ctrl+Z): the page is drawn again
+                    if (Keyboard.IsRedraw(key)) Actions.RedrawPage();
+                    else Actions.HandleKey(key);
                 }
             }
             catch (NavigationException)

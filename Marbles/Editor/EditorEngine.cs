@@ -55,7 +55,8 @@ internal enum EditorRequest
     CompletionsEdit, // ":complete edit": open the file of the completions
     Diff, // ":diff": compare the text with the file on disk (or the saved entry)
     WriteCopy, // ":w name": save the text as a new file (a comparison)
-    Bookmark, // ":bookmark": keep the file as a bookmark of the Jump menu
+    Bookmark, // ":bookmark name": keep the place of the cursor as a bookmark of the Jump menu (BookmarkName)
+    Marks, // ":marks": the marks of the text, to jump to one
     JumpToBookmark, // ":book 3": jump to bookmark 3 (BookArgument)
     StringMemory, // ":reglist": show the strings of the string memory, to pick one to insert
     MacroRecord, // ":record": start recording a macro (the host warns first in a note of a data file)
@@ -66,6 +67,7 @@ internal enum EditorRequest
     ClosePane, // ":q" in a split: close this pane (the other shows the text)
     OnlyPane, // ":only": close the other pane of a split
     NewDocument, // ":new name": a new file next to this one (in an entry: a new entry), opened in its place
+    WhitespaceToggle, // ":whitespace": blank space shown as . > $, or not
     Favorite // ":favorite": the file a favorite of the file browser, or the note a favorite of its data file (or not)
 }
 
@@ -116,7 +118,7 @@ internal sealed partial class EditorEngine
     /// <summary>
     /// The number of rows in the view
     /// </summary>
-    internal int Height { get; }
+    internal int Height { get; private set; }
 
     /// <summary>
     /// A single line editor is always in Insert mode. Enter accepts the text and Esc cancels.
@@ -239,6 +241,18 @@ internal sealed partial class EditorEngine
         Layout.SetWidth(width);
         TopRow = Math.Clamp(TopRow, 0, Math.Max(0, Layout.TotalRows() - 1));
         ClampCursor();
+        EnsureCursorVisible();
+    }
+
+    /// <summary>
+    /// Change the number of rows in the view (the terminal window was resized): the cursor stays in view
+    /// </summary>
+    internal void SetHeight(int height)
+    {
+        height = Math.Max(1, height);
+        if (height == Height) return;
+        Height = height;
+        TopRow = Math.Clamp(TopRow, 0, Math.Max(0, Layout.TotalRows() - 1));
         EnsureCursorVisible();
     }
 
@@ -426,6 +440,16 @@ internal sealed partial class EditorEngine
         _keepDesiredCell = false;
         if (!Buffer.IsStepOpen) _stepCursor = Cursor;
 
+        // The letters of a jump to a word (not a command of their own: not repeated or recorded)
+        if (IsJumping)
+        {
+            HandleJumpKey(key);
+            ClampCursor();
+            _desiredCell = -1;
+            EnsureCursorVisible();
+            return _request;
+        }
+
         // Record the keys of each command for repeating with "."
         var startsCommand = Mode == EditorMode.Normal && !HasPending;
         if (!_replaying)
@@ -458,6 +482,7 @@ internal sealed partial class EditorEngine
         // The selection is remembered when Visual mode is left, for "gv"
         var selectionBefore = IsVisual ? CurrentSelection() : null;
         var insertKey = Mode == EditorMode.Insert;
+        _foundShown = false;
         switch (Mode)
         {
             case EditorMode.Insert:
@@ -479,6 +504,13 @@ internal sealed partial class EditorEngine
         }
 
         if (Mode != EditorMode.Insert) ClearCompletions();
+
+        // The character found stays shown through ";" "," and a new "f" (or a count) being typed
+        if (!_foundShown && !((Mode == EditorMode.Normal || IsVisual) && _operator == NoKey &&
+                              (_prefix is 'f' or 'F' or 't' or 'T' || _prefix == NoKey && _count.Length > 0)))
+        {
+            _found = null;
+        }
 
         if (selectionBefore != null && !IsVisual) _lastSelection = selectionBefore;
 
@@ -983,7 +1015,20 @@ internal sealed partial class EditorEngine
             return;
         }
 
-        // ":book 3": jump to bookmark 3 (":book": the Bookmarks tab of the Jump menu)
+        // ":mark a", ":marks", ":delmarks a"
+        if (MarkCommand(command)) return;
+
+        // ":bookmark name" (or ":bookmark! name", which moves the name here): the place of the cursor as a bookmark
+        var bookmark = Regex.Match(command, "^bookmark(!)?(?: +(.*))?$");
+        if (bookmark.Success)
+        {
+            BookmarkName = bookmark.Groups[2].Value.Trim();
+            BookmarkMovesName = bookmark.Groups[1].Success;
+            if (!SingleLine) _request = EditorRequest.Bookmark;
+            return;
+        }
+
+        // ":book 3" or ":book name": jump to bookmark 3 (":book": the Bookmarks tab of the Jump menu)
         var book = Regex.Match(command, "^book(?: +(.*))?$");
         if (book.Success)
         {
@@ -1027,6 +1072,15 @@ internal sealed partial class EditorEngine
             command = "dup";
         }
 
+        // ":surround /bold": the completion to put around the selection follows the command
+        var surroundWord = string.Empty;
+        var surround = Regex.Match(command, "^(?:surround|sur)(?: +(.*))?$");
+        if (surround.Success)
+        {
+            surroundWord = surround.Groups[1].Value.Trim();
+            command = "surround";
+        }
+
         if (range.HasValue)
         {
             var (first, last) = range.Value;
@@ -1055,6 +1109,14 @@ internal sealed partial class EditorEngine
             else if (command is "dup" or "duplicate")
             {
                 Duplicate(first, last, fromSelection, copies);
+            }
+            else if (command == "surround")
+            {
+                Surround(first, last, fromSelection, surroundWord);
+            }
+            else if (command is "trim" or "trim!")
+            {
+                TrimLines(first, last, command == "trim!");
             }
             else if (command is "sort" or "sort!" or "sort i" or "sort! i")
             {
@@ -1088,6 +1150,13 @@ internal sealed partial class EditorEngine
         if (command[0] == 's' && command.Length > 1 && !char.IsLetterOrDigit(command[1]))
         {
             Substitute(command[1..], Cursor.Line, Cursor.Line);
+            return;
+        }
+
+        if (command == "surround")
+        {
+            // Without a selection or range: the line of the cursor
+            Surround(Cursor.Line, Cursor.Line, false, surroundWord);
             return;
         }
 
@@ -1221,7 +1290,12 @@ internal sealed partial class EditorEngine
                 InsertAtCursor(new PasswordGenerator().GeneratePassword());
                 break;
             case "trim":
-                TrimLines();
+            case "trim!":
+                // Without a selection: all the lines
+                TrimLines(0, Buffer.LineCount - 1, command == "trim!");
+                break;
+            case "whitespace":
+                if (!SingleLine) _request = EditorRequest.WhitespaceToggle;
                 break;
             case "dup":
             case "duplicate":
@@ -1298,9 +1372,6 @@ internal sealed partial class EditorEngine
                 break;
             case "path":
                 if (!SingleLine) _request = EditorRequest.CopyPath;
-                break;
-            case "bookmark":
-                if (!SingleLine) _request = EditorRequest.Bookmark;
                 break;
             case "fav":
             case "favorite":
@@ -1418,22 +1489,66 @@ internal sealed partial class EditorEngine
     private void GoToLine(int line)
     {
         line = Math.Clamp(line, 0, Buffer.LineCount - 1);
+        var from = Cursor;
         Cursor = new TextPos(line, FirstNonBlank(line));
+        RememberJump(from);
     }
 
-    // Remove blank space at the start and end of all lines
-    private void TrimLines()
+    // The kind of text: as it is colored, or else as its file or note is (a Markdown file with its colors off)
+    private SyntaxType KindOfText => Syntax != SyntaxType.None ? Syntax : CompletionSyntax;
+
+    // ":trim": the blank space (spaces and tabs) at the end of the lines is removed. In Markdown, two spaces or more
+    // at the end of a line of text followed by another is a line break: it is kept, unless "all" (":trim!")
+    private void TrimLines(int first, int last, bool all)
     {
-        for (var i = 0; i < Buffer.LineCount; i++)
+        var markdown = !all && KindOfText == SyntaxType.Markdown;
+        var trimmed = 0;
+        var kept = 0;
+        for (var i = first; i <= last; i++)
         {
             var line = Buffer[i];
-            var trimmed = line.Trim();
-            if (trimmed.Length == line.Length) continue;
-            Delete(new TextPos(i, 0), new TextPos(i, line.Length));
-            Insert(new TextPos(i, 0), trimmed);
+            var end = TrailingBlankStart(line);
+            if (end == line.Length) continue;
+            if (markdown && IsMarkdownLineBreak(line, end, i)) kept++;
+            else
+            {
+                Delete(new TextPos(i, end), new TextPos(i, line.Length));
+                trimmed++;
+            }
         }
 
-        Cursor = Cursor with { Col = 0 };
+        ClampCursor();
+        if (trimmed == 0 && kept == 0) Message = Lang.T("No blank space at line ends");
+        else if (kept == 0) Message = Lang.F("Lines trimmed: {0}", trimmed);
+        else Message = Lang.F("Trimmed: {0}, line breaks kept: {1} (:trim! all)", trimmed, kept);
+    }
+
+    /// <summary>
+    /// Where the blank space (spaces and tabs) at the end of a line starts (the length of the line if there is none)
+    /// </summary>
+    internal static int TrailingBlankStart(string line)
+    {
+        var end = line.Length;
+        while (end > 0 && line[end - 1] is ' ' or '\t') end--;
+        return end;
+    }
+
+    // Two spaces or more (no tab) after text, with a line of text after it: a line break of Markdown
+    private bool IsMarkdownLineBreak(string line, int end, int lineIndex)
+    {
+        return end > 0 && line.Length - end >= 2 && line.IndexOf('\t', end) < 0 &&
+               lineIndex + 1 < Buffer.LineCount && Buffer[lineIndex + 1].Trim().Length > 0;
+    }
+
+    /// <summary>
+    /// The blank space at the end of a line is a line break of Markdown, which ":trim" keeps (in a Markdown file
+    /// or a note colored as Markdown)
+    /// </summary>
+    internal bool IsLineBreakSpace(int lineIndex)
+    {
+        if (KindOfText != SyntaxType.Markdown || lineIndex >= Buffer.LineCount) return false;
+        var line = Buffer[lineIndex];
+        return IsMarkdownLineBreak(line, TrailingBlankStart(line), lineIndex);
     }
 
     // The start of a line in a Markdown list: "- ", "* ", "+ ", "1. " or "1) " (after the indentation)
@@ -1465,7 +1580,7 @@ internal sealed partial class EditorEngine
 
     private void Duplicate(int first, int last, bool fromSelection, int copies)
     {
-        if (SingleLine) return;
+        if (SingleLine || Buffer.RefuseIfReadOnly()) return;
         var mode = fromSelection ? _commandSelectionMode : EditorMode.VisualLine;
         _commandSelectionMode = EditorMode.Normal;
         switch (mode)
@@ -1726,12 +1841,13 @@ internal sealed partial class EditorEngine
 
     /// <summary>
     /// Create the regular expression for a search pattern. Like Vim's "smartcase" the search ignores case
-    /// unless the pattern has uppercase letters. A pattern that is not a valid expression is searched for as text.
+    /// unless the pattern has uppercase letters (not counting a letter after a backslash: \S, \W and \D are
+    /// classes). A pattern that is not a valid expression is searched for as text.
     /// </summary>
     private static Regex CreateRegex(string pattern, bool? ignoreCase = null, TimeSpan? timeout = null)
     {
         var options = RegexOptions.CultureInvariant;
-        if (ignoreCase ?? !pattern.Any(char.IsUpper)) options |= RegexOptions.IgnoreCase;
+        if (ignoreCase ?? !HasUpperCase(pattern)) options |= RegexOptions.IgnoreCase;
         try
         {
             return new Regex(pattern, options, timeout ?? SearchTimeout);
@@ -1740,6 +1856,18 @@ internal sealed partial class EditorEngine
         {
             return new Regex(Regex.Escape(pattern), options, timeout ?? SearchTimeout);
         }
+    }
+
+    // An uppercase letter in a pattern, where it is a letter to find (not the one after a backslash)
+    private static bool HasUpperCase(string pattern)
+    {
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            if (pattern[i] == '\\') i++;
+            else if (char.IsUpper(pattern[i])) return true;
+        }
+
+        return false;
     }
 
     private void SetSearch(string pattern)
@@ -1758,7 +1886,9 @@ internal sealed partial class EditorEngine
         HighlightSearch = true;
         if (FindNext(Cursor, forward, out var found))
         {
+            var from = Cursor;
             Cursor = found;
+            RememberJump(from);
         }
         else if (!_searchTimedOut)
         {
@@ -1821,6 +1951,111 @@ internal sealed partial class EditorEngine
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// The most matches counted for the status line: above it, only "more" is told
+    /// </summary>
+    internal const int SearchCountLimit = 9999;
+
+    // Counting all the matches of a search stops after this long (the count is not shown then)
+    private const long SearchCountMilliseconds = 200;
+
+    // The matches of the search, counted once for a text and a search (not at every redraw): where they start, in
+    // the order of the text (at most SearchCountLimit + 1), the text and its version and the search counted
+    private readonly List<TextPos> _countedMatches = new();
+    private TextBuffer? _countedBuffer;
+    private int _countedVersion;
+    private Regex? _countedRegex;
+
+    // Positions in the order of the text
+    private static readonly Comparer<TextPos> TextOrder = Comparer<TextPos>.Create((a, b) =>
+        a.Line != b.Line ? a.Line.CompareTo(b.Line) : a.Col.CompareTo(b.Col));
+
+    // The search took too long to count: it is not counted again (that would take as long after every change)
+    private Regex? _countTimedOut;
+
+    /// <summary>
+    /// The matches of the search being highlighted, for the status line: the number of the match the cursor is on
+    /// (0 when it is on none) and how many there are (above SearchCountLimit: more than that). False when no
+    /// search is highlighted, or counting took too long
+    /// </summary>
+    internal bool GetSearchCount(out int current, out int total)
+    {
+        current = 0;
+        total = 0;
+        if (!IsSearchHighlighted || _searchRegex == null || _countTimedOut == _searchRegex) return false;
+        if (_countedRegex != _searchRegex || _countedBuffer != Buffer || _countedVersion != Buffer.Version)
+        {
+            if (!CountMatches()) return false;
+        }
+
+        total = _countedMatches.Count;
+        // (a match that the cursor is on starts where it is)
+        var index = _countedMatches.BinarySearch(Cursor, TextOrder);
+        if (index >= 0 && index < SearchCountLimit) current = index + 1;
+        return true;
+    }
+
+    // Count the matches of the search in the whole text (false when it took too long)
+    private bool CountMatches()
+    {
+        _countedMatches.Clear();
+        _countedRegex = null;
+        var deadline = Environment.TickCount64 + SearchCountMilliseconds;
+        try
+        {
+            for (var line = 0; line < Buffer.LineCount && _countedMatches.Count <= SearchCountLimit; line++)
+            {
+                if (Environment.TickCount64 > deadline) throw new RegexMatchTimeoutException();
+                foreach (Match match in _searchRegex!.Matches(Buffer[line]))
+                {
+                    _countedMatches.Add(new TextPos(line, match.Index));
+                    if (_countedMatches.Count > SearchCountLimit) break;
+                }
+            }
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            _countedMatches.Clear();
+            _countTimedOut = _searchRegex;
+            return false;
+        }
+
+        _countedRegex = _searchRegex;
+        _countedBuffer = Buffer;
+        _countedVersion = Buffer.Version;
+        return true;
+    }
+
+    // The character found by "f", "F", "t" or "T" (and ";" ","): shown on all the lines until a key other than these,
+    // a count or Esc is used (null: none). Not with an operator ("dfx"), which changes the text
+    private string? _found;
+    private bool _foundShown; // Set while a key is handled, when it keeps the character shown
+
+    private void ShowFound(string character)
+    {
+        _found = character;
+        _foundShown = true;
+    }
+
+    /// <summary>
+    /// True while the character found by "f", "F", "t" or "T" is shown
+    /// </summary>
+    internal bool IsFoundShown => _found != null;
+
+    /// <summary>
+    /// The places on a line (start and end char index) of the character found by "f", "F", "t" or "T"
+    /// </summary>
+    internal IEnumerable<(int Start, int End)> FoundMatches(int line)
+    {
+        if (_found == null) yield break;
+        var text = Buffer[line];
+        for (var at = text.IndexOf(_found, StringComparison.Ordinal); at >= 0;
+             at = text.IndexOf(_found, at + _found.Length, StringComparison.Ordinal))
+        {
+            yield return (at, at + _found.Length);
+        }
     }
 
     /// <summary>

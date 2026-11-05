@@ -19,9 +19,17 @@ internal sealed partial class EditorEngine
     internal bool DiffIgnoreSpace { get; private set; }
 
     /// <summary>
-    /// What follows ":book" (EditorRequest.JumpToBookmark): the number of a bookmark, or empty
+    /// What follows ":book" (EditorRequest.JumpToBookmark): the number or the name of a bookmark, or empty
     /// </summary>
     internal string BookArgument { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// ":bookmark name": the name the bookmark is given (empty: none), and with "!" the name is moved to it from the
+    /// bookmark that has it (EditorRequest.Bookmark)
+    /// </summary>
+    internal string BookmarkName { get; private set; } = string.Empty;
+
+    internal bool BookmarkMovesName { get; private set; }
 
     /// <summary>
     /// The name given with ":w name" (EditorRequest.WriteCopy)

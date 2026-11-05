@@ -63,8 +63,8 @@ public class CompletionsTests : IDisposable
         // A word alone is completed to itself, and \\ is a \
         Assert.Equal(new Completions.Item("Marbles", "Marbles", SyntaxType.None), Completions.Items[7]);
         Assert.Equal("C:\\data", Completions.Items[8].Text);
-        // How they are shown: the first line, without the cursor mark
-        Assert.Equal("<div></div>", Completions.Items[0].Shown);
+        // How they are shown: the first line, with "..." where the cursor goes
+        Assert.Equal("<div>...</div>", Completions.Items[0].Shown);
         Assert.Equal("<ul> ...", Completions.Items[3].Shown);
     }
 
@@ -224,6 +224,40 @@ public class CompletionsTests : IDisposable
         Assert.Contains(Completions.Items, item => item.Word == "display" && item.Syntax == SyntaxType.Css);
         Assert.Contains(Completions.Items, item => item.Syntax == SyntaxType.Markdown);
         Assert.Contains(Completions.Items, item => item.Syntax == SyntaxType.JavaScript);
+        // Bold and italic in Markdown, with the cursor between the marks
+        Assert.Equal(new[] { "**$0**", "***$0***" }, Completions.Find("/bold", SyntaxType.Markdown).Select(item => item.Text));
+        // Italic with asterisks, as the Markdown Guide advises (they also work inside a word)
+        Assert.Equal("*$0*", Completions.Find("/ital", SyntaxType.Markdown).Single().Text);
+        Assert.Empty(Completions.Find("/bold", SyntaxType.Html));
+        // Shown with "..." where the cursor goes, so marks alone can be read
+        Assert.Equal("**...**", Completions.Find("/bold", SyntaxType.Markdown)[0].Shown);
+        Assert.Equal("[...]()", Completions.Find("/link", SyntaxType.Markdown).Single().Shown);
+        Assert.Equal("<div>...</div>", Completions.Find("<div", SyntaxType.Html).Single().Shown);
+        Assert.Equal("``` ...", Completions.Find("/code", SyntaxType.Markdown).Single().Shown);
+        // The words of Markdown and of all text start with "/": the words of a sentence are not completed
+        foreach (var word in new[] { "co", "com", "bo", "li", "ta", "to", "lo", "ja", "im" })
+        {
+            Assert.Empty(Completions.Find(word, SyntaxType.Markdown));
+        }
+
+        Assert.Equal("TODO: $0", Completions.Find("/to", SyntaxType.Markdown).Single().Text);
+        // The headings, and the other marks of Markdown
+        Assert.Equal(new[] { "/h1", "/h2", "/h3", "/h4", "/h5", "/h6", "/hr" },
+            Completions.Find("/h", SyntaxType.Markdown).Select(item => item.Word));
+        Assert.Equal("## $0", Completions.Find("/h2", SyntaxType.Markdown).Single().Text);
+        foreach (var (word, text) in new[]
+                 {
+                     ("/strike", "~~$0~~"), ("/inline", "`$0`"), ("/quote", "> $0"), ("/numbered", "1. $0"),
+                     ("/done", "- [x] $0"), ("/footnote", "[^$0]"), ("/comment", "<!-- $0 -->"), ("/url", "<$0>")
+                 })
+        {
+            Assert.Equal(text, Completions.Find(word, SyntaxType.Markdown).Single(item => item.Word == word).Text);
+        }
+
+        Assert.Equal("--- ...", Completions.Find("/front", SyntaxType.Markdown).Single().Shown);
+        Assert.Equal("JavaScript", Completions.Find("Java", SyntaxType.JavaScript).Single().Text);
+        // Not in plain text (a note without colors): "JavaScript" is in the list of JavaScript now
+        Assert.Empty(Completions.Find("Java", SyntaxType.None));
         Assert.Contains(Completions.Items, item => item.Syntax == SyntaxType.None);
 
         Assert.Equal(DialogText.Success, Completions.EnsureFile());
@@ -234,5 +268,33 @@ public class CompletionsTests : IDisposable
         Completions.Refresh();
         Assert.NotEqual(count, Completions.Items.Count);
         Assert.Equal("Hello world", Completions.Find("he", SyntaxType.None).Single().Text);
+    }
+
+    [Fact]
+    public void AFileThatIsThere_IsNeverWrittenOver()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(Completions.FilePath, "=== Mine\nhello = Hello world\n");
+        Assert.Equal(DialogText.Success, Completions.EnsureFile());
+        Assert.Equal("=== Mine\nhello = Hello world\n", File.ReadAllText(Completions.FilePath));
+    }
+
+    [Fact]
+    public void BoldInMarkdown_PutsTheCursorBetweenTheMarks()
+    {
+        Assert.Equal(DialogText.Success, Completions.Load());
+        var editor = Editor("", SyntaxType.Markdown);
+        editor.Type("aA very /bold<Tab>word");
+        Assert.Equal("A very **word**", editor.Buffer.GetText());
+        // Bold text that is typed is not completed as a word of the list ("**co" is not code)
+        editor.Type("<Esc>A **co");
+        Assert.Empty(editor.CompletionList);
+        // A heading at the start of a new line
+        editor.Type("<Esc>o/h2<Tab>Chapter");
+        Assert.Equal("A very **word** **co\n## Chapter", editor.Buffer.GetText());
+        // A part of the word goes through the completions with Tab, as before
+        editor.Type(" /bo<Tab><Tab><CR>x");
+        Assert.Equal("A very **word** **co\n## Chapter ***x***", editor.Buffer.GetText());
+        Completions.Parse(Lists);
     }
 }

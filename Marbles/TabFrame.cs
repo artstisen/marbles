@@ -167,8 +167,15 @@ internal sealed class TabFrame
                 Tools.SetCursorEx(Init.LineCount - 1, 0);
             }
 
-            var key = Console.ReadKey(true);
+            var key = Keyboard.ReadKey();
             Tools.HideCursor();
+            // The window was resized (or Marbles went on after Ctrl+Z): all is drawn again
+            if (Keyboard.IsRedraw(key))
+            {
+                full = true;
+                continue;
+            }
+
             // The terminal window has changed size: all is drawn again, and the key is still used
             if (Init.AutoSize && Init.ApplyAutoSize()) full = true;
 

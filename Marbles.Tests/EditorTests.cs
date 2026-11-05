@@ -574,6 +574,32 @@ public class EditorTests
         Assert.Equal(expected, editor.GetText());
     }
 
+    [Theory]
+    // A count given to "." takes the place of the count of the change (also one after the operator)
+    [InlineData("one two three four", "3x2.", "wo three four")]
+    [InlineData("a b c d e f", "2dw1.", "d e f")]
+    [InlineData("a b c d e f", "d2w1.", "d e f")]
+    [InlineData("a b c d e f", "d2w.", "e f")]
+    public void Repeat_WithACount_ReplacesTheCountOfTheChange(string text, string keys, string expected)
+    {
+        var editor = Editor(text);
+        editor.Type(keys);
+        Assert.Equal(expected, editor.GetText());
+    }
+
+    [Theory]
+    // An empty line yanked or deleted is a line in the register (it takes the place of what was there before)
+    [InlineData("yiwjyyp", "one\n\n\ntwo")]
+    [InlineData("yiwjVyP", "one\n\n\ntwo")]
+    [InlineData("yiwjddp", "one\ntwo\n")]
+    [InlineData("yiwjccx<Esc>kp", "one\n\nx\ntwo")]
+    public void AnEmptyLine_IsYankedAndDeletedAsALine(string keys, string expected)
+    {
+        var editor = Editor("one\n\ntwo");
+        editor.Type(keys);
+        Assert.Equal(expected, editor.GetText());
+    }
+
     [Fact]
     public void Repeat_WorksOnOtherLines()
     {
@@ -663,7 +689,7 @@ public class EditorTests
     [Fact]
     public void Commands_EditTheText()
     {
-        var editor = Editor("  one  \ntwo\nthree");
+        var editor = Editor("one  \ntwo\nthree");
         editor.Type(":3<CR>");
         Assert.Equal(2, editor.Cursor.Line);
         editor.Type(":trim<CR>");
@@ -930,6 +956,27 @@ public class EditorTests
         editor.SetLayoutWidth(40);
         Assert.Equal(1, editor.Layout.RowCount(0));
         Assert.Equal(0, editor.TopRow);
+    }
+
+    [Fact]
+    public void Height_CanChange_AndTheCursorStaysInView()
+    {
+        // The terminal window is resized: 100 lines in a view of 20 rows, the cursor on line 20 (the last row)
+        var text = string.Join("\n", Enumerable.Range(1, 100).Select(n => "line " + n));
+        var editor = new EditorEngine(text, 40, 20, false);
+        editor.Type("19j");
+        Assert.Equal(0, editor.TopRow);
+        // Smaller: the view scrolls so the cursor is on its last row
+        editor.SetHeight(10);
+        Assert.Equal(10, editor.Height);
+        Assert.Equal(19, editor.Cursor.Line);
+        Assert.Equal(10, editor.TopRow);
+        // Larger again: the view stays, and the cursor is in it
+        editor.SetHeight(30);
+        Assert.Equal(10, editor.TopRow);
+        // Never less than one row
+        editor.SetHeight(0);
+        Assert.Equal(1, editor.Height);
     }
 
     #endregion

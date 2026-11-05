@@ -315,8 +315,8 @@ internal static class LogoEditor
             if (!ColorPicker.Pick(DialogText.ColorCaption, PickerLeft, false, _paint,
                     color => !ConsoleColors.IsBackgroundColor(color), color =>
                     {
-                        Console.BackgroundColor = ConsoleColors.Current.BackgroundColor;
-                        Console.ForegroundColor = color;
+                        ConsoleColors.SetBackground(ConsoleColors.Current.BackgroundColor);
+                        ConsoleColors.SetForeground(color);
                     }, out var picked) || picked == null)
             {
                 return false;
@@ -554,8 +554,8 @@ internal static class LogoEditor
             if (!ColorPicker.Pick(DialogText.ColorCaption, PickerLeft, true, current,
                     color => !ConsoleColors.IsBackgroundColor(color), color =>
                     {
-                        Console.BackgroundColor = ConsoleColors.Current.BackgroundColor;
-                        Console.ForegroundColor = color;
+                        ConsoleColors.SetBackground(ConsoleColors.Current.BackgroundColor);
+                        ConsoleColors.SetForeground(color);
                     }, out var picked))
             {
                 return;

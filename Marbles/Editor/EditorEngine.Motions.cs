@@ -200,61 +200,121 @@ internal sealed partial class EditorEngine
         return new TextPos(line, 0);
     }
 
-    // The "f", "F", "t" and "T" commands: find a character on the line
+    // The "f", "F", "t" and "T" commands: find a character, on the line and the lines after it ("F" and "T": before
+    // it), up to the end (the start) of the text. "t" lands on the character before the one found, which is the end of
+    // the line above when it is the first of its line, and "T" on the one after it (the start of the line below)
     private bool FindChar(char command, string target, int count, bool repeated, out Motion motion)
     {
         motion = default;
         if (target.Length == 0) return false;
-        var line = CurrentLine;
         var forward = command is 'f' or 't';
-        var col = Cursor.Col;
+        var pos = Cursor;
         // Repeating "t" must not stay in front of the same character
         var skipAdjacent = repeated && command is 't' or 'T';
         while (count-- > 0)
         {
-            int found;
-            if (forward)
+            if ((forward ? FindForward(pos, target, skipAdjacent) : FindBackward(pos, target, skipAdjacent))
+                is not { } found)
             {
-                // After the character under the cursor (all of it, when it is more than one char)
-                var start = col < line.Length ? col + TextMetrics.ElementLength(line, col) : col + 1;
-                if (skipAdjacent && start < line.Length &&
-                    string.CompareOrdinal(line, start, target, 0, target.Length) == 0)
-                {
-                    start += target.Length;
-                }
-
-                found = start <= line.Length ? line.IndexOf(target, start, StringComparison.Ordinal) : -1;
-            }
-            else
-            {
-                var start = col - 1;
-                if (skipAdjacent && col - target.Length >= 0 &&
-                    string.CompareOrdinal(line, col - target.Length, target, 0, target.Length) == 0)
-                {
-                    start -= target.Length;
-                }
-
-                found = start >= 0 ? line.LastIndexOf(target, start, StringComparison.Ordinal) : -1;
+                return false;
             }
 
-            if (found < 0) return false;
-            col = found;
+            pos = found;
             skipAdjacent = false;
         }
 
+        var line = Buffer[pos.Line];
         switch (command)
         {
-            case 't':
-                col -= TextMetrics.PreviousElementLength(line, col);
+            case 't' when pos.Col > 0:
+                pos = pos with { Col = pos.Col - TextMetrics.PreviousElementLength(line, pos.Col) };
                 break;
+            case 't' when pos.Line > 0:
+            {
+                var above = Buffer[pos.Line - 1];
+                pos = new TextPos(pos.Line - 1,
+                    above.Length == 0 ? 0 : above.Length - TextMetrics.PreviousElementLength(above, above.Length));
+                break;
+            }
             case 'T':
-                col += TextMetrics.ElementLength(line, col);
+                var after = pos.Col + TextMetrics.ElementLength(line, pos.Col);
+                pos = after < line.Length || pos.Line + 1 >= Buffer.LineCount
+                    ? pos with { Col = after }
+                    : new TextPos(pos.Line + 1, 0);
                 break;
         }
 
         // Moving forward the found character is included, moving back the character under the cursor is not
-        motion = new Motion(Cursor with { Col = col }, false, forward);
+        motion = new Motion(pos, false, forward);
         return true;
+    }
+
+    // The next place of a character after a position (skipAdjacent: not the one right after it)
+    private TextPos? FindForward(TextPos from, string target, bool skipAdjacent)
+    {
+        var lineIndex = from.Line;
+        var line = Buffer[lineIndex];
+        // After the character under the cursor (all of it, when it is more than one char)
+        var col = from.Col < line.Length ? from.Col + TextMetrics.ElementLength(line, from.Col) : from.Col + 1;
+        if (skipAdjacent)
+        {
+            if (col < line.Length)
+            {
+                if (string.CompareOrdinal(line, col, target, 0, target.Length) == 0) col += target.Length;
+            }
+            else if (lineIndex + 1 < Buffer.LineCount && Buffer[lineIndex + 1].StartsWith(target, StringComparison.Ordinal))
+            {
+                // (the first of the next line)
+                lineIndex++;
+                line = Buffer[lineIndex];
+                col = target.Length;
+            }
+        }
+
+        while (true)
+        {
+            var found = col <= line.Length ? line.IndexOf(target, col, StringComparison.Ordinal) : -1;
+            if (found >= 0) return new TextPos(lineIndex, found);
+            if (++lineIndex >= Buffer.LineCount) return null;
+            line = Buffer[lineIndex];
+            col = 0;
+        }
+    }
+
+    // The place before a position where a character was last (skipAdjacent: not the one right before it)
+    private TextPos? FindBackward(TextPos from, string target, bool skipAdjacent)
+    {
+        var lineIndex = from.Line;
+        var line = Buffer[lineIndex];
+        var start = from.Col - 1;
+        if (skipAdjacent)
+        {
+            if (from.Col - target.Length >= 0)
+            {
+                if (string.CompareOrdinal(line, from.Col - target.Length, target, 0, target.Length) == 0)
+                {
+                    start -= target.Length;
+                }
+            }
+            else if (from.Col == 0 && lineIndex > 0 && Buffer[lineIndex - 1].EndsWith(target, StringComparison.Ordinal))
+            {
+                // (the last of the line above)
+                lineIndex--;
+                line = Buffer[lineIndex];
+                start = line.Length - target.Length - 1;
+            }
+        }
+
+        while (true)
+        {
+            var found = start >= 0 && line.Length > 0
+                ? line.LastIndexOf(target, Math.Min(start, line.Length - 1), StringComparison.Ordinal)
+                : -1;
+            if (found >= 0) return new TextPos(lineIndex, found);
+            if (--lineIndex < 0) return null;
+            line = Buffer[lineIndex];
+            start = line.Length - 1;
+        }
     }
 
     #endregion
@@ -366,7 +426,10 @@ internal sealed partial class EditorEngine
                 if (_lastFindCommand == '\0') return false;
                 var command = _lastFindCommand;
                 if (key == ',') command = char.IsLower(command) ? char.ToUpper(command) : char.ToLower(command);
-                return FindChar(command, _lastFindChar, n, true, out motion);
+                var found = FindChar(command, _lastFindChar, n, true, out motion);
+                // (still shown when there is no more to find)
+                if (!forOperator && (found || _found != null)) ShowFound(_lastFindChar);
+                return found;
             }
             case 'n':
             case 'N':

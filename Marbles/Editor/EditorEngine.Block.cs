@@ -278,6 +278,7 @@ internal sealed partial class EditorEngine
     // added at the end of the text if needed). Text to the right of the block stays in line
     private void PutBlock(bool after, int count)
     {
+        if (Buffer.RefuseIfReadOnly()) return;
         var lines = _blockRegister.Split(TextBuffer.NewLine);
         var width = lines.Max(TextMetrics.WidthOf);
         var column = ColumnOf(Cursor.Line, Cursor.Col) +

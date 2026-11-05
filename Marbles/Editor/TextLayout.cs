@@ -53,8 +53,12 @@ internal sealed class TextLayout
 
     private void LinesReplaced(int first, int removed, int inserted)
     {
-        _segments.RemoveRange(first, removed);
-        _segments.InsertRange(first, new int[]?[inserted]);
+        // The lines that are there in both are wrapped again where they are; only the lines added or taken away
+        // move the rest of the list (most changes are inside a line: nothing moves)
+        var same = Math.Min(removed, inserted);
+        for (var i = first; i < first + same; i++) _segments[i] = null;
+        if (removed > same) _segments.RemoveRange(first + same, removed - same);
+        else if (inserted > same) _segments.InsertRange(first + same, new int[]?[inserted - same]);
     }
 
     /// <summary>

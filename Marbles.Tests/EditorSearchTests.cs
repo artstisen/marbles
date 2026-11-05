@@ -14,6 +14,58 @@ public class EditorSearchTests
     }
 
     [Theory]
+    [InlineData(@"/\d+<CR>", 1, 3)] // The cursor on the first match after it
+    [InlineData(@"/\d+<CR>n", 2, 3)]
+    [InlineData(@"/\d+<CR>nn", 3, 3)]
+    [InlineData(@"/\d+<CR>nnn", 1, 3)] // Wraps around
+    [InlineData(@"/\d+<CR>N", 3, 3)]
+    [InlineData(@"/\d+<CR>l", 0, 3)] // Inside a match, not where it starts: on none
+    [InlineData("/item<CR>", 2, 2)]
+    [InlineData("/nothing<CR>", 0, 0)]
+    public void SearchCount_TellsTheMatchOfTheCursor_AndHowMany(string keys, int current, int total)
+    {
+        var editor = Editor("item 12 boxes\n34 item 5");
+        editor.Type(keys);
+        Assert.True(editor.GetSearchCount(out var on, out var count));
+        Assert.Equal((current, total), (on, count));
+    }
+
+    [Fact]
+    public void SearchCount_FollowsChangesToTheText()
+    {
+        var editor = Editor("one two\none");
+        editor.Type("/one<CR>");
+        editor.GetSearchCount(out _, out var total);
+        Assert.Equal(2, total);
+        editor.Type("Oone<Esc>");
+        editor.GetSearchCount(out _, out total);
+        Assert.Equal(3, total);
+        editor.Type("u");
+        editor.GetSearchCount(out _, out total);
+        Assert.Equal(2, total);
+    }
+
+    [Fact]
+    public void SearchCount_IsNotShown_WithoutHighlightedSearch()
+    {
+        var editor = Editor("one two");
+        Assert.False(editor.GetSearchCount(out _, out _));
+        editor.Type("/two<CR><Esc>");
+        // Esc turns the highlighting off
+        Assert.False(editor.GetSearchCount(out _, out _));
+    }
+
+    [Fact]
+    public void SearchCount_StopsAboveTheLimit()
+    {
+        var editor = Editor(new string('a', EditorEngine.SearchCountLimit + 5));
+        editor.Type("/a<CR>");
+        Assert.True(editor.GetSearchCount(out var current, out var total));
+        Assert.Equal(EditorEngine.SearchCountLimit + 1, total);
+        Assert.Equal(2, current);
+    }
+
+    [Theory]
     [InlineData(@"/\d+<CR>", 0, 5)] // Regular expression
     [InlineData(@"/\d+<CR>n", 1, 0)]
     [InlineData(@"/\d+<CR>nn", 1, 8)]

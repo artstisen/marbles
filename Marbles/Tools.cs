@@ -10,15 +10,15 @@ internal static class Tools
     /// A text cut to a length, for the screen: control characters (as an escape code in a file name) are blank
     /// spaces, so they are never sent to the terminal
     /// </summary>
+    /// <param name="s">The text</param>
+    /// <param name="length">The number of terminal cells it may take (a wide character takes two)</param>
+    /// <param name="dots">True to end a text that was cut with "..."</param>
     public static string TruncateString(string s, int length, bool dots)
     {
-        if (!IsValid(s)) return string.Empty;
-        if (s.Length >= length)
-        {
-            s = dots ? string.Concat(s.AsSpan(0, (length - 3)), "...") : s[..length];
-        }
-
-        return TextMetrics.Printable(s);
+        if (!IsValid(s) || length <= 0) return string.Empty;
+        s = TextMetrics.Printable(s);
+        if (TextMetrics.WidthOf(s) <= length) return s;
+        return dots && length > 3 ? TextMetrics.StartPart(s, length - 3) + "..." : TextMetrics.StartPart(s, length);
     }
 
 
@@ -1217,7 +1217,7 @@ internal static class Tools
         RemovePrivileges(false);
         ShowCursor(); // Remember to show cursor again for continuous work in the console
         // Exit the application reverting to the original console colors
-        Console.ResetColor();
+        ConsoleColors.Reset();
         Console.Clear();
         Console.WriteLine(DialogText.ApplicationExit);
         Environment.Exit(0);
@@ -1442,7 +1442,33 @@ internal static class Tools
     /// </summary>
     public static void WriteEditorHelp(bool returnToEditorMenu, HelpTopic topic = HelpTopic.All)
     {
-        // Only fill the lists once
+        FillHelp();
+        ShowHelp(topic);
+        if (returnToEditorMenu)
+        {
+            Actions.DrawEditMenu();
+        }
+    }
+
+    /// <summary>
+    /// What a command does, from its row in the help of a place (or else anywhere in the help): the row whose keys
+    /// have ":name" ("Duplicate the selection (or the line)" for "dup"). Null if the help has no row for it
+    /// </summary>
+    internal static string? CommandDescription(HelpTopic topic, string name)
+    {
+        FillHelp();
+        var command = ":" + name;
+        bool Names(Shortcut row) => !row.IsHeadline && row.GetDescription().Length > 0 &&
+                                    row.Key.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                                        .Any(key => key.Equals(command, StringComparison.OrdinalIgnoreCase));
+        var (first, count) = HelpRange(topic);
+        return (_shortcutList.Skip(first).Take(count).FirstOrDefault(Names) ?? _shortcutList.FirstOrDefault(Names))
+            ?.GetDescription();
+    }
+
+    // The rows of the help, made once (in the language in use: they are made again when it changes)
+    private static void FillHelp()
+    {
         if (_shortcutList.Count == 0)
         {
             _shortcutList = new List<Shortcut>();
@@ -1475,7 +1501,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":reset", DialogText.ConfigReset, false));
             _shortcutList.Add(new Shortcut(":q :exit", Lang.T("Exit Marbles (asks first)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Configuration"), Lang.T("The pages General, Layout, Editor and System"), false));
-            _shortcutList.Add(new Shortcut("j k 1-9", Lang.T("Select a setting (or the number of its row)"), false));
+            _shortcutList.Add(new Shortcut("j k 1-9 0", Lang.T("Select a setting (or the number of its row)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Startup"), Lang.T("Text Editor can start in the favorites list"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Stay logged in"), Lang.T("Files and pages keep the data file open"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Text Editor only"), Lang.T("No Note Management, data files are not opened"), false));
@@ -1576,6 +1602,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
             _shortcutList.Add(new Shortcut("j k", Lang.T("Select (as Down/Up)"), false));
             _shortcutList.Add(new Shortcut("gg G", Lang.T("First/Last"), false));
+            _shortcutList.Add(new Shortcut("5j 5k 5gg 5G", Lang.T("With a count: 5 rows down/up, to row 5"), false));
             _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("One page up/down"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the directory or file"), false));
             _shortcutList.Add(new Shortcut("h - Backspace", Lang.T("Go to the directory above"), false));
@@ -1604,6 +1631,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T(":path and :name: also p in the editor"), false));
             _shortcutList.Add(new Shortcut(":name", Lang.T("Copy the name to the clipboard"), false));
             _shortcutList.Add(new Shortcut(":bookmark", Lang.T("Bookmark the selected file or directory (Jump menu)"), false));
+            _shortcutList.Add(new Shortcut(":bookmark name", Lang.T("... with a name: :book name jumps to it"), false));
             _shortcutList.Add(new Shortcut(":diff", Lang.T("Compare 2 marked files, or 1 in each pane"), false));
             _shortcutList.Add(new Shortcut(":diff name", Lang.T("Compare the selected file with that file"), false));
             _shortcutList.Add(new Shortcut(":diff -w", Lang.T("Compare, blank space does not count"), false));
@@ -1627,6 +1655,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Text in files"), Lang.T("Text files containing the text"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Regular expr."), Lang.T("Name and text are regular expressions"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select in the list of files found"), false));
+            _shortcutList.Add(new Shortcut("5j 5k 5gg 5G", Lang.T("With a count: 5 rows down/up, to row 5"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file (at the line found)"), false));
             _shortcutList.Add(new Shortcut("B :goto", Lang.T("Show the file in the file browser"), false));
             _shortcutList.Add(new Shortcut("I :info", Lang.T("Show type, size, dates and path"), false));
@@ -1640,6 +1669,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
+            _shortcutList.Add(new Shortcut("5j 5k 5gg 5G", Lang.T("With a count: 5 rows down/up, to row 5"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file (a directory: go to it)"), false));
             _shortcutList.Add(new Shortcut("B :goto", Lang.T("Show the file in the file browser"), false));
             _shortcutList.Add(new Shortcut("V", Lang.T("Move the favorite or folder (j k, then Esc)"), false));
@@ -1670,6 +1700,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
+            _shortcutList.Add(new Shortcut("5j 5k 5gg 5G", Lang.T("With a count: 5 rows down/up, to row 5"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Open the file in the editor"), false));
             _shortcutList.Add(new Shortcut("B :goto", Lang.T("Show the file in the file browser"), false));
             _shortcutList.Add(new Shortcut("P :fav", Lang.T("Add to/Remove from the favorites (*)"), false));
@@ -1686,6 +1717,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":jump Ctrl+O", Lang.T("The Jump menu: files, pages and data files"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select"), false));
+            _shortcutList.Add(new Shortcut("5j 5k 5gg 5G", Lang.T("With a count: 5 rows down/up, to row 5"), false));
             _shortcutList.Add(new Shortcut("l Enter", Lang.T("Go to the directory (in the pane with the focus)"), false));
             _shortcutList.Add(new Shortcut("V :move", Lang.T("Move the directory (j k, then Esc)"), false));
             _shortcutList.Add(new Shortcut("T :top", Lang.T("Move the directory to the top"), false));
@@ -1707,6 +1739,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("  " + Lang.T("Tabs"), Lang.T("Bookmarks, Recent, File browser, Marbles, Data files"), false));
             _shortcutList.Add(new Shortcut("  " + DialogText.CaptionsFiles, Lang.T("Its lists: History, Favorites, Hotlist"), false));
             _shortcutList.Add(new Shortcut("j k gg G", Lang.T("Select a place"), false));
+            _shortcutList.Add(new Shortcut("5j 5k 5gg 5G", Lang.T("With a count: 5 rows down/up, to row 5"), false));
             _shortcutList.Add(new Shortcut("h l", Lang.T("The list before/after (through all the lists)"), false));
             _shortcutList.Add(new Shortcut("Tab Shift+Tab", Lang.T("The next/previous tab"), false));
             _shortcutList.Add(new Shortcut("Enter", Lang.T("Jump: open the file or page, or select the data file"), false));
@@ -1729,6 +1762,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":path :name", Lang.T("Copy the path/the name of the file (all tabs)"), false));
             _shortcutList.Add(new Shortcut(":book 3", Lang.T("Jump to bookmark 3 (:book alone: the bookmarks)"), false));
             _shortcutList.Add(new Shortcut("  :book 3", Lang.T("The number is shown at the right of the bookmark"), false));
+            _shortcutList.Add(new Shortcut(":book name", Lang.T("Jump to the bookmark with the name (Tab completes)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, DialogText.HelpSectionClipboard, true));
             _shortcutList.Add(new Shortcut("\"+y \"+yy", Lang.T("Editor: yank to the clipboard (and/or the paste bin)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Every yank"), Lang.T("Can be set to go out too (not deletes)"), false));
@@ -1802,6 +1836,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":wq :x ZZ", Lang.T("Save and close editor"), false));
             _shortcutList.Add(new Shortcut(":q Esc", Lang.T("Close editor (asks to save changes)"), false));
             _shortcutList.Add(new Shortcut(":q! ZQ", Lang.T("Close editor without saving"), false));
+            _shortcutList.Add(new Shortcut("Ctrl+C", Lang.T("Does not close the editor (it tells how to)"), false));
             _shortcutList.Add(new Shortcut(":e :e!", Lang.T("Text files: Read the file again (!: drop changes)"), false));
             _shortcutList.Add(new Shortcut(":help", Lang.T("Show this help"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Moving the cursor (Normal and Visual mode)"), true));
@@ -1812,8 +1847,17 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("gg G", Lang.T("Document top/Document end"), false));
             _shortcutList.Add(new Shortcut("5G :5", Lang.T("Go to line 5"), false));
             _shortcutList.Add(new Shortcut("{ }", Lang.T("Previous/Next blank line"), false));
-            _shortcutList.Add(new Shortcut("f. t.", Lang.T("To/Before next \".\" on line (F T: backwards)"), false));
+            _shortcutList.Add(new Shortcut("f. t.", Lang.T("To/Before next \".\", on any line (F T: backwards)"), false));
+            _shortcutList.Add(new Shortcut("  f. t.", Lang.T("Every \".\" is highlighted until another key"), false));
             _shortcutList.Add(new Shortcut("; ,", Lang.T("Repeat f/t forwards/backwards"), false));
+            _shortcutList.Add(new Shortcut("Enter", Lang.T("Jump to a word on the screen: type its letters"), false));
+            _shortcutList.Add(new Shortcut("  Enter", Lang.T("Esc cancels. With a count: that many lines down"), false));
+            _shortcutList.Add(new Shortcut("ma", Lang.T("Set mark a at the cursor (a-z, while Marbles runs)"), false));
+            _shortcutList.Add(new Shortcut("`a 'a", Lang.T("To mark a/the start of its line"), false));
+            _shortcutList.Add(new Shortcut("`` ''", Lang.T("Back to where the last jump was made from"), false));
+            _shortcutList.Add(new Shortcut("  ` " + Lang.T("alternate key"), Lang.T("Configuration, Editor: ' to the exact place"), false));
+            _shortcutList.Add(new Shortcut(":marks", Lang.T("The marks in a list: Enter jumps, D deletes"), false));
+            _shortcutList.Add(new Shortcut(":mark a :k a", Lang.T("Set mark a (:delmarks a b, a-c, or ! all)"), false));
             _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("Move one page up/down"), false));
             _shortcutList.Add(new Shortcut("CTRL+U CTRL+D", Lang.T("Move half a page up/down"), false));
             _shortcutList.Add(new Shortcut("gm gM", Lang.T("Move half the screen width right/left"), false));
@@ -1828,6 +1872,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("/Text", Lang.T("Uppercase letters make the search match case"), false));
             _shortcutList.Add(new Shortcut("n N", Lang.T("Next/Previous match"), false));
             _shortcutList.Add(new Shortcut("*", Lang.T("Search for the word under the cursor"), false));
+            _shortcutList.Add(new Shortcut("[2/12]", Lang.T("Status line: the match of the cursor/how many there are"), false));
             _shortcutList.Add(new Shortcut("Esc :noh", Lang.T("Remove search highlighting (Esc again closes)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Spell checking"), true));
             _shortcutList.Add(new Shortcut(":spell", Lang.T("Mark the misspelled words (again: remove the marks)"), false));
@@ -1896,6 +1941,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("Tab", Lang.T("Completions shown: complete (more: the next)"), false));
             _shortcutList.Add(new Shortcut("Shift+Tab Enter", Lang.T("Completions: the previous/use the one chosen"), false));
             _shortcutList.Add(new Shortcut("Esc", Lang.T("Completions: close the list (again: NORMAL)"), false));
+            _shortcutList.Add(new Shortcut("/bold Tab", Lang.T("Markdown: /bold /h2 /link /code ... (whole word: Tab)"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.F("String Memory (limit: {0} strings)", MaxLineMemoryCount), true));
             _shortcutList.Add(new Shortcut("y d c", Lang.T("Yanked/deleted text is added to memory"), false));
             _shortcutList.Add(new Shortcut("CTRL+P CTRL+N", Lang.T("Select previous/next memory string"), false));
@@ -1907,10 +1953,13 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Other commands"), true));
             _shortcutList.Add(new Shortcut(":ts", Lang.T("Insert ISO timestamp (YYYY-MM-DD HH:MM:SS)"), false));
             _shortcutList.Add(new Shortcut(":pw", Lang.T("Insert generated strong password"), false));
-            _shortcutList.Add(new Shortcut(":trim", Lang.T("Trim blank space (line start/end)"), false));
+            _shortcutList.Add(new Shortcut(":trim", Lang.T("Remove blank space at line ends (selection or all)"), false));
+            _shortcutList.Add(new Shortcut(":trim!", Lang.T("Also the two spaces of Markdown line breaks"), false));
+            _shortcutList.Add(new Shortcut(":whitespace", Lang.T("Show blank space as . > $ (again: hide it)"), false));
             _shortcutList.Add(new Shortcut(":ol :ul", Lang.T("Numbered/Bulleted list (selected lines)"), false));
             _shortcutList.Add(new Shortcut(":dup", Lang.T("Duplicate the selection (or the line)"), false));
             _shortcutList.Add(new Shortcut(":dup 5", Lang.T("Make 5 copies of the selection (or the line)"), false));
+            _shortcutList.Add(new Shortcut(":surround /bold", Lang.T("Put a completion around the selection (Tab: the list)"), false));
             _shortcutList.Add(new Shortcut(":sort :sort!", Lang.T("Sort the selected lines (or all), !: reversed"), false));
             _shortcutList.Add(new Shortcut(":wrap", Lang.T("Wrap long lines on/off (:set wrap, :set nowrap)"), false));
             _shortcutList.Add(new Shortcut(":scrolloff", Lang.T("Keep lines around the cursor on/off (12)"), false));
@@ -1943,7 +1992,10 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":only :q", Lang.T("Split: close the other pane/this pane"), false));
             _shortcutList.Add(new Shortcut(":yankall", Lang.T("Yank all the text (as gg V G y; the clipboard as y)"), false));
             _shortcutList.Add(new Shortcut(":new name", Lang.T("New file next to this one (in a note: a new note)"), false));
-            _shortcutList.Add(new Shortcut(":bookmark", Lang.T("Bookmark the file being edited (Jump menu)"), false));
+            _shortcutList.Add(new Shortcut(":bookmark", Lang.T("Bookmark the place of the cursor (Jump menu)"), false));
+            _shortcutList.Add(new Shortcut(":bookmark name", Lang.T("... with a name: :book name jumps to it"), false));
+            _shortcutList.Add(new Shortcut(":bookmark! name", Lang.T("Move the bookmark with the name here"), false));
+            _shortcutList.Add(new Shortcut("  " + Lang.T("Notes"), Lang.T("Not bookmarked: B on the data file in the Jump menu"), false));
             _shortcutList.Add(new Shortcut(":favorite :fav", Lang.T("Add/remove the file (or the note) as a favorite"), false));
             _shortcutList.Add(new Shortcut(":diff :diff -w", Lang.T("Compare with the saved text (-w: not blank space)"), false));
             _shortcutList.Add(new Shortcut("  " + Lang.T("Comparison"), Lang.T("n N ]c [c: the next/previous change"), false));
@@ -1952,12 +2004,6 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":rename :title", Lang.T("Rename the file, or change the title of the entry"), false));
             _shortcutList.Add(new Shortcut(":%y :%d :2,9d", Lang.T("Yank all/Delete all/Delete line 2 to 9"), false));
             _shortcutList.Add(new Shortcut(":clear", Lang.T("Clear all"), false));
-        }
-
-        ShowHelp(topic);
-        if (returnToEditorMenu)
-        {
-            Actions.DrawEditMenu();
         }
     }
 
@@ -2257,45 +2303,118 @@ internal static class Tools
             // What is being drawn cannot be completed, so the page must be drawn again
             Init.DimensionsExceptionCaught = true;
             _redrawRequested = true;
-            if (Init.AutoSize && Init.ApplyAutoSize())
-            {
-                // The dimensions follow the window: nothing to ask about
-                ClearScreen();
-                return;
-            }
-
-            ClearScreen();
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-            Console.Write(" " + DialogText.AttentionColon);
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.WriteLine(" " + DialogText.ErrorClientSize);
-            if (Init.AutoSize)
-            {
-                // The window is smaller than the smallest dimensions that can be used
-                Console.WriteLine("(" + Lang.F("Dimensions must be at least {0}", Init.MinLineWidth + "x" + Init.MinLineCount) + ")");
-                Console.WriteLine(DialogText.EnlargeWindow);
-                Console.ReadKey(true);
-                Init.ApplyAutoSize();
-            }
-            else
-            {
-                Console.WriteLine("(" + Lang.F("Dimensions must be at least {0}", Init.LineWidth + "x" + Init.LineCount) + ")");
-                Console.WriteLine(DialogText.FitOutputDimensions);
-                _keyInfo = Console.ReadKey(true);
-                if (_keyInfo.Key == ConsoleKey.Y)
-                {
-                    // Use the size of the window from now on (not smaller than the minimum)
-                    Init.AutoSize = true;
-                    if (!Init.ApplyAutoSize()) Init.SetDefaultOutputDimensions();
-                    FileIo.SaveSettings();
-                }
-            }
-
-            ClearScreen();
+            WindowTooSmall();
         }
     }
 
+    /// <summary>
+    /// True if the terminal window is smaller than the dimensions in use (false if its size is not known)
+    /// </summary>
+    internal static bool IsWindowTooSmall()
+    {
+        try
+        {
+            return Console.WindowWidth - 1 < Init.LineWidth || Console.WindowHeight - 1 < Init.LineCount;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// The terminal window has been made smaller than the dimensions in use: they follow the window (automatic
+    /// size), or the user is asked to make the window larger or to let the dimensions follow it. The screen is
+    /// cleared: the page must be drawn again
+    /// </summary>
+    internal static void WindowTooSmall()
+    {
+        if (Init.AutoSize && Init.ApplyAutoSize())
+        {
+            // The dimensions follow the window: nothing to ask about
+            ClearScreen();
+            return;
+        }
+
+        ClearScreen();
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
+        Console.Write(" " + DialogText.AttentionColon);
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Console.WriteLine(" " + DialogText.ErrorClientSize);
+        if (Init.AutoSize)
+        {
+            // The window is smaller than the smallest dimensions that can be used
+            Console.WriteLine("(" + Lang.F("Dimensions must be at least {0}", Init.MinLineWidth + "x" + Init.MinLineCount) + ")");
+            Console.WriteLine(DialogText.EnlargeWindow);
+            KeyOrLargerWindow();
+            Init.ApplyAutoSize();
+        }
+        else
+        {
+            Console.WriteLine("(" + Lang.F("Dimensions must be at least {0}", Init.LineWidth + "x" + Init.LineCount) + ")");
+            Console.WriteLine(DialogText.FitOutputDimensions);
+            if (KeyOrLargerWindow()?.Key == ConsoleKey.Y)
+            {
+                // Use the size of the window from now on (not smaller than the minimum)
+                Init.AutoSize = true;
+                if (!Init.ApplyAutoSize()) Init.SetDefaultOutputDimensions();
+                FileIo.SaveSettings();
+            }
+        }
+
+        ClearScreen();
+    }
+
+    // A key, or null as soon as the window is large enough for the dimensions in use (it was made larger while
+    // the question was shown)
+    private static ConsoleKeyInfo? KeyOrLargerWindow()
+    {
+        while (true)
+        {
+            try
+            {
+                if (Console.KeyAvailable) break;
+            }
+            catch
+            {
+                // Keys cannot be asked about (input from a file): wait for one
+                break;
+            }
+
+            if (!IsWindowTooSmall()) return null;
+            Thread.Sleep(50);
+        }
+
+        return Console.ReadKey(true);
+    }
+
     private static bool _redrawRequested;
+
+    // Ctrl+C was pressed (the signal comes on another thread: Init)
+    private static int _cancelKey;
+
+    /// <summary>
+    /// Ctrl+C was pressed: it is cancelled, and the editor tells how to close it (TakeCancelKey)
+    /// </summary>
+    internal static void NoteCancelKey() => Interlocked.Exchange(ref _cancelKey, 1);
+
+    /// <summary>
+    /// True (once) if Ctrl+C was pressed since this was asked last
+    /// </summary>
+    internal static bool TakeCancelKey() => Interlocked.Exchange(ref _cancelKey, 0) == 1;
+
+    // Marbles went on after it was stopped with Ctrl+Z (Linux, macOS: the signal comes on another thread: Init)
+    private static int _continued;
+
+    /// <summary>
+    /// Marbles goes on after Ctrl+Z and "fg": the screen shows what the shell wrote, so the page is drawn again
+    /// </summary>
+    internal static void NoteContinued() => Interlocked.Exchange(ref _continued, 1);
+
+    /// <summary>
+    /// True (once) if Marbles went on after Ctrl+Z since this was asked last
+    /// </summary>
+    internal static bool TakeContinued() => Interlocked.Exchange(ref _continued, 0) == 1;
 
     /// <summary>
     /// True (once) if a page could not be drawn because the terminal window was made smaller, and must be

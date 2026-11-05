@@ -22,7 +22,8 @@ internal sealed partial class EditorEngine
     private string _count = string.Empty; // The count being typed
     private string _opCount = string.Empty; // The count typed before the operator
     private char _operator; // "d", "c", "y", ">", "<", or "u", "U" and "~" for "gu", "gU" and "g~"
-    private char _prefix; // A key waiting for a second key: "g", "z", "Z", "r", "f", "F", "t", "T", "i", "a", "[", "]", '"'
+    private char _prefix; // A key waiting for a second key: "g", "z", "Z", "r", "f", "F", "t", "T", "i", "a", "[", "]", '"',
+                          // and "m", "'", "`" (marks)
     private bool _clipboardAsked; // '"+' was typed: the next yank goes to the clipboard
     private bool _clipboardJustAsked; // ... it was typed with the key just handled
     private TextPos _visualAnchor; // Where the selection was started in Visual mode
@@ -31,7 +32,8 @@ internal sealed partial class EditorEngine
     // A selection: where it was started, where the cursor was, the kind of selection, and "$" in Visual Block mode
     private sealed record Selected(TextPos Anchor, TextPos Cursor, EditorMode Mode, bool ToEnd);
 
-    internal bool HasPending => _count.Length > 0 || _opCount.Length > 0 || _operator != NoKey || _prefix != NoKey;
+    internal bool HasPending => _count.Length > 0 || _opCount.Length > 0 || _operator != NoKey || _prefix != NoKey ||
+                                IsJumping;
 
     private void ResetPending()
     {
@@ -40,6 +42,7 @@ internal sealed partial class EditorEngine
         _operator = NoKey;
         _prefix = NoKey;
         _pendingHigh = NoKey;
+        EndJump();
     }
 
     // The first half of a character outside the Basic Multilingual Plane (an emoji), typed after f, F, t, T or r:
@@ -106,6 +109,10 @@ internal sealed partial class EditorEngine
             else if (IsVisual)
             {
                 Mode = EditorMode.Normal;
+            }
+            else if (_found != null)
+            {
+                // (hidden as after any other key)
             }
             else if (HighlightSearch && _searchRegex != null)
             {
@@ -184,7 +191,8 @@ internal sealed partial class EditorEngine
             (cmd == 'Z' && !IsVisual || cmd == 'r' && (!IsVisual || Mode == EditorMode.VisualBlock)) &&
             !operatorPending ||
             cmd is '[' or ']' && !operatorPending ||
-            cmd == '"' && !operatorPending)
+            cmd == '"' && !operatorPending ||
+            cmd is 'm' or '\'' or '`' && !operatorPending)
         {
             _prefix = cmd;
             return;
@@ -202,6 +210,25 @@ internal sealed partial class EditorEngine
         {
             JumpToChange(cmd == 'n', TakeCount() ?? 1);
             ResetPending();
+            return;
+        }
+
+        // Enter: jump to a word on the screen (with a count, after an operator and in a macro it goes down to the first
+        // character of a line)
+        if (cmd == '\r' && !operatorPending && _count.Length == 0 && !SingleLine && !IsPlayingMacro)
+        {
+            ResetPending();
+            if (IsRecording)
+            {
+                SetError(Lang.T("The jump to a word is not used while recording"));
+                // Not a step of the macro
+                _macroCommandLeftOut = true;
+            }
+            else
+            {
+                StartJump();
+            }
+
             return;
         }
 
@@ -228,7 +255,10 @@ internal sealed partial class EditorEngine
         {
             // A block selected with "$" goes to the end of each line, until the cursor is moved sideways
             if (Mode == EditorMode.VisualBlock) _blockToEnd = motionKey == '$' || _blockToEnd && motionKey == 'G';
+            var from = Cursor;
             RunMotion(motion);
+            // "``" goes back from a jump
+            if (!operatorPending && motionKey is 'G' or 'n' or 'N') RememberJump(from);
             return;
         }
 
@@ -262,6 +292,14 @@ internal sealed partial class EditorEngine
         var last = Buffer.LineCount - 1;
         switch (prefix)
         {
+            case 'm':
+                SetMark(cmd);
+                return;
+            case '\'':
+            case '`':
+                // "`a" its place, "'a" the start of its line (its place too with the setting "marksapostrophe")
+                JumpToMark(cmd, prefix == '`' || MarksApostrophe);
+                return;
             case '"':
                 // A register: only "+ (and "*), the system clipboard, for the next yank
                 if (cmd is '+' or '*')
@@ -286,6 +324,9 @@ internal sealed partial class EditorEngine
                     _lastFindChar = typed;
                     if (FindChar(prefix, typed, TakeCount() ?? 1, false, out var motion))
                     {
+                        if (_operator == NoKey) ShowFound(typed);
+                        // A block selected with "$" no longer goes to the end of each line (as with ";" ",")
+                        _blockToEnd = false;
                         RunMotion(motion);
                         return;
                     }
@@ -352,7 +393,10 @@ internal sealed partial class EditorEngine
                     {
                         var count = TakeCount();
                         var line = count.HasValue ? Math.Clamp(count.Value - 1, 0, last) : 0;
+                        var jump = _operator == NoKey;
+                        var jumpFrom = Cursor;
                         RunMotion(new Motion(new TextPos(line, FirstNonBlank(line)), true));
+                        if (jump) RememberJump(jumpFrom);
                         return;
                     }
                     case 'u':
@@ -643,9 +687,9 @@ internal sealed partial class EditorEngine
         var text = Buffer.GetText(from, to);
         var changed = op switch
         {
-            'u' => text.ToLower(),
-            'U' => text.ToUpper(),
-            _ => string.Concat(text.Select(c => char.IsUpper(c) ? char.ToLower(c) : char.ToUpper(c)))
+            'u' => text.ToLowerInvariant(),
+            'U' => text.ToUpperInvariant(),
+            _ => string.Concat(text.Select(c => char.IsUpper(c) ? char.ToLowerInvariant(c) : char.ToUpperInvariant(c)))
         };
         // Leave the text alone if the change of case alters its length (possible for a few special characters)
         if (changed == text || changed.Length != text.Length) return;
@@ -1043,6 +1087,32 @@ internal sealed partial class EditorEngine
 
     #endregion
 
+    // The keys of a change with another count: its own counts (before the command, and after an operator, as in
+    // "2d3w") are left out, and the count is put first
+    private static ConsoleKeyInfo[] WithCount(ConsoleKeyInfo[] keys, int count)
+    {
+        var at = SkipCount(keys, 0);
+        var rest = new List<ConsoleKeyInfo>();
+        if (at < keys.Length)
+        {
+            rest.Add(keys[at]);
+            at = keys[at].KeyChar is 'd' or 'c' or 'y' or '<' or '>' or '=' ? SkipCount(keys, at + 1) : at + 1;
+        }
+
+        rest.AddRange(keys.Skip(at));
+        var digits = count.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            .Select(c => new ConsoleKeyInfo(c, ConsoleKey.D0 + (c - '0'), false, false, false));
+        return digits.Concat(rest).ToArray();
+    }
+
+    // After the digits of a count from a place in the keys (a count does not start with 0)
+    private static int SkipCount(ConsoleKeyInfo[] keys, int at)
+    {
+        if (at >= keys.Length || keys[at].KeyChar is < '1' or > '9') return at;
+        while (at < keys.Length && char.IsAsciiDigit(keys[at].KeyChar)) at++;
+        return at;
+    }
+
     #region Normal mode commands
 
     private void HandleCommand(char cmd, int? count)
@@ -1129,7 +1199,7 @@ internal sealed partial class EditorEngine
                 Redo(n);
                 break;
             case '.':
-                Repeat(n);
+                Repeat(count);
                 break;
 
             // Visual mode
@@ -1313,22 +1383,20 @@ internal sealed partial class EditorEngine
         }
     }
 
-    // The "." command: repeat the last change by replaying its keys
-    private void Repeat(int count)
+    // The "." command: repeat the last change by replaying its keys. A count given to "." takes the place of the
+    // count of the change (as in Vim: "3x" and then "2." deletes 2 characters)
+    private void Repeat(int? count)
     {
         if (_replaying || _lastChange.Length == 0) return;
         ResetPending();
         Buffer.EndStep(Cursor);
-        var keys = _lastChange;
+        var keys = count == null ? _lastChange : WithCount(_lastChange, count.Value);
         _replaying = true;
         try
         {
-            while (count-- > 0)
+            foreach (var key in keys)
             {
-                foreach (var key in keys)
-                {
-                    HandleKey(key);
-                }
+                HandleKey(key);
             }
         }
         finally
@@ -1361,8 +1429,9 @@ internal sealed partial class EditorEngine
 
     private void StoreRegister(string text, bool linewise, bool small)
     {
-        if (text.Length == 0) return;
+        // (whole lines get their line break first: an empty line yanked or deleted is a line, as in Vim)
         if (linewise && !text.EndsWith(TextBuffer.NewLine)) text += TextBuffer.NewLine;
+        if (text.Length == 0) return;
         _useSmallRegister = small;
         if (small)
         {
@@ -1389,6 +1458,8 @@ internal sealed partial class EditorEngine
     {
         var text = GetRegister(out var linewise);
         if (text.Length == 0) return;
+        // (the cursor goes to the lines put in, which a read-only text does not get)
+        if (Buffer.RefuseIfReadOnly()) return;
         if ((long)text.Length * count > MaxPutLength)
         {
             SetError(Lang.T("Too much text to put in at once (use a smaller count)"));

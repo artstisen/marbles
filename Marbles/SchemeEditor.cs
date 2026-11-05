@@ -657,36 +657,36 @@ internal static class SchemeEditor
             switch (item)
             {
                 case ColorItem.Highlight or ColorItem.HighlightText:
-                    Console.BackgroundColor = scheme.Highlight;
-                    Console.ForegroundColor = scheme.HighlightText;
+                    ConsoleColors.SetBackground(scheme.Highlight);
+                    ConsoleColors.SetForeground(scheme.HighlightText);
                     break;
                 case ColorItem.Attention or ColorItem.AttentionText:
-                    Console.BackgroundColor = scheme.Attention;
-                    Console.ForegroundColor = scheme.AttentionText;
+                    ConsoleColors.SetBackground(scheme.Attention);
+                    ConsoleColors.SetForeground(scheme.AttentionText);
                     break;
                 case ColorItem.Warning or ColorItem.WarningText:
-                    Console.BackgroundColor = scheme.Warning;
-                    Console.ForegroundColor = scheme.WarningText;
+                    ConsoleColors.SetBackground(scheme.Warning);
+                    ConsoleColors.SetForeground(scheme.WarningText);
                     break;
                 case ColorItem.Tab or ColorItem.TabText:
-                    Console.BackgroundColor = scheme.TabColor;
-                    Console.ForegroundColor = scheme.TabTextColor;
+                    ConsoleColors.SetBackground(scheme.TabColor);
+                    ConsoleColors.SetForeground(scheme.TabTextColor);
                     break;
                 case ColorItem.Unsaved or ColorItem.UnsavedText:
-                    Console.BackgroundColor = scheme.UnsavedColor;
-                    Console.ForegroundColor = scheme.UnsavedTextColor;
+                    ConsoleColors.SetBackground(scheme.UnsavedColor);
+                    ConsoleColors.SetForeground(scheme.UnsavedTextColor);
                     break;
                 case ColorItem.Selector or ColorItem.SelectorText:
-                    Console.BackgroundColor = scheme.SelectorColor;
-                    Console.ForegroundColor = scheme.SelectorTextColor;
+                    ConsoleColors.SetBackground(scheme.SelectorColor);
+                    ConsoleColors.SetForeground(scheme.SelectorTextColor);
                     break;
                 case ColorItem.Background:
-                    Console.BackgroundColor = color;
-                    Console.ForegroundColor = scheme.Text;
+                    ConsoleColors.SetBackground(color);
+                    ConsoleColors.SetForeground(scheme.Text);
                     break;
                 default:
-                    Console.BackgroundColor = scheme.BackgroundColor;
-                    Console.ForegroundColor = color;
+                    ConsoleColors.SetBackground(scheme.BackgroundColor);
+                    ConsoleColors.SetForeground(color);
                     break;
             }
         }

@@ -13,12 +13,54 @@ internal static class FileIo
     private const string DataDirectoryName = "data"; // The name of the data directory -DO NOT CHANGE
 
     /// <summary>
-    /// The data directory: "data" in the directory Marbles is started in, if there is one there (as Marbles has
-    /// always done), else "data" next to the program, so the same data is used wherever Marbles is started from (a
-    /// terminal in another directory, a file opened with Marbles). If the program directory cannot be written to (a
-    /// program installed for all users), "Marbles/data" in the user's application data is used
+    /// The data directory: "data" in the directory Marbles is started in, if there is one there that is Marbles' own
+    /// (as Marbles has always done), else "data" next to the program, so the same data is used wherever Marbles is
+    /// started from (a terminal in another directory, a file opened with Marbles). If the program directory cannot be
+    /// written to (a program installed for all users), or its "data" was made by another user, "Marbles/data" in the
+    /// user's application data is used. It is chosen once for each directory Marbles runs in
     /// </summary>
-    private static string DataDirectory => Directory.Exists(DataDirectoryName) ? DataDirectoryName : ProgramDataDirectory;
+    private static string DataDirectory
+    {
+        get
+        {
+            if (DataDirectoryOverride != null) return DataDirectoryOverride;
+            var current = Environment.CurrentDirectory;
+            if (_chosenIn != current)
+            {
+                _localData = IsMarblesData(DataDirectoryName);
+                _chosenIn = current;
+            }
+
+            return _localData ? DataDirectoryName : ProgramDataDirectory;
+        }
+    }
+
+    private static string? _chosenIn; // The directory Marbles ran in when the data directory was chosen
+    private static bool _localData; // The data directory is "data" in that directory
+
+    /// <summary>
+    /// The data directory, for tests (so nothing is written to the data directory of the program)
+    /// </summary>
+    internal static string? DataDirectoryOverride { get; set; }
+
+    /// <summary>
+    /// True if a folder "data" is Marbles' own: it has the settings file, or data files (in it or in a folder in it).
+    /// A folder "data" of something else (a web site, a program) is not filled with Marbles' settings and lists
+    /// </summary>
+    internal static bool IsMarblesData(string directory)
+    {
+        try
+        {
+            if (!Directory.Exists(directory)) return false;
+            if (File.Exists(Path.Combine(directory, SettingsFileName))) return true;
+            var options = new EnumerationOptions { RecurseSubdirectories = true, MaxRecursionDepth = 1 };
+            return Directory.EnumerateFiles(directory, "*" + DefaultFileNameExtension, options).Any();
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
 
     private static string? _programDataDirectory;
 
@@ -27,9 +69,24 @@ internal static class FileIo
     private static string FindProgramDataDirectory()
     {
         var nextToProgram = Path.Combine(AppContext.BaseDirectory, DataDirectoryName);
-        if (Directory.Exists(nextToProgram) || CanWriteIn(AppContext.BaseDirectory)) return nextToProgram;
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData,
+        // (one that is there must be writable by this user: one made when Marbles was run as root, with sudo, is not
+        // used by the user, whose settings and data files could not be written there)
+        var exists = Directory.Exists(nextToProgram);
+        if (exists ? CanWriteIn(nextToProgram) : CanWriteIn(AppContext.BaseDirectory))
+        {
+            return nextToProgram;
+        }
+
+        var instead = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData,
             Environment.SpecialFolderOption.DoNotVerify), "Marbles", DataDirectoryName);
+        // (told in the log: the settings and lists of the one next to the program are not used)
+        if (exists)
+        {
+            EventLog.Add(DialogText.LogFile + "Data directory next to the program cannot be written: " + nextToProgram +
+                         ", using " + instead);
+        }
+
+        return instead;
     }
 
     // True if a file can be made in a directory (it is made and deleted again)
@@ -1222,6 +1279,14 @@ internal static class FileIo
         _tempSettings += "linenumbers=" + (TextArea.LineNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Long lines in the editor wrapped (on unless turned off)
         _tempSettings += "wrap=" + (TextArea.WordWrap ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // Blank space shown in the editor as . (space), > (tab) and $ (line end) (:whitespace)
+        _tempSettings += "whitespace=" + (TextArea.ShowWhitespace ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // ' jumps to the place of a mark, as ` (for keyboards where ` is hard to type)
+        _tempSettings += "marksapostrophe=" + (EditorEngine.MarksApostrophe ? DialogText.BTrue : DialogText.BFalse) +
+                         Entries.NewLineChar;
+        // The commands of the place in a box above the command line while a command is typed
+        _tempSettings += "commandlist=" + (CommandList.Enabled ? DialogText.BTrue : DialogText.BFalse) +
+                         Entries.NewLineChar;
         // Lines kept above and below the cursor when the editor scrolls (on or off, and how many)
         _tempSettings += "scrolloff=" + (TextArea.ScrollOff ? DialogText.BTrue : DialogText.BFalse) +
                          Entries.NewLineChar;
@@ -1352,8 +1417,8 @@ internal static class FileIo
         Init.SetLineWidth((byte)Math.Clamp(GetNumber("linewidth") ?? Init.MinLineWidth, 0, byte.MaxValue));
         Init.SetLineCount((byte)Math.Clamp(GetNumber("linecount") ?? Init.MinLineCount, 0, byte.MaxValue));
 
-        // Automatic dimensions (off unless turned on)
-        Init.AutoSize = Tools.TrimToLower(Get("autosize")) == DialogText.BTrue;
+        // Automatic dimensions (on unless turned off)
+        Init.AutoSize = Tools.TrimToLower(Get("autosize")) != DialogText.BFalse;
         StartMenu.Mode = StartMenu.ParseSetting(Get("startmode"));
         StartMenu.StartInFavorites = Tools.TrimToLower(Get("startfavorites")) == DialogText.BTrue;
         StartMenu.Only = StartMenu.ParseOnly(Get("onlymode"));
@@ -1377,6 +1442,11 @@ internal static class FileIo
         // On unless turned off
         TextArea.LineNumbers = Tools.TrimToLower(Get("linenumbers")) == DialogText.BTrue;
         TextArea.WordWrap = Tools.TrimToLower(Get("wrap")) != DialogText.BFalse;
+        // Off unless turned on
+        TextArea.ShowWhitespace = Tools.TrimToLower(Get("whitespace")) == DialogText.BTrue;
+        EditorEngine.MarksApostrophe = Tools.TrimToLower(Get("marksapostrophe")) == DialogText.BTrue;
+        // The box of commands above the command line: on unless turned off
+        CommandList.Enabled = Tools.TrimToLower(Get("commandlist")) != DialogText.BFalse;
         // On unless turned off
         TextArea.ScrollOff = Tools.TrimToLower(Get("scrolloff")) != DialogText.BFalse;
         var scrollLines = GetNumber("scrolllines");
@@ -1442,7 +1512,8 @@ internal static class FileIo
         // Off unless turned on
         DataSession.StayLoggedIn = Tools.TrimToLower(Get("stayloggedin")) == DialogText.BTrue;
         // Completing words while typing: off unless turned on
-        Completions.Enabled = Tools.TrimToLower(Get("autocomplete")) == DialogText.BTrue;
+        // Completing words while typing: on unless turned off (a settings file of before, with "false", keeps it off)
+        Completions.Enabled = Tools.TrimToLower(Get("autocomplete")) != DialogText.BFalse;
 
         // Spell checking languages
         var spellLanguages = Get("spelllang").Replace(" ", string.Empty);

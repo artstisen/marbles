@@ -108,8 +108,8 @@ internal static class SyntaxHighlighter
         nextState = state;
         if (type == SyntaxType.Markdown)
         {
-            // The state tells if the line is inside a block of code
-            if (MarkdownHighlighter.IsFence(line)) nextState = state == 0 ? 1 : 0;
+            // The state tells if the line is inside a block of code (and the fence that opened it)
+            nextState = MarkdownHighlighter.NextFenceState(line, state);
             return MarkdownHighlighter.Highlight(line, state != 0);
         }
 

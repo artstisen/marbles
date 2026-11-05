@@ -81,6 +81,26 @@ public class StartArgumentTests : IDisposable
     }
 
     [Fact]
+    public void StartedInADirectoryWithADataDirectory_ThatOneIsUsed_WhenItIsMarbles()
+    {
+        // A folder "data" of something else (a web site) is not used
+        Directory.CreateDirectory(Path.Combine(_root, "site", "data"));
+        File.WriteAllText(Path.Combine(_root, "site", "data", "index.json"), "{}");
+        Directory.SetCurrentDirectory(Path.Combine(_root, "site"));
+        Assert.NotEqual(Path.Combine(_root, "site", "data"), Path.GetFullPath(FileIo.GetDataDirectoryName()));
+        // One with the settings of Marbles is (chosen again in another directory, as when Marbles is started there)
+        Directory.CreateDirectory(Path.Combine(_root, "notes", "data"));
+        File.WriteAllText(Path.Combine(_root, "notes", "data", FileIo.SettingsFileName), "[SETTINGS]");
+        Directory.SetCurrentDirectory(Path.Combine(_root, "notes"));
+        Assert.Equal(Path.Combine(_root, "notes", "data"), Path.GetFullPath(FileIo.GetDataDirectoryName()));
+        // And one with data files only
+        Directory.CreateDirectory(Path.Combine(_root, "old", "data"));
+        File.WriteAllText(Path.Combine(_root, "old", "data", "notes.mbls"), "x");
+        Directory.SetCurrentDirectory(Path.Combine(_root, "old"));
+        Assert.Equal(Path.Combine(_root, "old", "data"), Path.GetFullPath(FileIo.GetDataDirectoryName()));
+    }
+
+    [Fact]
     public void WithoutADataDirectoryWhereItIsStarted_TheOneNextToTheProgramIsUsed()
     {
         Directory.SetCurrentDirectory(Path.Combine(_root, "notes"));

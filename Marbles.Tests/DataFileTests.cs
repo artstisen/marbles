@@ -214,6 +214,8 @@ public class FileIoTests : IDisposable
         // The data directory is always relative to the current directory
         Directory.CreateDirectory(Path.Combine(_workDirectory, "data"));
         Directory.SetCurrentDirectory(_workDirectory);
+        // (the data directory of the test, also before a settings file or a data file is in it)
+        FileIo.DataDirectoryOverride = Path.Combine(_workDirectory, "data");
         FileIo.ResetSubFolder();
         FileIo.SetDefaultFileName();
         FileIo.SetBackup(false, string.Empty, false);
@@ -224,6 +226,7 @@ public class FileIoTests : IDisposable
     {
         Encryptor.RemoveKey();
         Entries.ClearAllEntries(false);
+        FileIo.DataDirectoryOverride = null;
         Directory.SetCurrentDirectory(_originalDirectory);
         Directory.Delete(_workDirectory, true);
     }

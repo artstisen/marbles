@@ -15,7 +15,7 @@ public class GuideTests
     public void AGuide_StartsWithItsTitle(int index)
     {
         var guide = QuickGuide.All[index];
-        var lines = QuickGuide.Lines(80, guide);
+        var lines = QuickGuide.Lines(Init.MinLineWidth, guide);
         Assert.Equal(QuickGuide.Title(guide), lines[0].Text);
         Assert.True(lines.Count > 10);
     }
@@ -26,7 +26,7 @@ public class GuideTests
     {
         var guide = QuickGuide.All[index];
         // Kind 2 is an item: its key is padded to the width of the keys of the guide
-        var widths = QuickGuide.Lines(80, guide).Where(line => line.Kind == 2).Select(line => line.Key.Length)
+        var widths = QuickGuide.Lines(Init.MinLineWidth, guide).Where(line => line.Kind == 2).Select(line => line.Key.Length)
             .Distinct().ToList();
         Assert.Single(widths);
     }

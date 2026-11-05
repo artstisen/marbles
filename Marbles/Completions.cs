@@ -30,15 +30,19 @@ internal static class Completions
     /// </summary>
     internal sealed record Item(string Word, string Text, SyntaxType Syntax)
     {
+        // The place of the cursor in the completion shown
+        private const string CursorShown = "...";
+
         /// <summary>
-        /// How the completion is shown: the first line of its text, without the cursor mark ("..." if it has more
-        /// lines)
+        /// How the completion is shown: the first line of its text, with "..." where the cursor goes, so a
+        /// completion of marks only can be read ("**...**" for bold, "<div>...</div>"), and " ..." after it if it
+        /// has more lines
         /// </summary>
         internal string Shown
         {
             get
             {
-                var lines = Text.Replace(Snippets.CursorMark, string.Empty).Split('\n');
+                var lines = Text.Replace(Snippets.CursorMark, CursorShown).Split('\n');
                 var first = lines[0].Trim();
                 return lines.Length > 1 ? first + " ..." : first;
             }
@@ -46,9 +50,10 @@ internal static class Completions
     }
 
     /// <summary>
-    /// Complete words while typing (setting "autocomplete", ":complete" in the editor)
+    /// Complete words while typing (setting "autocomplete", ":complete" in the editor). On unless turned off: the file
+    /// of completions is made at startup when there is none (a file that is there is never written over)
     /// </summary>
-    internal static bool Enabled { get; set; }
+    internal static bool Enabled { get; set; } = true;
 
     private static readonly List<Item> List = new();
 
@@ -89,6 +94,10 @@ internal static class Completions
         "where the cursor is placed, \\n starts a new line and \\\\ is a \\. The lines\n" + // English
         "after the first are indented as the line of the cursor. Blank lines are not\n" + // English
         "used, and neither is the text above the first title.\n" + // English
+        "\n" +
+        "The words of Markdown and of all text start with / (/bold, /link, /todo),\n" + // English
+        "so they are not offered while you write: a word of a sentence does not\n" + // English
+        "start so.\n" + // English
         "\n" +
         "=== HTML tags (html)\n" + // English
         "<!-- = <!-- $0 -->\n" +
@@ -178,18 +187,41 @@ internal static class Completions
         "function = function $0() {\\n}\n" +
         "if = if ($0) {\\n}\n" +
         "return = return $0;\n" +
+        "JavaScript\n" +
         "\n" +
         "=== Markdown (md)\n" + // English
-        "code = ```\\n$0\\n```\n" +
-        "image = ![$0]()\n" +
-        "link = [$0]()\n" +
-        "table = | $0 |  |\\n| --- | --- |\\n|  |  |\n" +
-        "task = - [ ] $0\n" +
+        "/bold = **$0**\n" +
+        "/bolditalic = ***$0***\n" +
+        "/code = ```\\n$0\\n```\n" +
+        "/comment = <!-- $0 -->\n" +
+        "/done = - [x] $0\n" +
+        "/footdef = [^$0]: \n" +
+        "/footnote = [^$0]\n" +
+        "/frontmatter = ---\\ntitle: $0\\n---\n" +
+        "/h1 = # $0\n" +
+        "/h2 = ## $0\n" +
+        "/h3 = ### $0\n" +
+        "/h4 = #### $0\n" +
+        "/h5 = ##### $0\n" +
+        "/h6 = ###### $0\n" +
+        "/hr = ---\n" +
+        "/image = ![$0]()\n" +
+        "/inline = `$0`\n" +
+        "/italic = *$0*\n" +
+        "/link = [$0]()\n" +
+        "/list = - $0\n" +
+        "/note = > [!NOTE]\\n> $0\n" +
+        "/numbered = 1. $0\n" +
+        "/quote = > $0\n" +
+        "/strike = ~~$0~~\n" +
+        "/table = | $0 |  |\\n| --- | --- |\\n|  |  |\n" +
+        "/task = - [ ] $0\n" +
+        "/url = <$0>\n" +
+        "/warning = > [!WARNING]\\n> $0\n" +
         "\n" +
         "=== All text\n" + // English
-        "lorem = Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
-        "todo = TODO: $0\n" +
-        "JavaScript\n";
+        "/lorem = Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n" +
+        "/todo = TODO: $0\n";
 
     /// <summary>
     /// Read the completions from the file (from the text the file is made with, if there is none)
@@ -356,6 +388,30 @@ internal static class Completions
         }
 
         return found;
+    }
+
+    /// <summary>
+    /// The completion of a word (upper and lower case alike): the one for the kind of text first, then one for all
+    /// text. Null if there is none
+    /// </summary>
+    internal static Item? Named(string word, SyntaxType syntax)
+    {
+        return List.FirstOrDefault(item => item.Syntax == syntax && syntax != SyntaxType.None &&
+                                           item.Word.Equals(word, StringComparison.OrdinalIgnoreCase)) ??
+               List.FirstOrDefault(item => item.Syntax == SyntaxType.None &&
+                                           item.Word.Equals(word, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// The words of the completions that can surround text (":surround"): those with a place for it ("$0"), of
+    /// the kind of text and of all text
+    /// </summary>
+    internal static IEnumerable<string> SurroundWords(SyntaxType syntax)
+    {
+        return List.Where(item => (item.Syntax == syntax && syntax != SyntaxType.None ||
+                                   item.Syntax == SyntaxType.None) &&
+                                  item.Text.Contains(Snippets.CursorMark, StringComparison.Ordinal))
+            .Select(item => item.Word).Distinct(StringComparer.OrdinalIgnoreCase);
     }
 
     // The characters of a word, and those that can start one ("<div", "&nbsp", "@media", ".class", "#id", "</p")

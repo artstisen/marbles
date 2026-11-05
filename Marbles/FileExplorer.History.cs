@@ -28,14 +28,36 @@ internal static partial class FileExplorer
             DrawHistory(redraw);
             if (Tools.TakeRedrawRequest()) DrawHistory(true);
             redraw = true;
-            var hadMessage = _historyMessage.Length > 0;
+            var message = _historyMessage;
+            var hadMessage = message.Length > 0;
             _historyMessage = string.Empty;
             var selected = _historyShown.Count > 0 ? _historyShown[_historyIndex] : -1;
-            var key = Console.ReadKey(true);
+            var key = Keyboard.ReadKey();
+            // The window was resized (or Marbles went on after Ctrl+Z): all is drawn again, with the message
+            if (Keyboard.IsRedraw(key))
+            {
+                _historyMessage = message;
+                continue;
+            }
+
             if (Jump.IsKey(key))
             {
                 // The Jump menu
                 Jump.Open();
+                continue;
+            }
+
+            // A count in front of a key: 5j 5k (5 rows), 5gg 5G (row 5). Esc only drops it
+            if (_listCount.Add(key))
+            {
+                redraw = hadMessage;
+                continue;
+            }
+
+            var count = _listCount.Take();
+            if (count != null && key.Key == ConsoleKey.Escape)
+            {
+                redraw = hadMessage;
                 continue;
             }
 
@@ -112,12 +134,12 @@ internal static partial class FileExplorer
             }
             else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
             {
-                _historyIndex = _historyShown.Count - 1;
+                _historyIndex = ListCount.Row(key.KeyChar == 'G' ? count : null, _historyShown.Count, false);
                 redraw = hadMessage;
             }
             else if (key.KeyChar == 'g')
             {
-                if (Console.ReadKey(true).KeyChar == 'g') _historyIndex = 0;
+                if (Console.ReadKey(true).KeyChar == 'g') _historyIndex = ListCount.Row(count, _historyShown.Count, true);
                 redraw = hadMessage;
             }
             else if (key.Key is ConsoleKey.Escape or ConsoleKey.Q or ConsoleKey.O or ConsoleKey.Backspace ||
@@ -135,12 +157,12 @@ internal static partial class FileExplorer
             }
             else if (navigation == ConsoleKey.DownArrow)
             {
-                _historyIndex++;
+                _historyIndex += count ?? 1;
                 redraw = hadMessage;
             }
             else if (navigation == ConsoleKey.UpArrow)
             {
-                _historyIndex--;
+                _historyIndex = Math.Max(0, _historyIndex - (count ?? 1));
                 redraw = hadMessage;
             }
             else if (key.Key == ConsoleKey.PageDown)
@@ -350,7 +372,7 @@ internal static partial class FileExplorer
                 FileHistory.MaxCount), Init.LineWidth - 2, true));
         Tools.SetCursorEx(2, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
+        Console.Write(new string('-', Init.LineWidth - 1));
 
         // The names in a column, followed by the directory and the time the file was opened
         var nameWidth = 0;
@@ -421,8 +443,9 @@ internal static partial class FileExplorer
     {
         Tools.SetCursorEx(Init.LineCount - 2, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
+        Console.Write(new string('-', Init.LineWidth - 1));
         var status = " " + (_historyShown.Count == 0 ? 0 : _historyIndex + 1) + "/" + _historyShown.Count + " ";
+        if (_listCount.Shown.Length > 0) status = " " + _listCount.Shown + status;
         if (_historyFilter.Length > 0) status += "/" + _historyFilter + " ";
         Tools.SetCursorEx(Init.LineCount - 2, Init.LineWidth - status.Length - 2);
         Console.Write(status);

@@ -432,14 +432,14 @@ public static class FileActions
     {
         if (!FileIo.IsCurrentFileValid()) return false;
         _oldFileName = FileIo.GetFileName();
-        if (Menu.YesNoPrompt(DialogText.DeleteFile, DialogText.DeleteFileYn,
-                DialogText.FileColon + " " + FileIo.GetFileName(),
-                true))
+        // (only Enter answers the questions: text typed by mistake cannot answer them)
+        if (ChoiceBox.ConfirmGuarded(DialogText.DeleteFile, DialogText.DeleteFileYn,
+                DialogText.FileColon + " " + FileIo.GetFileName()))
         {
             // Reconfirm
-            if (Menu.YesNoPrompt(DialogText.DeleteFile, DialogText.DeleteEntryYnConfirm,
+            if (ChoiceBox.ConfirmGuarded(DialogText.DeleteFile, DialogText.DeleteEntryYnConfirm,
                     DialogText.NameColon + " " + FileIo.GetFileName() + Entries.NewLineCharString + " " +
-                    DialogText.CanNotBeUndone, true))
+                    DialogText.CanNotBeUndone))
             {
                 // Check if the file exists
                 if (File.Exists(Path.Combine(FileIo.GetDataAndSubFolder(), FileIo.GetFileName())))

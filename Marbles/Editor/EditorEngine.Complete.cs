@@ -51,7 +51,13 @@ internal sealed partial class EditorEngine
         if (key.Key == ConsoleKey.Tab)
         {
             var back = (key.Modifiers & ConsoleModifiers.Shift) != 0;
-            if (_completions.Count == 1 && !back)
+            // The whole word of a completion typed ("/bold", when "/bolditalic" is shown too): Tab completes it
+            var exact = CompletionIndex < 0 && !back ? IndexOfTypedWord() : -1;
+            if (exact >= 0)
+            {
+                AcceptCompletion(exact);
+            }
+            else if (_completions.Count == 1 && !back)
             {
                 AcceptCompletion(0);
             }
@@ -75,6 +81,14 @@ internal sealed partial class EditorEngine
         }
 
         return false;
+    }
+
+    // The completion whose word is the word typed (upper and lower case alike), or -1
+    private int IndexOfTypedWord()
+    {
+        if (_completionFrom.Line != Cursor.Line || _completionFrom.Col > Cursor.Col) return -1;
+        var typed = CurrentLine[_completionFrom.Col..Cursor.Col];
+        return _completions.FindIndex(item => item.Word.Equals(typed, StringComparison.OrdinalIgnoreCase));
     }
 
     // After a key in Insert mode: look up the word before the cursor if a character was typed or deleted

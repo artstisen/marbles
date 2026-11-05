@@ -62,7 +62,7 @@ public class ReviewFixTests : IDisposable
         Assert.Equal(Lang.T("A path with a tab or a line break is not kept"),
             Bookmarks.AddWithMessage(new JumpTarget(JumpKind.Directory, Path.Combine(_directory, "a\tb"))));
         Assert.Empty(Bookmarks.Items);
-        Assert.StartsWith(Lang.F("Bookmarked: {0}", string.Empty),
+        Assert.StartsWith(Lang.F("Bookmarked ({0}): {1}", 1, string.Empty),
             Bookmarks.AddWithMessage(new JumpTarget(JumpKind.Directory, _directory)));
         Assert.True(Bookmarks.Rename(0, "one\ntwo\r\nthree"));
         Assert.Equal("one two  three", Bookmarks.Items[0].Name);

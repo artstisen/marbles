@@ -323,10 +323,13 @@ internal static class StartMenu
         Corners,
         LineNumbers,
         WordWrap,
+        Whitespace,
+        MarksApostrophe,
         ScrollOff,
         Clipboard,
         EditorOnly,
         NotesOnly,
+        CommandList,
         SyntaxColors,
         Spell,
         Snippets,
@@ -351,6 +354,7 @@ internal static class StartMenu
         if (Only != OnlyMode.Editor) settings.Add(Setting.StayLoggedIn);
         settings.Add(Setting.EditorOnly);
         settings.Add(Setting.NotesOnly);
+        settings.Add(Setting.CommandList);
         settings.Add(Setting.Language);
         // Layout
         settings.Add(Setting.AutoSize);
@@ -363,6 +367,8 @@ internal static class StartMenu
         // Editor
         settings.Add(Setting.LineNumbers);
         settings.Add(Setting.WordWrap);
+        settings.Add(Setting.Whitespace);
+        settings.Add(Setting.MarksApostrophe);
         settings.Add(Setting.ScrollOff);
         settings.Add(Setting.Clipboard);
         settings.Add(Setting.SyntaxColors);
@@ -403,6 +409,8 @@ internal static class StartMenu
                             DialogText.ConfigSizeNote,
             Setting.LineNumbers => Check(TextArea.LineNumbers) + DialogText.ConfigLineNumbers,
             Setting.WordWrap => Check(TextArea.WordWrap) + Lang.T("Wrap long lines"),
+            Setting.Whitespace => Check(TextArea.ShowWhitespace) + Lang.T("Show blank space as . > $ (:whitespace)"),
+            Setting.MarksApostrophe => Check(EditorEngine.MarksApostrophe) + Lang.T("Marks: ' jumps to the exact place"),
             Setting.ScrollOff => Check(TextArea.ScrollOff) +
                                  Lang.F("Keep {0} lines around the cursor", TextArea.ScrollOffLines),
             Setting.Clipboard => indent + Lang.T("Clipboard and paste bin (Enter: Change)"),
@@ -414,6 +422,7 @@ internal static class StartMenu
             Setting.Info => indent + DialogText.FileInfo,
             Setting.EditorOnly => Check(Only == OnlyMode.Editor) + Lang.T("Text Editor only"),
             Setting.NotesOnly => Check(Only == OnlyMode.Notes) + Lang.T("Note Management only"),
+            Setting.CommandList => Check(Marbles.CommandList.Enabled) + Lang.T("List the commands above the command line"),
             Setting.EditSettings => indent + Lang.F("Edit {0}", FileIo.SettingsFileName),
             Setting.Restart => indent + DialogText.ConfigRestart,
             Setting.ViewLog => indent + DialogText.ConfigViewLog,
@@ -437,10 +446,12 @@ internal static class StartMenu
         return setting switch
         {
             Setting.StartSelect or Setting.StartNotes or Setting.StartEditor or Setting.StartFavorites
-                or Setting.StayLoggedIn or Setting.EditorOnly or Setting.NotesOnly or Setting.Language => 0,
+                or Setting.StayLoggedIn or Setting.EditorOnly or Setting.NotesOnly or Setting.CommandList
+                or Setting.Language => 0,
             Setting.AutoSize or Setting.Size or Setting.Monochrome or Setting.ColorScheme or Setting.Logo
                 or Setting.LogoAnimation or Setting.Corners => 1,
-            Setting.LineNumbers or Setting.WordWrap or Setting.ScrollOff or Setting.Clipboard
+            Setting.LineNumbers or Setting.WordWrap or Setting.Whitespace or Setting.MarksApostrophe
+                or Setting.ScrollOff or Setting.Clipboard
                 or Setting.SyntaxColors or Setting.Spell or Setting.Snippets or Setting.AutoComplete
                 or Setting.Completions => 2,
             _ => 3
@@ -792,6 +803,10 @@ internal static class StartMenu
         private readonly int _page;
         private Setting? _selected; // Kept by the setting, as rows come and go (the size, the color scheme)
 
+        // A page with more settings than rows scrolls: the first setting shown, and the one drawn last time
+        private int _scroll;
+        private int _shownScroll = -1;
+
         internal SettingsPage(int page)
         {
             _page = page;
@@ -813,22 +828,47 @@ internal static class StartMenu
             // A blank row above the groups of the page, when there is room for them
             var groups = settings.Count(StartsGroup);
             var gaps = settings.Count + groups <= area.Height;
-            int Row(int i) => area.Top + i + (gaps ? settings.Take(i + 1).Count(StartsGroup) : 0);
+            // More settings than rows: the page scrolls to keep the selected one shown, with "^" and "v" at the right
+            // while there are more above or below (as in the lists of boxes)
+            var rows = Math.Max(1, area.Height);
+            var scrolls = settings.Count > rows;
+            if (!scrolls) _scroll = 0;
+            else if (selected < _scroll) _scroll = selected;
+            else if (selected >= _scroll + rows) _scroll = selected - rows + 1;
+            _scroll = Math.Clamp(_scroll, 0, Math.Max(0, settings.Count - rows));
+            // Scrolled: the rows are written again
+            if (_scroll != _shownScroll) full = true;
+            _shownScroll = _scroll;
+            var last = Math.Min(settings.Count, _scroll + rows);
+            int Row(int i) => area.Top + i - _scroll + (gaps ? settings.Take(i + 1).Count(StartsGroup) : 0);
             if (full)
             {
                 // The settings without a check box are indented to line up with the names of the ones with a
                 // check box. On a page without check boxes they line up with the pointer
                 var texts = settings.Select(SettingText).ToList();
                 var checkBoxes = texts.Any(text => text.StartsWith('['));
-                for (var i = 0; i < settings.Count; i++)
+                // (room for the marks at the right of a page that scrolls; the rows are written to their end)
+                var room = area.Width - (scrolls ? 6 : 4);
+                for (var i = _scroll; i < last; i++)
                 {
                     Tools.SetCursorEx(Row(i), area.Left + 2);
-                    var text = checkBoxes ? texts[i] : texts[i].TrimStart();
-                    Console.Write(" " + Tools.TruncateString(text, area.Width - 4, true));
+                    var text = " " + Tools.TruncateString(checkBoxes ? texts[i] : texts[i].TrimStart(), room, true);
+                    Console.Write(text);
+                    if (scrolls) Console.Write(new string(' ', Math.Max(0, room + 1 - TextMetrics.WidthOf(text))));
+                }
+
+                if (scrolls)
+                {
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
+                    Tools.SetCursorEx(area.Top, area.Left + area.Width - 2);
+                    Console.Write(_scroll > 0 ? "^" : " ");
+                    Tools.SetCursorEx(area.Top + rows - 1, area.Left + area.Width - 2);
+                    Console.Write(last < settings.Count ? "v" : " ");
+                    ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                 }
             }
 
-            for (var i = 0; i < settings.Count; i++)
+            for (var i = _scroll; i < last; i++)
             {
                 Tools.SetCursorEx(Row(i), area.Left);
                 if (i == selected) ConsoleColors.SetColors(ConsoleColors.ColorPreset.SelectorInverted);
@@ -856,6 +896,11 @@ internal static class StartMenu
             else if (key.KeyChar >= '1' && key.KeyChar - '1' < count)
             {
                 _selected = settings[key.KeyChar - '1'];
+            }
+            else if (key.KeyChar == '0' && count >= 10)
+            {
+                // The tenth
+                _selected = settings[9];
             }
             else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
             {
@@ -950,6 +995,15 @@ internal static class StartMenu
             case Setting.WordWrap:
                 TextArea.WordWrap = !TextArea.WordWrap;
                 break;
+            case Setting.Whitespace:
+                TextArea.ShowWhitespace = !TextArea.ShowWhitespace;
+                break;
+            case Setting.MarksApostrophe:
+                EditorEngine.MarksApostrophe = !EditorEngine.MarksApostrophe;
+                break;
+            case Setting.CommandList:
+                Marbles.CommandList.Enabled = !Marbles.CommandList.Enabled;
+                break;
             case Setting.SyntaxColors:
                 SyntaxHighlighter.ColorFiles = !SyntaxHighlighter.ColorFiles;
                 break;
@@ -1010,6 +1064,9 @@ internal static class StartMenu
                 if (ChoiceBox.Confirm(DialogText.CaptionsSettings, DialogText.ResetSettingsQuestion, string.Empty, true))
                 {
                     Actions.ApplyDefaultSettings();
+                    // Completing words is on again: the file of completions is made if there is none (one that is
+                    // there is never written over)
+                    Marbles.Completions.EnsureFile();
                 }
 
                 return;

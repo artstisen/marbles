@@ -70,6 +70,7 @@ internal static class DialogText
     public static string DividerNavigate => Lang.T("NAVIGATE");
     public static string DividerSelect => Lang.T("SELECT");
     public static string DividerCommand => Lang.T("COMMAND");
+    public static string DividerJump => Lang.T("JUMP");
     public static string CaptionsEditor => Lang.T("Editor");
     public static string CaptionsTop20 => Lang.T("TOP 20");
     public static string CaptionsFavorites => Lang.T("FAVORITES");
@@ -147,6 +148,7 @@ internal static class DialogText
     public static string SavIndicator => " " + Lang.T("Unsaved") + " ";
     public static string ReadOnlyLabel => " " + CaptionsReadOnly + " ";
     public static string EditorHelpHint => Lang.T(":help shows the keys of the editor");
+    public static string CancelKeyHint => Lang.T("Ctrl+C does not close the editor: type :q and press Enter");
 
     public const string PaginationLeftRight = "<- ->";
     public static string BrowseUpDown => Lang.T("Up/Down");

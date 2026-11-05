@@ -57,6 +57,8 @@ backup=
     {
         Directory.CreateDirectory(Path.Combine(_workDirectory, "data"));
         Directory.SetCurrentDirectory(_workDirectory);
+        // (the data directory of the test, also before a settings file is in it)
+        FileIo.DataDirectoryOverride = Path.Combine(_workDirectory, "data");
         FileIo.ResetSubFolder();
         Init.UsingDefaultSettings = false;
     }
@@ -64,9 +66,11 @@ backup=
     public void Dispose()
     {
         Init.SetDefaultOutputDimensions();
+        Init.AutoSize = true;
         Logo.Animation = Logo.AnimationSpeed.Fast;
         AsciiStyles.ResetAsciiStyle();
         FileIo.SetDefaultFileName();
+        FileIo.DataDirectoryOverride = null;
         Directory.SetCurrentDirectory(_originalDirectory);
         Directory.Delete(_workDirectory, true);
     }
@@ -234,6 +238,96 @@ backup=
     }
 
     [Fact]
+    public void CompletingWords_IsOnUnlessTurnedOff_AndOnWhenTheSettingsAreReset()
+    {
+        try
+        {
+            // A settings file of before, written with "false" (the default then): kept off
+            File.WriteAllText(SettingsFile, LegacySettings + "\nautocomplete=false\n");
+            Assert.True(FileIo.LoadSettings());
+            Assert.False(Completions.Enabled);
+            File.WriteAllText(SettingsFile, LegacySettings);
+            Assert.True(FileIo.LoadSettings());
+            Assert.True(Completions.Enabled);
+            Completions.Enabled = false;
+            Actions.ApplyDefaultSettings();
+            Assert.True(Completions.Enabled);
+        }
+        finally
+        {
+            Completions.Enabled = true;
+        }
+    }
+
+    [Theory]
+    [InlineData("whitespace=true\nmarksapostrophe=true", true)]
+    [InlineData("whitespace=false\nmarksapostrophe=false", false)]
+    [InlineData("", false)]
+    public void BlankSpaceShown_AndTheApostropheOfMarks_AreLoadedAndSaved_AndReset(string setting, bool on)
+    {
+        try
+        {
+            File.WriteAllText(SettingsFile, LegacySettings + "\n" + setting + "\n");
+            Assert.True(FileIo.LoadSettings());
+            Assert.Equal(on, TextArea.ShowWhitespace);
+            Assert.Equal(on, EditorEngine.MarksApostrophe);
+            FileIo.SaveSettings();
+            var saved = FileIo.ParseSettings(File.ReadAllText(SettingsFile));
+            Assert.Equal(on ? "true" : "false", saved["whitespace"]);
+            Assert.Equal(on ? "true" : "false", saved["marksapostrophe"]);
+            Actions.ApplyDefaultSettings();
+            Assert.False(TextArea.ShowWhitespace);
+            Assert.False(EditorEngine.MarksApostrophe);
+        }
+        finally
+        {
+            TextArea.ShowWhitespace = false;
+            EditorEngine.MarksApostrophe = false;
+        }
+    }
+
+    [Theory]
+    [InlineData("commandlist=false", false)]
+    [InlineData("commandlist=true", true)]
+    [InlineData("", true)]
+    public void TheListOfCommands_IsOnUnlessTurnedOff_AndOnWhenTheSettingsAreReset(string setting, bool on)
+    {
+        try
+        {
+            File.WriteAllText(SettingsFile, LegacySettings + "\n" + setting + "\n");
+            Assert.True(FileIo.LoadSettings());
+            Assert.Equal(on, CommandList.Enabled);
+            FileIo.SaveSettings();
+            Assert.Equal(on ? "true" : "false", FileIo.ParseSettings(File.ReadAllText(SettingsFile))["commandlist"]);
+            CommandList.Enabled = false;
+            Actions.ApplyDefaultSettings();
+            Assert.True(CommandList.Enabled);
+        }
+        finally
+        {
+            CommandList.Enabled = true;
+        }
+    }
+
+    [Fact]
+    public void AutomaticSize_IsOnUnlessTurnedOff_AndOnWhenTheSettingsAreReset()
+    {
+        // Not in the settings file (a new one, or one from before): on
+        File.WriteAllText(SettingsFile, LegacySettings);
+        Assert.True(FileIo.LoadSettings());
+        Assert.True(Init.AutoSize);
+        File.WriteAllText(SettingsFile, LegacySettings + "\nautosize=false\n");
+        Assert.True(FileIo.LoadSettings());
+        Assert.False(Init.AutoSize);
+        FileIo.SaveSettings();
+        Assert.Equal("false", FileIo.ParseSettings(File.ReadAllText(SettingsFile))["autosize"]);
+        // Reset: on again
+        Actions.ApplyDefaultSettings();
+        Assert.True(Init.AutoSize);
+        Assert.Equal("true", FileIo.ParseSettings(File.ReadAllText(SettingsFile))["autosize"]);
+    }
+
+    [Fact]
     public void SavedSettings_HaveNoKeyMapping_AndLoadAgain()
     {
         File.WriteAllText(SettingsFile, LegacySettings);
@@ -250,7 +344,10 @@ backup=
         Assert.Equal("Marbles", settings["logo"]);
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(36, settings.Count);
+        Assert.Equal(39, settings.Count);
+        Assert.Equal("true", settings["commandlist"]);
+        Assert.Equal("false", settings["whitespace"]);
+        Assert.Equal("false", settings["marksapostrophe"]);
         Assert.Equal("none", settings["onlymode"]);
         Assert.Equal("fast", settings["logoanim"]);
         Assert.Equal("true", settings["wrap"]);
@@ -271,7 +368,8 @@ backup=
         Assert.Equal("en", settings["language"]);
         Assert.Equal("false", settings["linenumbers"]);
         Assert.Equal("true", settings["browsedual"]);
-        Assert.Equal("false", settings["autocomplete"]);
+        // Completing words is on unless turned off (the settings file has no "autocomplete")
+        Assert.Equal("true", settings["autocomplete"]);
         Assert.Equal("false", settings["stayloggedin"]);
         Assert.Equal("1", settings["browsepane"]);
         Assert.Equal(string.Empty, settings["browsesel1"]);

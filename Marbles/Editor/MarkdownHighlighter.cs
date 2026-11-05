@@ -63,6 +63,24 @@ internal static class MarkdownHighlighter
         return c is '`' or '~' && line[start + 1] == c && line[start + 2] == c;
     }
 
+    /// <summary>
+    /// The state after a line, for blocks of code: 0 outside a block, else the fence that opened it (its length,
+    /// and 1 for ~~~). A block ends only at a fence of the same kind, at least as long, with nothing after it, so
+    /// ``` inside a block opened with ~~~ (or ````) is a line of the code
+    /// </summary>
+    internal static int NextFenceState(string line, int state)
+    {
+        if (!IsFence(line)) return state;
+        var start = Indent(line);
+        var c = line[start];
+        var end = start;
+        while (end < line.Length && line[end] == c) end++;
+        var fence = ((end - start) << 1) | (c == '~' ? 1 : 0);
+        if (state == 0) return fence;
+        var closes = (state & 1) == (fence & 1) && fence >> 1 >= state >> 1 && line.AsSpan(end).IsWhiteSpace();
+        return closes ? 0 : state;
+    }
+
     // The number of blank spaces a line starts with
     private static int Indent(string line)
     {

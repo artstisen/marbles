@@ -64,18 +64,41 @@ internal static partial class FileExplorer
             DrawHotlist(redraw);
             if (Tools.TakeRedrawRequest()) DrawHotlist(true);
             redraw = true;
-            var hadMessage = _hotlistMessage.Length > 0;
+            var message = _hotlistMessage;
+            var hadMessage = message.Length > 0;
             _hotlistMessage = string.Empty;
             var selected = _hotlistShown.Count > 0 ? _hotlistShown[_hotlistIndex] : -1;
-            var key = Console.ReadKey(true);
+            var key = Keyboard.ReadKey();
+            // The window was resized (or Marbles went on after Ctrl+Z): all is drawn again, with the message
+            if (Keyboard.IsRedraw(key))
+            {
+                _hotlistMessage = message;
+                continue;
+            }
+
+            // A count in front of a key: 5j 5k (5 rows), 5gg 5G (row 5). Esc only drops it
+            if (_listCount.Add(key))
+            {
+                redraw = hadMessage;
+                continue;
+            }
+
+            var count = _listCount.Take();
+            if (count != null && key.Key == ConsoleKey.Escape)
+            {
+                redraw = hadMessage;
+                continue;
+            }
+
             var navigation = Keyboard.ToNavigationKey(key).Key;
             if (_hotlistMoving)
             {
-                // Moving the selected directory: j k move it, and Esc, Enter or V end it
+                // Moving the selected directory: j k move it (with a count, that many places), and Esc, Enter or V
+                // end it
                 if (navigation is ConsoleKey.DownArrow or ConsoleKey.UpArrow && selected >= 0)
                 {
                     _hotlistIndex = DirectoryHotlist.Move(selected,
-                        selected + (navigation == ConsoleKey.DownArrow ? 1 : -1));
+                        selected + (navigation == ConsoleKey.DownArrow ? 1 : -1) * (count ?? 1));
                     SaveHotlist();
                 }
                 else if (key.Key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.V)
@@ -174,12 +197,12 @@ internal static partial class FileExplorer
             }
             else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
             {
-                _hotlistIndex = _hotlistShown.Count - 1;
+                _hotlistIndex = ListCount.Row(key.KeyChar == 'G' ? count : null, _hotlistShown.Count, false);
                 redraw = hadMessage;
             }
             else if (key.KeyChar == 'g')
             {
-                if (Console.ReadKey(true).KeyChar == 'g') _hotlistIndex = 0;
+                if (Console.ReadKey(true).KeyChar == 'g') _hotlistIndex = ListCount.Row(count, _hotlistShown.Count, true);
                 redraw = hadMessage;
             }
             else if (key.Key is ConsoleKey.Escape or ConsoleKey.Q or ConsoleKey.W or ConsoleKey.Backspace ||
@@ -197,12 +220,12 @@ internal static partial class FileExplorer
             }
             else if (navigation == ConsoleKey.DownArrow)
             {
-                _hotlistIndex++;
+                _hotlistIndex += count ?? 1;
                 redraw = hadMessage;
             }
             else if (navigation == ConsoleKey.UpArrow)
             {
-                _hotlistIndex--;
+                _hotlistIndex = Math.Max(0, _hotlistIndex - (count ?? 1));
                 redraw = hadMessage;
             }
             else if (key.Key == ConsoleKey.PageDown)
@@ -441,7 +464,7 @@ internal static partial class FileExplorer
                 DirectoryHotlist.MaxCount), Init.LineWidth - 2, true));
         Tools.SetCursorEx(2, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
+        Console.Write(new string('-', Init.LineWidth - 1));
 
         // The names in a column, followed by the paths
         var nameWidth = 0;
@@ -509,8 +532,9 @@ internal static partial class FileExplorer
     {
         Tools.SetCursorEx(Init.LineCount - 2, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
+        Console.Write(new string('-', Init.LineWidth - 1));
         var status = " " + (_hotlistShown.Count == 0 ? 0 : _hotlistIndex + 1) + "/" + _hotlistShown.Count + " ";
+        if (_listCount.Shown.Length > 0) status = " " + _listCount.Shown + status;
         if (_hotlistFilter.Length > 0) status += "/" + _hotlistFilter + " ";
         Tools.SetCursorEx(Init.LineCount - 2, Init.LineWidth - status.Length - 2);
         Console.Write(status);

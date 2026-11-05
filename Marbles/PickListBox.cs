@@ -9,6 +9,11 @@ internal static class PickListBox
 {
     private const int PreviewRows = 5;
 
+    /// <summary>
+    /// Returned by Show when a key of the caller's own was used: the caller shows the list again
+    /// </summary>
+    internal const int Reload = -2;
+
     // Where the parts of the box are
     private static int _top;
     private static int _left;
@@ -26,9 +31,11 @@ internal static class PickListBox
     /// <param name="preview">The text shown below the list for a row</param>
     /// <param name="selected">The row selected from the start</param>
     /// <param name="hints">The keys, on the bottom line</param>
-    /// <returns>The number of the row picked, or -1</returns>
+    /// <param name="extraKey">A key of the caller's own (as D to delete) on the selected row: true if it was used,
+    /// and the caller shows the list again (Reload is returned)</param>
+    /// <returns>The number of the row picked, -1, or Reload</returns>
     internal static int Show(string caption, IReadOnlyList<string> rows, Func<int, string> preview, int selected,
-        string hints)
+        string hints, Func<ConsoleKeyInfo, int, bool>? extraKey = null)
     {
         // In the color of text in frames and boxes
         using var frameText = ConsoleColors.FrameTextScope();
@@ -73,8 +80,16 @@ internal static class PickListBox
                 Tools.SetCursorEx(Init.LineCount - 1, 0);
             }
 
-            var key = Console.ReadKey(true);
+            var key = Keyboard.ReadKey();
             Tools.HideCursor();
+            if (Keyboard.IsRedraw(key))
+            {
+                // The window was resized (or Marbles went on after Ctrl+Z): the box is drawn again
+                DrawBox(caption);
+                shownScroll = -1;
+                continue;
+            }
+
             if (filtering)
             {
                 if (key.Key is ConsoleKey.Tab or ConsoleKey.DownArrow or ConsoleKey.UpArrow)
@@ -131,6 +146,7 @@ internal static class PickListBox
                 continue;
             }
 
+            if (extraKey != null && view.Count > 0 && extraKey(key, view[selected])) return Reload;
             if (key.Key == ConsoleKey.Escape || c is 'q' or 'Q' || navigation == ConsoleKey.LeftArrow) return -1;
             if ((key.Key == ConsoleKey.Enter || navigation == ConsoleKey.RightArrow) && view.Count > 0)
             {

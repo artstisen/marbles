@@ -75,6 +75,9 @@ internal static class JumpMenu
 
     // The bookmarks: j k move the selected one while this is on (V)
     private static bool _moving;
+
+    // A count typed in front of a key (5j, 5gg)
+    private static readonly ListCount Count = new();
     private static string _message = string.Empty;
 
     // The bookmarks marked with Space (several are moved to a folder, to the top or the end, or removed at once)
@@ -119,9 +122,9 @@ internal static class JumpMenu
     }
 
     // ":book 3" on a row of the Bookmarks tab: its number among all the bookmarks (also when a filter shows some, and
-    // the bookmarks in closed folders count); nothing for a folder
+    // the bookmarks in closed folders count), or ":book chapter3" for a bookmark with a name; nothing for a folder
     private static string BookCommand(Row row) =>
-        row.Bookmark is { IsFolder: false } entry ? ":book " + Bookmarks.NumberOf(entry) : string.Empty; // English
+        row.Bookmark is { IsFolder: false } entry ? Bookmarks.CommandOf(entry) : string.Empty;
 
     private const int MarkWidth = 4; // "FILE", "DIR", "PAGE", "DATA"
     private const int TimeWidth = 10; // "09:41" today, else "2026-10-12"
@@ -335,18 +338,38 @@ internal static class JumpMenu
             }
 
             selected = Math.Clamp(selected, 0, Math.Max(0, rows.Count - 1));
+            // Follow the size of the terminal window. The page below the menu was drawn for the size before: the
+            // screen is cleared, and the page is drawn when the menu closes
+            if (Init.ApplyAutoSize()) Tools.ClearScreen();
             var visible = Draw(tabs, tab, filter, rows, selected, ref scroll);
+            var message = _message;
             _message = _moving ? DialogText.Moving : string.Empty;
-            var key = Console.ReadKey(true);
+            var key = Keyboard.ReadKey();
+            // The window was resized (or Marbles went on after Ctrl+Z): all is drawn again, with the message
+            if (Keyboard.IsRedraw(key))
+            {
+                _message = message;
+                continue;
+            }
+
+            // A count in front of a key: 5j 5k (5 rows), 5gg 5G (row 5), shown next to the filter. Esc only drops it
+            if (Count.Add(key))
+            {
+                _message = Count.Shown;
+                continue;
+            }
+
+            var count = Count.Take();
+            if (count != null && key.Key == ConsoleKey.Escape) continue;
             var navigation = Keyboard.ToNavigationKey(key).Key;
             if (_moving)
             {
-                // Moving the selected bookmark or folder: j k move it (into and out of folders), and Esc, Enter or V
-                // end it
+                // Moving the selected bookmark or folder: j k move it (into and out of folders; with a count, that
+                // many steps), and Esc, Enter or V end it
                 if (navigation is ConsoleKey.DownArrow or ConsoleKey.UpArrow && rows.Count > 0 &&
                     rows[selected].Bookmark is { } moved)
                 {
-                    MoveBookmark(moved, navigation == ConsoleKey.UpArrow);
+                    for (var step = 0; step < (count ?? 1); step++) MoveBookmark(moved, navigation == ConsoleKey.UpArrow);
                     _select = moved;
                 }
                 else if (key.Key is ConsoleKey.Escape or ConsoleKey.Enter or ConsoleKey.V)
@@ -408,10 +431,10 @@ internal static class JumpMenu
             switch (navigation)
             {
                 case ConsoleKey.DownArrow:
-                    selected = Math.Min(selected + 1, Math.Max(0, rows.Count - 1));
+                    selected = Math.Min(selected + (count ?? 1), Math.Max(0, rows.Count - 1));
                     continue;
                 case ConsoleKey.UpArrow:
-                    selected = Math.Max(selected - 1, 0);
+                    selected = Math.Max(selected - (count ?? 1), 0);
                     continue;
                 case ConsoleKey.RightArrow:
                     tab = TabLayout.Next(tab, tabs.Count, false);
@@ -430,10 +453,10 @@ internal static class JumpMenu
             switch (key.KeyChar)
             {
                 case 'G':
-                    selected = Math.Max(0, rows.Count - 1);
+                    selected = ListCount.Row(count, rows.Count, false);
                     break;
                 case 'g':
-                    if (Console.ReadKey(true).KeyChar == 'g') selected = 0;
+                    if (Console.ReadKey(true).KeyChar == 'g') selected = ListCount.Row(count, rows.Count, true);
                     break;
                 case '/':
                     // Only show the places with a text in their names
@@ -842,7 +865,10 @@ internal static class JumpMenu
 
         if (!Bookmarks.Rename(IndexOf(entry), name))
         {
-            _message = DialogText.FavoriteFolderName;
+            // A folder with a name that cannot be used, or a bookmark with the name of another (or only digits)
+            var given = name.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ').Trim();
+            _message = entry.IsFolder ? DialogText.FavoriteFolderName
+                : Bookmarks.NameProblem(given, entry) ?? DialogText.FavoriteFolderName;
             return;
         }
 

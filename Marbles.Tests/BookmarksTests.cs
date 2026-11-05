@@ -28,14 +28,18 @@ public class BookmarksTests : IDisposable
     private JumpTarget FileAt(string name) => new(JumpKind.File, In(name));
 
     [Fact]
-    public void Places_AreAddedAtTheEnd_Once_AndThereIsALimit()
+    public void Places_AreAddedAtTheEnd_Once_AndThereIsNoLimit()
     {
         Assert.Equal(Bookmarks.AddResult.Added, Bookmarks.Add(FileAt("a.md")));
         Assert.Equal(Bookmarks.AddResult.Added, Bookmarks.Add(new JumpTarget(JumpKind.Page, "schemes")));
         Assert.Equal(Bookmarks.AddResult.AlreadyThere, Bookmarks.Add(FileAt("a.md")));
         Assert.Equal(2, Bookmarks.Items.Count);
-        for (var i = Bookmarks.Items.Count; i < Bookmarks.MaxCount; i++) Bookmarks.Add(FileAt("f" + i + ".md"));
-        Assert.Equal(Bookmarks.AddResult.Full, Bookmarks.Add(FileAt("one more.md")));
+        // (there were at most 100)
+        for (var i = Bookmarks.Items.Count; i < 150; i++) Bookmarks.Add(FileAt("f" + i + ".md"));
+        Assert.Equal(Bookmarks.AddResult.Added, Bookmarks.Add(FileAt("one more.md")));
+        Assert.Equal(151, Bookmarks.Places.Count);
+        Bookmarks.Parse(Bookmarks.Serialize());
+        Assert.Equal(151, Bookmarks.Places.Count);
     }
 
     [Fact]
@@ -127,11 +131,6 @@ public class BookmarksTests : IDisposable
         Bookmarks.Parse("file\t" + In("a.md") + "\npage\thelp\tHelp me\n");
         Assert.Equal(new[] { "a.md", "Help me" }, Bookmarks.Items.Select(entry => entry.Shown));
         Assert.All(Bookmarks.Items, entry => Assert.Null(entry.Color));
-        // The folders do not count towards the most bookmarks there can be
-        Bookmarks.Clear();
-        Bookmarks.AddFolder("F", 0);
-        for (var i = 0; i < Bookmarks.MaxCount; i++) Assert.Equal(Bookmarks.AddResult.Added, Bookmarks.Add(FileAt(i + ".md")));
-        Assert.Equal(Bookmarks.AddResult.Full, Bookmarks.Add(FileAt("one more.md")));
     }
 
     [Fact]
@@ -149,9 +148,110 @@ public class BookmarksTests : IDisposable
     [Fact]
     public void AddWithMessage_SavesAndTells()
     {
-        Assert.Equal(Lang.F("Bookmarked: {0}", "a.md"), Bookmarks.AddWithMessage(FileAt("a.md")));
-        Assert.Equal(Lang.F("Already bookmarked: {0}", "a.md"), Bookmarks.AddWithMessage(FileAt("a.md")));
+        Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 1, "a.md"), Bookmarks.AddWithMessage(FileAt("a.md")));
+        Assert.Equal(Lang.F("Already bookmarked ({0}): {1}", 1, "a.md"), Bookmarks.AddWithMessage(FileAt("a.md")));
         Assert.Contains("a.md", File.ReadAllText(Bookmarks.FilePath));
+        // The number is the one ":book" takes
+        Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 2, "b.md"), Bookmarks.AddWithMessage(FileAt("b.md")));
+    }
+
+    [Fact]
+    public void ABookmarkMadeInTheEditor_KeepsItsLineAndColumn()
+    {
+        var chapter = FileAt("chapter.md");
+        Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 1, "chapter.md:120"),
+            Bookmarks.AddWithMessage(chapter with { At = (120, 5) }));
+        // Another line of the same file, and the file itself, are other bookmarks; the same line is not
+        Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 2, "chapter.md:3"),
+            Bookmarks.AddWithMessage(chapter with { At = (3, 1) }));
+        Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 3, "chapter.md"), Bookmarks.AddWithMessage(chapter));
+        Assert.Equal(Lang.F("Already bookmarked ({0}): {1}", 1, "chapter.md:120"),
+            Bookmarks.AddWithMessage(chapter with { At = (120, 9) }));
+
+        // Kept in the file after the name and color, and read again
+        var text = File.ReadAllText(Bookmarks.FilePath);
+        Assert.Contains("file\t" + In("chapter.md") + "\t\t\t120:5\n", text);
+        Bookmarks.Load();
+        Assert.Equal(3, Bookmarks.Places.Count);
+        Assert.Equal((120, 5), Bookmarks.Places[0].Target.At);
+        Assert.Null(Bookmarks.Places[2].Target.At);
+        // The name offered when renaming (with the line), kept as it is: no name of its own
+        Assert.True(Bookmarks.Rename(0, "chapter.md:120"));
+        Assert.Equal(string.Empty, Bookmarks.Places[0].Name);
+        // With a name
+        Assert.True(Bookmarks.Rename(0, "Chapter 3"));
+        Bookmarks.Parse(Bookmarks.Serialize());
+        Assert.Equal("Chapter 3", Bookmarks.Places[0].Shown);
+        Assert.Equal((120, 5), Bookmarks.Places[0].Target.At);
+        // A place that cannot be read is a bookmark of the file
+        Bookmarks.Parse("file\t" + In("x.md") + "\t\t\tnone\n");
+        Assert.Null(Bookmarks.Places[0].Target.At);
+    }
+
+    [Fact]
+    public void APlaceInANote_IsNeverKept()
+    {
+        // A data file is bookmarked by its path in the data directory only: a line and column given for it (as a
+        // place in one of its notes would be) is not kept, nor read from a file edited by hand
+        var data = new JumpTarget(JumpKind.DataFile, "notes/work.mbls") { At = (12, 3) };
+        Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 1, "notes/work.mbls"), Bookmarks.AddWithMessage(data));
+        Assert.Null(Bookmarks.Places[0].Target.At);
+        Assert.Equal("data\tnotes/work.mbls\n", File.ReadAllText(Bookmarks.FilePath));
+        Bookmarks.Parse("data\tnotes/work.mbls\t\t\t12:3\n");
+        Assert.Null(Bookmarks.Places[0].Target.At);
+        Assert.Equal("data\tnotes/work.mbls\n", Bookmarks.Serialize());
+        Assert.Equal(Bookmarks.AddResult.AlreadyThere, Bookmarks.Add(data));
+        // A name given by the user is theirs to give
+        Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 1, "work"),
+            Bookmarks.AddWithMessage(data, "work", false, out var failed));
+        Assert.False(failed);
+        Assert.Equal("data\tnotes/work.mbls\twork\n", File.ReadAllText(Bookmarks.FilePath));
+    }
+
+    [Fact]
+    public void ABookmarkWithAName_IsFoundByIt_AndTheNameIsUsedOnce()
+    {
+        var chapter = FileAt("chapter.md") with { At = (12, 1) };
+        Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 1, "chapter3"),
+            Bookmarks.AddWithMessage(chapter, "chapter3", false, out var failed));
+        Assert.False(failed);
+        Assert.Equal(":book chapter3", Bookmarks.CommandOf(Bookmarks.Places[0]));
+        Assert.Same(Bookmarks.Places[0], Bookmarks.FindByName("CHAPTER3"));
+        // Another place with the name: refused, unless the name is moved
+        var notes = FileAt("notes.md");
+        Assert.Equal(Lang.F("{0} is the name of bookmark {1}: :bookmark! moves it here", "chapter3", 1),
+            Bookmarks.AddWithMessage(notes, "chapter3", false, out failed));
+        Assert.True(failed);
+        Assert.Equal(Lang.F("Bookmark {0} moved here: {1}", 1, "chapter3"),
+            Bookmarks.AddWithMessage(notes, "chapter3", true, out failed));
+        Assert.False(failed);
+        Bookmarks.Load();
+        Assert.Single(Bookmarks.Places);
+        Assert.Equal(In("notes.md"), Bookmarks.Places[0].Target.Target);
+        // A place bookmarked already gets the name
+        Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 1, "notes"),
+            Bookmarks.AddWithMessage(notes, "notes", false, out _));
+        Assert.Single(Bookmarks.Places);
+        // Only digits would be a number of :book
+        Assert.Equal(Lang.T("A name of only digits is the number of a bookmark: add a letter"),
+            Bookmarks.AddWithMessage(FileAt("x.md"), "2024", false, out failed));
+        Assert.True(failed);
+        // Renaming to the name of another bookmark is refused too
+        Bookmarks.AddWithMessage(FileAt("y.md"), "other", false, out _);
+        Assert.False(Bookmarks.Rename(1, "NOTES"));
+        Assert.Equal(Lang.F("The name {0} is used by bookmark {1}", "notes", 1),
+            Bookmarks.NameProblem("NOTES", Bookmarks.Places[1]));
+        Assert.True(Bookmarks.Rename(1, "y2"));
+        Assert.Equal(new[] { "notes", "y2" }, Bookmarks.NamesToComplete());
+        Bookmarks.Save();
+        // Completing names keeps the list as it is: what "u" puts back is still there
+        Bookmarks.RemoveAt(1);
+        Bookmarks.NamesToComplete();
+        Assert.Equal(1, Bookmarks.UndoRemove());
+        Assert.Equal(2, Bookmarks.Places.Count);
+        // Without a name: by its number
+        Bookmarks.AddWithMessage(FileAt("z.md"));
+        Assert.Equal(":book 3", Bookmarks.CommandOf(Bookmarks.Places[2]));
     }
 
     [Fact]
@@ -163,8 +263,17 @@ public class BookmarksTests : IDisposable
         // Alone: the Bookmarks tab of the Jump menu
         Assert.Equal(EditorRequest.JumpToBookmark, editor.Type(":book<CR>"));
         Assert.Equal(string.Empty, editor.BookArgument);
-        // ":bookmark" is another command
+        // ":bookmark" is another command, with a name or without
         Assert.Equal(EditorRequest.Bookmark, editor.Type(":bookmark<CR>"));
+        Assert.Equal(string.Empty, editor.BookmarkName);
+        Assert.Equal(EditorRequest.Bookmark, editor.Type(":bookmark Chapter3<CR>"));
+        Assert.Equal("Chapter3", editor.BookmarkName);
+        Assert.False(editor.BookmarkMovesName);
+        Assert.Equal(EditorRequest.Bookmark, editor.Type(":bookmark! Chapter3<CR>"));
+        Assert.True(editor.BookmarkMovesName);
+        // ":book name" by its name
+        Assert.Equal(EditorRequest.JumpToBookmark, editor.Type(":book chapter3<CR>"));
+        Assert.Equal("chapter3", editor.BookArgument);
     }
 
     [Fact]

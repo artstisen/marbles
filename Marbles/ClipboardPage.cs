@@ -187,7 +187,7 @@ internal static class ClipboardPage
         Menu.WriteNameInTopBar(false);
         Tools.SetCursorEx(1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
+        Console.Write(new string('-', Init.LineWidth - 1));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         for (var i = 0; i < Rows.Length; i++)
         {

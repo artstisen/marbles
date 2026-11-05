@@ -35,7 +35,12 @@ public partial class TextArea
     private const int StyleMisspelled = 3;
     private const int StyleLineNumber = 4;
     private const int StyleCurrentLineNumber = 5; // The number of the line the cursor is on
-    private const int StyleMarkdown = 10; // The styles of Markdown follow from this number
+    private const int StyleFound = 6; // The character found by f, F, t or T
+    private const int StyleJumpLabel = 7; // The letter to type to jump to a word
+    private const int StyleJumpNext = 8; // The letter to type after it
+    private const int StyleWhitespace = 9; // Blank space shown (:whitespace): . > $
+    private const int StyleTrailingSpace = 10; // ... at the end of a line
+    private const int StyleMarkdown = 12; // The styles of Markdown follow from this number
 
     /// <summary>
     /// True to show line numbers in the editor (setting "linenumbers")
@@ -46,6 +51,16 @@ public partial class TextArea
     /// Long lines are wrapped (setting "wrap", on unless turned off)
     /// </summary>
     internal static bool WordWrap { get; set; } = true;
+
+    /// <summary>
+    /// Blank space is shown: a space as ".", a tab as ">" and the end of a line as "$", in the color of the line
+    /// numbers, and the blank space at the end of a line highlighted (setting "whitespace", ":whitespace"). Classic
+    /// ASCII, so every terminal shows it, and each mark takes the place of what it marks
+    /// </summary>
+    internal static bool ShowWhitespace { get; set; }
+
+    // Not in a peek (or a comparison), or a field of one line
+    private bool ShowsWhitespace => ShowWhitespace && _peek == null && !_singleLine;
 
     internal const int DefaultScrollOffLines = 12;
 
@@ -69,7 +84,7 @@ public partial class TextArea
     private readonly int _top;
     private int _left;
     private int _width;
-    private readonly int _height;
+    private int _height; // Changed when the terminal window is resized (TextArea.Resize.cs)
     private readonly bool _singleLine;
     private readonly bool _readOnly;
     internal const int SaveAsEntry = 0;
@@ -128,6 +143,17 @@ public partial class TextArea
     /// pane is at the left. It is used once
     /// </summary>
     internal static (int Index, bool OtherLeft)? NextSplit { get; set; }
+
+    /// <summary>
+    /// The marks of the next file or note opened, kept in memory from when it was closed in this session (taken by
+    /// the editor; never written to disk)
+    /// </summary>
+    internal static IReadOnlyDictionary<char, TextPos>? NextMarks { get; set; }
+
+    /// <summary>
+    /// The marks of the text ("ma"), kept by the host in memory while the text is closed (this session only)
+    /// </summary>
+    internal Dictionary<char, TextPos> CopyMarks() => _engine.CopyMarks();
 
     /// <summary>
     /// A file of Marbles opened from the editor, which is closed for it: the snippets (":snip edit", at a line) or
@@ -192,6 +218,8 @@ public partial class TextArea
         // Taken at once, so it is never left for another editor
         var split = NextSplit;
         NextSplit = null;
+        var marks = NextMarks;
+        NextMarks = null;
         _peek = peek;
         _top = top;
         _left = left;
@@ -205,6 +233,7 @@ public partial class TextArea
         _shownCells = new int[_height];
         Canceled = false;
         SaveWasInvoked = false;
+        StartFollowingWindow();
 
         _textWidth = width - 1;
         _engine = new EditorEngine(text ?? string.Empty, _textWidth, _height, _singleLine)
@@ -220,10 +249,21 @@ public partial class TextArea
             // The macros played with ":play name" are read from their files
             MacroLoader = MacroFiles.Load
         };
+        // The marks set in the text earlier in this session (kept in memory only)
+        if (marks != null && !_singleLine && peek == null) _engine.LoadMarks(marks);
         // Tab after ":play " and ":macro " completes the names of the macros
         CommandCompletion.Arguments["play"] = MacroFiles.Names;
         CommandCompletion.Arguments["macro"] = MacroFiles.Names;
-        if (_engine.AutoComplete) Completions.Refresh();
+        // Tab after ":surround " completes the completions that can surround text, of the kind of text edited (not
+        // for a line of a dialog or a peek, which would take the place of the editor's)
+        if (!_singleLine && peek == null)
+        {
+            CommandCompletion.Arguments["surround"] = SurroundWords;
+            CommandCompletion.Arguments["sur"] = SurroundWords;
+        }
+
+        // (read also when completing while typing is off: ":surround" uses them)
+        if (!_singleLine) Completions.Refresh();
         // Files of a known kind (Markdown, HTML, CSS, JavaScript, JSON) are colored, unless that is turned off
         var fileType = peek != null ? peek.Syntax
             : saveMode == SaveAsFile && !_singleLine && !readOnly
@@ -364,7 +404,15 @@ public partial class TextArea
         {
             while (!_exit)
             {
-                var key = Console.ReadKey(true);
+                var key = ReadKey();
+                if (FollowsWindow && IsCancelKey(key))
+                {
+                    // Ctrl+C that comes as a key (some terminals send it so): as the signal, it does not close
+                    _engine.SetMessage(DialogText.CancelKeyHint, false);
+                    Draw();
+                    continue;
+                }
+
                 if (_peek != null && key.Key == ConsoleKey.Enter && _engine.Mode == EditorMode.Normal)
                 {
                     // Enter in a peek: the file in the editor
@@ -424,6 +472,15 @@ public partial class TextArea
                 // When more keys are waiting (as when pasting text) they are all handled before drawing
                 if (IsKeyWaiting()) continue;
                 Draw();
+                // The text could not be drawn (the window was made smaller): drawn again as the window is now
+                if (FollowsWindow && Tools.TakeRedrawRequest()) FitToWindow();
+            }
+
+            // The key typed right after the Esc that closed it (a peek): for the page shown now
+            if (_keyAfterEscape is { } left)
+            {
+                _keyAfterEscape = null;
+                Keyboard.PushBack(left);
             }
         }
         catch (Exception ex) when (ex is not NavigationException)
@@ -607,6 +664,12 @@ public partial class TextArea
                 MacroBoxes.Pick(_engine);
                 RedrawAll();
                 break;
+            case EditorRequest.Marks:
+                Tools.HideCursor();
+                DrawStatusLine();
+                PickMark();
+                RedrawAll();
+                break;
             case EditorRequest.StringMemory:
             {
                 // The newest first, the current one selected
@@ -644,11 +707,17 @@ public partial class TextArea
                 CompareWithSaved();
                 break;
             case EditorRequest.Bookmark:
-                // The file being edited (a note is in its data file: that one is bookmarked in the Jump menu)
+                // The place of the cursor in the file being edited: ":book" and the Jump menu open the file there
+                // (":bookmark name": by the name). A note is in its data file: that one is bookmarked in the Jump
+                // menu, and no place in a note is kept (bookmarks.txt is not encrypted)
                 if (_saveMode == SaveAsFile && FileExplorer.CurrentFilePath.Length > 0)
                 {
-                    _engine.ShowMessage(Bookmarks.AddWithMessage(
-                        new JumpTarget(JumpKind.File, FileExplorer.CurrentFilePath)), false);
+                    var message = Bookmarks.AddWithMessage(
+                        new JumpTarget(JumpKind.File, FileExplorer.CurrentFilePath)
+                        {
+                            At = CaretPosition.Of(GetText(), GetCursorIndex())
+                        }, _engine.BookmarkName, _engine.BookmarkMovesName, out var failed);
+                    _engine.ShowMessage(message, failed);
                 }
                 else
                 {
@@ -698,12 +767,12 @@ public partial class TextArea
             case EditorRequest.Jump:
                 Tools.HideCursor();
                 // Leaving the text asks about changes that are not saved
-                Jump.Open(LeaveForJump);
+                Jump.Open(LeaveForJump, MoveToBookmark);
                 RedrawAll();
                 break;
             case EditorRequest.JumpToBookmark:
                 Tools.HideCursor();
-                Jump.ToBookmark(_engine.BookArgument, LeaveForJump);
+                Jump.ToBookmark(_engine.BookArgument, LeaveForJump, MoveToBookmark);
                 RedrawAll();
                 break;
             case EditorRequest.Rename:
@@ -752,6 +821,12 @@ public partial class TextArea
                 LineNumbers = _engine.LineNumbers;
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
                 break;
+            case EditorRequest.WhitespaceToggle:
+                ShowWhitespace = !ShowWhitespace;
+                if (ShowWhitespace) _engine.ShowMessage(Lang.T("Blank space shown: . space, > tab, $ line end"), false);
+                else _engine.ShowMessage(Lang.T("Blank space not shown"), false);
+                if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
+                break;
             case EditorRequest.WrapChanged:
                 WordWrap = _engine.Wrap;
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
@@ -788,6 +863,39 @@ public partial class TextArea
                 break;
         }
     }
+
+    // ":marks": the marks of the text in a list, each with its line; Enter jumps to the one picked, D deletes it
+    private void PickMark()
+    {
+        while (true)
+        {
+            var marks = _engine.MarkList;
+            if (marks.Count == 0)
+            {
+                _engine.ShowMessage(Lang.T("No marks: m and a letter sets one (ma)"), false);
+                return;
+            }
+
+            var rows = marks.Select(mark => mark.Name + "  " + (mark.At.Line + 1).ToString().PadLeft(6) + "  " +
+                                            _engine.Buffer[mark.At.Line].Trim().Replace('\t', ' ')).ToList();
+            var picked = PickListBox.Show(Lang.T("Marks"), rows, i =>
+                    string.Join("\n", Enumerable.Range(marks[i].At.Line,
+                            Math.Min(8, _engine.Buffer.LineCount - marks[i].At.Line))
+                        .Select(line => _engine.Buffer[line].Replace("\t", "    "))),
+                0, Lang.T("j/k Select | Enter Jump | D Delete | / Filter | Esc Close"), (key, i) =>
+                {
+                    if (key.Key != ConsoleKey.D || (key.Modifiers & ConsoleModifiers.Control) != 0) return false;
+                    _engine.DeleteMark(marks[i].Name);
+                    return true;
+                });
+            if (picked == PickListBox.Reload) continue;
+            if (picked >= 0) _engine.JumpToMark(marks[picked].Name);
+            return;
+        }
+    }
+
+    private IEnumerable<string> SurroundWords() =>
+        Completions.SurroundWords(_engine.Syntax != SyntaxType.None ? _engine.Syntax : _engine.CompletionSyntax);
 
     // The kind of text being edited, for the snippets made for it (a file of a known kind with its colors off too)
     private SyntaxType SnippetSyntax()
@@ -981,7 +1089,11 @@ public partial class TextArea
         // A file is opened where the cursor is the next time, as when it is closed
         if (leave && _saveMode == SaveAsFile) FileExplorer.KeepCaretOfCurrentFile(this);
         // An entry is opened split again if it is now
-        if (leave && _saveMode == SaveAsEntry) Actions.KeepSplitOfEntry(this);
+        if (leave && _saveMode == SaveAsEntry)
+        {
+            Actions.KeepSplitOfEntry(this);
+            Actions.KeepMarksOfEntry(this);
+        }
         return leave;
     }
 
@@ -1453,7 +1565,7 @@ public partial class TextArea
         if (!_engine.ReadOnly || _peek != null) return;
         // At the right of the top row, where Unsaved is shown (a text that is read only is not changed)
         var label = DialogText.ReadOnlyLabel;
-        Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - TextMetrics.WidthOf(label)));
+        Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - 1 - TextMetrics.WidthOf(label)));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
         Console.Write(label);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
@@ -1555,9 +1667,58 @@ public partial class TextArea
         {
             DrawModeDivider();
             DrawStatusLine();
+            if (DrawCommandList()) return;
         }
 
         PlaceCursor();
+    }
+
+    // A bookmark of a place in the file being edited: the cursor goes there, and the file is not opened again (its
+    // changes stay as they are). False for any other place
+    private bool MoveToBookmark(JumpTarget target)
+    {
+        if (target is not { Kind: JumpKind.File, At: { } at } || _saveMode != SaveAsFile ||
+            FileExplorer.CurrentFilePath.Length == 0 ||
+            !FileOperations.SamePath(FileExplorer.CurrentFilePath, target.FullPath))
+        {
+            return false;
+        }
+
+        _engine.JumpToIndex(CaretPosition.IndexOf(GetText(), at.Line, at.Column));
+        return true;
+    }
+
+    private CommandList? _commandList; // The box of commands above the command line, while it is shown
+
+    // The commands in a box above the command line while a command is typed (not a search). When the command line
+    // is closed, what the box covered is drawn again (all of it: also the other pane of a split). True if the
+    // window was drawn again (and the cursor placed)
+    private bool DrawCommandList()
+    {
+        if (_engine.Mode == EditorMode.Command && CommandList.Enabled && _peek == null)
+        {
+            _commandList ??= new CommandList(CommandContext.Editor);
+            _commandList.Draw(_engine.CommandText);
+            return false;
+        }
+
+        if (_commandList == null) return false;
+        _commandList = null;
+        if (_otherPane != null)
+        {
+            RedrawAll();
+            return true;
+        }
+
+        // The rows are written again over the box (without clearing the screen first, which flickers on a slow
+        // terminal): each row whole, with the last column of the area that the text never uses (the right edge of
+        // the box is there), and the divider and the status line
+        Array.Fill(_shownRows, null);
+        Array.Fill(_shownCells, _width);
+        _shownStatus = null;
+        _shownModeLabel = null;
+        Draw();
+        return true;
     }
 
     // The rows of the text that have changed since they were written
@@ -1603,7 +1764,7 @@ public partial class TextArea
             return;
         }
 
-        var label = _engine.Mode switch
+        var label = _engine.IsJumping ? DialogText.DividerJump : _engine.Mode switch
         {
             EditorMode.Insert => DialogText.CaptionsEdit,
             EditorMode.Visual or EditorMode.VisualLine or EditorMode.VisualBlock => DialogText.DividerSelect,
@@ -1614,7 +1775,7 @@ public partial class TextArea
         _shownModeLabel = label;
         Tools.SetCursorEx(_top - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
+        Console.Write(new string('-', Init.LineWidth - 1));
         // Over the pane with the focus in a split
         Tools.SetCursorEx(_top - 1, Math.Max(0, ModeCenter - (TextMetrics.WidthOf(label) / 2 + 1)));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
@@ -1636,7 +1797,7 @@ public partial class TextArea
         var shown = "\u0001" + chosen + "\u0001" + string.Join("\u0001", list.Select(item => item.Text));
         if (shown == _shownModeLabel) return;
         _shownModeLabel = shown;
-        var width = Init.LineWidth;
+        var width = Init.LineWidth - 1;
         Tools.SetCursorEx(_top - 1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(new string('-', width));
@@ -1666,8 +1827,10 @@ public partial class TextArea
     private int BuildRow(StringBuilder row, int line, int segment)
     {
         if (_gutter == 0) return BuildTextRow(row, line, segment);
-        // The number of the line on its first row (the following rows of a long line have none)
-        var number = segment == 0 ? (line + 1).ToString() : string.Empty;
+        // The number of the line on its first row (the following rows of a long line have none); a line with a mark
+        // shows its letter instead
+        var mark = segment == 0 ? _engine.MarkOnLine(line) : '\0';
+        var number = segment != 0 ? string.Empty : mark != '\0' ? mark.ToString() : (line + 1).ToString();
         row.Append(StyleMarker)
             .Append((char)('0' + (line == _engine.Cursor.Line ? StyleCurrentLineNumber : StyleLineNumber)))
             .Append(number.PadLeft(_gutter - GutterGap)).Append(' ', GutterGap);
@@ -1689,7 +1852,10 @@ public partial class TextArea
         var s = _engine.Buffer[line];
         if (layout.Wrap)
         {
-            return BuildRange(row, line, s, layout.SegmentStart(line, segment), layout.SegmentEnd(line, segment));
+            var segmentEnd = layout.SegmentEnd(line, segment);
+            var rangeStart = row.Length;
+            var shown = BuildRange(row, line, s, layout.SegmentStart(line, segment), segmentEnd);
+            return shown + LineEndMark(row, rangeStart, s, segmentEnd, shown, layout.Width);
         }
 
         // Not wrapped: the cells from LeftCell, with "<" and ">" where text is hidden to the left or the right
@@ -1755,7 +1921,42 @@ public partial class TextArea
             row.Insert(textStart, new string(new[] { StyleMarker, (char)('0' + StyleNormal) }));
         }
 
+        if (!rightMark) cells += LineEndMark(row, rowStart, s, end, cells, width);
         return cells;
+    }
+
+    // The "$" at the end of a line while blank space is shown, when the row has room for it (the cells it took).
+    // A row with colors has its colors from its start: the text from "start" is given its own, if it has none
+    private int LineEndMark(StringBuilder row, int start, string s, int end, int cells, int width)
+    {
+        if (!ShowsWhitespace || end != s.Length || cells >= width) return 0;
+        if (row.Length > start && row[start] != StyleMarker)
+        {
+            row.Insert(start, new string(new[] { StyleMarker, (char)('0' + StyleNormal) }));
+        }
+
+        row.Append(StyleMarker).Append((char)('0' + StyleWhitespace)).Append('$');
+        return 1;
+    }
+
+    // A part of a line as written to the terminal: control characters as blank space, and while blank space is
+    // shown, a space as "." and a tab as ">"
+    private string Visible(string s, int start, int end)
+    {
+        if (!ShowsWhitespace) return TextMetrics.Printable(s, start, end);
+        var builder = new StringBuilder(end - start);
+        for (var i = start; i < end; i++)
+        {
+            builder.Append(s[i] switch
+            {
+                ' ' => '.',
+                '\t' => '>',
+                _ when char.IsControl(s[i]) => ' ',
+                _ => s[i]
+            });
+        }
+
+        return builder.ToString();
     }
 
     // The text of a part of a line (from the char index "start" to "end"), with its colors
@@ -1764,16 +1965,21 @@ public partial class TextArea
         var cells = TextMetrics.WidthOfRange(s, start, end);
         var selection = _engine.Selection(line);
         var hasMatches = false;
-        foreach (var _ in _engine.SearchMatches(line))
+        foreach (var _ in _engine.SearchMatches(line).Concat(_engine.FoundMatches(line)))
         {
             hasMatches = true;
             break;
         }
 
+        // While a jump to a word is made: its letters, shown in place of the first characters of the word
+        var labels = JumpLabelsOf(line, s);
+
         // The common case is a row in a single color
         var misspelled = _engine.Misspelled(line);
         var markdown = _engine.SyntaxStyles(line);
-        if (selection == null && !hasMatches && misspelled.Count == 0 && markdown == null)
+        var blank = ShowsWhitespace && s.AsSpan(start, end - start).IndexOfAny(' ', '\t') >= 0;
+        if (selection == null && !hasMatches && misspelled.Count == 0 && markdown == null && labels == null &&
+            !blank)
         {
             row.Append(TextMetrics.Printable(s, start, end));
             return cells;
@@ -1786,6 +1992,17 @@ public partial class TextArea
             for (var i = start; i < end && i < markdown.Length; i++)
             {
                 if (markdown[i] != SyntaxStyle.None) styles[i - start] = StyleMarkdown + (int)markdown[i];
+            }
+        }
+
+        if (blank)
+        {
+            // Dimmed, and highlighted at the end of the line (below the other marks). The spaces of a line break of
+            // Markdown, which ":trim" keeps, are only dimmed
+            var trailing = _engine.IsLineBreakSpace(line) ? s.Length : EditorEngine.TrailingBlankStart(s);
+            for (var i = start; i < end; i++)
+            {
+                if (s[i] is ' ' or '\t') styles[i - start] = i >= trailing ? StyleTrailingSpace : StyleWhitespace;
             }
         }
 
@@ -1805,11 +2022,31 @@ public partial class TextArea
             }
         }
 
+        foreach (var (matchStart, matchEnd) in _engine.FoundMatches(line))
+        {
+            for (var i = Math.Max(start, matchStart); i < Math.Min(end, matchEnd); i++)
+            {
+                styles[i - start] = StyleFound;
+            }
+        }
+
         if (selection != null)
         {
             for (var i = Math.Max(start, selection.Value.Start); i < Math.Min(end, selection.Value.End); i++)
             {
                 styles[i - start] = StyleSelection;
+            }
+        }
+
+        if (labels != null)
+        {
+            foreach (var (at, (_, next)) in labels)
+            {
+                var length = Math.Max(1, TextMetrics.ElementLength(s, at));
+                for (var i = Math.Max(start, at); i < Math.Min(end, at + length); i++)
+                {
+                    styles[i - start] = next ? StyleJumpNext : StyleJumpLabel;
+                }
             }
         }
 
@@ -1820,7 +2057,7 @@ public partial class TextArea
             if (i > runStart)
             {
                 row.Append(StyleMarker).Append((char)('0' + styles[runStart - start]));
-                row.Append(TextMetrics.Printable(s, runStart, i));
+                AppendShown(row, s, runStart, i, labels);
             }
 
             runStart = i;
@@ -1837,6 +2074,52 @@ public partial class TextArea
         return cells;
     }
 
+    // The letters of the jump to a word on a line, by the char index of the character they are shown in place of
+    // (Next: the letter to type after the first). Null when there are none. The second letter is shown over the
+    // character after the first, when that is on the line and not a tab
+    private Dictionary<int, (char Letter, bool Next)>? JumpLabelsOf(int line, string s)
+    {
+        Dictionary<int, (char, bool)>? labels = null;
+        foreach (var (col, label) in _engine.JumpLabels(line))
+        {
+            if (label.Length == 0 || col >= s.Length) continue;
+            labels ??= new Dictionary<int, (char, bool)>();
+            labels[col] = (label[0], false);
+            var after = col + Math.Max(1, TextMetrics.ElementLength(s, col));
+            if (label.Length > 1 && after < s.Length && s[after] != '\t' &&
+                TextMetrics.WidthOfRange(s, after, after + Math.Max(1, TextMetrics.ElementLength(s, after))) > 0)
+            {
+                labels[after] = (label[1], true);
+            }
+        }
+
+        return labels;
+    }
+
+    // A part of a line as shown, with the letters of a jump in place of the characters they cover (a wide character
+    // keeps its width: the letter and a blank space)
+    private void AppendShown(StringBuilder row, string s, int start, int end,
+        Dictionary<int, (char Letter, bool Next)>? labels)
+    {
+        if (labels == null)
+        {
+            row.Append(Visible(s, start, end));
+            return;
+        }
+
+        var from = start;
+        for (var i = start; i < end; i += Math.Max(1, TextMetrics.ElementLength(s, i)))
+        {
+            if (!labels.TryGetValue(i, out var label)) continue;
+            if (i > from) row.Append(Visible(s, from, i));
+            var after = i + Math.Max(1, TextMetrics.ElementLength(s, i));
+            row.Append(label.Letter).Append(' ', Math.Max(0, TextMetrics.WidthOfRange(s, i, after) - 1));
+            from = after;
+        }
+
+        if (end > from) row.Append(Visible(s, from, end));
+    }
+
     // The colors of a part of a row
     private static void SetStyleColors(int style)
     {
@@ -1846,6 +2129,11 @@ public partial class TextArea
             {
                 StyleSelection => ConsoleColors.ColorPreset.HighlightInverted,
                 StyleSearchMatch => ConsoleColors.ColorPreset.AttentionInverted,
+                StyleFound => ConsoleColors.ColorPreset.SelectorInverted,
+                StyleJumpLabel => ConsoleColors.ColorPreset.KeyHintInverted,
+                StyleJumpNext => ConsoleColors.ColorPreset.Accent,
+                StyleWhitespace => ConsoleColors.ColorPreset.LineNumber,
+                StyleTrailingSpace => ConsoleColors.ColorPreset.WarningInverted,
                 StyleMisspelled => ConsoleColors.ColorPreset.WarningInverted,
                 StyleLineNumber => ConsoleColors.ColorPreset.LineNumber,
                 StyleCurrentLineNumber => ConsoleColors.ColorPreset.CurrentLineNumber,
@@ -1969,6 +2257,15 @@ public partial class TextArea
         if (_engine.PendingKeys.Length > 0) right += _engine.PendingKeys + " | ";
         // A macro is being recorded (English, as the names of the modes)
         if (_engine.IsRecording) right += "REC | ";
+        // The match of the search the cursor is on, and how many there are: "[2/12]", "[-/12]" when it is on none
+        // (English, as Vim shows it)
+        if (_engine.GetSearchCount(out var current, out var total))
+        {
+            right += (total > EditorEngine.SearchCountLimit
+                ? "[>" + EditorEngine.SearchCountLimit + "]"
+                : "[" + (current > 0 ? current.ToString() : "-") + "/" + total + "]") + " | ";
+        }
+
         if (Tools.HasLineMemory()) right += DialogText.EditorMemory + " " + Tools.GetLineMemoryPosition() + " | ";
         if (_engine.IsSpellOn) right += DialogText.SpellStatus + " " + _engine.SpellLanguages + " | ";
         // A text file: its type and encoding

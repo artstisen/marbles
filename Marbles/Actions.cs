@@ -31,6 +31,11 @@ internal static class Actions
                 {
                     RunManageCommand(command);
                 }
+                else
+                {
+                    // Canceled: the menu again (the box of commands covered its bottom)
+                    Menu.DrawTopMenu(false, true, false);
+                }
             }
             else if (_c.KeyChar == '?')
             {
@@ -215,6 +220,23 @@ internal static class Actions
             }
 
             #endregion
+        }
+    }
+
+    /// <summary>
+    /// The page of the data file is drawn again in the dimensions now in use (the terminal window was resized, or
+    /// Marbles went on after Ctrl+Z): the main menu, or the list of entries where it was
+    /// </summary>
+    internal static void RedrawPage()
+    {
+        if (Mode.CurrentMode == Mode.SelectedMode.Manage)
+        {
+            Menu.DrawTopMenu(false, true, false);
+        }
+        else if (Mode.CurrentMode == Mode.SelectedMode.Search && _isSelectingResult)
+        {
+            SaveCursorPosition();
+            ExitNumericSelect(_selectionPage, _resultIndex);
         }
     }
 
@@ -453,7 +475,11 @@ internal static class Actions
         Lang.Refresh();
         var languages = Lang.Available;
         var choices = languages.Select(LanguageChoice).ToArray();
-        var keys = Enumerable.Range(1, languages.Length).Select(n => n.ToString()).ToArray();
+        // A key is one character: 1 to 9, then letters (not those that move in the box: g h j k l q)
+        const string more = "ABCDEFIMNOPRSTUVWXYZ";
+        var keys = Enumerable.Range(0, languages.Length)
+            .Select(n => n < 9 ? (n + 1).ToString() : n - 9 < more.Length ? more[n - 9].ToString() : string.Empty)
+            .ToArray();
         var picked = ChoiceBox.Pick(DialogText.PickLanguageCaption, DialogText.PickLanguageQuestion, string.Empty,
             choices, keys, Math.Max(0, Array.FindIndex(languages, language => language.Code == Lang.Current)), false);
         if (picked < 0) return;
@@ -844,16 +870,16 @@ internal static class Actions
 
     // The frame of the editor: the top row (the caption, the name of what is edited, and the place of the labels
     // Unsaved and Read only at the right), the divider the editor writes its mode on, and the bottom line. The
-    // cursor is left where the text starts, below the divider
+    // cursor is left where the text starts, below the divider: in row 2, also when the window was made narrower
+    // while the divider was written (it then wraps to the next row, and the text would start a row too low)
     private static void DrawEditorFrame(string caption, string title, string reminder)
     {
         Menu.WriteEditorTop(caption, title, reminder);
         Tools.SetCursorEx(1, 0);
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.EditorTitle);
-        Tools.SaveCursorPosition(1);
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         WriteHorizontalRule(false, "", false, ConsoleColors.ColorPreset.Normal);
-        Tools.LoadCursorPosition(1);
+        Tools.SetCursorEx(2, 0);
     }
 
     private static void EditEntry(bool search)
@@ -874,11 +900,13 @@ internal static class Actions
                 TextArea.NextEntrySyntax = EntrySyntax.Get(Entries.CurrentEntry.Options);
                 TextArea.NextEntryReadOnly = Entries.IsReadOnly(Entries.CurrentEntry);
                 TextArea.NextSplit = split;
+                TextArea.NextMarks = EntryMarks.GetValueOrDefault(Entries.CurrentEntry.Id);
                 TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
                     Init.LineCount - 3, Entries.CurrentEntry.Text, cursorIndex, false, false, search, 0);
                 // Cleanup
                 textArea.ClearUndoRedoCache();
                 KeepSplitOfEntry(textArea);
+                KeepMarksOfEntry(textArea);
                 // ":new Title": a new entry in the data file, in its place
                 if (TextArea.TakeNewDocumentRequest() is { } title)
                 {
@@ -951,6 +979,18 @@ internal static class Actions
     // The editor was closed (or left by a jump): whether the entry was split is remembered, also when the text was
     // not changed (in the entry, without changing its date; it is written to the data file when the file is saved
     // next). A read-only entry is not changed, as its cursor is not
+    // The marks ("ma") of the notes closed since the data file was logged into, by their ids: set again when a note
+    // is opened. In memory only, never in the data file or another file, and forgotten at logout
+    private static readonly Dictionary<string, Dictionary<char, TextPos>> EntryMarks = new();
+
+    /// <summary>
+    /// Keep the marks of the note being edited while it is closed (until logout)
+    /// </summary>
+    internal static void KeepMarksOfEntry(TextArea textArea)
+    {
+        if (Entries.CurrentEntryExists()) EntryMarks[Entries.CurrentEntry.Id] = textArea.CopyMarks();
+    }
+
     internal static void KeepSplitOfEntry(TextArea textArea)
     {
         if (!Entries.CurrentEntryExists() || Entries.IsReadOnly(Entries.CurrentEntry)) return;
@@ -1228,8 +1268,13 @@ internal static class Actions
         FileExplorer.DualPane = true;
         TextArea.LineNumbers = false;
         TextArea.WordWrap = true;
+        TextArea.ShowWhitespace = false;
+        EditorEngine.MarksApostrophe = false;
+        CommandList.Enabled = true;
         TextArea.ScrollOff = true;
         TextArea.ScrollOffLines = TextArea.DefaultScrollOffLines;
+        // Completing words is on (the callers make the file of completions if there is none)
+        Completions.Enabled = true;
         Snippets.Sort = Snippets.SortOrder.File;
         ConsoleColors.Use(ColorScheme.Default);
         Logo.Current = LogoArt.BuiltIn;
@@ -1238,8 +1283,10 @@ internal static class Actions
         StartMenu.StartInFavorites = false;
         StartMenu.Only = StartMenu.OnlyMode.None;
         SystemClipboard.SetDefaults();
-        Init.AutoSize = false;
+        // The dimensions follow the window (and are the default ones when it is not known, or smaller)
         Init.SetDefaultOutputDimensions();
+        Init.AutoSize = true;
+        Init.ApplyAutoSize();
         FileIo.SaveSettings();
     }
 
@@ -1248,6 +1295,9 @@ internal static class Actions
         if (ChoiceBox.Confirm(DialogText.CaptionsSettings, DialogText.ResetSettingsQuestion, string.Empty, true))
         {
             ApplyDefaultSettings();
+            // Completing words is on again: the file of completions is made if there is none (one that is there is
+            // never written over)
+            Completions.EnsureFile();
             Menu.DrawTopMenu(false, true, false);
         }
         else
@@ -1261,9 +1311,9 @@ internal static class Actions
     {
         if (Entries.CurrentEntryExists())
         {
-            // Ask to delete entry
-            if (Menu.YesNoPrompt(DialogText.CaptionsDelete, DialogText.DeleteEntryYn,
-                    DialogText.TitleColon + " \"" + Entries.CurrentEntry.Title + "\"", true))
+            // Ask to delete entry (only Enter answers: text typed by mistake cannot answer it)
+            if (ChoiceBox.ConfirmGuarded(DialogText.CaptionsDelete, DialogText.DeleteEntryYn,
+                    DialogText.TitleColon + " \"" + Entries.CurrentEntry.Title + "\""))
             {
                 // Save deletion backup for undo (the entry can be brought back with :undelete)
                 SaveDeletionBackup();
@@ -1733,6 +1783,8 @@ internal static class Actions
         ResetLastSelectedIndex();
         _foundEntries.Clear();
         _resultPages.Clear();
+        // The places of the marks in the notes
+        EntryMarks.Clear();
     }
 
 
@@ -2188,11 +2240,11 @@ internal static class Actions
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         if (jaggedLine)
         {
-            Console.Write(Tools.WriteJaggedLine(Init.LineWidth));
+            Console.Write(Tools.WriteJaggedLine(Init.LineWidth - 1));
         }
         else
         {
-            Console.Write(new string('-', Init.LineWidth));
+            Console.Write(new string('-', Init.LineWidth - 1));
         }
 
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);

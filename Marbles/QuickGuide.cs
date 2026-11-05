@@ -85,7 +85,7 @@ internal static partial class QuickGuide
         (Kind.Item, "h  l", Lang.T("Left/Right: the previous/next page, or back/open")),
         (Kind.Item, "gg  G", Lang.T("The first/last")),
         (Kind.Item, "/", Lang.T("Search or filter")),
-        (Kind.Item, ":", Lang.T("Type a command, like :new or :q (the menus show them)")),
+        (Kind.Item, ":", Lang.T("Type a command, like :new or :q (a box lists them)")),
         (Kind.Item, "Esc", Lang.T("Back, cancel or close")),
         (Kind.Item, "?", Lang.T("Help: the keys of the page you are on")),
         (Kind.Text, "", ""),

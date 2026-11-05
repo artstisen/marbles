@@ -42,6 +42,11 @@ internal sealed class TextBuffer
     /// </summary>
     internal Action<int, int, int>? LinesReplaced;
 
+    /// <summary>
+    /// The marks of the text ("ma"), which follow its changes
+    /// </summary>
+    internal TextMarks Marks { get; } = new();
+
     private sealed record Edit(TextPos Start, string Removed, string Inserted);
 
     private sealed class UndoStep
@@ -181,14 +186,20 @@ internal sealed class TextBuffer
     internal TextPos Insert(TextPos at, string text)
     {
         if (string.IsNullOrEmpty(text)) return at;
-        if (ReadOnly)
-        {
-            _changeRefused = true;
-            return at;
-        }
-
+        if (RefuseIfReadOnly()) return at;
         Record(new Edit(at, string.Empty, text));
         return ApplyInsert(at, text);
+    }
+
+    /// <summary>
+    /// True if the text is read only: the change about to be made is refused (and told, as one the buffer refused).
+    /// For a change made of several steps that each depend on the one before (a line put in, then moved to)
+    /// </summary>
+    internal bool RefuseIfReadOnly()
+    {
+        if (!ReadOnly) return false;
+        _changeRefused = true;
+        return true;
     }
 
     /// <summary>
@@ -228,7 +239,9 @@ internal sealed class TextBuffer
         {
             _lines[at.Line] = line.Insert(at.Col, text);
             LinesReplaced?.Invoke(at.Line, 1, 1);
-            return at with { Col = at.Col + text.Length };
+            var after = at with { Col = at.Col + text.Length };
+            Marks.Inserted(at, after);
+            return after;
         }
 
         var parts = text.Split(NewLine);
@@ -237,7 +250,9 @@ internal sealed class TextBuffer
         parts[^1] += tail;
         _lines.InsertRange(at.Line + 1, parts.Skip(1));
         LinesReplaced?.Invoke(at.Line, 1, parts.Length);
-        return new TextPos(at.Line + parts.Length - 1, parts[^1].Length - tail.Length);
+        var end = new TextPos(at.Line + parts.Length - 1, parts[^1].Length - tail.Length);
+        Marks.Inserted(at, end);
+        return end;
     }
 
     private void ApplyDelete(TextPos from, TextPos to)
@@ -250,6 +265,7 @@ internal sealed class TextBuffer
         }
 
         LinesReplaced?.Invoke(from.Line, to.Line - from.Line + 1, 1);
+        Marks.Deleted(from, to);
     }
 
     #endregion

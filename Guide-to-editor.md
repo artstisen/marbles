@@ -11,7 +11,7 @@ The line above the text also tells what the keys do: **NAVIGATE** in Normal mode
 When a text file is edited (from the file browser), the bottom line shows its type, encoding and line endings, like `HTML UTF-8 (BOM) CRLF` or `TXT Windows-1252 LF` (a file in another encoding than UTF-8 becomes UTF-8 when it is saved; the line endings are kept: `CRLF` as used by Windows, `LF` as used by Linux and macOS). The bottom line also shows messages, the current memory string, the cursor position as `line:column` and how far into the text the cursor is. Inside Marbles, `:help` shows the list of keys.
 
 ## Save and close
-Typed on the command line: press `:`, type the command and press `Enter`. `Tab` completes the command you are typing (`:spelln` and `Tab` gives `:spellnext`), `Tab` again gives the next command that starts the same and `Shift+Tab` the previous. With nothing typed, `Tab` goes through all the commands of the editor. Lines typed in front of a command are kept (`:%d` and `Tab` gives `:%delete`). `Up` and `Down` bring back the commands given in the editor before, the newest first (with the start of a command typed: only those that start with it). They are kept in memory only and forgotten at logout; a macro being recorded gets each command line as it was given (also one brought back with `Up` or completed with `Tab`), not the keys.
+Typed on the command line: press `:`, type the command and press `Enter`. A box above the command line lists the commands while you type, narrowed to those that start with what is typed, and tells what the one typed whole does (see [the command line](Guide-to-main-menu.md), at the top). `Tab` completes the command you are typing (`:spelln` and `Tab` gives `:spellnext`), `Tab` again gives the next command that starts the same and `Shift+Tab` the previous. With nothing typed, `Tab` goes through all the commands of the editor. Lines typed in front of a command are kept (`:%d` and `Tab` gives `:%delete`). `Up` and `Down` bring back the commands given in the editor before, the newest first (with the start of a command typed: only those that start with it). They are kept in memory only and forgotten at logout; a macro being recorded gets each command line as it was given (also one brought back with `Up` or completed with `Tab`), not the keys.
 
 - `:w` Save
 - `:wq` or `:x` or `ZZ` Save and close the editor
@@ -19,6 +19,7 @@ Typed on the command line: press `:`, type the command and press `Enter`. `Tab` 
 - `:q!` or `ZQ` Close the editor without saving
 - `:e` (or `:reload`) Text files: read the file from disk again, when it has been changed by another program. If you have changes that are not saved it is not done; `:e!` reads the file anyway and drops your changes. What was done before cannot be undone afterwards
 - `:help` Show the list of keys
+- `Ctrl+C` does not close the editor (so a note or a file that is not saved is not lost): it tells how to close it. Where the terminal has a selection, `Ctrl+C` still copies it. `Ctrl+\` (Linux, macOS) and `Ctrl+Break` (Windows) do not stop Marbles either
 
 `Esc` first leaves what you are in the middle of: Insert or Visual mode, a command that is half typed, or the highlighting of search matches. When there is nothing to leave, it closes the editor.
 
@@ -36,7 +37,9 @@ In Insert mode: `Tab` inserts 4 blank spaces (or completes a word, see [Completi
 - `gg` `G` Top/End of the text
 - `5G` or `:5` Go to line 5
 - `{` `}` Previous/Next blank line
-- `f.` `t.` To/Before the next `.` on the line (`F` `T`: backwards), repeated with `;` and `,`. Also with an emoji: `f😀`
+- `f.` `t.` To/Before the next `.`, on the line or on a line below (`F` `T`: backwards, on the line or above), repeated with `;` and `,`. `t` before a `.` that starts a line goes to the end of the line above (`T` after one that ends a line: to the start of the line below). With an operator it reaches the other lines too (`dfx`, `ct.`). Every `.` in the text is highlighted until you press a key other than `;`, `,`, a count or another `f` `t` `F` `T`; `Esc` only takes the highlight away (the next `Esc` closes the editor). Also with an emoji: `f😀`
+- `Enter` Jump to a word on the screen. Each word that starts on the rows shown gets a label of one or two letters, written over its first characters (the second letter dimmer), and the divider above the text shows JUMP. Type the letters at the word you want, and the cursor goes there: a letter that several words share leaves only those, each with its next letter. The letters are spread over the words from the top, so with up to 26 words on the screen one letter is enough, and with more two. `Enter` again goes to the first word left, `Esc` cancels, and other keys do nothing. In Visual mode the jump extends the selection. With a count (`3` `Enter`) or after an operator (`d` `Enter`), `Enter` goes down to the first character of a line, as in Vim. The jump is to the pane with the cursor, and it is not made while a macro is recorded (the labels depend on what is on the screen)
+- `ma` Set mark `a` at the cursor, and `` `a `` jump back to it (`'a`: to the start of its line). See [Marks](#marks)
 - `PgUp` `PgDn` One page up/down, `CTRL+U` `CTRL+D` Half a page up/down
 - `gm` `gM` Half the width of the screen to the right/left on the line
 - `zt` `zz` `zb` Scroll the row of the cursor to the top/center/bottom
@@ -57,7 +60,7 @@ A number before a movement or command repeats it: `5j` moves 5 rows down and `3w
 - `>>` `<<` Indent/Unindent the line
 - `~` Switch the case of the character, `gUU` `guu` Line to UPPERCASE/lowercase, `gUw` `guw` Word to UPPERCASE/lowercase
 - `u` Undo (500 steps), `U` or `CTRL+R` Redo
-- `.` Repeat the last change
+- `.` Repeat the last change. A count given to `.` takes the place of the count of the change, as in Vim: after `3x`, `2.` deletes 2 characters
 
 ## Visual mode
 Press `v` (text), `V` (whole lines) or `Q` (a block, see below) and select with the movement keys. The commands `:vsel`, `:vline` and `:block` do the same. Then:
@@ -99,7 +102,9 @@ A yanked or deleted block is pasted as a block with `p` (after the cursor) or `P
 - `*` Search for the word under the cursor
 - `Esc` or `:noh` Remove the highlighting of the matches (press `Esc` again to close the editor)
 
-The text you search for is a regular expression: `/\d+` finds numbers and `/cat|dog` finds either word. A search in lowercase ignores case; with an uppercase letter in it the search matches case.
+While the matches are highlighted, the status line shows which match the cursor is on and how many there are: `[2/12]`, or `[-/12]` when the cursor is not at the start of a match. The matches are counted again when the text changes, up to 9999 (`[>9999]` above that); when counting them takes too long, the count is not shown.
+
+The text you search for is a regular expression: `/\d+` finds numbers and `/cat|dog` finds either word. A search in lowercase ignores case; with an uppercase letter in it the search matches case. A letter after a backslash does not count: `/\Sfoo` still ignores case, as `\S`, `\W` and `\D` are classes.
 
 ## Replace
 The easy way is `:replace`, which shows a box to fill in:
@@ -153,6 +158,22 @@ The comparison is shown read only, as a unified diff (as `git diff` shows one): 
 - `:diff -w` Compare without counting blank space: lines that differ only in their indentation or spaces are the same
 
 If too many lines differ (more than 2000), the comparison is not shown.
+
+## Marks
+A mark keeps a place in the text to come back to while you work: set it, move away, and jump back with two keys. There are 26 marks in each file and each note, `a` to `z`.
+
+- `ma` Set mark `a` at the cursor (any letter `a` to `z`; a mark that is set already moves here). The bottom line tells it: _Mark a: line 120_
+- `` `a `` Jump to the place of mark `a`, and `'a` to the start of its line
+- ``` `` ``` (or `''`) Jump back to where the cursor was before the last jump, and again to go forth. A jump is a jump to a mark, `G`, `gg`, `5G` or `:5`, a search (`/`, `?`, `n`, `N`, `*`), and a bookmark of a place in the file (`:book`)
+- `:mark a` (or `:k a`) Set mark `a`, as `ma`
+- `:marks` The marks of the text in a list, each with its line number and text, and the lines below it under the list. `Enter` jumps to the one selected, `D` deletes it, and `/` filters the list
+- `:delmarks a b` Delete marks `a` and `b` (`:delmarks a-d` the marks `a` to `d`, `:delmarks!` all of them)
+
+With line numbers on, a line with a mark shows the letter of the mark in place of its number.
+
+The marks follow the text: lines put in above a mark move it down with its line, lines taken out above it move it up, and a mark in text that is deleted stays where the text was. Undo and redo move them too, and both panes of a split have the same marks. They are kept in memory only, while Marbles runs: a file closed and opened again in the same session has its marks still, and so has a note until you log out of its data file. They are never written to a file, the data file or the log (which gets `:k` and `:delmarks` by name only), so the places in a note stay as private as the note.
+
+**A keyboard where ` is hard to type:** on many keyboards outside the US (Danish, Norwegian, Swedish, German, French, Spanish ...) the backtick is a dead key, which waits for a letter to put an accent on (`` ` `` and `a` make `à`), so `` `a `` does not reach the mark. Turn on **Marks: ' jumps to the exact place** on the Editor page of Configuration (setting `marksapostrophe`): `'a` then jumps to the place of mark `a`, and `''` back. The jump to the start of the line is then `'a` followed by `0` or `_`. `` ` `` still works where it can be typed.
 
 ## Line numbers
 - `:number` (or `:nu`) Show or hide line numbers (they are off until turned on). `:set number` and `:set nonumber` do one of the two
@@ -232,27 +253,35 @@ down
 A macro file is colored, and with completing on (`:complete`), the words of the steps are completed while you type, as other completions (`Tab`).
 
 ## Completing words
-With completing turned on, the word you type in Insert mode is looked up in lists of words, and what it can be completed to is shown on the line above the text (where the mode is shown otherwise), for notes and text files alike. Nothing is guessed from the text, and the text is not changed until you use a completion. It is off from the start: turn it on with `:complete`, or with **Complete words while typing** on the Editor page of Configuration (the setting `autocomplete`).
+With completing turned on, the word you type in Insert mode is looked up in lists of words, and what it can be completed to is shown on the line above the text (where the mode is shown otherwise), for notes and text files alike. Nothing is guessed from the text, and the text is not changed until you use a completion. It is on from the start: turn it off (and on again) with `:complete`, or with **Complete words while typing** on the Editor page of Configuration (the setting `autocomplete`; a settings file from before version 1.5.4 has it as `false`, and keeps it off until you turn it on).
+
+The completions of Markdown and of all text start with `/`: `/bold`, `/italic`, `/h1` to `/h6`, `/link`, `/image`, `/code`, `/inline`, `/quote`, `/list`, `/numbered`, `/task`, `/done`, `/table`, `/footnote`, `/hr`, `/note`, `/warning`, `/frontmatter` ... and `/todo` and `/lorem` for all text. So they are not offered while you write: a word of a sentence does not start with `/`. In a Markdown file, type `/bold` and `Tab`, and the cursor is between `**` and `**`, ready for the word. In a note, the completions of Markdown are used when the note is colored as Markdown (`:syntax md`); in a note without colors only those for all text are.
 
 - `Tab` When one completion is shown: complete the word with it
-- `Tab` When more are shown: choose the first, and the next with each `Tab` (`Shift+Tab` goes back). The one chosen is highlighted, and `Enter` uses it. Before a completion is chosen, `Enter` starts a new line as usual
+- `Tab` When more are shown: choose the first, and the next with each `Tab` (`Shift+Tab` goes back). When the whole word of one of them is typed (`/bold`, while `/bolditalic` is shown too), `Tab` completes with it at once. The one chosen is highlighted, and `Enter` uses it. Before a completion is chosen, `Enter` starts a new line as usual
+- The completions are shown with `...` where the cursor goes, so one made of marks only can be read: `**...**` for `/bold`, `[...]()` for `/link`, `<div>...</div>`. One of more lines has ` ...` after its first line
 - Typing on, or `Backspace`, looks up the word again. `Esc` closes the list, and the next `Esc` leaves Insert mode
 - Without completions shown, `Tab` inserts blank space as usual
+- A completion with `$0` can also be put around text you select: `:surround /bold` (see [Other commands](#other-commands))
 - A completion is one change: `u` undoes it, and leaves the word that was typed. The lines after the first are indented as the line of the cursor, and the cursor goes to `$0` in the completion (or after it)
 - `:complete` Turn completing on or off (`:complete on`, `:complete off`). It is remembered
 - `:complete edit` Open the file of completions in the editor, as `:snip edit` (changes to the text being edited are asked about first)
 
 A word is looked up when it has 2 characters or more and the cursor is at its end. It can start with `<`, `</`, `<!`, `&`, `@`, `#`, `.` or `:`, so `<d` finds the HTML tags starting so, and `console.lo` the JavaScript `console.log`. At most 8 completions are shown, those for the kind of text first.
 
-The lists are kept in `completions.txt` in the data directory. It is made when completing is turned on (or the file is opened) and there is none, with lists of HTML tags, CSS properties, JavaScript, Markdown and a few for all text, and a short explanation at the top. It is also opened from the Configuration tab of the start page (**Completions editor**), the command `:completions` there, and the Jump menu. A changed file is used as soon as it is saved:
+The lists are kept in `completions.txt` in the data directory. It is made when Marbles starts with completing on (and when completing is turned on, or the file is opened) and there is none, with lists of HTML tags, CSS properties, JavaScript, Markdown and a few for all text, and a short explanation at the top. A file that is there is never written over: one made by an earlier version keeps its words (`code`, `link`, `todo` ... without `/`). To get the new lists, rename the old file and open the completions again (`:complete edit`), which makes a new one; then copy your own words into it. It is also opened from the Configuration tab of the start page (**Completions editor**), the command `:completions` there, and the Jump menu. A changed file is used as soon as it is saved:
 
 ```
 === HTML tags (html)
 <div = <div>$0</div>
 <ul = <ul>\n    <li>$0</li>\n</ul>
 
+=== Markdown (md)
+/bold = **$0**
+/h2 = ## $0
+
 === All text
-lorem = Lorem ipsum dolor sit amet
+/lorem = Lorem ipsum dolor sit amet
 Marbles
 ```
 
@@ -271,6 +300,8 @@ Lines wider than the editor are wrapped onto the next rows (at a blank space whe
 - `zh` `zl` Scroll the view one column left/right (`5zl`: five columns), `zH` `zL` half the width of the editor
 - `zs` `ze` Scroll the view so the cursor is at the left/right side
 - The cursor stays in the view: if the view is scrolled past it, it is moved into the view
+
+When the terminal window is resized, the editor follows it once the size has stayed the same for a moment (with _Automatic size_ on), in a note as in a file: the text is wrapped in the new width, a split keeps half the width for each pane, and the cursor stays in view. With a fixed size, a window made smaller than that size asks whether to follow the window; the question goes away by itself when the window is made large enough again. On Linux and macOS the editor is also drawn again by itself after `Ctrl+Z` and `fg`.
 
 ## Scrolling
 A number of lines (12 from the start) are kept above and below the cursor: the text scrolls when the cursor comes within 12 lines of the edge, so you see what comes next while moving through it (_scrolloff_, as in Vim and Neovim). At most half the height of the editor is kept, so on a small screen the line of the cursor stays in the middle. At the start and the end of the text the cursor goes on to the edge. With _scrolloff_ off, the text scrolls when the cursor reaches the top or the bottom of the editor.
@@ -296,7 +327,7 @@ Selected text, search matches and misspelled words are shown on top of the color
 | `# Heading 1` to `###### Heading 6` | Red, magenta, yellow, cyan, green and blue |
 | `**bold**` `__bold__` and list markers (`-` `*` `+` `1.` `[x]`) | The color of the logo and labels in your color scheme |
 | `*italic*` `_italic_` | The color of the preview title |
-| `` `code` `` and blocks of code between lines starting with ```` ``` ```` | The color of favorites |
+| `` `code` `` and blocks of code between lines starting with ```` ``` ```` or `~~~` (a block ends at a fence of the same kind, at least as long) | The color of favorites |
 | `[link text]` | The color of the editor title |
 | `(address)` of a link, web addresses, `> quotes` and rules (`---`) | The color of dividers |
 
@@ -355,16 +386,18 @@ The paste bin is not encrypted: text from a note written to it can be read by an
 ## Other commands
 - `:ts` Insert an ISO timestamp (YYYY-MM-DD HH:MM:SS)
 - `:pw` Insert a generated strong password
-- `:trim` Trim blank space at the start and end of all lines
+- `:trim` Remove the blank space (spaces and tabs) at the end of the lines: of the selected lines (select them and type `:trim`), or all the lines without a selection, or `:2,9trim` lines 2 to 9. The indentation at the start of the lines is kept (it was removed before version 1.5.4). In a Markdown file (and a note colored as Markdown), two spaces or more at the end of a line of text with another line of text after it are a line break: they are kept, and the message tells how many. `:trim!` removes them too. One `u` undoes it
+- `:whitespace` Show blank space, or hide it again: a space as `.`, a tab as `>` and the end of a line as `$`, in the color of the line numbers, and the blank space at the end of a line highlighted (in Markdown, the two spaces of a line break that `:trim` keeps are only dimmed). Each mark takes the place of the character it marks, so nothing moves. Kept as the setting `whitespace` (_Show blank space as . > $_ on the Editor page of Configuration), for notes and text files alike. Not in a peek or a comparison
 - `:ol` Make the selected lines a numbered list (`1. `, `2. ` ...), and `:ul` a bulleted list (`- `). Select the lines with `V` (or `v`, `Q`) and type the command: the command line then starts with `'<,'>`, which stands for the selected lines. Without a selection the command works on the line of the cursor, and `:2,5ol` on lines 2 to 5. Lines that are a list of the other kind are changed to this kind, and when all the lines already are a list of the kind asked for, the list marks are removed again. Blank lines are left as they are, the indentation is kept, and indented lines are numbered as a list of their own (1, 2 ... again under each item). One `u` undoes it
 - `:sort` Sort the selected lines (select them and type `:sort`), or all the lines without a selection, or `:2,9sort` lines 2 to 9. `:sort!` sorts them the other way, and `:sort i` (or `:sort! i`) does not tell upper and lower case apart. The lines are sorted by the values of their characters (uppercase before lowercase, æøå after z). One `u` undoes it
 - `:dup` (or `:duplicate`) Duplicate the selection: select the text and type `:dup` (the command line starts with `'<,'>`). Text selected with `v` is copied right after itself, the lines selected with `V` are copied below the last of them, and a block selected with `Q` is copied to the right of the block (the text to the right of it stays in line). Without a selection the line of the cursor is duplicated, and `:2,5dup` copies lines 2 to 5 below line 5. A number after the command makes that many copies (at most 500): `:dup 5` makes five copies of the line (or the selection), to fill out a list of HTML elements afterwards. The cursor goes to the start of the (first) copy, and one `u` undoes it
+- `:surround /bold` (or `:sur`) Put a completion around the selection: select the text, type `:` and `surround /bold`. Any completion with `$0` in it (where the cursor goes when it is typed, see [Completing words](#completing-words)) can surround text: the text goes in place of `$0`, so `/bold` (`**$0**`) makes it bold, `/link` (`[$0]()`) a link and `/code` a block of code. `Tab` after `:surround ` goes through the ones there are for the kind of text (in a note without colors: those for all text, as `/todo`), and your own in `completions.txt` are among them. Text selected with `v` is surrounded as it is (line breaks at its ends stay outside). With lines selected with `V`, each line is surrounded by itself (`/h2` makes each a heading, `/done` each a checked item; empty lines are left out), and a completion of several lines (`/code`, `/frontmatter`) goes around all of them at once. A block selected with `Q` is surrounded on each line. Without a selection the line of the cursor is surrounded, and `:2,5surround /task` makes lines 2 to 5 tasks. `Tab` also completes what follows a command after a range (`:'<,'>surround /b`). One `u` undoes it. (`:wrap` was taken: it turns the wrapping of lines on.)
 - `:diff` Compare the text with the file on disk, or the saved note (see [Comparing](#comparing))
-- `:book 3` Jump to bookmark 3 of the [Jump menu](Guide-to-main-menu.md#bookmarks) (changes that are not saved are asked about first); `:book` alone shows the bookmarks
+- `:book 3` Jump to bookmark 3 of the [Jump menu](Guide-to-main-menu.md#bookmarks) (changes that are not saved are asked about first), or `:book name` to the bookmark with that name (`Tab` completes the names); `:book` alone shows the bookmarks. A bookmark of a place in the file being edited moves the cursor there
 - `:new name` Make a new, empty file in the same directory as the file being edited, and open it in its place (in a note: `:new Title` makes a new note in the data file and opens it). Without a name, it is asked for. Only a plain name is used (not a path), and not one that is there already; a data file is made on the login page instead. If the text being edited has changes, you are asked about them first. Closing the new file goes back to the file browser, and the file before it is in the file history. Not in the settings, snippets or completions files, in a peek, or while a macro is recorded
 - `:split` Show the text in two panes side by side, to see two parts of it at once (in a note too); `:split` again goes back to one pane, as `:only`. Both panes show the same text: a change made in one is seen in the other at once, and the other pane keeps showing the place it was at (its cursor moves with lines added or removed above it). `Tab` (or `Shift+Tab`) in Normal mode goes to the other pane; the pane with the focus has the cursor, and the mode is shown over it. The top row, _Unsaved_ and the bottom line are those of the text, as with one pane. `:q` closes the pane with the focus and `:only` the other one, and the pane left takes the whole width; `Esc` closes the editor as usual. Each pane has its own cursor, view, search and line numbers (`:number` in that pane), and undo works on the text in both. While a macro is recorded, `Tab` does not go to the other pane. A text closed in two panes is opened in two panes again, with each cursor where it was and the focus in the same pane: a text file through the file history and the favorites (where the cursor of the other pane is written after the line and column, as `12:5|40:1`, or `12:5|<40:1` when that pane was at the left), and a note through its data file (encrypted, as the rest of the note; a data file with it can still be opened by earlier versions of Marbles, which leave it out)
 - `:favorite` (or `:fav`) Make the file being edited a favorite of the [file browser](Guide-to-login-menu.md#favorites), or take it out of the favorites if it is one, as `P` in the file browser. In a note of a data file, it makes the note a favorite of the data file (or not), as `P` in the list of notes: a note that is pinned is no longer pinned either. It is saved at once
-- `:bookmark` Bookmark the file being edited: it is then on the Bookmarks tab of the [Jump menu](Guide-to-main-menu.md#bookmarks). A note is not bookmarked by itself (bookmark its data file in the Jump menu)
+- `:bookmark` Bookmark the place of the cursor in the file being edited, its line and column: it is then on the Bookmarks tab of the [Jump menu](Guide-to-main-menu.md#bookmarks) (`chapter.md:120`), and `:book` opens the file there. The message tells its number (`Bookmarked (14): chapter.md:120`). `:bookmark name` gives it a name to jump to it by (`:book name`), and `:bookmark! name` moves the bookmark with the name here. A note is not bookmarked by itself, nor a place in it (bookmark its data file in the Jump menu): the list of bookmarks is not encrypted
 - `:yankall` Yank all the text, as `gg` `V` `G` `y` (and `:%y`). It goes to the string memory, and to the system clipboard and/or the paste bin as set for `y`
 - `:%y` `:%d` Yank all/Delete all, `:2,9d` Delete line 2 to 9
 - `:clear` Clear all text

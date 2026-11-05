@@ -122,14 +122,36 @@ internal static partial class FileExplorer
             DrawFound(redraw);
             if (Tools.TakeRedrawRequest()) DrawFound(true);
             redraw = true;
-            var hadMessage = _foundMessage.Length > 0;
+            var message = _foundMessage;
+            var hadMessage = message.Length > 0;
             _foundMessage = string.Empty;
             var selected = _foundShown.Count > 0 ? _found[_foundShown[_foundIndex]] : null;
-            var key = Console.ReadKey(true);
+            var key = Keyboard.ReadKey();
+            // The window was resized (or Marbles went on after Ctrl+Z): all is drawn again, with the message
+            if (Keyboard.IsRedraw(key))
+            {
+                _foundMessage = message;
+                continue;
+            }
+
             if (Jump.IsKey(key))
             {
                 // The Jump menu
                 Jump.Open();
+                continue;
+            }
+
+            // A count in front of a key: 5j 5k (5 rows), 5gg 5G (row 5). Esc only drops it
+            if (_listCount.Add(key))
+            {
+                redraw = hadMessage;
+                continue;
+            }
+
+            var count = _listCount.Take();
+            if (count != null && key.Key == ConsoleKey.Escape)
+            {
+                redraw = hadMessage;
                 continue;
             }
 
@@ -192,12 +214,12 @@ internal static partial class FileExplorer
             }
             else if (key.KeyChar == 'G' || key.Key == ConsoleKey.End)
             {
-                _foundIndex = _foundShown.Count - 1;
+                _foundIndex = ListCount.Row(key.KeyChar == 'G' ? count : null, _foundShown.Count, false);
                 redraw = hadMessage;
             }
             else if (key.KeyChar == 'g')
             {
-                if (Console.ReadKey(true).KeyChar == 'g') _foundIndex = 0;
+                if (Console.ReadKey(true).KeyChar == 'g') _foundIndex = ListCount.Row(count, _foundShown.Count, true);
                 redraw = hadMessage;
             }
             else if (key.Key is ConsoleKey.Escape or ConsoleKey.Q or ConsoleKey.Backspace ||
@@ -215,12 +237,12 @@ internal static partial class FileExplorer
             }
             else if (navigation == ConsoleKey.DownArrow)
             {
-                _foundIndex++;
+                _foundIndex += count ?? 1;
                 redraw = hadMessage;
             }
             else if (navigation == ConsoleKey.UpArrow)
             {
-                _foundIndex--;
+                _foundIndex = Math.Max(0, _foundIndex - (count ?? 1));
                 redraw = hadMessage;
             }
             else if (key.Key == ConsoleKey.PageDown)
@@ -384,7 +406,7 @@ internal static partial class FileExplorer
         Console.Write(Tools.TruncateString(header + root, Init.LineWidth - 2, true));
         Tools.SetCursorEx(2, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
+        Console.Write(new string('-', Init.LineWidth - 1));
 
         // The names in a column, followed by the directory (or the line that was found)
         var nameWidth = 0;
@@ -473,8 +495,9 @@ internal static partial class FileExplorer
     {
         Tools.SetCursorEx(Init.LineCount - 2, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
+        Console.Write(new string('-', Init.LineWidth - 1));
         var status = " " + (_foundShown.Count == 0 ? 0 : _foundIndex + 1) + "/" + _foundShown.Count + " ";
+        if (_listCount.Shown.Length > 0) status = " " + _listCount.Shown + status;
         if (_foundFilter.Length > 0) status += "/" + _foundFilter + " ";
         Tools.SetCursorEx(Init.LineCount - 2, Init.LineWidth - status.Length - 2);
         Console.Write(status);

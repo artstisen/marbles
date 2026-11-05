@@ -98,7 +98,7 @@ internal static class ColorPicker
                 }
                 else
                 {
-                    Console.ForegroundColor = color;
+                    ConsoleColors.SetForeground(color);
                 }
             }
 

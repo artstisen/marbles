@@ -45,6 +45,13 @@ internal sealed record JumpTarget(JumpKind Kind, string Target)
     };
 
     /// <summary>
+    /// The line and column (from 1) a bookmark of a file was made at in the editor (":bookmark"): the file is opened
+    /// there. Null: where the cursor was left. Only a file has one: a place in a note is never kept (it would be
+    /// written to bookmarks.txt unencrypted)
+    /// </summary>
+    internal (int Line, int Column)? At { get; init; }
+
+    /// <summary>
     /// True if what it goes to is there (a page always is)
     /// </summary>
     internal bool Exists => Kind switch
@@ -339,11 +346,19 @@ internal static class Jump
     /// </summary>
     /// <param name="beforeLeaving">Asked before the page is left (as about changes that are not saved): false
     /// to stay</param>
-    internal static void Open(Func<bool>? beforeLeaving = null)
+    /// <param name="here">Shows the place on the page itself, without leaving it (the editor, at a bookmarked place
+    /// in the file it has): true when it did</param>
+    internal static void Open(Func<bool>? beforeLeaving = null, Func<JumpTarget, bool>? here = null)
     {
         var target = JumpMenu.Pick();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         if (target == null) return;
+        if (here != null && here(target))
+        {
+            Remember(target);
+            return;
+        }
+
         if (OpensInPlace(target))
         {
             Remember(target);
@@ -366,20 +381,22 @@ internal static class Jump
     }
 
     /// <summary>
-    /// ":book 3": jump to bookmark 3 (its number on the Bookmarks tab of the Jump menu). ":book" alone shows the
-    /// Jump menu on the Bookmarks tab. A number that is not a bookmark is told about in a box. Returns when nothing
+    /// ":book 3": jump to bookmark 3 (its number on the Bookmarks tab of the Jump menu), or ":book chapter3" to the
+    /// bookmark with that name. ":book" alone shows the Jump menu on the Bookmarks tab. A number that is not a bookmark is told about in a box. Returns when nothing
     /// was jumped to, or the place was opened on top of the page (which must then be drawn again)
     /// </summary>
     /// <param name="argument">What follows ":book"</param>
     /// <param name="beforeLeaving">Asked before the page is left (the editor asks about changes that are not saved);
     /// false stays</param>
-    internal static void ToBookmark(string argument, Func<bool>? beforeLeaving = null)
+    /// <param name="here">As for Open</param>
+    internal static void ToBookmark(string argument, Func<bool>? beforeLeaving = null,
+        Func<JumpTarget, bool>? here = null)
     {
         argument = argument.Trim();
         if (argument.Length == 0)
         {
             JumpMenu.ShowNextOn(JumpMenu.Tab.Bookmarks);
-            Open(beforeLeaving);
+            Open(beforeLeaving, here);
             return;
         }
 
@@ -387,7 +404,19 @@ internal static class Jump
         ChoiceBox.Forget();
         // The bookmarks are numbered without the folders (also those in a closed folder)
         var places = Bookmarks.Places;
-        if (!int.TryParse(argument, out var number) || number < 1 || number > places.Count)
+        Bookmarks.Entry? bookmark;
+        if (!int.TryParse(argument, out var number))
+        {
+            // A name (upper and lower case alike)
+            bookmark = Bookmarks.FindByName(argument);
+            if (bookmark == null)
+            {
+                ChoiceBox.Message(Lang.T("Bookmarks"), Lang.F("No bookmark is named {0}", argument),
+                    DialogText.BookNumbersNote);
+                return;
+            }
+        }
+        else if (number < 1 || number > places.Count)
         {
             ChoiceBox.Message(Lang.T("Bookmarks"), places.Count == 0
                 ? DialogText.BookmarksEmpty
@@ -395,8 +424,12 @@ internal static class Jump
                 DialogText.BookNumbersNote);
             return;
         }
+        else
+        {
+            bookmark = places[number - 1];
+        }
 
-        var target = places[number - 1].Target;
+        var target = bookmark.Target;
         if (!JumpMenu.Usable(target))
         {
             ChoiceBox.Message(Lang.T("Bookmarks"), DialogText.BookNotInThisMode, target.Name);
@@ -406,6 +439,12 @@ internal static class Jump
         if (!target.Exists)
         {
             ChoiceBox.Message(Lang.T("Bookmarks"), DialogText.FileNotFound, target.FullPath);
+            return;
+        }
+
+        if (here != null && here(target))
+        {
+            Remember(target);
             return;
         }
 
@@ -426,7 +465,7 @@ internal static class Jump
     private static void Remember(JumpTarget target)
     {
         JumpHistory.Load();
-        JumpHistory.Add(target, DateTime.Now);
+        JumpHistory.Add(target with { At = null }, DateTime.Now);
         var status = JumpHistory.Save();
         if (status != DialogText.Success) EventLog.Add(DialogText.LogFile + "Jumps: " + status);
     }
@@ -502,7 +541,7 @@ internal static class Jump
                 // The file browser, in the directory of the file (which is opened in the editor), or in the
                 // directory. Closing it shows the Select mode page, as when it is closed there (staying logged in:
                 // the main menu of the data file)
-                if (target.Kind == JumpKind.File) FileExplorer.RunAtFile(target.FullPath);
+                if (target.Kind == JumpKind.File) FileExplorer.RunAtFile(target.FullPath, target.At);
                 else FileExplorer.RunAtDirectory(target.FullPath);
                 if (FileExplorer.DataFileSelected) break;
                 if (DataSession.Keep) DataSession.ReturnToMainMenu();

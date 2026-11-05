@@ -237,6 +237,11 @@ internal static class FileFavorites
     internal static int UndoRemove() => Folders.UndoRemove(item => !Contains(item.Path));
 
     /// <summary>
+    /// The place of a favorite or folder in the list (-1: not in it)
+    /// </summary>
+    internal static int IndexOf(Favorite favorite) => List.IndexOf(favorite);
+
+    /// <summary>
     /// Move favorites into a folder (last in it, in the order they have in the list), or out of their folders
     /// </summary>
     /// <param name="items">The favorites</param>

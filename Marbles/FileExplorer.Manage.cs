@@ -124,7 +124,8 @@ internal static partial class FileExplorer
                 AddToHotlist();
                 break;
             case "bookmark":
-                BookmarkSelected();
+            case "bookmark!":
+                BookmarkSelected(argument, name == "bookmark!");
                 break;
             case "logout":
                 // Staying logged in: end the session of the data file (the browser stays)
@@ -758,8 +759,9 @@ internal static partial class FileExplorer
     }
 
     // ":bookmark": the selected file or directory as a bookmark of the Jump menu (on "..": the directory shown). A data
-    // file in the data directory is kept as a data file (a jump to it selects it on the login page)
-    private static void BookmarkSelected()
+    // file in the data directory is kept as a data file (a jump to it selects it on the login page). With a name to
+    // jump to it by (":bookmark name"; ":bookmark! name" moves the name here from the bookmark that has it)
+    private static void BookmarkSelected(string bookmarkName, bool moveName)
     {
         var item = SelectedItem();
         var path = item?.Path ?? ActivePane.Directory;
@@ -783,7 +785,7 @@ internal static partial class FileExplorer
             target = new JumpTarget(JumpKind.File, path);
         }
 
-        _message = Bookmarks.AddWithMessage(target);
+        _message = Bookmarks.AddWithMessage(target, bookmarkName, moveName, out _);
     }
 
     // ":name": the name of the selected file or directory to the clipboard (on "..": of the directory shown, and
@@ -907,7 +909,8 @@ internal static partial class FileExplorer
         if (favoritesChanged) SaveFavorites();
     }
 
-    // Ask before deleting, in a box on top of the list, telling what is deleted
+    // Ask before deleting, in a box on top of the list, telling what is deleted. Only Enter answers: text typed by
+    // mistake cannot answer it
     private static bool ConfirmDelete(List<Item> items)
     {
         if (items.Count == 1)
@@ -927,8 +930,8 @@ internal static partial class FileExplorer
                 note = IsDataFile(item) ? DialogText.DeleteDataFileNote : DialogText.DeleteFileNote;
             }
 
-            return ChoiceBox.Confirm(item.IsDirectory ? DialogText.DeleteDirectory : DialogText.DeleteFile,
-                DialogText.DeleteNamed.Replace("{0}", Tools.TruncateString(item.Name, 40, true)), note, true);
+            return ChoiceBox.ConfirmGuarded(item.IsDirectory ? DialogText.DeleteDirectory : DialogText.DeleteFile,
+                DialogText.DeleteNamed.Replace("{0}", Tools.TruncateString(item.Name, 40, true)), note);
         }
 
         // All the files and directories, with the content of the directories
@@ -948,8 +951,8 @@ internal static partial class FileExplorer
 
         var note2 = Lang.F("In all {0} files and {1} directories. They cannot be recovered.", allFiles, allDirectories);
         if (items.Any(IsDataFile)) note2 += " " + DialogText.DeleteDataFilesNote;
-        return ChoiceBox.Confirm(DialogText.DeleteMarkedCaption,
-            Lang.F("Delete the {0} marked files and directories?", items.Count), note2, true);
+        return ChoiceBox.ConfirmGuarded(DialogText.DeleteMarkedCaption,
+            Lang.F("Delete the {0} marked files and directories?", items.Count), note2);
     }
 
     // Show information about the selected file or directory in a box on top of the list, until a key is pressed

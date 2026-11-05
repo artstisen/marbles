@@ -36,7 +36,8 @@ internal sealed partial class EditorEngine
     // passed over when a macro plays (the clipboard after a yank, a setting of the view, the help)
     private static bool IsSideEffect(EditorRequest request) => request is EditorRequest.Clipboard
         or EditorRequest.WrapChanged or EditorRequest.LineNumbersChanged or EditorRequest.ScrollOffChanged
-        or EditorRequest.CompleteChanged or EditorRequest.SyntaxChanged or EditorRequest.Help;
+        or EditorRequest.CompleteChanged or EditorRequest.SyntaxChanged or EditorRequest.Help
+        or EditorRequest.WhitespaceToggle;
 
     internal void StartRecording()
     {

@@ -18,7 +18,7 @@ Each choice has a number and a key, shown in front of it. The number selects the
 Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking in a box on top of the page (`Y`/`N`, or `j`/`k` and `Enter`; `Esc` cancels).
 
 ### Configuration
-The settings are on four pages, so they can be changed in one place without logging in to a data file. `j` `k` (and `gg` `G`) select a setting on the page, and the number of a row selects it. `Enter` or `Space` changes it. `Esc` or `Q` goes back to the Mode tab. Changes are saved at once.
+The settings are on four pages, so they can be changed in one place without logging in to a data file. `j` `k` (and `gg` `G`) select a setting on the page, and the number of a row selects it (`0` the tenth). A page with more settings than the window has rows for scrolls as the selection moves, with `^` and `v` at the right when there are more above or below. `Enter` or `Space` changes it. `Esc` or `Q` goes back to the Mode tab. Changes are saved at once.
 
 **General**
 
@@ -31,13 +31,14 @@ The settings are on four pages, so they can be changed in one place without logg
 - **Text Editor only** and **Note Management only**: Use this Marbles for one of the two modes only. They are for running two copies of Marbles in separate directories, one as a text editor and one for notes. Only one of them can be set (setting one clears the other, and setting it again turns it off)
   - _Text Editor only_: _Note Management_ is not shown in the Mode tab, and the file browser does not open data files (`.mbls`): it says so on its bottom line
   - _Note Management only_: _Text Editor/File Management_ is not shown in the Mode tab
+- **List the commands above the command line**: While a command is typed (after `:`), a box above the command line lists the commands of the page, narrowed while you type, with what the command typed does (on from the start). See [the command line](Guide-to-main-menu.md). Saved as `commandlist` in the settings file
   - The choices of the Mode tab are numbered as they are shown (`1` to `4`), and starting in the mode that is not used cannot be chosen (if it was chosen, the choices are shown at startup)
   - Saved as `onlymode` (`none`, `editor` or `notes`) in the settings file. _Reset all settings_ and `:defaults` turn both off
-- **Language**: The language of the menus, help and messages. English and Deutsch (German) are built in; Dansk (Danish), Norsk bokmål (Norwegian), Svenska (Swedish), Español (Spanish), Français (French), Italiano (Italian), Polski (Polish), Nederlands (Dutch) and Suomi (Finnish) are language files in the folder `lang` next to Marbles (see [Language files](Guide-to-installation.md#language-files)). `Enter` shows the languages in a box to pick from; a language from a file shows how much of it is translated (`Polski (pl)  98%`), and `(lang)` after a built-in language means a file in a folder `lang` is used instead of it. Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
+- **Language**: The language of the menus, help and messages. English and Deutsch (German) are built in; Dansk (Danish), Norsk bokmål (Norwegian), Svenska (Swedish), Español (Spanish), Français (French), Italiano (Italian), Polski (Polish), Nederlands (Dutch) and Suomi (Finnish) are language files in the folder `lang` next to Marbles (see [Language files](Guide-to-installation.md#language-files)). `Enter` shows the languages in a box to pick from (`1` to `9` pick the first nine at once, and letters the ones after them); a language from a file shows how much of it is translated (`Polski (pl)  98%`), and `(lang)` after a built-in language means a file in a folder `lang` is used instead of it. Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
 
 **Layout**
 
-- **Automatic size**: Follow the size of the terminal window. Turned off, the default size (80 x 23) is used until you set another
+- **Automatic size**: Follow the size of the terminal window: when it is resized, the page you are on (also the editor, the lists and the Jump menu) is drawn again in the new size once the size has stayed the same for a moment, without a key. On from the start, and after _Reset all settings_ (saved as `autosize` in the settings file). Turned off, the default size (79 x 23, for a window of 80 x 24) is used until you set another; a window smaller than the size you set is told about, with the choice to let the size follow the window
 - **Size**: Set the number of columns and rows by hand (shown when _Automatic size_ is off)
 - **Black and white (no colors)**: Show everything in black and white. Your color scheme is kept and is used again when this is turned off
 - **Color scheme**: The color scheme in use. `Enter` opens the [color schemes](Guide-to-main-menu.md#color-schemes), where a scheme is selected, and the colors are edited and saved as a scheme of your own (not shown when _Black and white_ is on)
@@ -49,12 +50,14 @@ The settings are on four pages, so they can be changed in one place without logg
 
 - **Line numbers**: Show line numbers to the left of the text (off from the start)
 - **Wrap long lines**: Long lines go on to the next rows (on from the start). When off, the view scrolls sideways (see [the guide to the editor](Guide-to-editor.md#long-lines))
+- **Show blank space as . > $ (:whitespace)**: A space is shown as `.`, a tab as `>` and the end of a line as `$`, and the blank space at the end of a line is highlighted (off from the start; `:whitespace` in the editor changes it too). It is the setting `whitespace`
+- **Marks: ' jumps to the exact place**: `'a` jumps to the place of [mark](Guide-to-editor.md#marks) `a`, as `` `a ``, for keyboards where `` ` `` is hard to type or a dead key (off from the start: `'a` goes to the start of the line of the mark, as in Vim). It is the setting `marksapostrophe`
 - **Keep 12 lines around the cursor**: When the cursor comes within 12 lines of the top or the bottom of the editor, the text scrolls, so you see what comes next (on from the start). The number is set with `:scrolloff 8` in the editor (see [the guide to the editor](Guide-to-editor.md#scrolling))
 - **Clipboard and paste bin**: `Enter` opens the clipboard settings: where yanked text goes out of Marbles (see [the guide to the editor](Guide-to-editor.md#system-clipboard-and-paste-bin))
 - **Syntax highlighting**: Color the text of the kinds of files the editor knows (Markdown, HTML, CSS, JavaScript, JSON, XML, C#, PHP), on from the start. It is the setting `syntaxcolors`, which `:syntax off` and `:syntax on` in the editor also change
 - **Spell checker**: The languages used when spell checking is turned on in the editor with `:spell` (it is not turned on here). `Enter` shows the languages there is a spell file for in a box, where `Enter` turns a language on or off (several can be on, and the last one stays on) and `Esc` closes. Saved as `spelllang` (`en` or `da,en`). The spell files are in the directory `spell`; without any, the row says so
 - **Snippet editor**: Open the file of [snippets](Guide-to-editor.md#snippets), `snippets.txt`, in the editor. If there is no file yet, you are asked whether to make one, with two examples. Closing the editor returns to this page
-- **Complete words while typing**: In Insert mode, the word typed is looked up in the lists of completions, and `Tab` completes it (see [Completing words](Guide-to-editor.md#completing-words)). Off from the start; `:complete` in the editor changes it too. It is the setting `autocomplete`
+- **Complete words while typing**: In Insert mode, the word typed is looked up in the lists of completions, and `Tab` completes it (see [Completing words](Guide-to-editor.md#completing-words)). On from the start; `:complete` in the editor changes it too. It is the setting `autocomplete`
 - **Completions editor**: Open the file of completions, `completions.txt`, in the editor. If there is no file yet, it is made with lists to start with. Closing the editor returns to this page
 
 **System**
@@ -108,7 +111,7 @@ Press `Esc` to show the options in a box. Select one with `j` `k` (or the arrow 
 - `N` Create a new data file
 - `X` Rename the selected data file
 - `C` Create a copy of the selected data file
-- `D` Delete the selected data file
+- `D` Delete the selected data file (you are asked twice; only `Enter` answers, see [Managing files](#managing-files))
 - `M` Merge two data files into a new, or export a data file as XML (the exported file is not encrypted). `Esc` while typing the name of the new file goes back to the choice of merge or export; the notes that were read, and their passwords, are cleared when you leave
 - `I` Show information about the data file in a box (name, type, size, dates, path and backup directory). Any key closes it
 - `R` Refresh the login page
@@ -135,7 +138,7 @@ The browser starts in the Marbles data directory and remembers the directories o
 
 The file browser can also be opened with the command `:browse` when you are logged in to a data file. You can look around and close the browser again without anything else happening, but opening a file logs you out of the data file, and the login page is shown when you close the browser. With **Stay logged into data file (Session)** on (Configuration, General), the data file stays open: closing the browser shows its main menu again, and `:logout` in the browser logs out of it.
 
-- `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down
+- `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down. With a count, in the pane with the focus: `5j` `5k` move 5 rows down/up, `5gg` (or `5G`) goes to row 5 (as numbered below the pane, `..` is row 1); the count shows below the pane while you type it, and `Esc` drops it. Other keys do what they do once with a count (`3D` is one delete)
 - `l` or `Enter` Open the selected directory or file. A file is opened in the editor where the cursor was when you closed it the last time (see [Where the cursor was](#where-the-cursor-was))
 - `h`, `-` or `Backspace` Go to the directory above (above the root of a drive on Windows: the list of drives)
 - `/text` Only show the names containing "text". `Esc` shows all again
@@ -147,7 +150,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `R` or `:refresh` Refresh: read the directories again (the selection stays)
 - `:path` Copy the full path of the selected file or directory (on `..`: the directory shown) to the system clipboard and/or the paste bin, as set in the [clipboard settings](Guide-to-editor.md#system-clipboard-and-paste-bin)
 - `:book 3` Jump to bookmark 3 of the [Jump menu](Guide-to-main-menu.md#bookmarks) (`:book` alone shows the bookmarks). Also on the start page, and on the pages of the favorites, the history, the hotlist and the search results
-- `:bookmark` Bookmark the selected file or directory (on `..`: the directory shown) on the Bookmarks tab of the [Jump menu](Guide-to-main-menu.md#bookmarks). A data file in the data directory is bookmarked as a data file (a jump to it selects it on the login page)
+- `:bookmark` Bookmark the selected file or directory (on `..`: the directory shown) on the Bookmarks tab of the [Jump menu](Guide-to-main-menu.md#bookmarks). `:bookmark name` gives it a name to jump to it by (`:book name`), and `:bookmark! name` moves the bookmark with the name here. A data file in the data directory is bookmarked as a data file (a jump to it selects it on the login page)
 - `:diff` Compare two text files: the two marked with `Space`, or (without marks, with two panes) the file selected in each pane. `:diff name` compares the selected file with the file of that name in the directory (or a path). The older file, by the time it was last changed, is the old one, so `+` is what was added since. The comparison is shown as in the editor (see [Comparing](Guide-to-editor.md#comparing)): `n` `N` (or `]c` `[c`) go to the changes, `Enter` opens the file at the line, `Esc` returns here. `:diff -w` does not count blank space. If the line endings or the encodings differ, the line at the top says so (they are not compared). Directories, data files and files that are not text are not compared
 - `:name` Copy the name of the selected file or directory (on `..`: of the directory shown) in the same way: `notes.md`, not the whole path
 - `:path` and `:name` also put the path or name in the [string memory](Guide-to-editor.md#string-memory) of the editor, as the current string: `p` in the editor (or `CTRL+R` in Insert mode) puts it in the text. This works also when the clipboard and the paste bin are turned off
@@ -177,7 +180,7 @@ These work on the selected file or directory. Duplicate, copy, move, favorite an
 - `D` or `:delete` Delete. You are asked first, and for a directory you are told how many files and directories it contains
 - `Space` Mark (or unmark) the selected file or directory and go to the next. A marked one has a `+` in front of its name, and the number marked is shown at the bottom right of the pane. While some are marked, `Y` `C` `M` `P` and `D` work on all the marked ones instead of the selected one: they are duplicated, copied or moved to the directory you select, made favorites (or, if they all are favorites already, removed from the favorites), or deleted after one question that tells how many files and directories are deleted in all. The marks stay while the pane shows the same directory (also with a filter), and `Esc` clears them. If one of them fails, the operation stops there and the message tells which one; those not done stay marked. `X` (rename) and `I` (info) always work on the selected one
 
-Names (of a new file or directory, a new name for one, and the name of a favorites folder) are typed in a box on top of the list: `Enter` accepts, `Esc` cancels. Questions (delete, converting a file that is not UTF-8, copying a data file to the data directory, and removing favorites) are asked in a box too: `Y` or `N` answers at once, or select with `j` `k` and press `Enter`. `Esc` cancels. When something cannot be undone, the question is highlighted as a warning and _No_ is selected first.
+Names (of a new file or directory, a new name for one, and the name of a favorites folder) are typed in a box on top of the list: `Enter` accepts, `Esc` cancels. Questions (delete, converting a file that is not UTF-8, copying a data file to the data directory, and removing favorites) are asked in a box too: `Y` or `N` answers at once, or select with `j` `k` and press `Enter`. `Esc` cancels. When something cannot be undone, the question is highlighted as a warning and _No_ is selected first. The question before deleting (files and directories here, a data file on the login page, and an entry of a data file) cannot be answered with `Y`, and only `Enter` answers it: select _Yes_ with `k` (or the arrow key `Up`) and press `Enter`. `Esc`, `Q`, `h` or `Enter` on _No_ cancels. That way text typed by mistake, meant for the editor, is unlikely to answer it: in "today", `d` asks to delete and `y` would have answered yes, and in "dark " the `k` selects _Yes_ but the space does not pick it.
 
 A new name (of a file, a directory or a data file) follows the same rules on all platforms, so files can be copied between Windows, macOS and Linux: it cannot contain `\ / : * ? " < > |` or control characters, cannot end with a dot or a space, can be at most 255 characters long, and cannot be a name Windows keeps for devices (`CON`, `PRN`, `AUX`, `NUL`, `COM1`-`COM9`, `LPT1`-`LPT9`, also with an extension, as `con.txt`). If a name cannot be used, the message tells why, or that a file or directory with that name already exists.
 
@@ -211,7 +214,7 @@ While it searches, the bottom line shows the directory being read and the number
 
 The files found are shown in a list, with the directory they are in. When you searched for a text, the first line containing it is shown with its line number.
 
-- `j` `k` Select, `gg` `G` First/Last
+- `j` `k` Select, `gg` `G` First/Last. With a count: `5j` `5k` move 5 rows down/up, `5gg` (or `5G`) goes to row 5 (the rows shown, as numbered at the bottom right); the count shows there while you type it, and `Esc` drops it
 - `l` or `Enter` Open the file in the editor, at the line that was found. Closing the editor returns to the list
 - `B` or `:goto` Show the file in the browser: its directory is opened in the pane with the focus, with the file selected
 - `I` or `:info` Show information about the file
@@ -228,10 +231,10 @@ Files and directories you use often can be marked as favorites:
 
 In the list of favorites:
 
-- `j` `k` Select, `gg` `G` First/Last
+- `j` `k` Select, `gg` `G` First/Last. With a count: `5j` `5k` move 5 rows down/up, `5gg` (or `5G`) goes to row 5 (the rows shown, as numbered at the bottom right); the count shows there while you type it, and `Esc` drops it
 - `l` or `Enter` Open the file in the editor (closing the editor returns to the list). A directory: go to it in the browser
 - `B` or `:goto` Show the file in the browser: its directory is opened with the file selected, where it can be renamed, copied, moved or deleted
-- `V` Move the selected favorite or folder: it is marked `<>` and highlighted, and follows `j` `k` up and down the list until you press `Esc` (or `Enter`, `V`)
+- `V` Move the selected favorite or folder: it is marked `<>` and highlighted, and follows `j` `k` up and down the list until you press `Esc` (or `Enter`, `V`); `3j` moves it 3 steps
 - `C` or `:color` Pick a text color for the favorite from the list of 16 colors
 - `P`, `D` or `:remove` Remove it from the favorites (the file itself stays where it is)
 - `u` or `:undo` Put back the favorite, or the folder with its favorites, that was removed last
@@ -262,7 +265,7 @@ The list is kept in the file `favorites.txt` in the data directory (one line per
 The file history lists the files you have opened in the editor from the file browser (also from the favorites, the search and the history itself), the last opened first, with the time each was opened. A file opened again moves to the top. It is practical when you work on many files over several days.
 
 - `O` or `:history` (in the file browser) Show the file history
-- `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down
+- `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down. With a count: `5j` `5k` move 5 rows down/up, `5gg` (or `5G`) goes to row 5 (the rows shown, as numbered at the bottom right); the count shows there while you type it, and `Esc` drops it
 - `l` or `Enter` Open the file in the editor (`:q` returns to the history)
 - `B` or `:goto` Show the file in the file browser: its directory, with the file selected
 - `P` or `:fav` Add the file to the favorites, or remove it. A favorite has a `*` after its name
@@ -280,7 +283,7 @@ The history holds the last 100 files: when it is full, the file opened longest a
 The directory hotlist keeps directories you want to go back to. `B` (or `:hotadd`) in the file browser adds the directory shown in the pane with the focus, whatever file or directory is selected in it, at the end of the list. A directory that is in the list already stays where it is. Taking directories out is done on the page of the list.
 
 - `W` or `:hotlist` (or `:hot`) in the file browser: Show the hotlist. Each row has the name of the directory (or the name you gave it), and its path after it. The hotlist is also a tab of the [Jump menu](Guide-to-main-menu.md#jump-menu)
-- `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down
+- `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down. With a count: `5j` `5k` move 5 rows down/up, `5gg` (or `5G`) goes to row 5 (the rows shown, as numbered at the bottom right); the count shows there while you type it, and `Esc` drops it
 - `l` or `Enter` Go to the directory, in the pane with the focus (the hotlist closes)
 - `V` (or `:move`) Move the directory in the list: it is marked `<>` and highlighted, `j` `k` move it, and `Esc` (or `Enter`, `V`) ends the moving. Not while a filter shows only some of the list
 - `T` or `:top` Move the directory to the top, `E` or `:bottom` to the end

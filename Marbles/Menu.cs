@@ -320,7 +320,7 @@ internal static class Menu
         WriteNameInTopBar(true);
         Tools.SetCursorEx(1, 0);
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth));
+        Console.Write(new string('-', Init.LineWidth - 1));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         _menuItems = MenuItems(tab);
         ClampMenuSelection();
@@ -860,8 +860,9 @@ internal static class Menu
     internal static void WriteKeyHints(string hints)
     {
         Console.Write(" ");
-        // The hints that fit on the line are shown (a longer text in another language can need more room)
-        var room = Init.LineWidth - 1 - Console.CursorLeft;
+        // The hints that fit on the line are shown (a longer text in another language can need more room). They can
+        // take the line to its end: the last column of the window is not part of it (Init.ApplyAutoSize)
+        var room = Init.LineWidth - Console.CursorLeft;
         foreach (var hint in hints.Split(" | "))
         {
             var space = hint.IndexOf(' ');
@@ -889,7 +890,7 @@ internal static class Menu
         if (DocumentInfo.HasChanged && (_tempCurrentSaveIndicator == "" || forceDisplay))
         {
             // At the right of the top row of the editor
-            Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - TextMetrics.WidthOf(DialogText.SavIndicator)));
+            Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - 1 - TextMetrics.WidthOf(DialogText.SavIndicator)));
             _tempCurrentSaveIndicator = DialogText.SavIndicator;
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.UnsavedInverted);
             Console.Write(_tempCurrentSaveIndicator);

@@ -103,4 +103,19 @@ public class ReadOnlyTests
         Assert.True(peek.Length < FileExplorer.PeekMaxCharacters + 100);
         Assert.All(peek.Split('\n').SkipLast(2), line => Assert.Equal(999, line.Length));
     }
+
+    [Theory]
+    [InlineData("Gyyp")]
+    [InlineData("GyyP")]
+    [InlineData("G:dup<CR>")]
+    [InlineData("G:dup 3<CR>")]
+    [InlineData("<C-v>jlyGp")]
+    public void PuttingLines_InAReadOnlyText_IsRefused_OnTheLastLineToo(string keys)
+    {
+        var editor = ReadOnlyEditor("one two\nthree");
+        editor.Type(keys);
+        Assert.Equal("one two\nthree", editor.Buffer.GetText());
+        Assert.True(editor.MessageIsError);
+        Assert.Equal(DialogText.EditorReadOnly, editor.Message);
+    }
 }

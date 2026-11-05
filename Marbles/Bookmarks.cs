@@ -6,17 +6,20 @@ namespace Marbles;
 /// The bookmarks of the Jump menu: places kept to jump to (a file, a directory, a page of Marbles or a data file),
 /// added with B on any list of the Jump menu, or with ":bookmark" in the editor and the file browser. They are in
 /// the order they were added, which can be changed on the Bookmarks tab. A bookmark can be given a name and a text
-/// color of its own, and bookmarks can be grouped in folders (as the favorites of the file browser). The list holds
-/// at most MaxCount places.
+/// color of its own, and bookmarks can be grouped in folders (as the favorites of the file browser). The list has
+/// no limit.
 ///
 /// The bookmarks are numbered 1, 2, 3 ... in the order of the list (folders are not counted, and the bookmarks in a
-/// closed folder are): ":book 3" jumps to the third.
+/// closed folder are): ":book 3" jumps to the third. A bookmark with a name is also jumped to by it (":book chapter3"):
+/// a name is used by one bookmark only, and is not only digits.
 ///
 /// The list is kept in the file "bookmarks.txt" in the data directory, one bookmark on each line: the kind ("file",
 /// "dir", "page" or "data", as in jump.txt), a tab character, the place, and after other tab characters the name it
-/// was given and its color (if any). A folder has its name in brackets ("[Work]"), its color and "collapsed" if it is
-/// closed; the bookmarks in a folder are the lines after it that start with a blank space. No titles or text of notes
-/// are kept: a data file is kept by its path in the data directory.
+/// was given and its color (if any), and the line and column of a bookmark of a file made in the editor ("120:5").
+/// A folder has its name in brackets ("[Work]"), its color and "collapsed" if it is closed; the bookmarks in a folder
+/// are the lines after it that start with a blank space. No titles or text of notes, and no places in notes, are
+/// kept: the file is not encrypted, so a data file is kept by its path in the data directory only (a line and
+/// column are kept for a file only).
 ///
 /// This class does not touch the console: the list is shown by JumpMenu.
 /// </summary>
@@ -24,11 +27,6 @@ internal static class Bookmarks
 {
     internal const string FileName = "bookmarks.txt";
     private const string CollapsedMark = "collapsed";
-
-    /// <summary>
-    /// The most places in the list (the folders are not counted)
-    /// </summary>
-    internal const int MaxCount = 100;
 
     /// <summary>
     /// A bookmark (a place, the name it was given and its color), or a folder (its name and color)
@@ -66,9 +64,15 @@ internal static class Bookmarks
         public bool Collapsed { get; set; }
 
         /// <summary>
-        /// The name shown: the one given, or the name of the place (a folder: its name)
+        /// The name shown: the one given, or the name of the place, with the line of a bookmark made in the editor
+        /// ("chapter.md:120"; a folder: its name)
         /// </summary>
-        internal string Shown => IsFolder || Name.Length > 0 ? Name : Target.Name;
+        internal string Shown => IsFolder || Name.Length > 0 ? Name : PlaceName;
+
+        /// <summary>
+        /// The name of the place, with the line of a bookmark made in the editor ("chapter.md:120")
+        /// </summary>
+        internal string PlaceName => Target.At is { } at ? Target.Name + ":" + at.Line : Target.Name;
     }
 
     // The list, with its folders (moving, removing and putting back are done by it)
@@ -124,6 +128,16 @@ internal static class Bookmarks
     private static ConsoleColor? ParseColor(string text) =>
         Enum.TryParse<ConsoleColor>(text.Trim(), true, out var color) && Enum.IsDefined(color) ? color : null;
 
+    // The line and column of a bookmark made in the editor ("120:5"), or null
+    private static (int Line, int Column)? ParseAt(string text)
+    {
+        var parts = text.Trim().Split(':');
+        return parts.Length == 2 && int.TryParse(parts[0], out var line) && int.TryParse(parts[1], out var column) &&
+               line > 0 && column > 0
+            ? (line, column)
+            : null;
+    }
+
     internal static void Parse(string text)
     {
         List.Clear();
@@ -154,8 +168,12 @@ internal static class Bookmarks
             if (parts.Length < 2 || JumpHistory.ParseKind(parts[0]) is not { } kind) continue;
             var place = kind is JumpKind.File or JumpKind.Directory ? FileOperations.ListedPath(parts[1]) : parts[1].Trim();
             if (place.Length == 0) continue;
-            var target = new JumpTarget(kind, place);
-            if (Contains(target) || Places.Count >= MaxCount) continue;
+            // (a line and column only for a file: never for a data file, whose notes are not to be told about)
+            var target = new JumpTarget(kind, place)
+            {
+                At = kind == JumpKind.File && parts.Length > 4 ? ParseAt(parts[4]) : null
+            };
+            if (Contains(target)) continue;
             // The bookmarks of a folder follow it directly
             if (!inFolder) hasFolder = false;
             List.Add(new Entry(target, parts.Length > 2 ? parts[2].Trim() : string.Empty)
@@ -181,8 +199,11 @@ internal static class Bookmarks
             else
             {
                 text.Append(JumpHistory.KindName(entry.Target.Kind)).Append('\t').Append(entry.Target.Target);
-                if (entry.Name.Length > 0 || color.Length > 0) text.Append('\t').Append(entry.Name);
-                if (color.Length > 0) text.Append('\t').Append(color);
+                var at = entry.Target is { Kind: JumpKind.File, At: { } place } ? place.Line + ":" + place.Column
+                    : string.Empty;
+                if (entry.Name.Length > 0 || color.Length > 0 || at.Length > 0) text.Append('\t').Append(entry.Name);
+                if (color.Length > 0 || at.Length > 0) text.Append('\t').Append(color);
+                if (at.Length > 0) text.Append('\t').Append(at);
             }
 
             text.Append('\n');
@@ -212,7 +233,56 @@ internal static class Bookmarks
     }
 
     internal static bool Contains(JumpTarget target) =>
-        List.Exists(entry => !entry.IsFolder && entry.Target.SameAs(target));
+        List.Exists(entry => !entry.IsFolder && SameBookmark(entry.Target, target));
+
+    // The same bookmark: the same place, and the same line in a file (a bookmark of a file, and bookmarks at other
+    // lines of it, are others)
+    private static bool SameBookmark(JumpTarget one, JumpTarget other) =>
+        one.SameAs(other) && one.At?.Line == other.At?.Line;
+
+    // The bookmark of a place, or null
+    private static Entry? Find(JumpTarget target) =>
+        List.Find(entry => !entry.IsFolder && SameBookmark(entry.Target, target));
+
+    /// <summary>
+    /// The bookmark with a name (upper and lower case alike; not a folder), or null
+    /// </summary>
+    internal static Entry? FindByName(string name) =>
+        name.Length == 0
+            ? null
+            : List.Find(entry => !entry.IsFolder && entry.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// The names of the bookmarks, for Tab after ":book ". From the list as it is (read from the file only when it has
+    /// not been read yet): in the Jump menu, reading it again would lose what "u" puts back, and the marks
+    /// </summary>
+    internal static IEnumerable<string> NamesToComplete()
+    {
+        if (List.Count == 0) Load();
+        return Places.Where(entry => entry.Name.Length > 0 && !entry.Name.Contains(' ')).Select(entry => entry.Name)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Why a bookmark cannot have a name, or null: a name of only digits would be a number of ":book", and a name is
+    /// used by one bookmark only (other than the one given)
+    /// </summary>
+    internal static string? NameProblem(string name, Entry? entry)
+    {
+        if (name.Length == 0) return null;
+        if (name.All(char.IsAsciiDigit)) return Lang.T("A name of only digits is the number of a bookmark: add a letter");
+        return FindByName(name) is { } other && other != entry
+            ? Lang.F("The name {0} is used by bookmark {1}", other.Name, NumberOf(other))
+            : null;
+    }
+
+    /// <summary>
+    /// The command that jumps to a bookmark: ":book chapter3" by its name, else ":book 14" by its number
+    /// </summary>
+    internal static string CommandOf(Entry entry) =>
+        ":book " + (entry.Name.Length > 0 && !entry.Name.All(char.IsAsciiDigit) && FindByName(entry.Name) == entry
+            ? entry.Name
+            : NumberOf(entry).ToString()); // English
 
     /// <summary>
     /// What adding a place did
@@ -221,7 +291,6 @@ internal static class Bookmarks
     {
         Added,
         AlreadyThere,
-        Full,
         NotKept // A tab or a line break in its path
     }
 
@@ -237,8 +306,9 @@ internal static class Bookmarks
             target = target with { Target = Path.GetFullPath(target.Target) };
         }
 
+        // A line and column in a file only (never in a data file: the file of the list is not encrypted)
+        if (target.Kind != JumpKind.File) target = target with { At = null };
         if (Contains(target)) return AddResult.AlreadyThere;
-        if (Places.Count >= MaxCount) return AddResult.Full;
         // (a tab or a line break in it would break the line of the file)
         if (target.Target.IndexOfAny(LineBreaking) >= 0 || target.Name.IndexOfAny(LineBreaking) >= 0)
         {
@@ -300,7 +370,11 @@ internal static class Bookmarks
             return true;
         }
 
-        entry.Name = name == entry.Target.Name ? string.Empty : name;
+        // The name of the place (as offered when renaming), with or without the line: no name of its own. A name of
+        // another bookmark, or of only digits, is not taken (NameProblem tells why)
+        name = name == entry.Target.Name || name == entry.PlaceName ? string.Empty : name;
+        if (NameProblem(name, entry) != null) return false;
+        entry.Name = name;
         return true;
     }
 
@@ -368,16 +442,81 @@ internal static class Bookmarks
     /// <summary>
     /// Add a place to the bookmarks (as they are in the file) and save them
     /// </summary>
-    /// <returns>The message that tells what happened</returns>
-    internal static string AddWithMessage(JumpTarget target)
+    /// <returns>The message that tells what happened (with the number of the bookmark, for ":book 14")</returns>
+    internal static string AddWithMessage(JumpTarget target) =>
+        AddWithMessage(target, string.Empty, false, out _);
+
+    /// <summary>
+    /// Add a place to the bookmarks with a name, to jump to it by (":bookmark chapter3", then ":book chapter3"), and
+    /// save them (as they are in the file). A place that is bookmarked already gets the name. A name another bookmark
+    /// has is not taken, unless "moveName" (":bookmark! name"): that bookmark is moved to the place, keeping its
+    /// number, folder and color
+    /// </summary>
+    /// <param name="target">The place</param>
+    /// <param name="name">The name (empty: none)</param>
+    /// <param name="moveName">The bookmark with the name is moved here</param>
+    /// <param name="isError">True when nothing was done for a reason the message tells</param>
+    /// <returns>The message that tells what happened (with the number of the bookmark, for ":book 14")</returns>
+    internal static string AddWithMessage(JumpTarget target, string name, bool moveName, out bool isError)
     {
+        isError = true;
         Load();
-        var result = Add(target);
-        if (result == AddResult.AlreadyThere) return Lang.F("Already bookmarked: {0}", target.Name);
-        if (result == AddResult.Full) return Lang.F("The bookmarks are full ({0})", MaxCount);
-        if (result == AddResult.NotKept) return Lang.T("A path with a tab or a line break is not kept");
-        var status = Save();
-        return status == DialogText.Success ? Lang.F("Bookmarked: {0}", target.Name) : status;
+        name = name.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ').Trim();
+        if (target.Kind is JumpKind.File or JumpKind.Directory)
+        {
+            target = target with { Target = Path.GetFullPath(target.Target) };
+        }
+
+        // A line and column in a file only (never in a data file: bookmarks.txt is not encrypted)
+        if (target.Kind != JumpKind.File) target = target with { At = null };
+        if (target.Target.IndexOfAny(LineBreaking) >= 0) return Lang.T("A path with a tab or a line break is not kept");
+        if (name.Length > 0 && name.All(char.IsAsciiDigit)) return NameProblem(name, null)!;
+        var existing = Find(target);
+        var named = FindByName(name);
+        Entry entry;
+        if (named != null && named != existing)
+        {
+            if (!moveName)
+            {
+                return Lang.F("{0} is the name of bookmark {1}: :bookmark! moves it here", named.Name,
+                    NumberOf(named));
+            }
+
+            // (a place has one bookmark: the one it has keeps its own name)
+            if (existing != null) return Lang.F("Already bookmarked ({0}): {1}", NumberOf(existing), existing.Shown);
+            named.Target = target;
+            isError = !Saved(out var moved);
+            return isError ? moved : Lang.F("Bookmark {0} moved here: {1}", NumberOf(named), named.Shown);
+        }
+
+        if (existing != null)
+        {
+            isError = false;
+            if (name.Length == 0 || existing.Name.Equals(name, StringComparison.Ordinal))
+            {
+                return Lang.F("Already bookmarked ({0}): {1}", NumberOf(existing), existing.Shown);
+            }
+
+            // The bookmark of the place gets the name
+            existing.Name = name;
+            entry = existing;
+        }
+        else
+        {
+            Add(target);
+            entry = Find(target)!;
+            entry.Name = name;
+        }
+
+        isError = !Saved(out var status);
+        return isError ? status : Lang.F("Bookmarked ({0}): {1}", NumberOf(entry), entry.Shown);
+    }
+
+    // The list saved: true, else false and why
+    private static bool Saved(out string status)
+    {
+        status = Save();
+        return status == DialogText.Success;
     }
 
     /// <summary>
