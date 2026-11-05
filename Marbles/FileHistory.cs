@@ -12,7 +12,7 @@ namespace Marbles;
 /// was last opened (yyyy-MM-dd HH:mm), a tab character and the path. When the file was closed in the editor, the
 /// line and column of the cursor (as "12:5") and a tab character come before the path: the file is opened there
 /// the next time. A file closed in a split (":split") also has the place of the cursor of the other pane after it
-/// ("12:5|40:1", or "12:5|<40:1" when that pane was at the left), and is opened split again.
+/// ("12:5|40:1", or "12:5|&lt;40:1" when that pane was at the left), and is opened split again.
 /// </summary>
 internal static class FileHistory
 {
@@ -233,7 +233,7 @@ internal static class CaretPosition
     }
 
     /// <summary>
-    /// The place in the other pane of a split as written after the line and column ("|40:1", "|<40:1" when that
+    /// The place in the other pane of a split as written after the line and column ("|40:1", "|&lt;40:1" when that
     /// pane is at the left)
     /// </summary>
     internal static string SplitText(int line, int column, bool otherLeft) =>

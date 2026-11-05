@@ -1015,8 +1015,6 @@ internal static class Actions
     }
 
 
-    /// <param name="fromList">True when changed from a list of entries: the list is shown again afterwards
-    /// (else the entry)</param>
     /// <summary>
     /// Give the entry being edited another title (":title" or ":rename" in the editor). It is saved in the data
     /// file at once, as when it is changed in a list. A read-only entry keeps its title
@@ -1046,6 +1044,11 @@ internal static class Actions
         return DialogText.Success;
     }
 
+    /// <summary>
+    /// Change the title of the current entry, asked for in a box
+    /// </summary>
+    /// <param name="fromList">True when changed from a list of entries: the list is shown again afterwards
+    /// (else the entry)</param>
     private static void ChangeTitle(bool fromList = false)
     {
         if (Entries.CurrentEntryExists())
@@ -1689,7 +1692,7 @@ internal static class Actions
     private static bool _movingPinned;
 
     /// <summary>
-    /// A pinned entry is being moved: the selection pointer is "<>"
+    /// A pinned entry is being moved: the selection pointer is "&lt;&gt;"
     /// </summary>
     internal static bool MovingPinned => _movingPinned;
 

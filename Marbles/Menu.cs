@@ -118,17 +118,6 @@ internal static class Menu
         }
     }
 
-
-    private static string GetMenuNavigation(string pages)
-    {
-        return "<- " + pages + " ->  h/l";
-    }
-
-    private static string GetFavoriteState()
-    {
-        return Actions.IsFavorite(Entries.CurrentEntry) ? "*" : string.Empty;
-    }
-
     public static void StatusMessage(string msg, bool requireKeyPress, bool clearScreen, bool showCaption,
         string caption, string note, bool suppressPause)
     {
@@ -177,10 +166,12 @@ internal static class Menu
         }
     }
 
-
     /// <summary>
     /// Ask yes or no in a box on top of the page (ChoiceBox)
     /// </summary>
+    /// <param name="caption">The title of the box</param>
+    /// <param name="question">The question</param>
+    /// <param name="note">A line below the question (empty for none)</param>
     /// <param name="invertColors">True for something that cannot be undone: the question is shown as a warning
     /// and No is selected first</param>
     public static bool YesNoPrompt(string caption, string question, string note, bool invertColors)
@@ -230,7 +221,6 @@ internal static class Menu
             _ => 3
         };
     }
-
 
 
 
@@ -558,51 +548,6 @@ internal static class Menu
         }
     }
 
-    private static void WriteExtendedMenuItem(string key, string example, string description,
-        ConsoleColors.ColorPreset preset, bool newLine, bool flipExample, Entry? colorOf = null)
-    {
-        // Clear line 40 chars
-        Console.Write(new string(' ', 40));
-        Tools.CursorReturn();
-        Console.Write(" " + key);
-        if (description.Length > 0)
-        {
-            Console.Write(" ");
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write(new string('.', 13 - key.Length));
-            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            Console.Write(" ");
-            if (flipExample)
-            {
-                Console.Write(description);
-                // An entry can have a color of its own
-                if (colorOf != null)
-                {
-                    PinColors.Apply(colorOf, preset);
-                }
-                else
-                {
-                    ConsoleColors.SetColors(preset);
-                }
-
-                Console.Write(example);
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-            }
-            else
-            {
-                ConsoleColors.SetColors(preset);
-                Console.Write(example);
-                ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                Console.Write(" " + description);
-            }
-        }
-
-        if (newLine)
-        {
-            Console.Write(Entries.NewLineCharString);
-        }
-    }
-
     #region Floating menu
 
     private static int _tempCursorMemoryTop;
@@ -698,15 +643,6 @@ internal static class Menu
         }
     }
 
-    private static void WriteMenuExtension(string extension)
-    {
-        if (string.IsNullOrEmpty(extension)) return;
-        Tools.CursorReturn();
-        Console.Write(" " + extension);
-        Tools.CursorReturn();
-        Tools.CursorDown();
-    }
-
     #region Mode Label
 
     private static int _tempModeLabelCursorMemoryTop;
@@ -726,6 +662,12 @@ internal static class Menu
     private static string _modeTitleMemory = string.Empty;
     private static string _modeNoteMemory = string.Empty;
 
+    /// <summary>
+    /// The label of the page at the top left, and a note after it
+    /// </summary>
+    /// <param name="title">The label (shown in capitals)</param>
+    /// <param name="note">The text after the label (empty for none)</param>
+    /// <param name="recallMode">0: only show it, 1: also keep it, 2: show the one kept instead</param>
     /// <param name="attention">True to show the label in the attention colors (something is in progress,
     /// as copying to a directory being selected)</param>
     public static void WriteModeLabel(string title, string note, int recallMode, bool attention = false)

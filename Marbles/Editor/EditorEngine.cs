@@ -621,7 +621,6 @@ internal sealed partial class EditorEngine
 
     #region Editing helpers
 
-    private string Line(int line) => Buffer[line];
     private string CurrentLine => Buffer[Cursor.Line];
 
     private TextPos Insert(TextPos at, string text)
@@ -630,10 +629,10 @@ internal sealed partial class EditorEngine
         return Buffer.Insert(at, text);
     }
 
-    private string Delete(TextPos from, TextPos to)
+    private void Delete(TextPos from, TextPos to)
     {
         Buffer.BeginStep(_stepCursor);
-        return Buffer.Delete(from, to);
+        Buffer.Delete(from, to);
     }
 
     private void ClampCursor()

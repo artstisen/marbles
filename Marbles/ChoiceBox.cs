@@ -50,6 +50,13 @@ internal static class ChoiceBox
     /// <summary>
     /// Pick one of a few choices. The key of each choice is shown in front of it and picks it at once
     /// </summary>
+    /// <param name="caption">The title of the box</param>
+    /// <param name="question">The question, above the choices</param>
+    /// <param name="note">A line below the question (empty for none)</param>
+    /// <param name="choices">The texts of the choices</param>
+    /// <param name="keys">The key of each choice, shown in front of it (empty for none)</param>
+    /// <param name="selected">The choice selected first</param>
+    /// <param name="warning">Show the box in the attention colors (something that cannot be undone)</param>
     /// <param name="guarded">No letter picks a choice, and only Enter picks the selected one (j/k and the
     /// arrow keys select, Esc, Q and h cancel); no keys are shown in front of the choices</param>
     /// <returns>The number of the choice, or -1 if the box was closed with Esc</returns>

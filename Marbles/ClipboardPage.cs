@@ -161,6 +161,7 @@ internal static class ClipboardPage
                 SystemClipboard.PasteBinFile = path;
                 break;
             }
+            case Row.Clear:
             default:
             {
                 if (!ChoiceBox.Confirm(Lang.T("Paste bin file"), Lang.T("Empty the paste bin?"),

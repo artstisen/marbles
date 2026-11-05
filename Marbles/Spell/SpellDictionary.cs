@@ -272,7 +272,7 @@ internal sealed class SpellDictionary
                 {
                     tree.Indexes[index] = 0;
                 }
-                else if (c != ByteIndex)
+                else if (c is ByteFlags or ByteFlags2)
                 {
                     // End of word with flags, optionally followed by a region and an affix ID
                     var flags = ReadByte();

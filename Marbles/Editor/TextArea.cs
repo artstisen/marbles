@@ -240,6 +240,7 @@ public partial class TextArea
     {
     }
 
+    /// <inheritdoc cref="TextArea(int, int, int, int, string, int, bool, bool, bool, int)"/>
     /// <param name="modified">Treat the text as changed from the start (it can be saved without editing it)</param>
     /// <param name="peek">Show the text as a peek in a pane of the file browser (null: the editor)</param>
     internal TextArea(int left, int top, int width, int height, string text, int recallCursorIndex, bool scrollToEnd,

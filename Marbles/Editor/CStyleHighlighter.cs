@@ -126,6 +126,7 @@ internal static class CStyleHighlighter
     internal static int Scan(CStyleLanguage language, string line, int start, int end, int state,
         SyntaxStyle[] styles) => Scan(language, line, start, end, state, styles, out _);
 
+    /// <inheritdoc cref="Scan(CStyleLanguage, string, int, int, int, SyntaxStyle[])"/>
     /// <param name="stop">Where the code ended: at "?&gt;" in PHP, else at the end of the part</param>
     internal static int Scan(CStyleLanguage language, string line, int start, int end, int state,
         SyntaxStyle[] styles, out int stop)

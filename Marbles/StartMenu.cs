@@ -87,14 +87,14 @@ internal static class StartMenu
     private const int TabRow = 6;
 
     /// <summary>
-    /// The name of a start mode in the settings file
-    /// </summary>
-    /// <summary>
     /// When Marbles starts in the Text Editor: open the favorites list of the file browser first
     /// (setting "startfavorites")
     /// </summary>
     internal static bool StartInFavorites { get; set; }
 
+    /// <summary>
+    /// The name of a start mode in the settings file
+    /// </summary>
     internal static string SettingName(StartMode mode)
     {
         return mode switch

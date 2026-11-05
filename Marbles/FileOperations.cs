@@ -391,15 +391,10 @@ internal static class FileOperations
     internal const string TrashName = "trash"; // English: the name of a directory
 
     /// <summary>
-    /// The trash directory, for tests
-    /// </summary>
-    internal static string? TrashOverride { get; set; }
-
-    /// <summary>
     /// The trash directory (it is made when the first file is moved to it)
     /// </summary>
     internal static string TrashDirectory =>
-        Path.GetFullPath(TrashOverride ?? Path.Combine(FileIo.GetDataDirectoryName(), TrashName));
+        Path.GetFullPath(Path.Combine(FileIo.GetDataDirectoryName(), TrashName));
 
     /// <summary>
     /// Deleting in the file browser and on the login page moves to the trash (setting "deletetotrash", on unless

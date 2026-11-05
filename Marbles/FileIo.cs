@@ -117,7 +117,6 @@ internal static class FileIo
     private static bool _saveBackup;
     private static string _backupPath = string.Empty;
     private static string _fileName = string.Empty;
-    private static string _tempContent = string.Empty;
     private static string _currentSubFolder = string.Empty;
 
     internal static string GetSubFolder()
