@@ -719,7 +719,7 @@ public partial class TextArea
                         new JumpTarget(JumpKind.File, FileExplorer.CurrentFilePath)
                         {
                             At = CaretPosition.Of(GetText(), GetCursorIndex())
-                        }, _engine.BookmarkName, _engine.BookmarkMovesName, out var failed);
+                        }, _engine.BookmarkName, _engine.BookmarkMovesName, true, out var failed);
                     _engine.ShowMessage(message, failed);
                 }
                 else
@@ -1510,14 +1510,22 @@ public partial class TextArea
     /// <returns>False if the text could not be saved (the reason is shown as a message)</returns>
     private bool Save()
     {
+        // A peek is never saved: it shows another file than the one the editor saves to, and maybe only the start
+        // of it (it is read only, so this only guards against a request let through by mistake)
+        if (_peek != null) return true;
         if (!_engine.IsModified) return true;
         Tools.HideCursor();
         DocumentInfo.HasChanged = true;
         SaveWasInvoked = true;
         if (_saveMode == SaveAsSettings)
         {
-            // Save as settings
-            FileIo.WriteSettingsFile(GetText());
+            // Save as settings (a write that failed is told, and the text stays changed)
+            var written = FileIo.WriteSettingsFile(GetText());
+            if (written != DialogText.Success)
+            {
+                _engine.SetMessage(written, true);
+                return false;
+            }
         }
         else if (_saveMode == SaveAsFile)
         {
@@ -2265,6 +2273,10 @@ public partial class TextArea
         // A message comes before what is at the right (it is shown until the next key): if it does not fit, only
         // the line and column are kept, and else nothing
         var room = width - label.Length - gap.Length;
+        // (all that is at the right can be wider than the line too, in a narrow window or a long language: then
+        // the line and column are kept, as with a message)
+        if (TextMetrics.WidthOf(right) > room) right = " " + (cursor.Line + 1) + ":" + column + " ";
+        if (TextMetrics.WidthOf(right) > room) right = string.Empty;
         if (text.Length > 0 && TextMetrics.WidthOf(text) > room - right.Length)
         {
             right = " " + (cursor.Line + 1) + ":" + column + " ";

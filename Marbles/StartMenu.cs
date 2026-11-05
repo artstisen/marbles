@@ -413,7 +413,7 @@ internal static class StartMenu
             Setting.Whitespace => Check(TextArea.ShowWhitespace) + Lang.T("Show blank space as . > $ (:whitespace)"),
             Setting.MarksApostrophe => Check(EditorEngine.MarksApostrophe) + Lang.T("Marks: ' jumps to the exact place"),
             Setting.ScrollOff => Check(TextArea.ScrollOff) +
-                                 Lang.F("Keep {0} lines around the cursor", TextArea.ScrollOffLines),
+                                 Lang.F("Lines kept around cursor: {0}", TextArea.ScrollOffLines),
             Setting.Clipboard => indent + Lang.T("Clipboard and paste bin (Enter: Change)"),
             Setting.SyntaxColors => Check(SyntaxHighlighter.ColorFiles) + Lang.T("Syntax highlighting"),
             Setting.Spell => indent + SpellText(),

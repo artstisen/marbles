@@ -194,9 +194,26 @@ public class LangTests : IDisposable
             // Brackets with a key in front of a choice, like "[Y] Yes" or "[Esc] Cancel"
             string Keys(string s) => string.Join(",", Regex.Matches(s, @"\[(?:[A-Z]|Esc|Enter|Tab)\]").Select(m => m.Value));
             if (Keys(english) != Keys(text)) problems.Add("keys in brackets: " + english);
+            if (!KeepsKeyCombinations(english, text)) problems.Add("keys with Ctrl, Shift or Alt: " + english);
         }
 
         Assert.True(problems.Count == 0, code + ": " + string.Join(Environment.NewLine, problems));
+    }
+
+    // Keys with Ctrl, Shift or Alt are kept in a translation as they are, each as often as in the English text
+    private static bool KeepsKeyCombinations(string english, string text) =>
+        !Regex.Matches(english, @"\b(?:Ctrl|Shift|Alt)\+\w+").Select(m => m.Value).Distinct()
+            .Any(k => Regex.Matches(text, Regex.Escape(k)).Count < Regex.Matches(english, Regex.Escape(k)).Count);
+
+    [Fact]
+    public void ATranslation_KeepsTheKeysWithCtrlShiftAndAlt()
+    {
+        Assert.True(KeepsKeyCombinations("Ctrl+O opens the Jump menu", "Ctrl+O öffnet das Sprungmenü"));
+        // A key lost in the translation (as "trl+O" once in Blyant), translated, or given fewer times
+        Assert.False(KeepsKeyCombinations("Ctrl+O opens the Jump menu", "trl+O öffnet das Sprungmenü"));
+        Assert.False(KeepsKeyCombinations("Ctrl+K opens", "Strg+K öffnet"));
+        Assert.False(KeepsKeyCombinations("Shift+Tab and Ctrl+K, again Ctrl+K", "Shift+Tab und Ctrl+K"));
+        Assert.True(KeepsKeyCombinations("No keys here", "Keine Tasten"));
     }
 
     [Theory]
@@ -219,7 +236,7 @@ public class LangTests : IDisposable
         Assert.NotEqual("File deleted", DialogText.FileDeleted);
         // Not in the file: English
         Assert.Equal("Not a text of Marbles", Lang.T("Not a text of Marbles"));
-        Assert.Contains("3", Lang.F("{0} fewer lines", 3));
+        Assert.Contains("3", Lang.F("Lines removed: {0}", 3));
         // The commands and the names of the modes do not change
         Assert.Equal("NORMAL", DialogText.EditorModeNormal);
         Assert.Equal("COMMAND:", DialogText.CommandPrompt);
@@ -271,6 +288,9 @@ public class LangTests : IDisposable
         Assert.True(problems.Count == 0, string.Join(Environment.NewLine, problems));
     }
 
+    // A comment that says a line is English: "English" after "//"
+    private static bool IsEnglishMark(string line) => Regex.IsMatch(line, @"//.*\bEnglish\b");
+
     // Text written to the screen is given to Lang.T (or Lang.F). A line that is meant to be the same in all
     // languages is marked with a comment containing "English"
     [Fact]
@@ -278,15 +298,16 @@ public class LangTests : IDisposable
     {
         var patterns = new[]
         {
-            @"Console\.Write(Line)?\(\s*""[^""]*[A-Za-z]{3,}",
-            @"\b(Message|_message) = ""[A-Za-z]",
-            @"SetError\(""",
-            @"StatusMessage\(""",
-            @"WriteModeLabel\(""[A-Za-z]",
-            @"WriteModeLabel\([^,]+,\s*""[A-Za-z]",
-            @"new Shortcut\((?:""[^""]*""|[^,""]+),\s*""",
-            @"WriteMenuItem\(""[^""]*"",\s*""[A-Za-z]",
-            @"YesNoPrompt\([^,]+,\s*""[A-Za-z]"
+            // (a string can be interpolated or verbatim: $"...", @"...")
+            @"Console\.Write(Line)?\(\s*[$@]*""[^""]*[A-Za-z]{3,}",
+            @"\b(Message|_message) = [$@]*""[A-Za-z]",
+            @"SetError\([$@]*""",
+            @"StatusMessage\([$@]*""",
+            @"WriteModeLabel\([$@]*""[A-Za-z]",
+            @"WriteModeLabel\([^,]+,\s*[$@]*""[A-Za-z]",
+            @"new Shortcut\((?:[$@]*""[^""]*""|[^,""]+),\s*[$@]*""",
+            @"WriteMenuItem\([$@]*""[^""]*"",\s*[$@]*""[A-Za-z]",
+            @"YesNoPrompt\([^,]+,\s*[$@]*""[A-Za-z]"
         }.Select(p => new Regex(p)).ToArray();
         var problems = new List<string>();
         foreach (var path in SourceFiles())
@@ -297,7 +318,10 @@ public class LangTests : IDisposable
             for (var i = 0; i < lines.Length; i++)
             {
                 var line = lines[i];
-                if (line.TrimStart().StartsWith("//") || line.Contains("English")) continue;
+                // (the mark is a comment: on the line, or a line of comment just above it; a word "English" in the
+                // code, as Lang.English, is no mark)
+                if (line.TrimStart().StartsWith("//") || IsEnglishMark(line) ||
+                    (i > 0 && lines[i - 1].TrimStart().StartsWith("//") && IsEnglishMark(lines[i - 1]))) continue;
                 var code = Regex.Replace(line, @"Lang\.[TF]\(""(?:[^""\\]|\\.)*""", "Lang.T(x");
                 if (patterns.Any(p => p.IsMatch(code))) problems.Add(name + ":" + (i + 1) + ": " + line.Trim());
             }

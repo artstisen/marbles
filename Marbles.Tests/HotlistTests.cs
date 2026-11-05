@@ -97,11 +97,10 @@ public class HotlistTests : IDisposable
         Assert.Equal(new DirectoryHotlist.Entry(In("c"), "Mine"), DirectoryHotlist.Items[0]);
     }
 
-    [Fact]
+    [UnixFact]
     public void BlankSpaceAtTheEndsOfAPath_IsKept_WhenTheDirectoryHasIt()
     {
         // Linux and macOS allow a directory name that ends with blank space (Windows does not)
-        if (OperatingSystem.IsWindows()) return;
         var spaced = In("notes ");
         Directory.CreateDirectory(spaced);
         DirectoryHotlist.Parse(spaced + "\n  " + In("other") + "  \n");

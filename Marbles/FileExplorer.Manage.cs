@@ -313,7 +313,7 @@ internal static partial class FileExplorer
         }
         else
         {
-            _caption = isMove ? Lang.F("Move to: {0} marked", items.Count) : Lang.F("Copy to: {0} marked", items.Count);
+            _caption = isMove ? Lang.F("Move to (marked: {0})", items.Count) : Lang.F("Copy to (marked: {0})", items.Count);
         }
 
         // With two panes the other pane is the place to start: "S" at once copies or moves to it
@@ -382,8 +382,8 @@ internal static partial class FileExplorer
         else
         {
             message = isMove
-                ? Lang.F("{0} moved to {1}", done, ShortPath(target))
-                : Lang.F("{0} copied to {1}", done, ShortPath(target));
+                ? Lang.F("Moved: {0}, to {1}", done, ShortPath(target))
+                : Lang.F("Copied: {0}, to {1}", done, ShortPath(target));
         }
 
         // The last one copied or moved is selected where it was put
@@ -785,7 +785,7 @@ internal static partial class FileExplorer
             target = new JumpTarget(JumpKind.File, path);
         }
 
-        _message = Bookmarks.AddWithMessage(target, bookmarkName, moveName, out _);
+        _message = Bookmarks.AddWithMessage(target, bookmarkName, moveName, true, out _);
     }
 
     // ":name": the name of the selected file or directory to the clipboard (on "..": of the directory shown, and
@@ -870,7 +870,7 @@ internal static partial class FileExplorer
             select = path;
         }
 
-        Finish(failed ?? DialogText.Success, select, items.Count == 1 ? string.Empty : Lang.F("{0} duplicated", done));
+        Finish(failed ?? DialogText.Success, select, items.Count == 1 ? string.Empty : Lang.F("Duplicated: {0}", done));
     }
 
     private static void MoveSelected()
@@ -905,7 +905,7 @@ internal static partial class FileExplorer
         }
 
         Finish(failed ?? DialogText.Success, failedItem?.Path,
-            items.Count == 1 ? DialogText.FileItemDeleted + items[0].Name : Lang.F("{0} deleted", done));
+            items.Count == 1 ? DialogText.FileItemDeleted + items[0].Name : Lang.F("Deleted: {0}", done));
         if (favoritesChanged) SaveFavorites();
     }
 
@@ -922,7 +922,7 @@ internal static partial class FileExplorer
                 var (files, directories) = FileOperations.Count(item.Path);
                 note = files + directories == 0
                     ? DialogText.DeleteEmptyDirectoryNote
-                    : Lang.F("With all its content: {0} files and {1} directories. They cannot be recovered", files,
+                    : Lang.F("With all its content (files: {0}, directories: {1}). They cannot be recovered", files,
                         directories);
             }
             else
@@ -949,10 +949,10 @@ internal static partial class FileExplorer
             allDirectories += directories + 1;
         }
 
-        var note2 = Lang.F("In all {0} files and {1} directories. They cannot be recovered.", allFiles, allDirectories);
+        var note2 = Lang.F("In all, files: {0}, directories: {1}. They cannot be recovered.", allFiles, allDirectories);
         if (items.Any(IsDataFile)) note2 += " " + DialogText.DeleteDataFilesNote;
         return ChoiceBox.ConfirmGuarded(DialogText.DeleteMarkedCaption,
-            Lang.F("Delete the {0} marked files and directories?", items.Count), note2);
+            Lang.F("Delete the marked files and directories ({0})?", items.Count), note2);
     }
 
     // Show information about the selected file or directory in a box on top of the list, until a key is pressed
@@ -993,7 +993,7 @@ internal static partial class FileExplorer
         if (isDirectory)
         {
             var (files, directories) = FileOperations.Count(path);
-            rows.Add((DialogText.InfoContent, Lang.F("{0} files, {1} directories", files, directories)));
+            rows.Add((DialogText.InfoContent, Lang.F("Files: {0}, directories: {1}", files, directories)));
         }
         else
         {
@@ -1038,8 +1038,8 @@ internal static partial class FileExplorer
             }
 
             _message = add
-                ? Lang.F("{0} added to the favorites", items.Count)
-                : Lang.F("{0} removed from the favorites", items.Count);
+                ? Lang.F("Added to the favorites: {0}", items.Count)
+                : Lang.F("Removed from the favorites: {0}", items.Count);
             ActivePane.Marks.Clear();
         }
 

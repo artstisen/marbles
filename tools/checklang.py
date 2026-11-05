@@ -4,8 +4,8 @@
     python tools/checklang.py pl path/to/pl.txt     (a file somewhere else, such as the folder lang)
 
 Errors (the tests fail on these): an empty translation, placeholders ({0}) that differ, blank space at the start
-or end that differs, key hints whose keys differ, keys in brackets ([Y], [Esc]) that differ, and lines broken by
-hand (\\n) longer than 79 characters.
+or end that differs, key hints whose keys differ, keys in brackets ([Y], [Esc]) that differ, keys with Ctrl, Shift
+or Alt (Ctrl+O) that are not all in the translation, and lines broken by hand (\\n) longer than 79 characters.
 Warnings: translations much longer than the English text, which may not fit where they are shown (menus, boxes,
 the help and the key hints have room for about the length of the English text).
 """
@@ -76,6 +76,9 @@ def check(code, given=None):
         bracket = r'\[(?:[A-Z]|Esc|Enter|Tab)\]'
         if re.findall(bracket, english) != re.findall(bracket, text):
             errors.append('keys in brackets: ' + english + '  ->  ' + text)
+        combination = r'\b(?:Ctrl|Shift|Alt)\+\w+'
+        if any(text.count(k) < english.count(k) for k in set(re.findall(combination, english))):
+            errors.append('keys with Ctrl, Shift or Alt: ' + english + '  ->  ' + text)
         if '\n' in english and any(len(line) > 79 for line in text.split('\n')):
             errors.append('a line longer than 79: ' + english[:40])
         if '\n' not in english and len(text) > max(len(english) * 1.35, len(english) + 8):
@@ -86,6 +89,7 @@ def check(code, given=None):
     for w in warnings:
         print('WARNING', w)
     print(f'{code}: {len(errors)} errors, {len(warnings)} warnings')
+    return len(errors)
 
 
 if __name__ == '__main__':
@@ -94,4 +98,5 @@ if __name__ == '__main__':
         sys.stdout.reconfigure(encoding='utf-8', errors='replace')
     if len(sys.argv) not in (2, 3):
         sys.exit(__doc__)
-    check(sys.argv[1], sys.argv[2] if len(sys.argv) == 3 else None)
+    # (the exit code is 1 when there are errors, so a script can stop on them)
+    sys.exit(1 if check(sys.argv[1], sys.argv[2] if len(sys.argv) == 3 else None) else 0)

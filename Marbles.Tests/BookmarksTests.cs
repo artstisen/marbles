@@ -203,7 +203,7 @@ public class BookmarksTests : IDisposable
         Assert.Equal(Bookmarks.AddResult.AlreadyThere, Bookmarks.Add(data));
         // A name given by the user is theirs to give
         Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 1, "work"),
-            Bookmarks.AddWithMessage(data, "work", false, out var failed));
+            Bookmarks.AddWithMessage(data, "work", false, true, out var failed));
         Assert.False(failed);
         Assert.Equal("data\tnotes/work.mbls\twork\n", File.ReadAllText(Bookmarks.FilePath));
     }
@@ -213,31 +213,31 @@ public class BookmarksTests : IDisposable
     {
         var chapter = FileAt("chapter.md") with { At = (12, 1) };
         Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 1, "chapter3"),
-            Bookmarks.AddWithMessage(chapter, "chapter3", false, out var failed));
+            Bookmarks.AddWithMessage(chapter, "chapter3", false, true, out var failed));
         Assert.False(failed);
         Assert.Equal(":book chapter3", Bookmarks.CommandOf(Bookmarks.Places[0]));
         Assert.Same(Bookmarks.Places[0], Bookmarks.FindByName("CHAPTER3"));
         // Another place with the name: refused, unless the name is moved
         var notes = FileAt("notes.md");
         Assert.Equal(Lang.F("{0} is the name of bookmark {1}: :bookmark! moves it here", "chapter3", 1),
-            Bookmarks.AddWithMessage(notes, "chapter3", false, out failed));
+            Bookmarks.AddWithMessage(notes, "chapter3", false, true, out failed));
         Assert.True(failed);
         Assert.Equal(Lang.F("Bookmark {0} moved here: {1}", 1, "chapter3"),
-            Bookmarks.AddWithMessage(notes, "chapter3", true, out failed));
+            Bookmarks.AddWithMessage(notes, "chapter3", true, true, out failed));
         Assert.False(failed);
         Bookmarks.Load();
         Assert.Single(Bookmarks.Places);
         Assert.Equal(In("notes.md"), Bookmarks.Places[0].Target.Target);
         // A place bookmarked already gets the name
         Assert.Equal(Lang.F("Bookmarked ({0}): {1}", 1, "notes"),
-            Bookmarks.AddWithMessage(notes, "notes", false, out _));
+            Bookmarks.AddWithMessage(notes, "notes", false, true, out _));
         Assert.Single(Bookmarks.Places);
         // Only digits would be a number of :book
         Assert.Equal(Lang.T("A name of only digits is the number of a bookmark: add a letter"),
-            Bookmarks.AddWithMessage(FileAt("x.md"), "2024", false, out failed));
+            Bookmarks.AddWithMessage(FileAt("x.md"), "2024", false, true, out failed));
         Assert.True(failed);
         // Renaming to the name of another bookmark is refused too
-        Bookmarks.AddWithMessage(FileAt("y.md"), "other", false, out _);
+        Bookmarks.AddWithMessage(FileAt("y.md"), "other", false, true, out _);
         Assert.False(Bookmarks.Rename(1, "NOTES"));
         Assert.Equal(Lang.F("The name {0} is used by bookmark {1}", "notes", 1),
             Bookmarks.NameProblem("NOTES", Bookmarks.Places[1]));

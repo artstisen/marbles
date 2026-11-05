@@ -9,10 +9,14 @@
 # Windows and the portable version (Marbles-1.5.3-win-x64.zip), and a tar.gz for Linux and macOS
 # (Marbles-1.5.3-linux-x64.tar.gz), where the program is marked as one that can be run. Each has a folder "Marbles"
 # with the files in it. The language pack is Marbles-languages-1.5.3.zip
+# The tests are run first (nothing is published when one fails), and the version must be the same in all the
+# places it is set: AssemblyVersion and FileVersion in Marbles.csproj, and DialogText.ApplicationVersion.
 # Usage:  ./publish.ps1                     (all versions)
 #         ./publish.ps1 portable,win-x64    (one or more versions)
+#         ./publish.ps1 -SkipTests          (without running the tests first)
 param(
-    [string[]]$Platforms = @("portable", "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-arm", "osx-x64", "osx-arm64", "languages")
+    [string[]]$Platforms = @("portable", "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-arm", "osx-x64", "osx-arm64", "languages"),
+    [switch]$SkipTests
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,9 +31,28 @@ foreach ($platform in $Platforms) {
     if ($known -notcontains $platform) { throw "Unknown version: '$platform' (known: $($known -join ', '))" }
 }
 
-# The version of Marbles (1.5.3), for the names of the archives
+# The version of Marbles (1.5.3), for the names of the archives: the same in all three places
 [xml]$csproj = Get-Content $project
-$version = ($csproj.Project.PropertyGroup.FileVersion | Where-Object { $_ } | Select-Object -First 1) -replace '\.0$', ''
+function Get-Property([string]$name) {
+    $csproj.Project.PropertyGroup | ForEach-Object { $_.$name } | Where-Object { $_ } | Select-Object -First 1
+}
+$version = (Get-Property "FileVersion") -replace '\.0$', ''
+$shown = [regex]::Match((Get-Content (Join-Path $PSScriptRoot "Marbles/DialogText.cs") -Raw),
+    'ApplicationVersion\s*=\s*"v([^"]+)"').Groups[1].Value
+$versions = [ordered]@{
+    "AssemblyVersion" = (Get-Property "AssemblyVersion") -replace '\.0$', ''
+    "FileVersion" = $version
+    "DialogText.ApplicationVersion" = $shown
+}
+if (-not $version -or ($versions.Values | Where-Object { $_ -ne $version })) {
+    throw "The version is not the same everywhere: $(($versions.GetEnumerator() | ForEach-Object { "$($_.Key) $($_.Value)" }) -join ', ')"
+}
+
+if (-not $SkipTests) {
+    Write-Host "Running the tests..."
+    dotnet test (Join-Path $PSScriptRoot "Marbles.sln") --nologo -v quiet
+    if ($LASTEXITCODE -ne 0) { throw "The tests failed: nothing was published" }
+}
 
 # Each folder is emptied first, so files left from earlier versions are not released. A data folder (made when a
 # version was tried there) holds data files and settings: it is never deleted, nothing is published. All folders

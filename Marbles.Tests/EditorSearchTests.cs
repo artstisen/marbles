@@ -164,7 +164,7 @@ public class EditorSearchTests
     {
         var editor = Editor("cat cat\ncat\nbird");
         editor.Type(":%s/cat/dog/g<CR>");
-        Assert.Equal("3 substitutions on 2 lines", editor.Message);
+        Assert.Equal("Substitutions: 3, on lines: 2", editor.Message);
         Assert.Equal(1, editor.Cursor.Line);
         editor.Type(":%s/horse/dog/<CR>");
         Assert.True(editor.MessageIsError);
@@ -249,7 +249,7 @@ public class EditorSearchTests
         editor.Replace("a.b", "$1 & x", false, false, 0, 1);
         // The text is not a regular expression, and the replacement is used as it is
         Assert.Equal("$1 & x $1 & x axb\n$1 & x", editor.GetText());
-        Assert.Equal("3 substitutions on 2 lines", editor.Message);
+        Assert.Equal("Substitutions: 3, on lines: 2", editor.Message);
         // One step to undo
         editor.Type("u");
         Assert.Equal("a.b A.B axb\na.b", editor.GetText());

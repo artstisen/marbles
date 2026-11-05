@@ -4,12 +4,29 @@ namespace Marbles.Tests;
 
 /// <summary>
 /// Fixes of the editor brought over from Blyant: blocks of code in Markdown closed by their own kind of fence, case
-/// changes and smartcase, texts cut for the screen, and the layout that follows edits inside lines
+/// changes and smartcase, texts cut for the screen, the layout that follows edits inside lines, options given at
+/// startup, and a bookmark added in the Jump menu after one was removed
 /// </summary>
 [Collection("Static state")]
-public class EditorFixTests
+public class EditorFixTests : IDisposable
 {
     private const string Codes = ".123456BICKQLAUR#SWN9";
+    private readonly string _directory = Path.Combine(Path.GetTempPath(), "marbles-editorfix-" + Guid.NewGuid().ToString("N"));
+    private readonly string? _bookmarksPath = Bookmarks.FilePathOverride;
+
+    public EditorFixTests()
+    {
+        Directory.CreateDirectory(_directory);
+        Bookmarks.FilePathOverride = Path.Combine(_directory, Bookmarks.FileName);
+        Bookmarks.Clear();
+    }
+
+    public void Dispose()
+    {
+        Bookmarks.FilePathOverride = _bookmarksPath;
+        Bookmarks.Clear();
+        Directory.Delete(_directory, true);
+    }
 
     private static string[] Styles(SyntaxType type, params string[] lines)
     {
@@ -109,5 +126,36 @@ public class EditorFixTests
                 Assert.Equal(fresh.Layout.Segments(line), editor.Layout.Segments(line));
             }
         }
+    }
+
+    [Fact]
+    public void AnOption_IsAnsweredAndNeverTakenForAFileToMake()
+    {
+        Assert.True(StartArgument.IsOption("--help", _directory));
+        Assert.True(StartArgument.IsOption("-v", _directory));
+        File.WriteAllText(Path.Combine(_directory, "-notes.md"), "x");
+        Assert.False(StartArgument.IsOption("-notes.md", _directory));
+        Assert.False(StartArgument.IsOption("-", _directory));
+        Assert.False(StartArgument.IsOption("notes.md", _directory));
+        var output = new StringWriter();
+        Assert.Equal(0, StartArgument.AnswerOption("--version", output));
+        Assert.Equal(DialogText.ApplicationName + " " + DialogText.ApplicationVersion, output.ToString().Trim());
+        output = new StringWriter();
+        Assert.Equal(0, StartArgument.AnswerOption("-h", output));
+        Assert.StartsWith("Usage: marbles", output.ToString());
+        Assert.All(output.ToString().Split('\n'), line => Assert.True(line.TrimEnd('\r').Length <= 80, line));
+        Assert.Equal(1, StartArgument.AnswerOption("--nope", new StringWriter()));
+    }
+
+    [Fact]
+    public void ABookmarkAddedInTheJumpMenu_KeepsTheRemovedOneToPutBack()
+    {
+        foreach (var name in new[] { "a", "b" }) Bookmarks.Add(new JumpTarget(JumpKind.File, Path.Combine(_directory, name)));
+        Assert.Equal(DialogText.Success, Bookmarks.Save());
+        Bookmarks.RemoveAt(0);
+        // B in the Jump menu, on the list it has read: u still puts "a" back, where it was
+        Bookmarks.AddWithMessage(new JumpTarget(JumpKind.File, Path.Combine(_directory, "c")), false);
+        Assert.Equal(0, Bookmarks.UndoRemove());
+        Assert.Equal(new[] { "a", "b", "c" }, Bookmarks.Items.Select(entry => entry.Shown).OrderBy(name => name));
     }
 }

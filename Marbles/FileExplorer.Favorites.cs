@@ -527,7 +527,7 @@ internal static partial class FileExplorer
         choices.AddRange(folders.Select(folder => "[" + folder.Name + "]"));
         var caption = items.Count == 1
             ? DialogText.FavoriteMoveOne
-            : DialogText.FavoriteMoveMany.Replace("{0}", items.Count.ToString());
+            : DialogText.FavoriteMoveMany(items.Count);
         var choice = PickFromList(caption, choices, folders.Count > 0 ? 2 : 0);
         if (choice < 0) return;
         FileFavorites.Favorite? folder = null;
@@ -563,9 +563,9 @@ internal static partial class FileExplorer
         FilterFavorites();
         _favoriteIndex = Math.Max(0,
             _favorites.FindIndex(number => ReferenceEquals(FileFavorites.Items[number], folder ?? items[0])));
-        _favoriteMessage = (items.Count == 1 ? DialogText.FavoriteMovedOne
-                               : DialogText.FavoriteMovedMany.Replace("{0}", items.Count.ToString())) +
-                           (folder == null ? DialogText.FavoriteNoFolder : folder.Name);
+        var where = folder == null ? DialogText.FavoriteNoFolder : folder.Name;
+        _favoriteMessage = items.Count == 1 ? DialogText.FavoriteMovedOne + where
+            : DialogText.FavoriteMovedMany(items.Count, where);
         SaveFavoriteList();
     }
 
@@ -635,7 +635,7 @@ internal static partial class FileExplorer
             // All the marked favorites
             var count = _favoriteMarks.Count;
             if (count > 1 && !ChoiceBox.Confirm(DialogText.FavoriteRemoveCaption,
-                    DialogText.FavoriteRemoveMany.Replace("{0}", count.ToString()),
+                    DialogText.FavoriteRemoveMany(count),
                     DialogText.FavoriteRemoveNote, true))
             {
                 return;
@@ -643,7 +643,7 @@ internal static partial class FileExplorer
 
             count = FileFavorites.RemoveMany(_favoriteMarks);
             _favoriteMarks.Clear();
-            _favoriteMessage = DialogText.FavoriteRemovedMany.Replace("{0}", count.ToString());
+            _favoriteMessage = DialogText.FavoriteRemovedMany(count);
             SaveFavoriteList();
             return;
         }
@@ -656,8 +656,7 @@ internal static partial class FileExplorer
             var count = FileFavorites.FolderCount(number);
             if (count > 0 && !ChoiceBox.Confirm(DialogText.FavoriteDeleteFolder,
                     DialogText.DeleteNamed.Replace("{0}", Tools.TruncateString(item.Name, 40, true)),
-                    (count == 1 ? DialogText.FavoriteDeleteFolderNoteOne : DialogText.FavoriteDeleteFolderNote)
-                    .Replace("{0}", count.ToString()), true))
+                    count == 1 ? DialogText.FavoriteDeleteFolderNoteOne : DialogText.FavoriteDeleteFolderNote(count), true))
             {
                 return;
             }
@@ -769,7 +768,7 @@ internal static partial class FileExplorer
             var isDirectory = !favorite.IsFolder && Directory.Exists(favorite.Path);
             var exists = favorite.IsFolder || isDirectory || File.Exists(favorite.Path);
             var count = favorite.IsFolder ? FileFavorites.FolderCount(_favorites[index]) : 0;
-            var info = favorite.IsFolder ? (count == 1 ? Lang.T("1 favorite") : Lang.F("{0} favorites", count)) :
+            var info = favorite.IsFolder ? Lang.F("Favorites: {0}", count) :
                 !exists ? DialogText.FavoriteMissing :
                 isDirectory ? DialogText.DirectoryMark : FileSizeFormatter.FormatSize(new FileInfo(favorite.Path).Length);
             DrawFavoritePointer(index, index == _favoriteIndex);
@@ -868,7 +867,7 @@ internal static partial class FileExplorer
         var status = " " + (_favorites.Count == 0 ? 0 : _favoriteIndex + 1) + "/" + _favorites.Count + " ";
         if (_listCount.Shown.Length > 0) status = " " + _listCount.Shown + status;
         if (_favoriteFilter.Length > 0) status += "/" + _favoriteFilter + " ";
-        if (_favoriteMarks.Count > 0) status = " " + Lang.F("{0} marked", _favoriteMarks.Count) + " -" + status;
+        if (_favoriteMarks.Count > 0) status = " " + Lang.F("Marked: {0}", _favoriteMarks.Count) + " -" + status;
         Tools.SetCursorEx(Init.LineCount - 2, Init.LineWidth - status.Length - 2);
         Console.Write(status);
         Tools.SetCursorEx(Init.LineCount - 1, 0);

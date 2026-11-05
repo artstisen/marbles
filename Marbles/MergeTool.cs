@@ -421,7 +421,10 @@ internal class MergeTool
                             {
                                 if (Directory.Exists(FileIo.GetDataAndSubFolder()))
                                 {
-                                    File.WriteAllText(Path.Combine(FileIo.GetDataAndSubFolder(), _selectedFileName), stringXml);
+                                    // Written safely: a file that has come since it was looked for is replaced
+                                    // whole, never emptied first
+                                    FileIo.WriteAllBytesSafe(Path.Combine(FileIo.GetDataAndSubFolder(), _selectedFileName),
+                                        new System.Text.UTF8Encoding(false).GetBytes(stringXml));
                                     // Exit routine
                                     Init.Log("Export (S): " + _sourceFileName1, false);
                                     Init.Log("Export (T): -> " + _selectedFileName, false);

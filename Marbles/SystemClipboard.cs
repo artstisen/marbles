@@ -98,8 +98,45 @@ internal static class SystemClipboard
             if (result != DialogText.Success) return (result, true);
         }
 
+        // (a terminal that is known to drop it is not told as "copied": the paste bin works everywhere)
+        if (Osc52 && !PasteBin && TerminalWithoutClipboard)
+        {
+            return (Lang.T("This terminal may not take the clipboard: use the paste bin (:clipboard)"), false);
+        }
+
         return (Osc52 && PasteBin ? DialogText.CopiedToBoth : Osc52 ? DialogText.CopiedToClipboard
             : DialogText.CopiedToPasteBin, false);
+    }
+
+    /// <summary>
+    /// True in a terminal that is known to drop the clipboard sequence (OSC 52): the text console of Linux (and of
+    /// a Raspberry Pi), the terminals made with VTE (LXTerminal, GNOME Terminal) and the Terminal of macOS
+    /// </summary>
+    internal static bool TerminalWithoutClipboard =>
+        _terminalWithoutClipboard ??= !OperatingSystem.IsWindows() && WithoutClipboard(Environment.GetEnvironmentVariable);
+
+    // Found the first time it is asked for. Not in a static initializer: those run in the order they are written,
+    // before the lists below are set, and on Linux and macOS that stopped Blyant (from which this comes) at startup (in a VTE terminal)
+    private static bool? _terminalWithoutClipboard;
+
+    // The terminals that take the clipboard sequence, by their TERM, and the variables they set of their own
+    private static readonly string[] ClipboardTerms = { "xterm-kitty", "wezterm", "alacritty", "foot", "contour" };
+    private static readonly string[] ClipboardMarkers = { "KITTY_WINDOW_ID", "WEZTERM_EXECUTABLE", "ALACRITTY_SOCKET" };
+
+    /// <summary>
+    /// The terminal drops the clipboard sequence, as told by the variables of the environment (looked up with
+    /// "variable"). VTE_VERSION is passed on to all that is started in a VTE terminal, also another terminal
+    /// (kitty started from GNOME Terminal) and tmux, which can pass the sequence on: it only tells of VTE when
+    /// nothing tells of one of those
+    /// </summary>
+    internal static bool WithoutClipboard(Func<string, string?> variable)
+    {
+        var term = variable("TERM");
+        if (term == "linux" || variable("TERM_PROGRAM") == "Apple_Terminal") return true;
+        if (string.IsNullOrEmpty(variable("VTE_VERSION"))) return false;
+        if (!string.IsNullOrEmpty(variable("TMUX")) || !string.IsNullOrEmpty(variable("TERM_PROGRAM"))) return false;
+        if (term != null && ClipboardTerms.Any(name => term.StartsWith(name, StringComparison.Ordinal))) return false;
+        return !ClipboardMarkers.Any(marker => !string.IsNullOrEmpty(variable(marker)));
     }
 
     /// <summary>
@@ -141,11 +178,13 @@ internal static class SystemClipboard
             {
                 var existing = File.ReadAllText(path, Encoding.UTF8);
                 if (existing.Length > 0 && !existing.EndsWith('\n')) lines = Environment.NewLine + lines;
+                // Added to the end: what is in it is not written again, so it cannot be lost
                 File.AppendAllText(path, lines, new UTF8Encoding(false));
             }
             else
             {
-                File.WriteAllText(path, lines, new UTF8Encoding(false));
+                // Replaced safely: a write that is interrupted leaves the paste bin as it was
+                FileIo.WriteAllBytesSafe(path, new UTF8Encoding(false).GetBytes(lines));
             }
 
             return DialogText.Success;
@@ -186,7 +225,7 @@ internal static class SystemClipboard
         try
         {
             var path = PasteBinPath;
-            if (File.Exists(path)) File.WriteAllText(path, string.Empty);
+            if (File.Exists(path)) FileIo.WriteAllBytesSafe(path, []);
             return DialogText.Success;
         }
         catch (Exception e)

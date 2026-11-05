@@ -47,7 +47,7 @@ internal sealed partial class EditorEngine
             count += CheckLine(line).Count;
         }
 
-        Message = DialogText.SpellOn + SpellLanguages + " - " + Lang.F("{0} misspelled", count);
+        Message = DialogText.SpellOn + SpellLanguages + " - " + Lang.F("Misspelled: {0}", count);
         // The languages are kept in the settings
         if (SpellChecker.Languages != before) _request = EditorRequest.SaveSettings;
     }

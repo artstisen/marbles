@@ -320,19 +320,12 @@ public class FileManagementTests : IDisposable
         }
     }
 
-    [Fact]
+    [LinksFact]
     public void SavingALink_WritesTheFileItPointsTo_AndTheLinkStays()
     {
         var target = MakeFile("old text", "real.txt");
         var link = In("link.txt");
-        try
-        {
-            File.CreateSymbolicLink(link, target);
-        }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
-        {
-            return; // Links cannot be made here (Windows without Developer Mode)
-        }
+        File.CreateSymbolicLink(link, target);
 
         FileIo.WriteAllBytesSafe(link, "new text"u8.ToArray());
         Assert.Equal("new text", File.ReadAllText(target));

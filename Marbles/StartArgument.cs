@@ -19,6 +19,55 @@ internal static class StartArgument
     internal sealed record Result(JumpTarget? Target, string Path, bool AskToCreate = false, string Message = "");
 
     /// <summary>
+    /// True if the argument is an option ("--help", "-v" ...): it starts with "-" and is not a file or directory
+    /// that is there (a file can be named "-notes.md")
+    /// </summary>
+    internal static bool IsOption(string argument, string currentDirectory)
+    {
+        if (!argument.StartsWith('-') || argument == "-") return false;
+        try
+        {
+            var path = System.IO.Path.GetFullPath(argument, currentDirectory);
+            return !File.Exists(path) && !Directory.Exists(path);
+        }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or IOException)
+        {
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Answer an option: the usage or the version, written to the terminal. Returns the exit code (1 for an option
+    /// that is not known). English: written before the settings (and the language) are read
+    /// </summary>
+    internal static int AnswerOption(string option, TextWriter output)
+    {
+        switch (option.ToLowerInvariant())
+        {
+            case "--version" or "-v" or "-version":
+                output.WriteLine(DialogText.ApplicationName + " " + DialogText.ApplicationVersion);
+                return 0;
+            case "--help" or "-h" or "-?" or "-help":
+                output.WriteLine(Usage);
+                return 0;
+            default:
+                output.WriteLine("Unknown option: " + option);
+                output.WriteLine(Usage);
+                return 1;
+        }
+    }
+
+    // English: see AnswerOption
+    private const string Usage =
+        "Usage: marbles [file, directory or data file]\n" +
+        "  A file is opened in the editor, a directory in the file browser, and a data\n" +
+        "  file (.mbls) is selected on the login page. A file that is not there (in a\n" +
+        "  directory that is) can be made. Without a path, Marbles starts as it is\n" +
+        "  set to.\n" +
+        "  --help, -h    Show this text\n" +
+        "  --version, -v Show the version";
+
+    /// <summary>
     /// Find what a path given at startup leads to
     /// </summary>
     /// <param name="argument">The path, as given</param>

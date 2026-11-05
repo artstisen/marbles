@@ -132,13 +132,15 @@ public class CommandTests
         return Part(file, " " + name + "(string ", "\n    }\n");
     }
 
-    // The commands compared with in a piece of code: case "name":, is "name" or "other", == "name" ...
+    // The commands compared with in a piece of code: case "name":, is "name" or "other", == "name", the arm of a
+    // switch expression ("name" => ...), command.Equals("name") ...
     private static SortedSet<string> Compared(params string[] code)
     {
         var names = new SortedSet<string>(StringComparer.Ordinal);
         foreach (var line in string.Join("\n", code).Split('\n'))
         {
-            if (!Regex.IsMatch(line, "(case |is |is not \\(|== |!= |or |StartsWith\\()\"")) continue;
+            if (!Regex.IsMatch(line, "(case |is |is not \\(|== |!= |or |StartsWith\\(|command\\.Equals\\()\"") &&
+                !Regex.IsMatch(line, "^\\s*\"[a-z]+!?\"\\s*(or\\s|=>)")) continue;
             foreach (Match match in Regex.Matches(line, "\"([a-z]+!?)[ \"]"))
             {
                 names.Add(match.Groups[1].Value);

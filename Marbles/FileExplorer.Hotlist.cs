@@ -402,7 +402,7 @@ internal static partial class FileExplorer
     {
         if (DirectoryHotlist.Items.Count == 0) return;
         if (!ChoiceBox.Confirm(DialogText.CaptionsHotlist,
-                Lang.F("Remove all {0} directories from the hotlist?", DirectoryHotlist.Items.Count),
+                Lang.F("Remove all the directories from the hotlist ({0})?", DirectoryHotlist.Items.Count),
                 DialogText.HotlistClearNote, true))
         {
             return;

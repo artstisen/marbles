@@ -31,8 +31,11 @@ internal static class ConsoleColors
     /// a few others): .NET then shows the bright colors as the dark ones, and dark gray as black, so the bright
     /// colors are set again here with the codes those terminals have for them (90-97, 100-107)
     /// </summary>
-    internal static bool EightColors { get; } = !OperatingSystem.IsWindows() && HasEightColors(
-        Environment.GetEnvironmentVariable("TERM"));
+    internal static bool EightColors =>
+        _eightColors ??= !OperatingSystem.IsWindows() && HasEightColors(Environment.GetEnvironmentVariable("TERM"));
+
+    // Found the first time it is asked for, not in a static initializer (see SystemClipboard.TerminalWithoutClipboard)
+    private static bool? _eightColors;
 
     // The terminals whose description (terminfo) has 8 colors
     internal static bool HasEightColors(string? term) =>

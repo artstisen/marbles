@@ -50,9 +50,11 @@ marbles notes.md                Open notes.md in the editor (the file browser is
 marbles ~/projects/site         Show the directory in the file browser
 marbles .                       Show the directory you are in, in the file browser
 marbles work.mbls               Select the data file on the login page (in the data directory)
+marbles --help                  Show how Marbles is started (also -h)
+marbles --version               Show the version (also -v)
 ```
 
-A path that is not a full path is taken from the directory you are in. Closing the editor (`:q`) shows the file browser in the directory of the file, and closing the file browser the start page, as after a jump from the [Jump menu](Guide-to-main-menu.md#jump-menu); `:exit` leaves Marbles. A file that is not there yet (in a directory that is) is made if you want that: Marbles asks first. A data file outside the data directory is shown in the file browser, which offers to copy it to the data directory. With _Text Editor only_ a data file is not opened, and with _Note Management only_ a text file or directory is not.
+A path that is not a full path is taken from the directory you are in. Closing the editor (`:q`) shows the file browser in the directory of the file, and closing the file browser the start page, as after a jump from the [Jump menu](Guide-to-main-menu.md#jump-menu); `:exit` leaves Marbles. A file that is not there yet (in a directory that is) is made if you want that: Marbles asks first. A word starting with `-` is an option, not a file to make (unless a file or directory of that name is there): an option Marbles does not know is told, with the usage. A data file outside the data directory is shown in the file browser, which offers to copy it to the data directory. With _Text Editor only_ a data file is not opened, and with _Note Management only_ a text file or directory is not.
 
 (On Windows the program is `Marbles.exe`, and the portable version is started with `dotnet Marbles.dll notes.md`.)
 
@@ -84,7 +86,7 @@ dotnet build Marbles.sln -c Release
 
 The files to run are then found in _Marbles/bin/Release/net10.0_.
 
-To build executables that include the .NET runtime (so nothing has to be installed to run them), run ```./publish.ps1``` with PowerShell. It creates a single file for each platform in the directory _publish_, and the lightweight version for all platforms (which needs the .NET runtime, and is started with ```dotnet Marbles.dll```) in _publish/portable_. It also packs each of them for a release in _publish/release_: a zip for Windows and the portable version, and a tar.gz for Linux and macOS (where the program is marked as one that can be run), each with a folder _Marbles_, and the language file pack (`Marbles-languages-1.5.3.zip`). `./publish.ps1 win-x64,languages` builds only the ones named.
+To build executables that include the .NET runtime (so nothing has to be installed to run them), run ```./publish.ps1``` with PowerShell. It creates a single file for each platform in the directory _publish_, and the lightweight version for all platforms (which needs the .NET runtime, and is started with ```dotnet Marbles.dll```) in _publish/portable_. It also packs each of them for a release in _publish/release_: a zip for Windows and the portable version, and a tar.gz for Linux and macOS (where the program is marked as one that can be run), each with a folder _Marbles_, and the language file pack (`Marbles-languages-1.5.3.zip`). `./publish.ps1 win-x64,languages` builds only the ones named. The tests are run first, and nothing is published when one fails (`-SkipTests` leaves them out); the version must be the same in `Marbles.csproj` (`AssemblyVersion`, `FileVersion`) and in `DialogText.ApplicationVersion`.
 
 ## Upgrading from Marbles v1.0.x
 Copy your "data" directory to the directory of the new version, or unzip the new version over the old.

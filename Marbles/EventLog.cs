@@ -137,9 +137,9 @@ internal static class EventLog
             Menu.WriteModeLabel(DialogText.LogReview, string.Empty, 0);
             Tools.SetCursorEx(1, 1);
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-            Console.Write((lines.Count == 1 ? Lang.F("{0} line", lines.Count) : Lang.F("{0} lines", lines.Count)) +
+            Console.Write(Lang.F("Lines: {0}", lines.Count) +
                           (filter.Length > 0 ? " " + Lang.F("of {0} containing: {1}", Lines.Count, filter) : "") +
-                          (_removed > 0 ? " (" + Lang.F("{0} older lines removed", _removed) + ")" : ""));
+                          (_removed > 0 ? " (" + Lang.F("Older lines removed: {0}", _removed) + ")" : ""));
             ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
             for (var row = 0; row < pageSize && top + row < rows.Count; row++)
             {

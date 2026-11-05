@@ -31,11 +31,10 @@ public class ReviewFixTests : IDisposable
         if (Directory.Exists(_directory)) Directory.Delete(_directory, true);
     }
 
-    [Fact]
+    // (a file is only locked so on Windows)
+    [WindowsFact]
     public void AListThatCouldNotBeRead_IsNotWrittenOver()
     {
-        // (a file is only locked so on Windows)
-        if (!OperatingSystem.IsWindows()) return;
         var path = FileFavorites.FilePathOverride!;
         File.WriteAllText(path, "first.txt\nsecond.txt\n");
         using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))

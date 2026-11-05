@@ -442,9 +442,12 @@ internal static class Bookmarks
     /// <summary>
     /// Add a place to the bookmarks (as they are in the file) and save them
     /// </summary>
+    /// <param name="target">The place</param>
+    /// <param name="reload">False in the Jump menu, which has read the list already: what can be undone there (a
+    /// bookmark removed) is kept</param>
     /// <returns>The message that tells what happened (with the number of the bookmark, for ":book 14")</returns>
-    internal static string AddWithMessage(JumpTarget target) =>
-        AddWithMessage(target, string.Empty, false, out _);
+    internal static string AddWithMessage(JumpTarget target, bool reload = true) =>
+        AddWithMessage(target, string.Empty, false, reload, out _);
 
     /// <summary>
     /// Add a place to the bookmarks with a name, to jump to it by (":bookmark chapter3", then ":book chapter3"), and
@@ -455,12 +458,14 @@ internal static class Bookmarks
     /// <param name="target">The place</param>
     /// <param name="name">The name (empty: none)</param>
     /// <param name="moveName">The bookmark with the name is moved here</param>
+    /// <param name="reload">As for AddWithMessage</param>
     /// <param name="isError">True when nothing was done for a reason the message tells</param>
     /// <returns>The message that tells what happened (with the number of the bookmark, for ":book 14")</returns>
-    internal static string AddWithMessage(JumpTarget target, string name, bool moveName, out bool isError)
+    internal static string AddWithMessage(JumpTarget target, string name, bool moveName, bool reload,
+        out bool isError)
     {
         isError = true;
-        Load();
+        if (reload) Load();
         name = name.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ').Trim();
         if (target.Kind is JumpKind.File or JumpKind.Directory)
         {

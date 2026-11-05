@@ -2300,6 +2300,13 @@ internal static class Tools
     {
         try
         {
+            // On Linux and macOS a place outside the window is not refused (the terminal would scroll): it is told
+            // as on Windows
+            if (!OperatingSystem.IsWindows() && IsOutsideWindow(_columnPosition, _rowPosition))
+            {
+                throw new ArgumentOutOfRangeException(nameof(_rowPosition));
+            }
+
             Console.SetCursorPosition(_columnPosition, _rowPosition);
         }
         catch
@@ -2309,6 +2316,21 @@ internal static class Tools
             Init.DimensionsExceptionCaught = true;
             _redrawRequested = true;
             WindowTooSmall();
+        }
+    }
+
+    // True if a place is outside the terminal window (false if its size is not known)
+    private static bool IsOutsideWindow(int column, int row)
+    {
+        try
+        {
+            var width = Console.WindowWidth;
+            var height = Console.WindowHeight;
+            return width > 0 && height > 0 && (column >= width || row >= height);
+        }
+        catch
+        {
+            return false;
         }
     }
 

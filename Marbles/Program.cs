@@ -4,6 +4,15 @@ class Program
 {
     private static void Main(string[] args)
     {
+        // A path given (relative to the directory Marbles is started in, which is read before anything else)
+        var currentDirectory = Directory.GetCurrentDirectory();
+        // An option (--help, --version) is answered before anything is shown (also to a pipe, as "marbles --help |
+        // less"): it is never taken for the name of a file to make
+        if (args.Length > 0 && StartArgument.IsOption(args[0], currentDirectory))
+        {
+            Environment.Exit(StartArgument.AnswerOption(args[0], Console.Out));
+        }
+
         // Keys are read one at a time from the terminal: with its input from a file or a pipe Marbles cannot run
         if (Console.IsInputRedirected)
         {
@@ -12,8 +21,6 @@ class Program
             Environment.Exit(1);
         }
 
-        // A path given (relative to the directory Marbles is started in, which is read before anything else)
-        var currentDirectory = Directory.GetCurrentDirectory();
         Init.RunInitialization();
         if (Lang.Missing != null)
         {
@@ -59,7 +66,8 @@ class Program
 
         try
         {
-            File.WriteAllText(result.Path, string.Empty);
+            // Only a new file: one that has come since it was looked for is not emptied
+            FileIo.CreateNewFile(result.Path);
             EventLog.Add(DialogText.LogFile + "New: " + result.Path);
             return result.Target;
         }

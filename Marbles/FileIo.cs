@@ -608,6 +608,36 @@ internal static class FileIo
     private const string TempFileNameExtension = ".tmp";
 
     /// <summary>
+    /// Make a new, empty file. It must not be there: a file that has come since it was looked for is not emptied
+    /// </summary>
+    internal static void CreateNewFile(string path)
+    {
+        new FileStream(path, FileMode.CreateNew).Dispose();
+    }
+
+    // True if this user may write the file (Linux, macOS): it is opened for writing and closed at once, unchanged
+    private static bool MayWrite(string path)
+    {
+        try
+        {
+            using (File.OpenHandle(path, FileMode.Open, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
+            {
+            }
+
+            return true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            // (another reason, as the file being gone: the save tells it)
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Write the content to a temporary file and then replace the target file with it,
     /// so an interrupted save can never leave a half written data file behind.
     /// The file keeps the time it was created (where the system has one that can be set), its permissions (Linux,
@@ -643,6 +673,14 @@ internal static class FileIo
             // Saving matters more than the time and permissions
         }
 
+        // A file that this user may not write (chmod -w, or a file of another user) is not replaced: the replacing
+        // would only need the directory to be writable, so it is refused here, as Windows refuses a read-only file.
+        // The system is asked (opening it for writing changes nothing in it), so groups and other users count too
+        if (mode != null && !MayWrite(path))
+        {
+            throw new UnauthorizedAccessException(Lang.F("{0} is read only: it is not written", Path.GetFileName(path)));
+        }
+
         try
         {
             var options = new FileStreamOptions
@@ -656,8 +694,20 @@ internal static class FileIo
                 stream.Flush(true); // Make sure the content is on the disk before replacing the target file
             }
 
-            // (The umask can have taken permissions away when it was created)
-            if (mode is { } unixMode && !OperatingSystem.IsWindows()) File.SetUnixFileMode(tempPath, unixMode);
+            // (The umask can have taken permissions away when it was created.) Only where it can be: a memory stick
+            // with FAT or exFAT, and some network folders, refuse it, and the file is saved all the same
+            if (mode is { } unixMode && !OperatingSystem.IsWindows())
+            {
+                try
+                {
+                    File.SetUnixFileMode(tempPath, unixMode);
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                {
+                    // The permissions the file system gives
+                }
+            }
+
             File.Move(tempPath, path, true);
         }
         catch
@@ -761,7 +811,8 @@ internal static class FileIo
         {
             if (Entries.CurrentEntryExists())
             {
-                File.WriteAllText(path, Entries.CurrentEntry.Text, Encoding.UTF8);
+                // Replaced safely, as a file is saved (UTF-8 with a BOM, as before)
+                WriteAllBytesSafe(path, Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(Entries.CurrentEntry.Text)).ToArray());
                 return DialogText.Success;
             }
             else
