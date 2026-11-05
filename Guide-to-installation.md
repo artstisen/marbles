@@ -9,16 +9,16 @@ Download the latest Marbles archive for your platform from the [releases page](h
 
 | Platform | Download |
 |---|---|
-| Windows (most PCs) | `Marbles-1.5.3-win-x64.zip` |
-| Windows on ARM | `Marbles-1.5.3-win-arm64.zip` |
-| Linux (most PCs) | `Marbles-1.5.3-linux-x64.tar.gz` |
-| Linux on 64-bit ARM (Raspberry Pi with a 64-bit system) | `Marbles-1.5.3-linux-arm64.tar.gz` |
-| Linux on 32-bit ARM (Raspberry Pi with a 32-bit system) | `Marbles-1.5.3-linux-arm.tar.gz` |
-| macOS on Apple silicon (M1 and later) | `Marbles-1.5.3-osx-arm64.tar.gz` |
-| macOS on Intel | `Marbles-1.5.3-osx-x64.tar.gz` |
-| Any platform, with .NET 10 installed | `Marbles-1.5.3-portable.zip` |
+| Windows (most PCs) | `Marbles-1.5.4-win-x64.zip` |
+| Windows on ARM | `Marbles-1.5.4-win-arm64.zip` |
+| Linux (most PCs) | `Marbles-1.5.4-linux-x64.tar.gz` |
+| Linux on 64-bit ARM (Raspberry Pi with a 64-bit system) | `Marbles-1.5.4-linux-arm64.tar.gz` |
+| Linux on 32-bit ARM (Raspberry Pi with a 32-bit system) | `Marbles-1.5.4-linux-arm.tar.gz` |
+| macOS on Apple silicon (M1 and later) | `Marbles-1.5.4-osx-arm64.tar.gz` |
+| macOS on Intel | `Marbles-1.5.4-osx-x64.tar.gz` |
+| Any platform, with .NET 10 installed | `Marbles-1.5.4-portable.zip` |
 
-On Linux and macOS, unpack it with ```tar -xzf Marbles-1.5.3-linux-x64.tar.gz``` (with the name of the file you downloaded): the program can then be run as it is.
+On Linux and macOS, unpack it with ```tar -xzf Marbles-1.5.4-linux-x64.tar.gz``` (with the name of the file you downloaded): the program can then be run as it is.
 
 ### The single file
 Open your favorite terminal, go to the Marbles directory and start the program:
@@ -27,7 +27,7 @@ Open your favorite terminal, go to the Marbles directory and start the program:
 - **Linux and macOS**: type ```./Marbles``` (Linux and macOS are case sensitive). If it was not unpacked with `tar` (some programs leave out that it can be run), make it executable once with ```chmod +x Marbles```. On macOS the program is not signed: if macOS refuses to open it, allow it once with ```xattr -d com.apple.quarantine Marbles```
 
 ### The portable version
-Unzip `Marbles-1.5.3-portable.zip`: its folder _Marbles_ has _Marbles.dll_, _Marbles.deps.json_, _Marbles.runtimeconfig.json_ and the folder _lang_. Open your favorite terminal, go to the Marbles directory and type ```dotnet Marbles.dll``` (Linux and macOS are case sensitive).
+Unzip `Marbles-1.5.4-portable.zip`: its folder _Marbles_ has _Marbles.dll_, _Marbles.deps.json_, _Marbles.runtimeconfig.json_ and the folder _lang_. Open your favorite terminal, go to the Marbles directory and type ```dotnet Marbles.dll``` (Linux and macOS are case sensitive).
 
 ## Install .NET
 Only the portable version needs this. Ensure that you have the .NET 10 runtime installed on your system. If not you can get it here:
@@ -61,7 +61,7 @@ A path that is not a full path is taken from the directory you are in. Closing t
 ## Language files
 English is built into Marbles. The other languages are text files in a folder named `lang` next to the Marbles program: `da.txt` (Danish), `de.txt` (German), `nb.txt` (Norwegian), `sv.txt` (Swedish), `es.txt` (Spanish), `fr.txt` (French), `it.txt` (Italian), `pl.txt` (Polish), `nl.txt` (Dutch) and `fi.txt` (Finnish). They come with Marbles; keep the folder next to the program when you copy or move it. If it is missing, those languages are not offered (and Marbles starts in English if one of them was chosen, keeping the choice for when the file is back).
 
-The language files can also be downloaded on their own, as the **language file pack** on the [releases page](https://github.com/artstisen/marbles/releases) (`Marbles-languages-1.5.3.zip`): the folder `lang` with the language files and a read-me. Unzip it next to the Marbles program to put the folder `lang` in place. In the source, the files are `Marbles/Lang/External`, and `./publish.ps1 languages` makes the pack in _publish/languages_.
+The language files can also be downloaded on their own, as the **language file pack** on the [releases page](https://github.com/artstisen/marbles/releases) (`Marbles-languages-1.5.4.zip`): the folder `lang` with the language files and a read-me. Unzip it next to the Marbles program to put the folder `lang` in place. In the source, the files are `Marbles/Lang/External`, and `./publish.ps1 languages` makes the pack in _publish/languages_.
 
 Marbles also looks for a folder `lang` in the data directory, which is used first. A language file there (or next to the program):
 
@@ -86,7 +86,7 @@ dotnet build Marbles.sln -c Release
 
 The files to run are then found in _Marbles/bin/Release/net10.0_.
 
-To build executables that include the .NET runtime (so nothing has to be installed to run them), run ```./publish.ps1``` with PowerShell. It creates a single file for each platform in the directory _publish_, and the lightweight version for all platforms (which needs the .NET runtime, and is started with ```dotnet Marbles.dll```) in _publish/portable_. It also packs each of them for a release in _publish/release_: a zip for Windows and the portable version, and a tar.gz for Linux and macOS (where the program is marked as one that can be run), each with a folder _Marbles_, and the language file pack (`Marbles-languages-1.5.3.zip`). `./publish.ps1 win-x64,languages` builds only the ones named. The tests are run first, and nothing is published when one fails (`-SkipTests` leaves them out); the version must be the same in `Marbles.csproj` (`AssemblyVersion`, `FileVersion`) and in `DialogText.ApplicationVersion`.
+To build executables that include the .NET runtime (so nothing has to be installed to run them), run ```./publish.ps1``` with PowerShell. It creates a single file for each platform in the directory _publish_, and the lightweight version for all platforms (which needs the .NET runtime, and is started with ```dotnet Marbles.dll```) in _publish/portable_. It also packs each of them for a release in _publish/release_: a zip for Windows and the portable version, and a tar.gz for Linux and macOS (where the program is marked as one that can be run), each with a folder _Marbles_, and the language file pack (`Marbles-languages-1.5.4.zip`). `./publish.ps1 win-x64,languages` builds only the ones named. The tests are run first, and nothing is published when one fails (`-SkipTests` leaves them out); the version must be the same in `Marbles.csproj` (`AssemblyVersion`, `FileVersion`) and in `DialogText.ApplicationVersion`.
 
 ## Upgrading from Marbles v1.0.x
 Copy your "data" directory to the directory of the new version, or unzip the new version over the old.

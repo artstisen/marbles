@@ -6,9 +6,9 @@
 #   languages   The language file pack: a zip with the language files (lang) and a read-me, to be downloaded
 #               on its own
 # Each version is also packed for a release in "publish/release", named by the version of Marbles: a zip for
-# Windows and the portable version (Marbles-1.5.3-win-x64.zip), and a tar.gz for Linux and macOS
-# (Marbles-1.5.3-linux-x64.tar.gz), where the program is marked as one that can be run. Each has a folder "Marbles"
-# with the files in it. The language pack is Marbles-languages-1.5.3.zip
+# Windows and the portable version (Marbles-1.5.4-win-x64.zip), and a tar.gz for Linux and macOS
+# (Marbles-1.5.4-linux-x64.tar.gz), where the program is marked as one that can be run. Each has a folder "Marbles"
+# with the files in it. The language pack is Marbles-languages-1.5.4.zip
 # The tests are run first (nothing is published when one fails), and the version must be the same in all the
 # places it is set: AssemblyVersion and FileVersion in Marbles.csproj, and DialogText.ApplicationVersion.
 # Usage:  ./publish.ps1                     (all versions)
@@ -31,7 +31,7 @@ foreach ($platform in $Platforms) {
     if ($known -notcontains $platform) { throw "Unknown version: '$platform' (known: $($known -join ', '))" }
 }
 
-# The version of Marbles (1.5.3), for the names of the archives: the same in all three places
+# The version of Marbles (1.5.4), for the names of the archives: the same in all three places
 [xml]$csproj = Get-Content $project
 function Get-Property([string]$name) {
     $csproj.Project.PropertyGroup | ForEach-Object { $_.$name } | Where-Object { $_ } | Select-Object -First 1
@@ -115,7 +115,7 @@ foreach ($platform in $Platforms) {
     $folder = Join-Path $output $platform
     if (Test-Path $folder) { Remove-Item -Recurse -Force $folder }
     if ($platform -eq "languages") {
-        # The zip is named by the version of Marbles (Marbles-languages-1.5.3.zip)
+        # The zip is named by the version of Marbles (Marbles-languages-1.5.4.zip)
         $lang = Join-Path $PSScriptRoot "Marbles/Lang"
         $staging = Join-Path ([System.IO.Path]::GetTempPath()) ("marbles-languages-" + [guid]::NewGuid().ToString("N"))
         New-Item -ItemType Directory -Force (Join-Path $staging "lang") | Out-Null

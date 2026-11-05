@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="868" height="572" viewBox="0 0 868 572">
+<title>Marbles: the main menu of a data file</title>
+<style>text{font-family:"Cascadia Mono","Cascadia Code",Consolas,"DejaVu Sans Mono",Menlo,monospace;font-size:14px;white-space:pre}</style>
+<rect width="100%" height="100%" rx="10" fill="#0C0C0C"/>
+<rect width="100%" height="34" rx="10" fill="#2B2B2B"/>
+<rect y="24" width="100%" height="10" fill="#2B2B2B"/>
+<circle cx="20" cy="17" r="6" fill="#FF5F57"/>
+<circle cx="40" cy="17" r="6" fill="#FEBC2E"/>
+<circle cx="60" cy="17" r="6" fill="#28C840"/>
+<text x="434.0" y="22" fill="#A0A0A0" text-anchor="middle">Marbles: the main menu of a data file</text>
+<rect x="14.0" y="48" width="134.4" height="17" fill="#61D6D6"/>
+<text x="14.0" y="60.8" fill="#0C0C0C" textLength="126.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> DATA FILE MENU</text>
+<text x="392.0" y="60.8" fill="#61D6D6" textLength="67.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> Marbles</text>
+<text x="795.2" y="60.8" fill="#767676" textLength="50.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">[data]</text>
+<text x="14.0" y="77.8" fill="#767676" textLength="823.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve">--------------------------------------------------------------------------------------------------</text>
+<text x="30.8" y="94.8" fill="#F2F2F2" textLength="67.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve">.-------</text>
+<text x="98.0" y="94.8" fill="#767676" textLength="336.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">. .-----------. .----------. .---------.</text>
+<text x="30.8" y="111.8" fill="#F2F2F2" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="39.2" y="111.8" fill="#61D6D6" textLength="50.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> Notes</text>
+<text x="98.0" y="111.8" fill="#767676" textLength="336.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">| | Data file | | Settings | | Marbles |</text>
+<text x="803.6" y="111.8" fill="#767676" textLength="25.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve">Tab</text>
+<text x="22.4" y="128.8" fill="#767676" textLength="814.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve">.&#x27;       &#x27;-&#x27;-----------&#x27;-&#x27;----------&#x27;-&#x27;---------&#x27;-----------------------------------------------.</text>
+<text x="22.4" y="145.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="145.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<rect x="39.2" y="150" width="16.8" height="17" fill="#61D6D6"/>
+<text x="22.4" y="162.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="39.2" y="162.8" fill="#0C0C0C" textLength="16.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve">-&gt;</text>
+<text x="56.0" y="162.8" fill="#CCCCCC" textLength="16.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> N</text>
+<text x="72.8" y="162.8" fill="#767676" textLength="92.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> ..........</text>
+<text x="173.6" y="162.8" fill="#CCCCCC" textLength="25.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve">New</text>
+<text x="828.8" y="162.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="179.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="30.8" y="179.8" fill="#CCCCCC" textLength="58.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    S /</text>
+<text x="89.6" y="179.8" fill="#767676" textLength="75.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> ........</text>
+<text x="173.6" y="179.8" fill="#CCCCCC" textLength="50.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">Search</text>
+<text x="828.8" y="179.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="196.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="30.8" y="196.8" fill="#CCCCCC" textLength="42.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    R</text>
+<text x="72.8" y="196.8" fill="#767676" textLength="92.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> ..........</text>
+<text x="173.6" y="196.8" fill="#CCCCCC" textLength="67.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve">Reselect</text>
+<text x="828.8" y="196.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="213.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="30.8" y="213.8" fill="#CCCCCC" textLength="42.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    F</text>
+<text x="72.8" y="213.8" fill="#767676" textLength="92.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> ..........</text>
+<text x="173.6" y="213.8" fill="#CCCCCC" textLength="109.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve">Favorites (0)</text>
+<text x="828.8" y="213.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="230.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="30.8" y="230.8" fill="#CCCCCC" textLength="42.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    T</text>
+<text x="72.8" y="230.8" fill="#767676" textLength="92.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> ..........</text>
+<text x="173.6" y="230.8" fill="#CCCCCC" textLength="50.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">Top 20</text>
+<text x="828.8" y="230.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="247.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="30.8" y="247.8" fill="#CCCCCC" textLength="42.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    M</text>
+<text x="72.8" y="247.8" fill="#767676" textLength="92.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> ..........</text>
+<text x="173.6" y="247.8" fill="#CCCCCC" textLength="159.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve">Session history (0)</text>
+<text x="828.8" y="247.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="264.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="30.8" y="264.8" fill="#CCCCCC" textLength="42.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    A</text>
+<text x="72.8" y="264.8" fill="#767676" textLength="92.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> ..........</text>
+<text x="173.6" y="264.8" fill="#CCCCCC" textLength="100.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve">List all (8)</text>
+<text x="828.8" y="264.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="281.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="30.8" y="281.8" fill="#CCCCCC" textLength="109.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve">    :undelete</text>
+<text x="140.0" y="281.8" fill="#767676" textLength="25.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> ..</text>
+<text x="173.6" y="281.8" fill="#CCCCCC" textLength="109.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve">Undo deletion</text>
+<text x="828.8" y="281.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="298.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="298.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="315.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="315.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="332.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="332.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="349.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="349.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="366.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="366.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="383.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="383.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="400.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="400.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="417.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="417.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="434.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="434.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="451.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="451.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="468.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="468.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="485.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="485.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="502.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="828.8" y="502.8" fill="#767676" textLength="8.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve">|</text>
+<text x="22.4" y="519.8" fill="#767676" textLength="814.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve">&#x27;-----------------------------------------------------------------------------------------------&#x27;</text>
+<rect x="22.4" y="524" width="42.0" height="17" fill="#CCCCCC"/>
+<rect x="131.6" y="524" width="75.6" height="17" fill="#CCCCCC"/>
+<rect x="257.6" y="524" width="58.8" height="17" fill="#CCCCCC"/>
+<rect x="476.0" y="524" width="25.2" height="17" fill="#CCCCCC"/>
+<rect x="551.6" y="524" width="25.2" height="17" fill="#CCCCCC"/>
+<text x="22.4" y="536.8" fill="#0C0C0C" textLength="33.6" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> j/k</text>
+<text x="64.4" y="536.8" fill="#CCCCCC" textLength="58.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> Select</text>
+<text x="131.6" y="536.8" fill="#0C0C0C" textLength="67.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> l/Enter</text>
+<text x="207.2" y="536.8" fill="#CCCCCC" textLength="42.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> Open</text>
+<text x="257.6" y="536.8" fill="#0C0C0C" textLength="50.4" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> Tab/h</text>
+<text x="316.4" y="536.8" fill="#CCCCCC" textLength="151.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> Next/Previous tab</text>
+<text x="476.0" y="536.8" fill="#0C0C0C" textLength="16.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> ?</text>
+<text x="501.2" y="536.8" fill="#CCCCCC" textLength="42.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> Help</text>
+<text x="551.6" y="536.8" fill="#0C0C0C" textLength="16.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> X</text>
+<text x="576.8" y="536.8" fill="#CCCCCC" textLength="58.8" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> Logout</text>
+</svg>

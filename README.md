@@ -5,7 +5,12 @@ All your notes are kept in a single encrypted file that is easy to back up and c
 
 > **Looking for a text editor?** If you want a versatile modal editor to plan, organize and write Typst, Markdown and code directly in your terminal, take a look at my other project, Blyant: [github.com/artstisen/blyant](https://github.com/artstisen/blyant) and [blyant-editor.com](https://blyant-editor.com).
 
-![Marbles in WT on Windows 11](marbles-text-editor-153-windows-11-1.jpg)
+| | |
+|---|---|
+| ![Editing a note as Markdown, with a search and its count](docs/screenshots/editor.svg) | ![All the notes of a data file](docs/screenshots/notes-list.svg) |
+| ![The main menu of a data file](docs/screenshots/main-menu.svg) | ![The color schemes](docs/screenshots/color-schemes.svg) |
+
+The screenshots are of the real program, made with [tools/screenshots.py](tools/screenshots.py) from a data file of made-up notes, in the color schemes Default, Deep Blue and Tasty Bytes.
 
 ## Key features
 
@@ -49,6 +54,8 @@ The aim is an unbloated set of core tools: I've included the functionality I wou
 
 Marbles v1.5.3 in Windows Terminal on Windows 11:
 
+![Marbles in WT on Windows 11](marbles-text-editor-153-windows-11-1.jpg)
+
 ![Marbles in WT on Windows 11, 1](marbles-text-editor-153-tui-1.jpg)
 
 ![Marbles in WT on Windows 11, 2](marbles-text-editor-153-tui-2.jpg)
@@ -90,7 +97,7 @@ Inside Marbles, press `?` for the list of keys.
 | Core code base | Agnostic: no OS-specific logic, .NET handles the differences between the platforms |
 | Box drawing | Classic ASCII |
 | Console I/O encoding | UTF-8 |
-| Languages | English built in; Danish, German, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (the commands and keys are the same in all languages). The language files are also a pack of their own on the releases page (`Marbles-languages-1.5.3.zip`) |
+| Languages | English built in; Danish, German, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (the commands and keys are the same in all languages). The language files are also a pack of their own on the releases page (`Marbles-languages-1.5.4.zip`) |
 | Date/time format | ISO 8601 |
 | File encryption | AES-256-GCM, with the key derived from the password using PBKDF2-HMAC-SHA256 |
 | Software license | [MIT](LICENSE) |
