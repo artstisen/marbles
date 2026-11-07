@@ -97,7 +97,7 @@ Open the WT (Windows Terminal) settings file found in:
 
 (remember to replace "_User_" with your own user)
 
-You can also open the file directly from WT by pressing ```CTRL+,``` and clicking the "Open JSON file" found in the bottom left corner of the settings window.
+You can also open the file directly from WT by pressing ```CTRL+,``` and clicking "Open JSON file" found in the bottom left corner of the settings window.
 
 **TIP:** Create an alias for opening the WT settings file through PowerShell by adding the following script to the .ps1 file (as described in detail in the start of this article):
 ```
@@ -111,7 +111,7 @@ New-Alias -Name wtedit -Value fnc-wt1
 ```
 Remember to initialize the ```$psUser``` variable as described in the top of the article.
 
-Typing "**wtedit"** will now open the settings.json in your preferred editor.
+Typing "**wtedit"** will now open settings.json in your preferred editor.
 
 
 Insert the following lines in below the ```"defaultProfile": "{GUID}",``` in the WT settings file (see full example further down):

@@ -3,7 +3,7 @@
 ## Select mode
 Marbles can be used for encrypted notes and as an editor for ordinary text files. When it starts, the start page is shown in a frame with three tabs at its top: **Mode**, where you select what to use Marbles for, **Configuration**, with the settings, and **Help**, with the help and the about page. The settings are on five pages, shown as the sub-tabs **General**, **Layout**, **Editor**, **Lists** and **System** in a row at the top of the frame. The tab and sub-tab shown are highlighted in the color of the frame.
 
-`Tab` goes to the next tab (Mode, Configuration, Help, and round to Mode again), and `Shift+Tab` the other way. `h` and `l` (or `Left`/`Right`) go to the previous and the next sub-tab of the tab shown, going round, so in Configuration they go through General, Layout, Editor, Lists and System. The keys are shown at the right ends of the two rows: `Tab` after the tabs and `h/l` after the sub-tabs, in the color of the frame. A tab opens with the sub-tab it showed last. This is the same in all the frames with tabs (the color schemes, the logos).
+`Tab` goes to the next tab (Mode, Configuration, Help, and round to Mode again), and `Shift+Tab` the other way. `h` and `l` (or `Left`/`Right`) go to the previous and next sub-tab of the tab shown, going round, so in Configuration they go through General, Layout, Editor, Lists and System. The keys are shown at the right ends of the two rows: `Tab` after the tabs and `h/l` after the sub-tabs, in the color of the frame. A tab opens with the sub-tab it showed last. This is the same in all frames with tabs (the color schemes, the logos).
 
 
 ### Mode
@@ -12,7 +12,7 @@ Each choice has a number and a key, shown in front of it. The number selects the
 - `1` `N` **Note Management (encrypted notes)**: Continue to the login page
 - `2` `F` **Text Editor/File Management**: Open the [file browser](#file-browser) to edit plain text files and manage files. Closing the file browser returns here
 - `3` `O` **Jump menu**: Open the [Jump menu](Guide-to-main-menu.md#jump-menu), to go straight to a file, a page of Marbles or a data file (also with `Ctrl+O`). Pages such as Color schemes and Help open on top of the start page
-- `4` `U` **Quick guide**: A short introduction to Marbles: what the two parts are for, the keys for moving around (with a picture of `h` `j` `k` `l` as the arrow keys), and the modes of the editor. `Esc` closes it, and `?` shows the help with all the keys
+- `4` `U` **Quick guide**: A short introduction to Marbles: what the two parts are for, keys for moving around (with a picture of `h` `j` `k` `l` as the arrow keys), and the modes of the editor. `Esc` closes it, and `?` shows the help with all keys
 - `5` **Exit**: Close Marbles at once (`Enter` on it). `Q` exits too, after asking
 
 Move the selection with `j`/`k` (or the arrow keys) or the number, and press `Enter`. `?` shows the help, and `Q` (or `Esc`) exits Marbles after asking in a box on top of the page (`Y`/`N`, or `j`/`k` and `Enter`; `Esc` cancels).
@@ -27,7 +27,7 @@ The settings are on five pages, so they can be changed in one place without logg
 - **Start in Text Editor (file browser)**: Go directly to the file browser
   - **Open the favorites list first** (shown when starting in the Text Editor): Start in the [favorites](#favorites) of the file browser. Closing the list shows the file browser. Saved as `startfavorites` in the settings file
   - The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to starting in Note Management. A settings file without `startmode` starts in Note Management, and one written by Marbles 1.5.3 or earlier keeps the choice it has (`select` shows the choices)
-- **Stay logged into data file (Session)**: Off from the start. Normally, going from your notes to something else logs you out of the data file: opening a text file in the file browser, or a jump to a file, a directory or a page of Configuration. The notes are cleared from memory and the password is asked for again. With this on, the data file stays open until you log out yourself (Logout in the main menu, `:logout` in the file browser), choose another data file, or exit Marbles: text files are edited, the file browser and the pages of Configuration are used, and the main menu of the data file comes back afterwards without the password. The string memory is kept too, so text yanked in a note can be put in a text file (and the other way round). The notes are in memory, decrypted, while you work on files, so anyone at your computer can open them: use it on a computer only you use. Saved as `stayloggedin` in the settings file. Not shown with _Text Editor only_
+- **Stay logged into data file (Session)**: Off from the start. Normally, going from your notes to something else logs you out of the data file: opening a text file in the file browser, or a jump to a file, a directory or a page of Configuration. The notes are cleared from memory and the password is asked for again. With this on, the data file stays open until you log out yourself (Logout in the main menu, `:logout` in the file browser), choose another data file, or exit Marbles: text files are edited, the file browser and the pages of Configuration are used, and the data file main menu comes back afterwards without the password. The string memory is kept too, so text yanked in a note can be put in a text file (and the other way round). The notes are in memory, decrypted, while you work on files, so anyone at your computer can open them: use it on a computer only you use. Saved as `stayloggedin` in the settings file. Not shown with _Text Editor only_
 - **Text Editor only** and **Note Management only**: Use this Marbles for one of the two modes only. They are for running two copies of Marbles in separate directories, one as a text editor and one for notes. Only one of them can be set (setting one clears the other, and setting it again turns it off)
   - _Text Editor only_: _Note Management_ is not shown in the Mode tab, and the file browser does not open data files (`.mbls`): it says so on its bottom line
   - _Note Management only_: _Text Editor/File Management_ is not shown in the Mode tab
@@ -51,12 +51,12 @@ The settings are on five pages, so they can be changed in one place without logg
 
 - **Line numbers**: Show line numbers to the left of the text (off from the start)
 - **Wrap long lines**: Long lines go on to the next rows (on from the start). When off, the view scrolls sideways (see [the guide to the editor](Guide-to-editor.md#long-lines))
-- **Show blank space as . > $ (:whitespace)**: A space is shown as `.`, a tab as `>` and the end of a line as `$`, and the blank space at the end of a line is highlighted (off from the start; `:whitespace` in the editor changes it too). It is the setting `whitespace`
+- **Show blank space as . > $ (:whitespace)**: A space is shown as `.`, a tab as `>` and the end of a line as `$`, and blank space at the end of a line is highlighted (off from the start; `:whitespace` in the editor changes it too). It is the setting `whitespace`
 - **Marks: ' jumps to the exact place**: `'a` jumps to the place of [mark](Guide-to-editor.md#marks) `a`, as `` `a ``, for keyboards where `` ` `` is hard to type or a dead key (off from the start: `'a` goes to the start of the line of the mark, as in Vim). It is the setting `marksapostrophe`
-- **Keep 12 lines around the cursor**: When the cursor comes within 12 lines of the top or the bottom of the editor, the text scrolls, so you see what comes next (on from the start). The number is set with `:scrolloff 8` in the editor (see [the guide to the editor](Guide-to-editor.md#scrolling))
+- **Keep 12 lines around the cursor**: When the cursor comes within 12 lines of the top or bottom of the editor, the text scrolls, so you see what comes next (on from the start). The number is set with `:scrolloff 8` in the editor (see [the guide to the editor](Guide-to-editor.md#scrolling))
 - **Clipboard and paste bin**: `Enter` opens the clipboard settings: where yanked text goes out of Marbles (see [the guide to the editor](Guide-to-editor.md#system-clipboard-and-paste-bin))
 - **Syntax highlighting**: Color the text of the kinds of files the editor knows (Markdown, HTML, CSS, JavaScript, JSON, XML, C#, PHP, INI), on from the start. It is the setting `syntaxcolors`, which `:syntax off` and `:syntax on` in the editor also change
-- **Spell checker**: The languages used when spell checking is turned on in the editor with `:spell` (it is not turned on here). `Enter` shows the languages there is a spell file for in a box, where `Enter` turns a language on or off (several can be on, and the last one stays on) and `Esc` closes. Saved as `spelllang` (`en` or `da,en`). The spell files are in the directory `spell`; without any, the row says so
+- **Spell checker**: The languages used when spell checking is turned on in the editor with `:spell` (it is not turned on here). `Enter` shows the languages there is a spell file for in a box, where `Enter` turns a language on or off (several can be on, and the last one stays on) and `Esc` closes. Saved as `spelllang` (`en` or `da,en`). Spell files are in the directory `spell`; without any, the row says so
 - **Snippet editor**: Open the file of [snippets](Guide-to-editor.md#snippets), `snippets.txt`, in the editor. If there is no file yet, you are asked whether to make one, with two examples. Closing the editor returns to this page
 - **Complete words while typing**: In Insert mode, the word typed is looked up in the lists of completions, and `Tab` completes it (see [Completing words](Guide-to-editor.md#completing-words)). On from the start; `:complete` in the editor changes it too. It is the setting `autocomplete`
 - **Completions editor**: Open the file of completions, `completions.txt`, in the editor. If there is no file yet, it is made with lists to start with. Closing the editor returns to this page
@@ -64,7 +64,7 @@ The settings are on five pages, so they can be changed in one place without logg
 **Lists**
 
 - **Line numbers in file browser**, **in Favorites**, **in History**, **in Hotlist**, **in Search results** and **in Bookmarks**: Number the rows of each list at the left, as `12gg` and `5j` count them (in the panes of the file browser `..` is row 1). Off from the start. The numbers have the colors of the line numbers of the editor (the selected row: _Current line number_), and the pointer and the names move to the right of them. `:number` and `:nonumber` in a list change its setting too. The History, Favorites and Hotlist tabs of the [Jump menu](Guide-to-main-menu.md#jump-menu) follow the settings of their lists, and _in Bookmarks_ is its Bookmarks tab. Saved as `filenumbers`, `favoritenumbers`, `historynumbers`, `hotlistnumbers`, `searchnumbers` and `bookmarknumbers`. With _Note Management only_ only _Line numbers in Bookmarks_ is shown
-- The lists of entries of a data file have no such numbers: their rows already show the numbers `1` to `0` that open the entries of the page (and `:12` selects entry 12), and a second column of numbers would be mistaken for them
+- Lists of entries of a data file have no such numbers: their rows already show the numbers `1` to `0` that open the entries of the page (and `:12` selects entry 12), and a second column of numbers would be mistaken for them
 
 **System**
 
@@ -75,21 +75,21 @@ The settings are on five pages, so they can be changed in one place without logg
 - **View log**: Show the [log](#the-log)
 
 ### Commands
-On every tab of the start page (Mode, the pages of Configuration, Help), `:` opens the command line on the bottom line. `Tab` completes the command you are typing, from the commands of this page, and `Up`/`Down` bring back the commands given here before:
+On every tab of the start page (Mode, the pages of Configuration, Help), `:` opens the command line on the bottom line. `Tab` completes the command you are typing, from the commands of this page, and `Up`/`Down` bring back commands given here before:
 
 - `:note` (or `:notes`) The login page, as _Note Management_ on the Mode tab; `:file` (or `:browse`) The file browser, as _Text Editor/File Management_. With _Text Editor only_ or _Note Management only_, the mode that is not used is refused
 - `:mode` The Mode tab; `:config` (or `:general`), `:layout`, `:editor`, `:lists` and `:system` The pages of the Configuration tab (`:editor` is the Editor page of Configuration, not the text editor)
 - `:jump` (or `:ju`, `:jmp`) The [Jump menu](Guide-to-main-menu.md#jump-menu); `:jump name` goes straight to a page of Marbles (`:jump colors`, `:jump help`; `Tab` completes the names, see [Jumping to a page by its name](Guide-to-main-menu.md#bookmarks))
 - `:help` (or `:h`) The help of the start page, as `?`; `:about` The about page; `:quick` (or `:guide`) The quick guide
-- `:scheme` The color schemes; `:logo` The logos; `:snippet` (or `:snip`) The snippet editor; `:completions` (or `:comp`) The completions editor; `:clipboard` The clipboard settings; `:log` The log
+- `:scheme` Color schemes; `:logo` Logos; `:snippet` (or `:snip`) The snippet editor; `:completions` (or `:comp`) The completions editor; `:clipboard` Clipboard settings; `:log` The log
 - `:restart` Restart Marbles (asks first); `:reset` Reset all settings (asks first, as on the System page); `:quit`, `:exit` (or `:q`) Exit Marbles (asks first)
 
-The command names are the same in all languages, and the names of the main menu work here too (`:browse`, `:guide`, `:scheme`, `:logo`).
+Command names are the same in all languages, and the names of the main menu work here too (`:browse`, `:guide`, `:scheme`, `:logo`).
 
 ### Help
-- `1` **Help**: All the keys and commands of Marbles, as `:help` (`?` on a page shows the keys of that page)
+- `1` **Help**: All keys and commands of Marbles, as `:help` (`?` on a page shows the keys of that page)
 - `2` **Quick guide**: The short introduction to Marbles, as `U` on the Mode tab
-- `3` **Jump menu guide**, `4` **File browser guide**, `5` **Text editor guide**, `6` **Note Management guide**: A short guide to each part: what it is for and its most used keys. They are shown as the quick guide: `h`/`l` page, `j`/`k` line, `Esc` closes, and `?` shows all the keys of that part
+- `3` **Jump menu guide**, `4` **File browser guide**, `5` **Text editor guide**, `6` **Note Management guide**: A short guide to each part: what it is for and its most used keys. They are shown as the quick guide: `h`/`l` page, `j`/`k` line, `Esc` closes, and `?` shows all keys of that part
 - `7` **About**: General information about Marbles, and its license on the next page. `Esc` closes it
 
 Select with `j`/`k` or the number and press `Enter`. `Esc` goes back to the Mode tab.
@@ -164,7 +164,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `Ctrl+K` or `:recent` The latest files you opened: a small box with the 9 newest files of the [file history](Guide-to-login-menu.md#file-history), newest first, each with the folder it is in. `j` `k` select, `Enter` opens the selected file and `1` to `9` the file of that number, `Esc` closes the box. A text file opens in the editor where you left it; a data file is selected on the login page. A file that is gone is dimmed. Notes are never in it: they are not files. A text file opens straight in the editor (the browser is there when you close it). Also in the favorites, the history, the hotlist and the search results, on the start page, in the [Jump menu](Guide-to-main-menu.md#jump-menu) and in the [editor](Guide-to-editor.md#other-commands) (in Normal mode)
 - `:book 3` Jump to bookmark 3 of the [Jump menu](Guide-to-main-menu.md#bookmarks) (`:book` alone shows the bookmarks). Also on the start page, and on the pages of the favorites, the history, the hotlist and the search results
 - `:bookmark` Bookmark the selected file or directory (on `..`: the directory shown) on the Bookmarks tab of the [Jump menu](Guide-to-main-menu.md#bookmarks). `:bookmark name` gives it a name to jump to it by (`:book name`), and `:bookmark! name` moves the bookmark with the name here. A data file in the data directory is bookmarked as a data file (a jump to it selects it on the login page)
-- `:diff` Compare two text files: the two marked with `Space`, or (without marks, with two panes) the file selected in each pane. `:diff name` compares the selected file with the file of that name in the directory (or a path). The older file, by the time it was last changed, is the old one, so `+` is what was added since. The comparison is shown as in the editor (see [Comparing](Guide-to-editor.md#comparing)): `n` `N` (or `]c` `[c`) go to the changes, `Enter` opens the file at the line, `Esc` returns here. `:diff -w` does not count blank space. If the line endings or the encodings differ, the line at the top says so (they are not compared). Directories, data files and files that are not text are not compared
+- `:diff` Compare two text files: the two marked with `Space`, or (without marks, with two panes) the file selected in each pane. `:diff name` compares the selected file with the file of that name in the directory (or a path). The older file, by the time it was last changed, is the old one, so `+` is what was added since. The comparison is shown as in the editor (see [Comparing](Guide-to-editor.md#comparing)): `n` `N` (or `]c` `[c`) go to the changes, `Enter` opens the file at the line, `Esc` returns here. `:diff -w` does not count blank space. If line endings or encodings differ, the line at the top says so (they are not compared). Directories, data files and files that are not text are not compared
 - `:name` Copy the name of the selected file or directory (on `..`: of the directory shown) in the same way: `notes.md`, not the whole path
 - `:path` and `:name` also put the path or name in the [string memory](Guide-to-editor.md#string-memory) of the editor, as the current string: `p` in the editor (or `CTRL+R` in Insert mode) puts it in the text. This works also when the clipboard and the paste bin are turned off
 - `:match` With two panes: the other pane shows the directory of the pane with the focus (with the same file or directory selected). The focus stays where it is
@@ -172,7 +172,7 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `:trash` Go to the trash (`trash` in the data directory), with what was deleted (see [Managing files](#managing-files))
 - `:protect off` Lift the protection of Marbles' own files for this session, so they can be renamed, moved and deleted; `:protect on` restores it (`:protect` alone tells how it is). See [Managing files](#managing-files)
 - `:data` Go to the data directory itself, with the files Marbles keeps there: `settings.ini`, `snippets.txt` and `completions.txt` (the snippets and the completions of the editor), `favorites.txt`, `history.txt` and `hotlist.txt` (of the file browser), and `jump.txt` and `bookmarks.txt` (of the Jump menu)
-- `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again; `Up` and `Down` bring back the commands given in the file browser before (see [the command line](Guide-to-main-menu.md))
+- `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again; `Up` and `Down` bring back commands given in the file browser before (see [the command line](Guide-to-main-menu.md))
 - `?` Help
 - `Esc`, `Q` or `:q` Close the file browser
 - `:exit` Exit Marbles (asks first)
@@ -219,7 +219,7 @@ Things to know:
 In the box:
 
 - **Name**: Part of the name of the file. With `*` (any characters) and `?` (one character) the whole name must fit, as in `*.md`. Leave it empty to search all files for a text
-- **Text in files**: Find the text files that contain a text. Files that are not text, files larger than 10 MB and Marbles data files (they are encrypted) are not searched
+- **Text in files**: Find text files that contain a text. Files that are not text, files larger than 10 MB and Marbles data files (they are encrypted) are not searched
 - **Regular expression**: The name and the text are regular expressions (`^(notes|plan)\.`, `\d{4}-\d\d`)
 - **Match case**: Off, so `cat` also finds `Cat`
 - **Where**: The directory and its subfolders, or the directory only
@@ -266,18 +266,18 @@ In the list of favorites:
 **Folders:** Favorites can be grouped in folders. A folder only exists in the list of favorites; nothing is created on disk and no files are moved.
 
 - `A` or `:folder name` Create a folder in front of the selected item. It is shown as `[-] Name` when open and `[+] Name` when closed, with the number of favorites in it
-- `l` or `Enter` on a folder: Open or close it. The favorites in an open folder are shown below it, two spaces in
-- `:expand` Open all the folders, `:collapse` Close all the folders
-- **Several at once:** Mark the favorites with `Space` (it marks or unmarks the selected favorite and goes to the next; a marked favorite has a `+` in front, and the number of marked is shown at the bottom right). Then press `M` and pick where they go from the list: one of your folders, _New folder..._ (you are asked for its name, and it is placed where the first of the favorites is) or _(No folder)_. Without marks, `M` moves the selected favorite. With marks, `D` removes all the marked favorites (you are asked first), and `u` puts them back. `Esc` clears the marks
+- `l` or `Enter` on a folder: Open or close it. Favorites in an open folder are shown below it, two spaces in
+- `:expand` Open all folders, `:collapse` Close all folders
+- **Several at once:** Mark the favorites with `Space` (it marks or unmarks the selected favorite and goes to the next; a marked favorite has a `+` in front, and the number of marked is shown at the bottom right). Then press `M` and pick where they go from the list: one of your folders, _New folder..._ (you are asked for its name, and it is placed where the first of the favorites is) or _(No folder)_. Without marks, `M` moves the selected favorite. With marks, `D` removes all marked favorites (you are asked first), and `u` puts them back. `Esc` clears the marks
 - **To the top or the end:** `T` (or `:top`) moves the marked favorites to the top of the list, and `E` (or `:bottom`) to the end, in the order they have. Without marks it moves the selected favorite, or the selected folder with its favorites. A favorite in a folder goes to the top or the end of its folder (`M` moves it out of the folder)
 - **Into a folder:** Move a favorite (`V`, then `j` `k`) onto the folder. Moving down onto a folder puts it first in the folder, moving up from below puts it last. A closed folder opens
-- **Out of a folder:** Move the favorite on, past the first or the last favorite in the folder
+- **Out of a folder:** Move the favorite on, past the first or last favorite in the folder
 - A folder is moved like a favorite. It is closed first, and moves with its favorites past the favorite or folder next to it
 - `X` or `:rename name` Rename the folder
 - `C` Pick a color for the folder
 - `P`, `D` or `:remove` Remove the folder. If there are favorites in it you are asked first, as they are removed from the list with it (the files stay)
 
-While the list is filtered with `/text` the favorites found are shown without the folders, and nothing can be moved.
+While the list is filtered with `/text` the favorites found are shown without folders, and nothing can be moved.
 
 The list is kept in the file `favorites.txt` in the data directory (one line per favorite: the color, a tab character and the path; a folder has its name in brackets instead of a path, and the favorites in it start with a blank space). A file that has been closed in the editor has the line and column of the cursor before its path (`3:12` and a tab character). Favorites follow when you rename or move a file or directory in the browser, and are removed when you delete it. A favorite whose file is gone is shown as _(missing)_.
 

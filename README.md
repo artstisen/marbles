@@ -1,16 +1,16 @@
 # Marbles
 A free, open-source, cross-platform program for keeping encrypted notes, with a Vim-style editor, in any terminal on Windows, Linux and macOS.
 
-All your notes are kept in a single encrypted file that is easy to back up and carry along. You find them with search, favorites and pinned notes, and write them with the keys of Vim.
+All your notes are kept in a single encrypted file that is easy to back up and carry along. Manage multiple encrypted files with thousands of notes. Search and arrange your notes, import, export and merge data files.
 
 > **Looking for a text editor?** If you want a versatile modal editor to plan, organize and write Typst, Markdown and code directly in your terminal, take a look at my other project, Blyant: [github.com/artstisen/blyant](https://github.com/artstisen/blyant) and [blyant-editor.com](https://blyant-editor.com).
 
 | | |
 |---|---|
-| ![Editing a note as Markdown, with a search and its count](docs/screenshots/editor.svg) | ![All the notes of a data file](docs/screenshots/notes-list.svg) |
-| ![The main menu of a data file](docs/screenshots/main-menu.svg) | ![The color schemes](docs/screenshots/color-schemes.svg) |
+| ![Editing a note as Markdown](docs/screenshots/editor.svg) | ![All notes of a data file](docs/screenshots/notes-list.svg) |
+| ![The data file main menu](docs/screenshots/main-menu.svg) | ![Color schemes](docs/screenshots/color-schemes.svg) |
 
-The screenshots are of the real program, made with [tools/screenshots.py](tools/screenshots.py) from a data file of made-up notes, in the color schemes Default, Deep Blue and Tasty Bytes.
+Screenshots are of the real program, made with [tools/screenshots.py](tools/screenshots.py) from a data file of made-up notes, in the color schemes Default, Deep Blue and Tasty Bytes.
 
 ## Key features
 
@@ -21,7 +21,7 @@ The screenshots are of the real program, made with [tools/screenshots.py](tools/
 - Several data files, which can be created, merged and exported from within Marbles
 - Handles large notes and data files with thousands of notes
 
-**Written with the keys of Vim**
+**Written with Vim keys**
 - Normal, Insert and Visual modes (also block selection), counts, text objects, registers and undo
 - Spell checking, word completion, and search and replace with regular expressions
 - Split view, syntax highlighting (Markdown and code), snippets and macros
@@ -43,12 +43,12 @@ The screenshots are of the real program, made with [tools/screenshots.py](tools/
 3. Marbles starts in **Note Management**, at the login page of your data file. The first time, you create the password of your data file. Keep it safe: your notes cannot be recovered without it.
 4. Press `?` on any page to see its keys, or open the Quick guide from the start page.
 
-See the [guide to installation](Guide-to-installation.md) for the builds and the details.
+See the [guide to installation](Guide-to-installation.md) for builds and details.
 
 ## About Marbles
 Marbles provides a simple interface for creating, editing, searching, arranging, importing, exporting and deleting notes. Notes are stored as a searchable collection of entries in a single encrypted file for easy portability, and several data files can be created and managed from within the program itself.
 
-The aim is an unbloated set of core tools: I've included the functionality I would normally have added via lightweight plugins and init modifications in Neovim, without disrupting the classic terminal aesthetic. The interface is drawn with standard 128-character ASCII only (no extended ASCII or ANSI character sets), so it works with all standard monospaced fonts on every platform. The notes themselves can contain any Unicode text.
+The aim is an unbloated set of core tools: I've included the functionality I would normally have added via lightweight plugins and init modifications in Neovim, without disrupting the classic terminal aesthetic. The interface is drawn with standard 128-character ASCII only (no extended ASCII or ANSI character sets), so it works with all standard monospaced fonts on every platform. Notes themselves can contain any Unicode text.
 
 ## Gallery
 
@@ -83,21 +83,21 @@ Multiple instances of Marbles v1.0.1 in a split Windows Terminal with the CRT mo
 - [Start page, login and file browser](Guide-to-login-menu.md)
 - [Main menu, lists and entries](Guide-to-main-menu.md)
 - [Editor](Guide-to-editor.md)
-- [PowerShell alias and the Windows Terminal CRT mod](Guide-to-windows-terminal-crt.md)
+- [PowerShell alias and Windows Terminal CRT mod](Guide-to-windows-terminal-crt.md)
 - [Changes and upgrading from earlier versions](CHANGELOG.md)
 
-Inside Marbles, press `?` for the list of keys.
+Inside Marbles, press `?` for a list of keys.
 
 ## Specifications
 | | |
 |---|---|
 | Supported platforms | Windows, Linux and macOS |
-| Requirements | None for the single-file builds (the .NET runtime is included); the portable build needs the .NET 10 runtime |
+| Requirements | None for single-file builds (the .NET runtime is included); the portable build needs the .NET 10 runtime |
 | Application type | Text mode |
-| Core code base | Agnostic: no OS-specific logic, .NET handles the differences between the platforms |
+| Core code base | Agnostic: no OS-specific logic, .NET handles differences between platforms |
 | Box drawing | Classic ASCII |
 | Console I/O encoding | UTF-8 |
-| Languages | English built in; Danish, German, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (the commands and keys are the same in all languages). The language files are also a pack of their own on the releases page (`Marbles-languages-1.5.4.zip`) |
+| Languages | English built in; Danish, German, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (commands and keys are the same in all languages). Language files are also a pack of their own on the releases page (`Marbles-languages-1.5.4.zip`) |
 | Date/time format | ISO 8601 |
 | File encryption | AES-256-GCM, with the key derived from the password using PBKDF2-HMAC-SHA256 |
 | Software license | [MIT](LICENSE) |
@@ -113,7 +113,7 @@ dotnet run --project Marbles
 
 `publish.ps1` builds self-contained single file executables (with the .NET runtime included) for Windows, Linux and macOS, and the lightweight version for all platforms that needs the .NET runtime.
 
-`AGENTS.md` has the rules for working on the code (for people and for coding agents).
+`AGENTS.md` has rules for working on the code (for people and for coding agents).
 
 ## Tools used
 - Written in C#, a single binary file, no dependencies, runs in the terminal you already use
