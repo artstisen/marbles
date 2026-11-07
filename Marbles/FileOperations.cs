@@ -50,9 +50,15 @@ internal static class FileOperations
     /// directory is told with the links followed; on Windows a junction or a symbolic link is followed too. The
     /// parts that are not there are kept as they are
     /// </summary>
-    internal static string RealPath(string path)
+    internal static string RealPath(string path) => RealPath(path, 0);
+
+    // The links a path may lead through before it is taken as it is (links that lead to each other)
+    private const int MaxLinks = 40;
+
+    private static string RealPath(string path, int links)
     {
         var full = Path.GetFullPath(path);
+        if (links > MaxLinks) return full;
         try
         {
             var root = Path.GetPathRoot(full) ?? string.Empty;
@@ -63,10 +69,12 @@ internal static class FileOperations
                 var next = Path.Combine(current, parts[i]);
                 FileSystemInfo item = Directory.Exists(next) ? new DirectoryInfo(next) : new FileInfo(next);
                 if (!item.Exists) return Path.Combine(new[] { current }.Concat(parts[i..]).ToArray());
-                // (a mount point of a whole volume on Windows, "\\?\Volume{...}\", is kept as it is)
+                // (a mount point of a whole volume on Windows, "\\?\Volume{...}\", is kept as it is). The place a link
+                // leads to can have links in it too (on macOS a link to "/var/..." leads through "/var", a link
+                // into "/private/var"): it is followed again
                 current = item.LinkTarget != null && item.ResolveLinkTarget(true) is { } target &&
                           !target.FullName.StartsWith(@"\\?\", StringComparison.Ordinal)
-                    ? Path.GetFullPath(target.FullName)
+                    ? RealPath(target.FullName, links + 1)
                     : next;
             }
 
