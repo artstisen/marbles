@@ -476,9 +476,10 @@ public class ReleaseFixTests : IDisposable
         Assert.Equal(DialogText.FileIntoItself, FileOperations.Copy(source, link, out _));
         Assert.Equal(DialogText.FileIntoItself, FileOperations.Move(source, link, out _));
         Assert.False(Directory.Exists(Path.Combine(source, "inner", "project")));
-        // The real path follows the link
+        // The real path follows the link (both sides with links followed: on macOS the temp folder "/var/..." is
+        // "/private/var/...")
         Assert.True(FileOperations.SamePath(FileOperations.RealPath(Path.Combine(link, "file.txt")),
-            Path.Combine(source, "inner", "file.txt")));
+            FileOperations.RealPath(Path.Combine(source, "inner", "file.txt"))));
 
         // The link itself can be moved into the directory it leads to (only the link moves)
         Assert.False(FileOperations.IntoItself(link, source, false));
