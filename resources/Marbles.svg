@@ -1,26 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
 <title>Marbles</title>
 <rect x="49" y="49" width="926" height="926" rx="181" fill="#101418" stroke="#343e46" stroke-width="18"/>
-<defs>
-<clipPath id="bowShade" clipPathUnits="userSpaceOnUse"><rect x="560" y="148.333" width="360" height="120"/></clipPath>
-</defs>
-<g transform="translate(530 490) rotate(-45) scale(0.95) translate(-450 -95)">
-<!-- Bit (the teeth) on the upper side of the shaft -->
-<polygon points="20,31.6667 20,-80 75,-80 75,-25 115,-25 115,-60 165,-60 165,-15 210,-15 210,31.6667" fill="#a0ecec"/>
-<!-- Shaft in the three teal tones of the pencil -->
-<rect x="0" y="31.6667" width="560" height="42.2222" fill="#a0ecec"/>
-<rect x="0" y="73.8889" width="560" height="42.2222" fill="#61d6d6"/>
-<rect x="0" y="116.111" width="560" height="42.2222" fill="#2896a0"/>
-<path d="M0 52.7778L0 73.8889A21.1111 21.1111 0 0 1 0 31.6667Z" fill="#a0ecec"/>
-<path d="M0 95L0 116.111A21.1111 21.1111 0 0 1 0 73.8889Z" fill="#61d6d6"/>
-<path d="M0 137.222L0 158.333A21.1111 21.1111 0 0 1 0 116.111Z" fill="#2896a0"/>
-<!-- Bow (the ring) in the yellow of the eraser and the cursor -->
-<path d="M580 95a160 160 0 1 0 320 0a160 160 0 1 0 -320 0ZM680 95a60 60 0 1 0 120 0a60 60 0 1 0 -120 0Z" fill="#f9f1a5" fill-rule="evenodd"/>
-<path d="M580 95a160 160 0 1 0 320 0a160 160 0 1 0 -320 0ZM680 95a60 60 0 1 0 120 0a60 60 0 1 0 -120 0Z" fill="#d7c45c" fill-rule="evenodd" clip-path="url(#bowShade)"/>
-<!-- Collar, as the ferrule of the pencil -->
-<rect x="520" y="10" width="80" height="170" fill="#cccccc"/>
-<rect x="540" y="10" width="8" height="170" fill="#8c8c8c"/>
-<rect x="570" y="10" width="8" height="170" fill="#8c8c8c"/>
+<g transform="translate(520 485) rotate(-45) scale(0.92) translate(-435 -95)">
+<!-- Bit (the teeth): square steps below the shaft -->
+<polygon points="40,130 40,200 95,200 95,165 135,165 135,215 190,215 190,160 245,160 245,130" fill="#2896a0"/>
+<!-- Shaft in two teal tones, with a bevelled tip and a groove along it -->
+<polygon points="34,60 560,60 560,95 0,95 0,94" fill="#a0ecec"/>
+<polygon points="0,95 560,95 560,130 0,130" fill="#61d6d6"/>
+<polygon points="0,60 34,60 0,94" fill="#101418"/>
+<rect x="60" y="91" width="430" height="9" fill="#2896a0"/>
+<!-- Collar -->
+<rect x="530" y="40" width="44" height="110" fill="#2896a0"/>
+<!-- Bow: an octagon with an octagonal hole, its lower half in the darker teal -->
+<path d="M640,-55 L800,-55 L870,15 L870,175 L800,245 L640,245 L570,175 L570,15 Z M695,40 L745,40 L775,70 L775,120 L745,150 L695,150 L665,120 L665,70 Z" fill="#61d6d6" fill-rule="evenodd"/>
+<path d="M870,95 L870,175 L800,245 L640,245 L570,175 L570,95 L665,95 L665,120 L695,150 L745,150 L775,120 L775,95 Z" fill="#2896a0"/>
 </g>
+<!-- The cursor, as in the icon of Blyant -->
 <rect x="412" y="823" width="200" height="55" fill="#f9f1a5"/>
 </svg>
