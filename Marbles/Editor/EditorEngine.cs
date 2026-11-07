@@ -1900,7 +1900,15 @@ internal sealed partial class EditorEngine
     /// <summary>
     /// A redraw starts: the highlighting of the search matches has its time again (HighlightBudget)
     /// </summary>
-    internal void StartHighlighting() => _highlightSpent = 0;
+    internal void StartHighlighting()
+    {
+        _highlightSpent = 0;
+        _highlighted.Clear();
+    }
+
+    // The matches of the lines highlighted in this redraw, with the text they were found in: a line shown on many
+    // rows is asked for on each of them, and is searched only once (a changed line is searched again)
+    private readonly Dictionary<int, (string Text, List<(int Start, int End)> Matches)> _highlighted = new();
     private Regex? _searchRegex;
     private Regex? _highlightRegex;
 
@@ -1943,6 +1951,8 @@ internal sealed partial class EditorEngine
         _lastSearch = pattern;
         _searchRegex = CreateRegex(pattern);
         _highlightRegex = CreateRegex(pattern, null, HighlightTimeout);
+        // (another search: the matches kept are of the one before)
+        _highlighted.Clear();
     }
 
     private void StartSearch(string pattern, bool forward)
@@ -2148,6 +2158,13 @@ internal sealed partial class EditorEngine
     internal IEnumerable<(int Start, int End)> SearchMatches(int line)
     {
         if (!HighlightSearch || _highlightRegex == null) yield break;
+        var text = Buffer[line];
+        if (_highlighted.TryGetValue(line, out var known) && ReferenceEquals(known.Text, text))
+        {
+            foreach (var match in known.Matches) yield return match;
+            yield break;
+        }
+
         // The matches are all found here, so a timeout is caught. All the lines of a redraw together have a time
         // too (HighlightBudget), checked at each match: a long line can have very many
         var found = new List<(int Start, int End)>();
@@ -2156,7 +2173,7 @@ internal sealed partial class EditorEngine
         var start = System.Diagnostics.Stopwatch.GetTimestamp();
         try
         {
-            for (var match = tooSlow ? null : _highlightRegex.Match(Buffer[line]);
+            for (var match = tooSlow ? null : _highlightRegex.Match(text);
                  match is { Success: true };
                  match = match.NextMatch())
             {
@@ -2179,6 +2196,7 @@ internal sealed partial class EditorEngine
             yield break;
         }
 
+        _highlighted[line] = (text, found);
         foreach (var match in found) yield return match;
     }
 

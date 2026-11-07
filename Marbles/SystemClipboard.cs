@@ -59,6 +59,20 @@ internal static class SystemClipboard
     }
 
     /// <summary>
+    /// True if a full Windows path names a stream of a file ("file.txt:stream", "notes.mbls::$DATA"): it has a colon
+    /// after its drive ("C:", "\\?\C:" or "\\.\C:")
+    /// </summary>
+    internal static bool NamesAStream(string path)
+    {
+        var from = path.StartsWith(@"\\?\", StringComparison.Ordinal) || path.StartsWith(@"\\.\", StringComparison.Ordinal)
+            ? 4
+            : 0;
+        // (the colon of the drive letter, if there is one)
+        if (path.Length > from + 1 && path[from + 1] == ':') from += 2;
+        return path.IndexOf(':', from) >= 0;
+    }
+
+    /// <summary>
     /// Why a file cannot be the paste bin, or null if it can: a directory, a data file (".mbls", or the copy of an
     /// old one, ".legacy"), or a file of Marbles itself (the settings, the lists, the snippets, the completions,
     /// and the files in the folders of the macros, color schemes, logos, languages, spell files and the trash).
@@ -80,6 +94,8 @@ internal static class SystemClipboard
         }
 
         if (Directory.Exists(path)) return Lang.F("{0} is a directory", Path.GetFileName(path));
+        // Windows: a colon after the drive names a stream of a file ("notes.mbls::$DATA" is the data file itself)
+        if (OperatingSystem.IsWindows() && NamesAStream(path)) return DialogText.PasteBinNotThisFile;
         var real = FileOperations.RealPath(path);
         foreach (var candidate in new[] { path, real })
         {

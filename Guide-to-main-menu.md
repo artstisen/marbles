@@ -17,7 +17,7 @@ The same keys are used everywhere in Marbles:
 - `Up` and `Down` on the command line bring back the commands given before on the same page (each page has its own, the newest first, at most 20). With the start of a command typed, only the commands that start with it are shown (`:co` and `Up` finds `:copy`, not `:delete`); `Down` past the newest gives back what you typed. The commands are kept in memory only, never written to a file, and are forgotten when you log out (or close Marbles)
 - `:q` Close/Return. In the main menu: Exit Marbles
 - `:qa` Exit Marbles from anywhere
-- `:logout` (or `X`) Close the data file and return to the [login page](Guide-to-login-menu.md). What Marbles kept of the notes in memory is forgotten: the string memory, the texts of the find-and-replace box, the block yanked last and the last command typed (on Linux and macOS also the scrollback of the terminal)
+- `:logout` (or `X`) Close the data file and return to the [login page](Guide-to-login-menu.md). What Marbles kept of the notes in memory is forgotten: the string memory, the texts of the find-and-replace box, the block yanked last and the last command typed (on Linux and macOS, where the terminal has no alternate screen, also its scrollback)
 - `Esc` Return/Cancel
 
 The notes are saved in the data file after each change. When the same data file is open in two windows (or programs) and the other one has saved it since you logged in, you are asked before saving: **Save anyway** replaces the changes made there; **Do not save** keeps them (log out and in again to see them; the change made here is not saved).

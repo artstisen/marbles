@@ -286,12 +286,20 @@ internal sealed partial class EditorEngine
         if (Buffer.RefuseIfReadOnly()) return;
         var lines = _blockRegister.Split(TextBuffer.NewLine);
         var width = lines.Max(TextMetrics.WidthOf);
-        // What is put in: each line padded to the widest, as many times as the count (the limit of "p")
-        var size = 0L;
-        foreach (var line in lines) size += (line.Length + Math.Max(0, width - TextMetrics.WidthOf(line)) + 1L) * count;
-        if (TooMuchToPut(size)) return;
         var column = ColumnOf(Cursor.Line, Cursor.Col) +
                      (after && CurrentLine.Length > 0 ? CellsAt(Cursor) : 0);
+        // What is put in (the limit of "p"): each line padded to the widest, as many times as the count, and the
+        // blank space that a short line (or a line added at the end) gets up to the column of the block
+        var size = 0L;
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i];
+            size += ((long)line.Length + Math.Max(0, width - TextMetrics.WidthOf(line)) + 1) * count;
+            var shown = Cursor.Line + i < Buffer.LineCount ? TextMetrics.WidthOf(Buffer[Cursor.Line + i]) : 0;
+            size += Math.Max(0, column - shown);
+        }
+
+        if (TooMuchToPut(size)) return;
         var top = Cursor.Line;
         var topCol = 0;
         for (var i = 0; i < lines.Length; i++)

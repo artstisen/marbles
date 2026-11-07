@@ -61,6 +61,23 @@ internal static class Keyboard
     internal static void PushBack(ConsoleKeyInfo key) => _pending = key;
 
     /// <summary>
+    /// Forget the keys that were typed but not read yet (and a key handed back), so a question that comes up while
+    /// keys are typed is not answered by them
+    /// </summary>
+    internal static void DropWaitingKeys()
+    {
+        _pending = null;
+        try
+        {
+            while (Console.KeyAvailable) Console.ReadKey(true);
+        }
+        catch (InvalidOperationException)
+        {
+            // Keys cannot be asked about (input from a file): nothing waits
+        }
+    }
+
+    /// <summary>
     /// The key handed back, if there is one (it is taken)
     /// </summary>
     internal static ConsoleKeyInfo? TakePending()

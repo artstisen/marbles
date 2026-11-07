@@ -150,6 +150,19 @@ public class ReleaseFixTests : IDisposable
         Assert.Equal("aaaaab\ncccccd\nef", small.Buffer.GetText());
     }
 
+    [Fact]
+    public void PutBlock_TheLimitCountsTheBlankSpaceUpToTheColumn()
+    {
+        // A narrow block of 10 000 lines put after a line of 2000 characters: the short lines below it get 2000
+        // spaces each, twice the limit, though the register is small
+        var text = new string('w', 2000) + "\n" + string.Join("\n", Enumerable.Repeat("x", 10000));
+        var editor = Editor(text);
+        editor.Type("2GQGy");
+        editor.Type("gg$p");
+        Assert.Contains("Too much text", editor.Message);
+        Assert.Equal(text, editor.Buffer.GetText());
+    }
+
     // A pattern that is slow on a long line of "a": each match looks to the end of the line, so the line takes
     // seconds in all, but no match alone is slow enough for the timeout of a match
     private const string SlowPattern = "a(?=a*$)";
@@ -234,6 +247,25 @@ public class ReleaseFixTests : IDisposable
         Assert.Equal((2, 2), (current, total));
     }
 
+    [Fact]
+    public void ALongWrappedLine_IsSearchedOncePerRedraw_AndStaysHighlighted()
+    {
+        // A line of 300 000 characters is shown on many rows, and its matches are asked for twice for each of them
+        var editor = Editor(string.Concat(Enumerable.Repeat("some text here ", 20000)));
+        editor.Type("/e<CR>");
+        editor.StartHighlighting();
+        var first = editor.SearchMatches(0).ToArray();
+        for (var row = 0; row < 80; row++) Assert.Equal(first.Length, editor.SearchMatches(0).Count());
+        Assert.Equal(80000, first.Length);
+        Assert.True(editor.IsSearchHighlighted);
+        // A changed line is searched again
+        editor.Type("0x");
+        editor.StartHighlighting();
+        Assert.Equal(80000, editor.SearchMatches(0).Count());
+        editor.Type("I e<Esc>");
+        Assert.Equal(80001, editor.SearchMatches(0).Count());
+    }
+
     #endregion
 
     #region Logout
@@ -298,6 +330,29 @@ public class ReleaseFixTests : IDisposable
         Assert.Equal("\u001b[?1049h", Tools.AlternateScreenOn);
         Assert.Equal("\u001b[?1049l", Tools.AlternateScreenOff);
         Assert.Equal("\u001b[3J", Tools.ClearScrollbackSequence);
+    }
+
+    [Fact]
+    public void TheScrollback_IsClearedOnlyWhenMarblesIsNotOnTheAlternateScreen()
+    {
+        // On the alternate screen nothing went to the scrollback, and clearing it would take the shell's history
+        Assert.False(Tools.ClearsScrollback(true, true));
+        // The alternate screen could not be used (or was left): what Marbles showed may be in the scrollback
+        Assert.True(Tools.ClearsScrollback(true, false));
+        // Windows (the console clears all of its buffer), a file or a pipe
+        Assert.False(Tools.ClearsScrollback(false, false));
+    }
+
+    [Theory]
+    [InlineData(@"C:\data\notes.mbls::$DATA", true)]
+    [InlineData(@"C:\data\settings.ini:stream", true)]
+    [InlineData(@"\\?\C:\data\notes.mbls:x", true)]
+    [InlineData(@"C:\data\paste-bin.txt", false)]
+    [InlineData(@"\\?\C:\data\paste-bin.txt", false)]
+    [InlineData(@"\\server\share\paste-bin.txt", false)]
+    public void AStreamOfAFile_IsNamedByAColonAfterTheDrive(string path, bool stream)
+    {
+        Assert.Equal(stream, SystemClipboard.NamesAStream(path));
     }
 
     #endregion

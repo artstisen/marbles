@@ -258,7 +258,6 @@ internal static class Init
     private static PosixSignalRegistration? _continueSignal;
     private static PosixSignalRegistration? _terminateSignal;
     private static PosixSignalRegistration? _hangUpSignal;
-    private static PosixSignalRegistration? _stopSignal;
 
     // Ctrl+C does not close Marbles (a note or a file that is not saved would be lost): the signal is cancelled,
     // and the editor tells how to close it. Ctrl+C stays a signal (not a key, as TreatControlCAsInput would make it),
@@ -276,13 +275,9 @@ internal static class Init
         if (OperatingSystem.IsWindows()) return;
         try
         {
-            _continueSignal = PosixSignalRegistration.Create(PosixSignal.SIGCONT, _ =>
-            {
-                Tools.ResumeAlternateScreen();
-                Tools.NoteContinued();
-            });
-            // Ctrl+Z: the shell is shown on its own screen, not over the page of Marbles (which may show a note)
-            _stopSignal = PosixSignalRegistration.Create(PosixSignal.SIGTSTP, _ => Tools.SuspendAlternateScreen());
+            _continueSignal = PosixSignalRegistration.Create(PosixSignal.SIGCONT, _ => Tools.NoteContinued());
+            // Ctrl+Z (SIGTSTP) has no handler: with one, .NET does not stop the process after it (Marbles went on
+            // running, with the shell waiting). It stops as any program does, on the alternate screen
             // Stopped from outside, or the terminal closed: the alternate screen is left before Marbles ends (it
             // ends as it would without this)
             _terminateSignal = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ => Tools.LeaveAlternateScreen());

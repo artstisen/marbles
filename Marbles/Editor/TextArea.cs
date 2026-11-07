@@ -503,6 +503,8 @@ public partial class TextArea
         try
         {
             Tools.HideCursor();
+            // Keys typed (or pasted) before the error would answer the message and the question below
+            Keyboard.DropWaitingKeys();
             Tools.ActionUnsupported(error.Message);
         }
         catch (Exception e) when (e is not NavigationException)
@@ -518,6 +520,7 @@ public partial class TextArea
             var asked = true;
             try
             {
+                Keyboard.DropWaitingKeys();
                 answer = Menu.YesNoCancelPrompt(DialogText.Save, DialogText.SaveChangesYn, note, true);
             }
             catch (Exception e) when (e is not NavigationException)

@@ -1195,43 +1195,21 @@ internal static class Tools
         }
     }
 
-    // Left for Ctrl+Z, to be shown again after "fg"
-    private static bool _alternateScreenSuspended;
-
     /// <summary>
-    /// Ctrl+Z (Linux, macOS): the shell is shown on the screen it was on, not on the page of Marbles
-    /// </summary>
-    internal static void SuspendAlternateScreen()
-    {
-        lock (TerminalLock)
-        {
-            if (!_alternateScreen) return;
-            _alternateScreen = false;
-            _alternateScreenSuspended = true;
-            WriteTerminal(AlternateScreenOff);
-        }
-    }
-
-    /// <summary>
-    /// "fg" after Ctrl+Z: Marbles is on the alternate screen again (the page is drawn again after)
-    /// </summary>
-    internal static void ResumeAlternateScreen()
-    {
-        lock (TerminalLock)
-        {
-            if (!_alternateScreenSuspended) return;
-            _alternateScreenSuspended = false;
-            _alternateScreen = WriteTerminal(AlternateScreenOn);
-        }
-    }
-
-    /// <summary>
-    /// Clear the scrollback of the terminal (at logout: no note can be scrolled back to)
+    /// Clear the scrollback of the terminal (at logout: no note can be scrolled back to). Only when Marbles is not on
+    /// the alternate screen (the terminal would not show it): on it, nothing was written to the scrollback, and the
+    /// sequence would clear the history of the shell from before Marbles was started in some terminals (xterm, VTE)
     /// </summary>
     internal static void ClearScrollback()
     {
-        if (UsesAlternateScreen()) WriteTerminal(ClearScrollbackSequence);
+        if (ClearsScrollback(UsesAlternateScreen(), _alternateScreen)) WriteTerminal(ClearScrollbackSequence);
     }
+
+    /// <summary>
+    /// True if the scrollback is cleared at logout: on Linux and macOS when Marbles is not on the alternate screen
+    /// </summary>
+    internal static bool ClearsScrollback(bool usesAlternateScreen, bool onAlternateScreen) =>
+        usesAlternateScreen && !onAlternateScreen;
 
     internal const string AlternateScreenOn = "\u001b[?1049h";
     internal const string AlternateScreenOff = "\u001b[?1049l";
