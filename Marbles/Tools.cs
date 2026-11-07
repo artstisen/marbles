@@ -2364,7 +2364,7 @@ internal static class Tools
                                               "alongside the Marbles program files (the program automatically creates " +
                                               "this directory). You can copy the data directory or the entire Marbles " +
                                               "directory to a backup, portable or cloud media if necessary, or enable " +
-                                              "automatic backup to a secondary location. Marbles uses AES-256 file " +
+                                              "automatic backup to a secondary location. Marbles uses AES-256-GCM file " +
                                               "encryption.")) + "\n\n" +
                              Paragraph(Lang.T("CAUTION: It is not possible to recover your notes if you forget your " +
                                               "password."));

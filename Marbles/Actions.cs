@@ -1514,11 +1514,11 @@ internal static class Actions
         _tempAboutText += Environment.NewLine + Environment.NewLine;
         _tempAboutText += DialogText.MultipleInstances;
         _tempAboutText += Environment.NewLine + Environment.NewLine;
-        // Show in read only editor (page 1)
-        var dummy = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1, 22, _tempAboutText, 0, false,
-            true, false, 0);
+        // Show in read only editor (page 1), on all the rows above the last, which has the page number
+        var dummy = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1, Init.LineCount - 1,
+            _tempAboutText, 0, false, true, false, 0);
         Tools.CursorTopLeft();
-        Tools.CursorDown(Init.LineCount - 2);
+        Tools.CursorDown(Init.LineCount - 1);
         Tools.CursorRight(Init.LineWidth - (TempPageNumber.Length + 1));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(TempPageNumber);
@@ -1535,10 +1535,10 @@ internal static class Actions
         _tempAboutText = string.Empty;
         _tempAboutText = SoftwareLicense.GetLicenseText();
         // Show in read only editor (page 2)
-        var dummy1 = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1, 22, _tempAboutText, 0, false,
-            true, false, 0);
+        var dummy1 = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1, Init.LineCount - 1,
+            _tempAboutText, 0, false, true, false, 0);
         Tools.CursorTopLeft();
-        Tools.CursorDown(Init.LineCount - 2);
+        Tools.CursorDown(Init.LineCount - 1);
         Tools.CursorRight(Init.LineWidth - (TempPageNumber.Length + 1));
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
         Console.Write(Lang.F("Page {0}/{1}", 2, 2));

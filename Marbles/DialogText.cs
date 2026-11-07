@@ -11,11 +11,12 @@ internal static class DialogText
     //                                                                                \n <- Max line length
     //-----------------------------------------------------------------------------
     public static string About => Lang.T(
-        "Marbles is written in C# and uses UTF-8 console I/O encoding and AES-256\n" +
-        "data encryption. Your notes and settings are stored in the \"data\" directory\n" +
-        "which is located alongside the Marbles program files. You can copy the data\n" +
-        "directory or the entire Marbles directory to any backup/portable/cloud medium\n" +
-        "if needed, or enable automatic backup to a secondary location.\n\n" +
+        "Marbles is written in C# and uses UTF-8 console I/O encoding. The data file\n" +
+        "is encrypted with AES-256-GCM, with the key derived from your password by\n" +
+        "PBKDF2-HMAC-SHA256. Your notes and settings are kept in the \"data\" directory\n" +
+        "next to the Marbles program files. You can copy it, or the entire Marbles\n" +
+        "directory, to any backup/portable/cloud medium, or enable automatic backup\n" +
+        "to a secondary location.\n\n" +
         "CAUTION: It is not possible to recover your notes if you forget your\n" +
         "password.\n" +
         "This application is cross-platform software that can run on different\n" +
