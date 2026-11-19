@@ -174,4 +174,68 @@ public class ChangeHistoryTests
         Assert.Equal("one", ChangeHistory.Excerpt("one\n"));
         Assert.Equal(string.Empty, ChangeHistory.Excerpt("\n \n"));
     }
+
+    [Fact]
+    public void AReplaceOnVeryManyLines_IsSeveralChanges_ToldQuickly()
+    {
+        // (the parts are not joined: comparing each edit with every part took seconds, and minutes on longer texts)
+        var editor = Editor(string.Join("\n", Enumerable.Range(1, 50_000).Select(i => "line " + i)));
+        editor.Type(":%s/line/row/<CR>");
+        Assert.StartsWith("row 1\nrow 2\n", editor.GetText());
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var change = Assert.Single(Changes(editor));
+        clock.Stop();
+        Assert.True(clock.ElapsedMilliseconds < 2000, clock.ElapsedMilliseconds + " ms");
+        Assert.Equal(ChangeHistory.ChangeKind.Several, change.Kind);
+        Assert.Equal(50_000, change.Count);
+        // At its first place in the text
+        Assert.Equal(new TextPos(0, 0), change.Place);
+        Assert.Equal("line 1", change.Removed);
+        Assert.Equal("row 1", change.Inserted);
+    }
+
+    [Fact]
+    public void AStepAfterAVeryLargeOne_IsStillMovedByIt()
+    {
+        // As in a short text: a line break put in on every line moves the x down a line for each line
+        var small = Editor("a\na\na");
+        small.Type("GAx<Esc>");
+        small.Type(":%s/a/a\\rb/<CR>");
+        var place = Changes(small)[1].Place;
+        var editor = Editor(string.Join("\n", Enumerable.Range(1, 3000).Select(_ => "a")));
+        editor.Type("GAx<Esc>");
+        editor.Type(":%s/a/a\\rb/<CR>");
+        var changes = Changes(editor);
+        Assert.Equal(2, changes.Count);
+        Assert.Equal(ChangeHistory.ChangeKind.Several, changes[0].Kind);
+        Assert.Equal(3000, changes[0].Count);
+        Assert.Equal(new TextPos(0, 0), changes[0].Place);
+        Assert.Equal(ChangeHistory.ChangeKind.Inserted, changes[1].Kind);
+        Assert.Equal(new TextPos(place.Line + 2 * (3000 - 3), place.Col), changes[1].Place);
+    }
+
+    [Fact]
+    public void ALongTextTyped_IsStillOneInsertion()
+    {
+        // Thousands of edits, but one part of the text
+        var editor = Editor("x");
+        var typed = string.Concat(Enumerable.Repeat("word ", 600));
+        editor.Type("A" + typed + "<Esc>");
+        var change = Assert.Single(Changes(editor));
+        Assert.Equal(ChangeHistory.ChangeKind.Inserted, change.Kind);
+        Assert.Equal(typed, change.Inserted);
+    }
+
+    [Fact]
+    public void WhenThereIsNoTimeLeft_TheStepsLeftAreToldInOneRow()
+    {
+        var editor = Editor("a\nb\nc");
+        editor.Type("Ax<Esc>");
+        editor.Type("jAy<Esc>");
+        Assert.Equal(2, Changes(editor).Count);
+        // No time at all: none is listed
+        var change = Assert.Single(ChangeHistory.Of(editor.Buffer.History(), -1));
+        Assert.Equal(ChangeHistory.ChangeKind.NotListed, change.Kind);
+        Assert.Equal(2, change.Count);
+    }
 }

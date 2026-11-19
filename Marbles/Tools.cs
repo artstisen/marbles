@@ -556,12 +556,21 @@ internal static class Tools
         Mode.SetMode(Mode.SelectedMode.Edit);
         ClearScreen();
         Actions.DrawEditSettingsMenu();
-        TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-            Init.LineCount - 3, FileIo.ReadSettingsFile(), 0, false, false, false, 1);
-        // Cleanup
-        textArea.ClearUndoRedoCache();
-        Mode.SetMode(mode);
-        return textArea.SaveWasInvoked;
+        // (also when a jump leaves the editor)
+        FileIo.EditingSettingsFile = true;
+        try
+        {
+            TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
+                Init.LineCount - 3, FileIo.ReadSettingsFile(), 0, false, false, false, 1);
+            // Cleanup
+            textArea.ClearUndoRedoCache();
+            Mode.SetMode(mode);
+            return textArea.SaveWasInvoked;
+        }
+        finally
+        {
+            FileIo.EditingSettingsFile = false;
+        }
     }
 
     /// <summary>

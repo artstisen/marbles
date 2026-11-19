@@ -275,4 +275,35 @@ public class JumpTests : IDisposable
             StartMenu.Only = only;
         }
     }
+
+    [Fact]
+    public void AJump_DoesNotLeave_WhileAPageBelowHasChanges()
+    {
+        // The editor's own jump (the Jump menu on top of it): the editor asks about its changes itself
+        Jump.OnTop(() => true, () => Assert.False(Jump.PageBelowHasChanges));
+        // A page opened on top of the editor (":jump snippets"): a jump from it would throw the changes away
+        Jump.OnTop(() => true, () => Jump.Covering(() => Assert.True(Jump.PageBelowHasChanges)));
+        Jump.OnTop(() => false, () => Jump.Covering(() => Assert.False(Jump.PageBelowHasChanges)));
+        // The snippet editor's own Jump menu, on top of the editor with changes
+        Jump.OnTop(() => true, () => Jump.Covering(() =>
+            Jump.OnTop(() => false, () => Assert.True(Jump.PageBelowHasChanges))));
+        // A page on top of the page on top (":jump colors" there)
+        Jump.OnTop(() => false, () => Jump.Covering(() =>
+            Jump.OnTop(() => true, () => Jump.Covering(() => Assert.True(Jump.PageBelowHasChanges)))));
+        // Closed: nothing is below
+        Assert.False(Jump.PageBelowHasChanges);
+        // Also when the page on top was left by an exception (as Navigation.Wait)
+        Assert.Throws<InvalidOperationException>(() => Jump.OnTop(() => true,
+            () => Jump.Covering(() => throw new InvalidOperationException())));
+        Assert.False(Jump.PageBelowHasChanges);
+    }
+
+    [Fact]
+    public void ThePagesThatChangeSettings_AreKnown()
+    {
+        Assert.All(new[] { "schemes", "logos", "clipboard", "snippets", "completions" },
+            id => Assert.True(JumpPages.ChangesSettings(id)));
+        Assert.All(new[] { "log", "help", "about", "browse", "config/general" },
+            id => Assert.False(JumpPages.ChangesSettings(id)));
+    }
 }

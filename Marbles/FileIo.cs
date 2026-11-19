@@ -1242,8 +1242,15 @@ internal static class FileIo
 
     private static string _tempSettings = string.Empty;
 
+    /// <summary>
+    /// True while the settings file is edited (Configuration): the settings are not saved then, as they would be
+    /// written over the text saved there (":w"), and the commands and pages that change settings are refused
+    /// </summary>
+    internal static bool EditingSettingsFile { get; set; }
+
     internal static void SaveSettings()
     {
+        if (EditingSettingsFile) return;
         // Collect settings data and save it
         // Section start
         _tempSettings = "; Last modified " + IsoDateTime.GetDateTimeNow() + Entries.NewLineChar;

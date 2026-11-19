@@ -154,7 +154,8 @@ internal static class SchemeEditor
     /// <summary>
     /// ":colorscheme name" on a page: the scheme is used (with its logo, if it has one) and saved in the settings, as
     /// by Enter on the Schemes tab. The start of a name is enough when only one scheme has it. Without a name: the name
-    /// of the scheme in use. The page is drawn again by the caller
+    /// of the scheme in use. The page is drawn again by the caller. Not while the settings file is edited (the scheme
+    /// would be saved over it)
     /// </summary>
     /// <param name="argument">The name typed, or a start of it</param>
     /// <param name="used">True when a scheme was used</param>
@@ -164,6 +165,7 @@ internal static class SchemeEditor
         used = false;
         argument = argument.Trim();
         if (argument.Length == 0) return Lang.F("Color scheme: {0}", ColorSchemes.DisplayName(ConsoleColors.Current.Name));
+        if (FileIo.EditingSettingsFile) return DialogText.SnippetsNotHere;
         var name = ColorSchemes.Find(argument, ColorSchemes.AllNames(), out var several);
         if (several) return Lang.F("Several color schemes start with {0}", argument);
         var scheme = name == null ? null : ColorSchemes.Load(name);

@@ -136,6 +136,13 @@ internal static class JumpPages
     /// </summary>
     internal static bool Leaves(string id) => ConfigurationPage(id) >= 0 || IsFileBrowser(id);
 
+    /// <summary>
+    /// True for the pages opened on top that change settings (and save them): color schemes, logos, the clipboard,
+    /// and the editors of snippets and completions. Not opened while the settings file is edited
+    /// </summary>
+    internal static bool ChangesSettings(string id) =>
+        id is "schemes" or "logos" or "clipboard" or "snippets" or "completions";
+
     // The name of a page in ":jump general"
     private static string NameOf(string id) => id == "schemes" ? "colors" : id[(id.IndexOf('/') + 1)..];
 
@@ -418,10 +425,7 @@ internal static class Jump
             return;
         }
 
-        if (beforeLeaving != null && !beforeLeaving()) return;
-        Remember(target);
-        Pending = target;
-        Navigation.Wait();
+        Leave(target, beforeLeaving, true);
     }
 
     // A jump to the data file that is logged in to
@@ -507,10 +511,7 @@ internal static class Jump
             return;
         }
 
-        if (beforeLeaving != null && !beforeLeaving()) return;
-        Remember(target);
-        Pending = target;
-        Navigation.Wait();
+        Leave(target, beforeLeaving, true);
     }
 
     /// <summary>
@@ -560,10 +561,7 @@ internal static class Jump
             return;
         }
 
-        if (beforeLeaving != null && !beforeLeaving()) return;
-        Remember(target);
-        Pending = target;
-        Navigation.Wait();
+        Leave(target, beforeLeaving, true);
     }
 
     /// <summary>
@@ -575,10 +573,34 @@ internal static class Jump
     /// <param name="beforeLeaving">Asked before the page is left (false: stay)</param>
     internal static void ToPlace(JumpTarget target, Func<bool>? beforeLeaving = null)
     {
+        Leave(target, beforeLeaving, false);
+    }
+
+    // Leave the page for a place: not while a page below has changes that are not saved (it is told); else the page
+    // asks about its own changes (beforeLeaving, false: stay). The place is kept in the jump history (remember), and
+    // gone to by the main loop. Every jump that leaves the page goes through here
+    private static void Leave(JumpTarget target, Func<bool>? beforeLeaving, bool remember)
+    {
+        if (!CanLeave()) return;
         if (beforeLeaving != null && !beforeLeaving()) return;
+        if (remember) Remember(target);
         Pending = target;
         Navigation.Wait();
     }
+
+    // False (and told) while a page that a page was opened on top of has changes that are not saved: leaving would
+    // throw them away without a question (the page below cannot be asked to save from here: what it saves to, as
+    // the file of the editor, can be another while the page on top is shown)
+    private static bool CanLeave()
+    {
+        if (!PageBelowHasChanges) return true;
+        ChoiceBox.Forget();
+        ChoiceBox.Message(DialogText.CaptionsJump, PageBelowChanged, PageBelowNote);
+        return false;
+    }
+
+    private static string PageBelowChanged => Lang.T("A page below this one has changes that are not saved");
+    private static string PageBelowNote => Lang.T("Close this page, then save or discard changes there.");
 
     /// <summary>
     /// What a command that goes to a page goes to, for ToPage: ":favorites", ":history", ":hotlist" and ":browse" the
@@ -597,9 +619,20 @@ internal static class Jump
     // changes that are not saved. A page below cannot be asked to save from the page on top
     private static readonly List<Func<bool>> PagesBelow = new();
 
+    // How many of the pages below (from the first) have a page opened on top of them (OpenInPlace: the snippet editor
+    // on top of the editor). The last of the others is the page that is making the jump: it is asked about its own
+    // changes (beforeLeaving)
+    private static int _covered;
+
+    /// <summary>
+    /// True while a page that a page was opened on top of has changes that are not saved: no jump leaves then
+    /// </summary>
+    internal static bool PageBelowHasChanges => PagesBelow.Take(_covered).Any(hasChanges => hasChanges());
+
     /// <summary>
     /// Show something on top of a page (the Jump menu from the editor): the page is one of the pages below while it is
-    /// shown, so ":exit" there does not leave its changes that are not saved
+    /// shown, so ":exit" there does not leave its changes that are not saved, and no jump from a page opened on top of
+    /// it (Covering) leaves them
     /// </summary>
     internal static void OnTop(Func<bool>? hasChanges, Action show)
     {
@@ -615,6 +648,24 @@ internal static class Jump
     }
 
     /// <summary>
+    /// Show a page on top of the pages below (OpenInPlace): a jump from it does not leave while one of them has changes
+    /// that are not saved
+    /// </summary>
+    internal static void Covering(Action show)
+    {
+        var before = _covered;
+        _covered = PagesBelow.Count;
+        try
+        {
+            show();
+        }
+        finally
+        {
+            _covered = before;
+        }
+    }
+
+    /// <summary>
     /// ":exit" (":qa", ":quitall") on a page: leave Marbles. Not while a page below has changes that are not saved (it
     /// is told); else the page asks about its own changes (beforeLeaving: the editor asks to save them, or the usual
     /// question), or the usual question is asked. Returns when Marbles is not left
@@ -624,8 +675,7 @@ internal static class Jump
         ChoiceBox.Forget();
         if (PagesBelow.Any(hasChanges => hasChanges()))
         {
-            ChoiceBox.Message(DialogText.Exit, Lang.T("A page below this one has changes that are not saved"),
-                Lang.T("Close this page, then save or discard changes there."));
+            ChoiceBox.Message(DialogText.Exit, PageBelowChanged, PageBelowNote);
             return;
         }
 
@@ -643,10 +693,24 @@ internal static class Jump
         if (status != DialogText.Success) EventLog.Add(DialogText.LogFile + "Jumps: " + status);
     }
 
-    // A page shown on top of the page the jump was made from
+    // A page shown on top of the page the jump was made from. Not a page that changes the settings while the
+    // settings file is edited (they would be saved over it)
     private static void OpenInPlace(string page)
     {
         ChoiceBox.Forget();
+        if (FileIo.EditingSettingsFile && JumpPages.ChangesSettings(page))
+        {
+            ChoiceBox.Message(JumpPages.Label(page), DialogText.SnippetsNotHere, string.Empty);
+            return;
+        }
+
+        Covering(() => ShowInPlace(page));
+        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+        Tools.ClearScreen();
+    }
+
+    private static void ShowInPlace(string page)
+    {
         switch (page)
         {
             case "schemes":
@@ -674,9 +738,6 @@ internal static class Jump
                 Actions.ShowAboutPages();
                 break;
         }
-
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Tools.ClearScreen();
     }
 
     /// <summary>

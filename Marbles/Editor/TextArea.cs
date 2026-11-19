@@ -1107,6 +1107,10 @@ public partial class TextArea
                 ShowDocumentInfo();
                 RedrawAll();
                 break;
+            case EditorRequest.ClipboardSettings when _saveMode == SaveAsSettings:
+                // The clipboard settings would be saved over the settings file being edited
+                _engine.ShowMessage(DialogText.SnippetsNotHere, true);
+                break;
             case EditorRequest.ClipboardSettings:
                 Tools.HideCursor();
                 ClipboardPage.Show();
@@ -1222,7 +1226,8 @@ public partial class TextArea
 
     // ":changes": the edit history, newest first (the steps undone at the top, dimmed): where each change is now,
     // what it did, the start of its text and when it was made. Below the list: the text removed (-) and inserted (+).
-    // Enter jumps to the place of the change. Only shown: the history is in memory, and nothing of it is logged
+    // Enter jumps to the place of the change. Only shown: the history is in memory, and nothing of it is logged. A
+    // history too long to list in time ends with a row that tells how many of the oldest steps are not listed
     private void ShowChanges()
     {
         var changes = ChangeHistory.Of(_engine.Buffer.History());
@@ -1233,9 +1238,11 @@ public partial class TextArea
         }
 
         var kinds = changes.Select(KindOf).ToList();
-        var places = changes.Select(change => PlaceOf(change.Place)).ToList();
-        var times = changes.Select(change => change.Undone ? Lang.T("undone") : change.Time.ToString("HH:mm:ss"))
-            .ToList();
+        var places = changes.Select(change => change.Kind == ChangeHistory.ChangeKind.NotListed
+            ? string.Empty
+            : PlaceOf(change.Place)).ToList();
+        var times = changes.Select(change => change.Kind == ChangeHistory.ChangeKind.NotListed ? string.Empty
+            : change.Undone ? Lang.T("undone") : change.Time.ToString("HH:mm:ss")).ToList();
         var kindWidth = kinds.Max(TextMetrics.WidthOf);
         var placeWidth = places.Max(TextMetrics.WidthOf);
         var timeWidth = times.Max(TextMetrics.WidthOf);
@@ -1246,7 +1253,11 @@ public partial class TextArea
             Pad(Tools.TruncateString(TextOf(change), textWidth, true), textWidth) + "  " + times[i]).ToList();
         var picked = PickListBox.Show(Lang.T("Edit history"), rows, i => Preview(changes[i]), 0,
             Lang.T("j/k Select | Enter Jump | / Filter | Esc Close"), dimmed: i => changes[i].Undone);
-        if (picked >= 0) _engine.JumpToPlace(changes[picked].Place);
+        if (picked >= 0 && changes[picked].Kind != ChangeHistory.ChangeKind.NotListed)
+        {
+            _engine.JumpToPlace(changes[picked].Place);
+        }
+
         return;
 
         static string Pad(string text, int width) => text + new string(' ', Math.Max(0, width - TextMetrics.WidthOf(text)));
@@ -1259,12 +1270,18 @@ public partial class TextArea
         ChangeHistory.ChangeKind.Deleted => Lang.T("Deleted"),
         ChangeHistory.ChangeKind.Replaced => Lang.T("Replaced"),
         ChangeHistory.ChangeKind.Several => Lang.F("Changes: {0}", change.Count),
+        ChangeHistory.ChangeKind.NotListed => "...", // (English: no words)
         _ => Lang.T("No change")
     };
 
     // The text of a change in a row: the start of the text inserted or deleted, or both ("colour -> color")
     private static string TextOf(ChangeHistory.Change change)
     {
+        if (change.Kind == ChangeHistory.ChangeKind.NotListed)
+        {
+            return Lang.F("Too many changes: {0} older steps not listed", change.Count);
+        }
+
         var removed = ChangeHistory.Excerpt(change.Removed);
         var inserted = ChangeHistory.Excerpt(change.Inserted);
         if (removed.Length == 0) return inserted;

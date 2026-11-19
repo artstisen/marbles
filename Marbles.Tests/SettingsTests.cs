@@ -630,4 +630,26 @@ backup=
         Assert.True(FileIo.LoadSettings());
         Assert.True(Init.UsingDefaultSettings);
     }
+
+    [Fact]
+    public void WhileTheSettingsFileIsEdited_TheSettingsAreNotSavedOverIt()
+    {
+        File.WriteAllText(SettingsFile, "linenumbers=true\n");
+        FileIo.EditingSettingsFile = true;
+        try
+        {
+            FileIo.SaveSettings();
+            Assert.Equal("linenumbers=true\n", File.ReadAllText(SettingsFile));
+            // ":colorscheme name" is refused (":colorscheme" alone tells the scheme in use)
+            Assert.Equal(DialogText.SnippetsNotHere, SchemeEditor.UseByCommand("lush", out var used));
+            Assert.False(used);
+        }
+        finally
+        {
+            FileIo.EditingSettingsFile = false;
+        }
+
+        FileIo.SaveSettings();
+        Assert.Contains("[SETTINGS]", File.ReadAllText(SettingsFile));
+    }
 }

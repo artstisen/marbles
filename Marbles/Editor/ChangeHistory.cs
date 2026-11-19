@@ -5,10 +5,26 @@
 /// they follow each other (the letters typed in Insert mode, a word deleted and typed again) into the parts of the
 /// text the step changed, and each step is told by its first part: where it is now (moved by the steps made after
 /// it), whether text was inserted, deleted or replaced, and the start of that text. It does not touch the console,
-/// so it can be tested
+/// so it can be tested.
+///
+/// A step that changed very many parts of the text (":%s" on a long text) is told as Several at its first place in
+/// the text, without joining its edits, and the list is made for at most BudgetMilliseconds: the steps left then (the
+/// oldest) are told by one row of the kind NotListed
 /// </summary>
 internal static class ChangeHistory
 {
+    /// <summary>
+    /// The most parts of a step that are joined: a step with more is told as Several (Count: the places it changed,
+    /// see PlacesOf), at the place of its first edit in the text. (A paragraph typed is thousands of edits, but one part: it is still told as
+    /// one insertion)
+    /// </summary>
+    internal const int MaxParts = 1000;
+
+    /// <summary>
+    /// How long the list is made for (as the other limits of the editor, it is never left waiting)
+    /// </summary>
+    internal const long BudgetMilliseconds = 500;
+
     /// <summary>
     /// What a step did to the text
     /// </summary>
@@ -18,7 +34,8 @@ internal static class ChangeHistory
         Deleted,
         Replaced,
         Several, // Several parts of the text (Count)
-        None // Text typed and deleted again
+        None, // Text typed and deleted again
+        NotListed // The last row when there was no time to list them all: the oldest steps (Count) are not listed
     }
 
     /// <summary>
@@ -29,15 +46,27 @@ internal static class ChangeHistory
         DateTime Time, bool Undone);
 
     /// <summary>
-    /// The steps of the history (TextBuffer.History, oldest first), newest first
+    /// The steps of the history (TextBuffer.History, oldest first), newest first. When making the list takes longer
+    /// than the budget, the steps left are told by a last row (NotListed)
     /// </summary>
-    internal static List<Change> Of(IReadOnlyList<TextBuffer.Step> history)
+    internal static List<Change> Of(IReadOnlyList<TextBuffer.Step> history, long budgetMilliseconds = BudgetMilliseconds)
     {
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        // The first place in the text that the edits of each step start at (null: none). A place before it is not
+        // moved by the step, which is then passed over at once
+        var firsts = history.Select(step => FirstStart(step.Edits)).ToList();
         var changes = new List<Change>();
-        for (var i = 0; i < history.Count; i++)
+        for (var i = history.Count - 1; i >= 0; i--)
         {
+            if (clock.ElapsedMilliseconds > budgetMilliseconds)
+            {
+                changes.Add(new Change(ChangeKind.NotListed, default, string.Empty, string.Empty, i + 1,
+                    history[i].Time, false));
+                break;
+            }
+
             var step = history[i];
-            var parts = Parts(step.Edits);
+            var parts = Parts(step.Edits, out var many);
             var first = parts.Count > 0 ? parts[0] : null;
             var place = first?.Start ?? step.CursorAfter;
             // Moved by the edits of the steps made after it that are in the text (an undone step is not, and its
@@ -46,11 +75,12 @@ internal static class ChangeHistory
             {
                 for (var j = i + 1; j < history.Count && !history[j].Undone; j++)
                 {
+                    if (firsts[j] is not { } firstOfStep || place < firstOfStep) continue;
                     foreach (var edit in history[j].Edits) place = Shift(place, edit);
                 }
             }
 
-            var kind = parts.Count switch
+            var kind = many ? ChangeKind.Several : parts.Count switch
             {
                 0 => ChangeKind.None,
                 > 1 => ChangeKind.Several,
@@ -59,11 +89,22 @@ internal static class ChangeHistory
                     : ChangeKind.Replaced
             };
             changes.Add(new Change(kind, place, first?.Removed ?? string.Empty, first?.Inserted ?? string.Empty,
-                parts.Count, step.Time, step.Undone));
+                many ? PlacesOf(step.Edits) : parts.Count, step.Time, step.Undone));
         }
 
-        changes.Reverse();
         return changes;
+    }
+
+    // The first place in the text that edits start at, or null when there are none
+    private static TextPos? FirstStart(IReadOnlyList<TextBuffer.Edit> edits)
+    {
+        TextPos? first = null;
+        foreach (var edit in edits)
+        {
+            if (first == null || edit.Start < first.Value) first = edit.Start;
+        }
+
+        return first;
     }
 
     // A part of the text a step changed: where it starts, and the text removed and inserted there
@@ -78,9 +119,11 @@ internal static class ChangeHistory
     // typed or deleted in it), one that ends where the part starts (Backspace before it), or one that starts where
     // its text ends (a letter deleted after it). The other parts move with each edit (":%s" replaces from the last
     // line up: a line break put in above a part moves it down), so they are where they are when the step is done.
-    // The parts that changed nothing are left out, and the others are in the order of the text
-    private static List<Part> Parts(IReadOnlyList<TextBuffer.Edit> edits)
+    // The parts that changed nothing are left out, and the others are in the order of the text. More than MaxParts
+    // (many): only the first edit in the text, moved by the edits made after it (joining them all would take long)
+    private static List<Part> Parts(IReadOnlyList<TextBuffer.Edit> edits, out bool many)
     {
+        many = false;
         var parts = new List<Part>();
         foreach (var edit in edits)
         {
@@ -89,11 +132,51 @@ internal static class ChangeHistory
             if (joined == null)
             {
                 parts.Add(new Part { Start = edit.Start, Removed = edit.Removed, Inserted = edit.Inserted });
+                if (parts.Count > MaxParts)
+                {
+                    many = true;
+                    return [FirstInText(edits)];
+                }
             }
         }
 
         parts.RemoveAll(part => part.Removed == part.Inserted);
         return parts.OrderBy(part => part.Start).ToList();
+    }
+
+    // The edit of a step that starts first in the text (the first of them at that place), joined with the edits made
+    // after it that follow it (a replacement is an edit that deletes and one that inserts), as a part where it is
+    // when the step is done
+    private static Part FirstInText(IReadOnlyList<TextBuffer.Edit> edits)
+    {
+        var first = 0;
+        for (var i = 1; i < edits.Count; i++)
+        {
+            if (edits[i].Start < edits[first].Start) first = i;
+        }
+
+        var part = new Part { Start = edits[first].Start, Removed = edits[first].Removed, Inserted = edits[first].Inserted };
+        for (var i = first + 1; i < edits.Count; i++)
+        {
+            if (!Join(part, edits[i])) part.Start = Shift(part.Start, edits[i]);
+        }
+
+        return part;
+    }
+
+    /// <summary>
+    /// The places a step changed, told for a step with very many parts (Several): its edits, without those that
+    /// start where the edit before them did (a replacement deletes, then inserts at the same place)
+    /// </summary>
+    internal static int PlacesOf(IReadOnlyList<TextBuffer.Edit> edits)
+    {
+        var count = 0;
+        for (var i = 0; i < edits.Count; i++)
+        {
+            if (i == 0 || edits[i].Start != edits[i - 1].Start) count++;
+        }
+
+        return count;
     }
 
     private static bool Join(Part part, TextBuffer.Edit edit)
