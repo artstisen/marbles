@@ -759,6 +759,33 @@ public class FileManagementTests : IDisposable
     }
 
     [Fact]
+    public void Favorites_AddedAtTheTopAndRemovedAgain_AreNotCounted_AndUndoFollows()
+    {
+        FileFavorites.Parse("\t/x/a\n\t/x/keep\n\t/x/b\n");
+        FileFavorites.TakeAddedAtTop();
+        // Added at the top (P), then removed again the same way: the favorites page does not move its selection
+        Assert.True(FileFavorites.Toggle("/x/new"));
+        Assert.False(FileFavorites.Toggle("/x/new"));
+        Assert.Equal(0, FileFavorites.TakeAddedAtTop());
+        // Two added, one removed: one row
+        Assert.True(FileFavorites.Toggle("/x/one"));
+        Assert.True(FileFavorites.Toggle("/x/two"));
+        Assert.False(FileFavorites.Toggle("/x/one"));
+        Assert.Equal(1, FileFavorites.TakeAddedAtTop());
+        // Removed lower in the list: not one of those added at the top
+        Assert.True(FileFavorites.Toggle("/x/three"));
+        Assert.False(FileFavorites.Toggle("/x/b"));
+        Assert.Equal(1, FileFavorites.TakeAddedAtTop());
+        Assert.Equal("three two a keep", Show());
+        // Removed on the page (D), then one above it removed elsewhere: undo puts it back where it was
+        FileFavorites.RemoveAt(Find("keep"));
+        Assert.False(FileFavorites.Toggle("/x/two"));
+        Assert.Equal("three a", Show());
+        Assert.Equal(2, FileFavorites.UndoRemove());
+        Assert.Equal("three a keep", Show());
+    }
+
+    [Fact]
     public void Favorites_AreMovedToTheTopOrTheEnd_OfTheListOrTheirFolder()
     {
         FileFavorites.Parse("\t/x/a\n\t[F]\n \t/x/b\n \t/x/c\n \t/x/d\n\t/x/e\n\t/x/f\n\t[G]\n \t/x/g\n");

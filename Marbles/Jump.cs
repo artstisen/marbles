@@ -634,9 +634,9 @@ internal static class Jump
     /// shown, so ":exit" there does not leave its changes that are not saved, and no jump from a page opened on top of
     /// it (Covering) leaves them
     /// </summary>
-    internal static void OnTop(Func<bool>? hasChanges, Action show)
+    internal static void OnTop(Func<bool> hasChanges, Action show)
     {
-        PagesBelow.Add(hasChanges ?? (() => false));
+        PagesBelow.Add(hasChanges);
         try
         {
             show();

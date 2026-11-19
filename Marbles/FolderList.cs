@@ -116,6 +116,16 @@ internal sealed class FolderList<T> where T : class, IFolderItem
     }
 
     /// <summary>
+    /// An item was taken out of the list at this place (a favorite removed elsewhere than on its page): what was
+    /// removed last and had a place after it goes back one place further up
+    /// </summary>
+    internal void Removed(int index)
+    {
+        if (_removed == null) return;
+        _removed = _removed.Select(part => (part.Index > index ? part.Index - 1 : part.Index, part.Items)).ToList();
+    }
+
+    /// <summary>
     /// Move items into a folder (at the top of it, in the order they have in the list, where they are seen at once), or
     /// out of their folders
     /// </summary>

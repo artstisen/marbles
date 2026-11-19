@@ -309,7 +309,19 @@ public partial class TextArea
     {
     }
 
-    /// <inheritdoc cref="TextArea(int, int, int, int, string, int, bool, bool, bool, int)"/>
+    /// <summary>
+    /// Create an instance of the TextArea control
+    /// </summary>
+    /// <param name="left">Left padding (control placement in console window)</param>
+    /// <param name="top">Top padding (control placement in console window)</param>
+    /// <param name="width">Text area width</param>
+    /// <param name="height">Text area height (a height of 1 creates a single line editor)</param>
+    /// <param name="text">Optional text content</param>
+    /// <param name="recallCursorIndex">The cursor position to recall</param>
+    /// <param name="scrollToEnd">Place the cursor at the end of the supplied text</param>
+    /// <param name="readOnly">Limit the control to read only</param>
+    /// <param name="openSearchDialog">Automatically open the search prompt</param>
+    /// <param name="saveMode">Set which save method to call</param>
     /// <param name="modified">Treat the text as changed from the start (it can be saved without editing it)</param>
     /// <param name="peek">Show the text as a peek in a pane of the file browser (null: the editor)</param>
     internal TextArea(int left, int top, int width, int height, string text, int recallCursorIndex, bool scrollToEnd,
@@ -1696,15 +1708,15 @@ public partial class TextArea
             // (as it was read: a file in UTF-16 or another encoding is saved as UTF-8, with a BOM only after :bom on)
             (Lang.T("Encoding:"), FileExplorer.CurrentEncodingLabel),
             (Lang.T("Saved as:"), FileExplorer.CurrentHasBom ? Lang.T("UTF-8 with a BOM") : Lang.T("UTF-8 without a BOM")),
+            // The commands before the explanation: a box higher than the window loses its last rows
+            (":bom on", Lang.T("Save the file with a BOM")), // English: the commands
+            (":bom off", Lang.T("Save the file without a BOM")), // English: the commands
             (string.Empty, string.Empty),
             (Lang.T("What:"), Lang.T("A byte order mark (BOM) is three bytes (EF BB BF) at the start of a file that " +
                                      "mark it as UTF-8. UTF-8 does not need it, and most programs do without; some " +
                                      "Windows programs add it or want it, and scripts and some tools on Linux and " +
                                      "macOS fail with it. Marbles does not show it in the text, and saves a file " +
-                                     "with a BOM only if it had one.")),
-            (string.Empty, string.Empty),
-            (":bom on", Lang.T("Save the file with a BOM")), // English: the commands
-            (":bom off", Lang.T("Save the file without a BOM")) // English: the commands
+                                     "with a BOM only if it had one."))
         };
         ChoiceBox.Forget();
         ChoiceBox.ShowRows(Lang.T("Byte order mark"), rows, 64);

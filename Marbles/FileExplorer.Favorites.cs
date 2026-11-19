@@ -239,7 +239,7 @@ internal static partial class FileExplorer
                 if (command != null && CommandLine.Name(command) is "colorscheme" or "colo")
                 {
                     // ":colorscheme name": another color scheme, the list drawn again in it
-                    _favoriteMessage = SchemeEditor.UseByCommand(CommandLine.Argument(command), out _);
+                    _favoriteMessage = SchemeEditor.UseByCommand(CommandLine.ArgumentAsTyped(command), out _);
                     continue;
                 }
 

@@ -295,7 +295,7 @@ internal static class StartMenu
             {
                 // ":colorscheme name": another color scheme, the page drawn again in it (the page has no line for
                 // messages: a box tells the scheme in use, or that the name is not known)
-                var message = SchemeEditor.UseByCommand(CommandLine.Argument(command), out var used);
+                var message = SchemeEditor.UseByCommand(CommandLine.ArgumentAsTyped(command), out var used);
                 if (!used)
                 {
                     _frame?.Redraw();

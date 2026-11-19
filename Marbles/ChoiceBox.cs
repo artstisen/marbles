@@ -308,9 +308,8 @@ internal static class ChoiceBox
             for (var i = 0; i < valueRows.Count; i++) lines.Add((i == 0 ? label : string.Empty, valueRows[i]));
         }
 
-        // The box fits on the screen
-        var most = Math.Max(1, Init.LineCount - 5);
-        if (lines.Count > most) lines = lines.GetRange(0, most);
+        // The box fits on the screen (rows left out: the last row shown ends with "...")
+        lines = FitRows(lines, Math.Max(1, Init.LineCount - 5), room);
         var (top, left, _, _) = DrawFrame(caption, inner, lines.Count);
         for (var i = 0; i < lines.Count; i++)
         {
@@ -327,8 +326,23 @@ internal static class ChoiceBox
     }
 
     /// <summary>
+    /// The rows of an information box that fit in a height: when there are more, the last row shown ends with "..."
+    /// (in the room of a value), so a box is never cut without it being seen
+    /// </summary>
+    internal static List<(string Label, string Value)> FitRows(List<(string Label, string Value)> lines, int most,
+        int room)
+    {
+        if (lines.Count <= most) return lines;
+        var fit = lines.GetRange(0, most);
+        var (label, value) = fit[^1];
+        fit[^1] = (label, TextMetrics.StartPart(value, Math.Max(0, room - 3)).TrimEnd() + "...");
+        return fit;
+    }
+
+    /// <summary>
     /// A long value (a path, a text) on rows of a width, all of it: text goes on on the next row at a blank space, and
-    /// a word without blank space (a path) is cut at the width
+    /// a word without blank space (a path) is cut at the width. The width is in cells of the screen (a wide character
+    /// takes two), and a character (or emoji) is never split
     /// </summary>
     internal static List<string> Rows(string value, int room)
     {
@@ -336,10 +350,12 @@ internal static class ChoiceBox
         var rest = value;
         do
         {
-            var part = rest.Length <= room ? rest : rest[..room];
+            var part = TextMetrics.StartPart(rest, room);
+            // (a wide character on a row narrower than it: the row has it all the same)
+            if (part.Length == 0 && rest.Length > 0) part = rest[..TextMetrics.ElementLength(rest, 0)];
             // Text goes on at a blank space when there is one in the second half of the row (a path at the room)
             var space = part.Length < rest.Length ? part.LastIndexOf(' ') : -1;
-            if (space > room / 2) part = part[..(space + 1)];
+            if (space > 0 && TextMetrics.WidthOf(part[..space]) > room / 2) part = part[..(space + 1)];
             rows.Add(part.TrimEnd());
             rest = rest[part.Length..];
         } while (rest.Length > 0);

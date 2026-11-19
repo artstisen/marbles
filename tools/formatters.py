@@ -57,12 +57,12 @@ def version_of(validator):
 
 def converted(text, source, version):
     """The file as it is in Marbles: other namespaces, a line telling where it came from, UTF-8 with BOM and CRLF"""
-    text = text.lstrip('﻿').replace('\r\n', '\n')
+    text = text.lstrip('\ufeff').replace('\r\n', '\n')
     text = re.sub(r'\bBlyant\.Validator\.', 'Marbles.Format.', text)
     head = ('// Copied from Blyant Validator %s (%s) by tools/formatters.py: not changed by hand in Marbles.\n'
             '// Change it in Blyant Validator, and copy it again. English: its messages are not translated\n'
             % (version, source))
-    return ('﻿' + head + text).replace('\n', '\r\n').encode('utf-8')
+    return ('\ufeff' + head + text).replace('\n', '\r\n').encode('utf-8')
 
 
 def main():

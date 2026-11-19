@@ -192,7 +192,48 @@ public class ClipboardTests : IDisposable
         // A row broken at a blank space loses only that space
         Assert.Equal(path.Replace(" ", string.Empty), string.Concat(rows).Replace(" ", string.Empty));
         Assert.Equal(new[] { "short" }, ChoiceBox.Rows("short", 30));
+        // An empty value (a blank row between parts of a box) is one empty row
+        Assert.Equal(new[] { string.Empty }, ChoiceBox.Rows(string.Empty, 30));
         // A text (what :bom tells) goes on at the blank space between words, not inside a word
         Assert.Equal(new[] { "A byte order mark (BOM) is", "three bytes" }, ChoiceBox.Rows("A byte order mark (BOM) is three bytes", 30));
+    }
+
+    [Theory]
+    // CJK: two cells each
+    [InlineData("日本語のファイル名はとても長いのでいくつかの行に分かれます.txt")]
+    [InlineData("文書 目録 写真 音楽 映画 資料 予定 日記 手紙 報告.md")]
+    // Emoji (two chars each, two cells), with and without blank space
+    [InlineData("😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀.txt")]
+    [InlineData("notes 😀 about 🎉 the party 👍 with 🚀 rockets and 🌍 earth.md")]
+    // A family emoji is one character of several chars
+    [InlineData("a👨‍👩‍👧‍👦b👨‍👩‍👧‍👦c👨‍👩‍👧‍👦d👨‍👩‍👧‍👦e👨‍👩‍👧‍👦f👨‍👩‍👧‍👦.txt")]
+    public void WideCharacters_FitTheRowsOfABox_AndAreNeverSplit(string value)
+    {
+        foreach (var room in new[] { 7, 10, 13, 30 })
+        {
+            var rows = ChoiceBox.Rows(value, room);
+            // In cells of the screen, not chars
+            Assert.All(rows, row => Assert.True(TextMetrics.WidthOf(row) <= room, row));
+            // No half of a surrogate pair at the end or start of a row
+            Assert.All(rows, row => Assert.False(row.Length > 0 && (char.IsHighSurrogate(row[^1]) || char.IsLowSurrogate(row[0])), row));
+            // All of it is there (a row broken at a blank space loses only that space)
+            Assert.Equal(value.Replace(" ", string.Empty), string.Concat(rows).Replace(" ", string.Empty));
+        }
+
+        // A row narrower than a wide character still has it, and goes on
+        Assert.Equal(new[] { "日", "本" }, ChoiceBox.Rows("日本", 1));
+    }
+
+    [Fact]
+    public void ABoxHigherThanTheWindow_EndsWithDots_OnTheLastRowShown()
+    {
+        var lines = new List<(string Label, string Value)> { ("A:", "one"), ("B:", "two"), ("C:", "three") };
+        Assert.Same(lines, ChoiceBox.FitRows(lines, 3, 20));
+        var fit = ChoiceBox.FitRows(lines, 2, 20);
+        Assert.Equal(new[] { ("A:", "one"), ("B:", "two...") }, fit);
+        // Also when the value fills the row
+        fit = ChoiceBox.FitRows(new List<(string, string)> { ("A:", "日本語日本語"), ("B:", "x") }, 1, 8);
+        Assert.Equal("日本...", fit[0].Value);
+        Assert.True(TextMetrics.WidthOf(fit[0].Value) <= 8);
     }
 }

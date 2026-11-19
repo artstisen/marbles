@@ -549,7 +549,8 @@ internal static class Tools
     /// <summary>
     /// Edit the settings file in the editor (from the Configuration page)
     /// </summary>
-    /// <returns>True if the file was saved: Marbles must start over to read the settings again</returns>
+    /// <returns>True if the file was saved: Marbles must start over to read the settings again. Left by a jump
+    /// instead (no return), the settings saved (":w") are read at once</returns>
     internal static bool EditSettingsFile()
     {
         var mode = Mode.CurrentMode;
@@ -558,18 +559,24 @@ internal static class Tools
         Actions.DrawEditSettingsMenu();
         // (also when a jump leaves the editor)
         FileIo.EditingSettingsFile = true;
+        var opened = FileIo.ReadSettingsFile();
+        var closed = false;
         try
         {
             TextArea textArea = new TextArea(Console.CursorLeft, Console.CursorTop, Init.LineWidth - 1,
-                Init.LineCount - 3, FileIo.ReadSettingsFile(), 0, false, false, false, 1);
+                Init.LineCount - 3, opened, 0, false, false, false, 1);
             // Cleanup
             textArea.ClearUndoRedoCache();
             Mode.SetMode(mode);
+            closed = true;
             return textArea.SaveWasInvoked;
         }
         finally
         {
             FileIo.EditingSettingsFile = false;
+            // Left by a jump (":jump general"), not closed: Marbles does not start over, so the settings saved in the
+            // editor are read now, or the next setting saved would write over them
+            if (!closed && FileIo.ReloadEditedSettings(opened) && Init.AutoSize) Init.ApplyAutoSize();
         }
     }
 

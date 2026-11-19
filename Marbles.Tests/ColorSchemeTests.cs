@@ -311,6 +311,42 @@ public class ColorSchemeTests : IDisposable
     }
 
     [Fact]
+    public void TheNameOfAScheme_IsPassedInTheCaseItWasTyped()
+    {
+        try
+        {
+            // The command line returns ":colorscheme Mine" in lowercase: the argument is the one typed
+            CommandLine.SetLastArgument("Mine");
+            Assert.Equal("Mine", CommandLine.ArgumentAsTyped("colorscheme mine"));
+            Assert.Equal("Mine", CommandLine.ArgumentAsTyped("colo   mine"));
+            // A command that was not the last one typed: as it is in the command
+            Assert.Equal("other", CommandLine.ArgumentAsTyped("colo other"));
+            Assert.Equal(string.Empty, CommandLine.ArgumentAsTyped("colo"));
+        }
+        finally
+        {
+            CommandLine.ForgetLastArgument();
+        }
+    }
+
+    // (a file is only locked so on Windows)
+    [WindowsFact]
+    public void ASchemeFileThatCannotBeRead_IsTold_NotAsANameThatIsNotThere()
+    {
+        Directory.CreateDirectory(_directory);
+        var path = Path.Combine(_directory, "Locked.txt");
+        File.WriteAllText(path, ColorScheme.Default.Serialize());
+        using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            Assert.Equal(Lang.F("The color scheme {0} could not be read", "Locked"),
+                SchemeEditor.UseByCommand("lock", out var used));
+            Assert.False(used);
+        }
+
+        Assert.Equal(Lang.F("No color scheme named {0}", "Mauve"), SchemeEditor.UseByCommand("Mauve", out _));
+    }
+
+    [Fact]
     public void TheNamesOfTheSchemes_AreCompleted_AlsoAfterASpace()
     {
         CommandCompletion.Arguments["colorscheme"] = ColorSchemes.AllNames;

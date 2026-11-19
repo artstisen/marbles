@@ -356,7 +356,7 @@ internal static class Actions
             case "colo":
                 // ":colorscheme name": another color scheme, the menu drawn again in it (a box tells the scheme in
                 // use, or that the name is not known)
-                ShowSchemeMessage(CommandLine.Argument(command));
+                ShowSchemeMessage(CommandLine.ArgumentAsTyped(command));
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "config":
@@ -604,7 +604,7 @@ internal static class Actions
             case "colorscheme":
             case "colo":
                 // ":colorscheme name": another color scheme (the list is shown again in it)
-                ShowSchemeMessage(CommandLine.Argument(command));
+                ShowSchemeMessage(CommandLine.ArgumentAsTyped(command));
                 break;
             case "readonly":
             case "ro":

@@ -1248,6 +1248,23 @@ internal static class FileIo
     /// </summary>
     internal static bool EditingSettingsFile { get; set; }
 
+    /// <summary>
+    /// The settings file was edited and the editor left without being closed (a jump): when it was saved there (":w",
+    /// its text is not what it was when the editor was opened), the settings are read from it, as when Marbles starts
+    /// over after the editor is closed. Else the settings in memory are the ones from before, and the next setting
+    /// saved would write over the text saved in the editor
+    /// </summary>
+    /// <param name="opened">The text of the settings file when the editor was opened</param>
+    /// <returns>True if the settings were read again</returns>
+    internal static bool ReloadEditedSettings(string opened)
+    {
+        if (EditingSettingsFile) return false;
+        var now = ReadSettingsFile();
+        if (now == opened || now == DialogText.ErrorReadingFile || now == DialogText.FileNotFound) return false;
+        EventLog.Add(DialogText.LogFile + "Settings read again (saved in the editor)");
+        return LoadSettings();
+    }
+
     internal static void SaveSettings()
     {
         if (EditingSettingsFile) return;

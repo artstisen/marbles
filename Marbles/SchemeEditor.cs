@@ -168,8 +168,10 @@ internal static class SchemeEditor
         if (FileIo.EditingSettingsFile) return DialogText.SnippetsNotHere;
         var name = ColorSchemes.Find(argument, ColorSchemes.AllNames(), out var several);
         if (several) return Lang.F("Several color schemes start with {0}", argument);
-        var scheme = name == null ? null : ColorSchemes.Load(name);
-        if (scheme == null) return Lang.F("No color scheme named {0}", argument);
+        if (name == null) return Lang.F("No color scheme named {0}", argument);
+        // (a file that cannot be read, or is not a scheme)
+        var scheme = ColorSchemes.Load(name);
+        if (scheme == null) return Lang.F("The color scheme {0} could not be read", name);
         UseLogoOf(scheme);
         Use(scheme);
         used = true;

@@ -282,9 +282,9 @@ internal sealed class SpellDictionary
                     tree.Indexes[index] = flags;
                     c = 0;
                 }
-                else
+                else if (c == ByteIndex)
                 {
-                    // A node that was read before is used again
+                    // A node that was read before is used again (the only value left below ByteFlags2)
                     tree.Indexes[index] = ReadNumber(3) | SharedMask;
                     c = ReadByte();
                 }

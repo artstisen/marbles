@@ -23,7 +23,8 @@ internal static class PickListBox
     private static int _previewTop;
     private static int _previewRows;
 
-    // The rows shown dimmed, of the list shown
+    // The rows shown dimmed, of the list shown (null when the box is closed: it can hold the texts of the rows, as
+    // the note text of ":changes")
     private static Func<int, bool>? _dimmed;
 
     /// <summary>
@@ -44,7 +45,19 @@ internal static class PickListBox
         // In the colors of boxes
         using var box = ConsoleColors.BoxScope();
         _dimmed = dimmed;
+        try
+        {
+            return Pick(caption, rows, preview, selected, hints, extraKey);
+        }
+        finally
+        {
+            _dimmed = null;
+        }
+    }
 
+    private static int Pick(string caption, IReadOnlyList<string> rows, Func<int, string> preview, int selected,
+        string hints, Func<ConsoleKeyInfo, int, bool>? extraKey)
+    {
         var filter = string.Empty;
         var filtering = false;
         var view = Enumerable.Range(0, rows.Count).ToList();

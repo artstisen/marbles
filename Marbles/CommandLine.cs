@@ -198,6 +198,22 @@ internal static class CommandLine
     }
 
     /// <summary>
+    /// The text after the first word of a command, in the case it was typed: Read returns commands in lowercase, so
+    /// it is the argument of the last command read (LastArgument) when that is the same text in any case, or else
+    /// the argument as it is in the command (":colorscheme Mine", where a name can differ from another only in case)
+    /// </summary>
+    internal static string ArgumentAsTyped(string command)
+    {
+        var argument = Argument(command);
+        return LastArgument.Equals(argument, StringComparison.OrdinalIgnoreCase) ? LastArgument : argument;
+    }
+
+    /// <summary>
+    /// Keep the argument of a command as if it was typed last (for the tests of ArgumentAsTyped)
+    /// </summary>
+    internal static void SetLastArgument(string argument) => LastArgument = argument;
+
+    /// <summary>
     /// Show a message on the bottom line and wait for a key press
     /// </summary>
     internal static void ShowMessage(string message)

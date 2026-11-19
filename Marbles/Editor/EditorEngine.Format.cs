@@ -7,12 +7,14 @@ namespace Marbles;
 
 /// <summary>
 /// ":format": the text of an HTML, CSS or XML file formatted as Blyant Validator formats it (its formatters are copied
-/// into Marbles/Format by tools/formatters.py). Only blank space changes: the indents, and where the lines break. The
+/// into Marbles/Format by tools/formatters.py). Blank space changes (the indents, and where the lines break), and in CSS
+/// a missing ";" is added at the end of a declaration, and an empty one is left out. The
 /// kind of text is that of the file, told by its name as Blyant Validator tells it (FormatKind); in a note, it is the
 /// syntax the note is colored as (FormatBySyntax: ":syntax html"). The whole text is formatted, as one change that "u"
 /// undoes (the lines that differ are replaced), and nothing is written to disk: the text is saved as any other change.
-/// A text that cannot be formatted safely (a block that is never closed, XML that is not well-formed) is left as it
-/// is, and the formatter tells why, with the line
+/// A text that cannot be formatted safely (a CSS block that is never closed, HTML that ends inside a tag, XML that is
+/// not well-formed) is left as it is, and the formatter tells why, with the line. An HTML element that is never closed
+/// is formatted, without an end tag added
 /// </summary>
 internal sealed partial class EditorEngine
 {

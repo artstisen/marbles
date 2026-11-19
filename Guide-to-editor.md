@@ -445,17 +445,18 @@ What Marbles does:
 - A note of a data file has no BOM and no file encoding: it is kept encrypted in the data file, so `:bom` is refused there
 
 Commands:
-- `:bom` shows a box with the name of the file, its encoding as it was read, how it is saved (`UTF-8 with a BOM` or `UTF-8 without a BOM`), what a BOM is, and the commands
+- `:bom` shows a box with the name of the file, its encoding as it was read, how it is saved (`UTF-8 with a BOM` or `UTF-8 without a BOM`), the commands `:bom on` and `:bom off`, and what a BOM is (in a window too low for all of it, the end of the explanation is cut, and the last row shown ends with `...`)
 - `:bom on` Save the file with a BOM, `:bom off` without one. The text is marked as changed (_Unsaved_), and the BOM is written or left out when you save it
 
 ## Other commands
 - `:ts` Insert an ISO timestamp (YYYY-MM-DD HH:MM:SS)
 - `:pw` Insert a generated strong password
 - `:trim` Remove blank space (spaces and tabs) at the end of the lines: of the selected lines (select them and type `:trim`), or all lines without a selection, or `:2,9trim` lines 2 to 9. Indentation at the start of lines is kept (it was removed before version 1.5.4). In a Markdown file (and a note colored as Markdown), two spaces or more at the end of a line of text with another line of text after it are a line break: they are kept, and the message tells how many. `:trim!` removes them too. One `u` undoes it
-- `:format` Format an HTML, CSS or XML file, as [Blyant Validator](https://github.com/artstisen/blyant-validator) formats it (with the same code): the indents, and where the lines break. Only blank space changes, never the content, and the whole text is formatted.
+- `:format` Format an HTML, CSS or XML file, as [Blyant Validator](https://github.com/artstisen/blyant-validator) formats it (with the same code): the indents, and where the lines break. Only blank space changes, except in CSS: a missing `;` at the end of a declaration is added (`a{color:red}` becomes `color: red;`), and an empty one (`;;`) is left out. The whole text is formatted.
   - The file type is taken from the name, as in Blyant Validator: `.html` and `.htm`, `.css`, and `.xml`, `.svg`, `.rss`, `.atom` and `.xhtml` (XML). Other files (Markdown, `.csproj`, `.php` ...) are not formatted
   - In a note of a data file, the text is formatted by its colors: a note colored as HTML, CSS or XML (`:syntax html`, `:syntax css`, `:syntax xml`, or the syntax set for the note) is formatted as that, and other notes are not. The note stays encrypted: `:format` only changes the text in the editor
-  - A text that cannot be formatted safely is left as it is, and the message says why, and on which line: a block that is never closed, or XML that is not well-formed. `:42` goes to line 42
+  - A text that cannot be formatted safely is left as it is, and the message says why, and on which line: in CSS a block that is never closed, a `}` without a block, or a string not closed on its line; in HTML a text that ends inside a tag or a quoted value; and XML that is not well-formed. `:42` goes to line 42
+  - An HTML element that is never closed (`<div><p>a`) is formatted all the same: its content is indented under it, and no end tag is added
   - The indent is two spaces, as in Blyant Validator, so a file is formatted the same way in both. The line endings of the file are kept when it is saved
   - The cursor stays on the same line. One `u` undoes it, and nothing is written to the disk until you save
 - `:bom` The byte order mark of the file: `:bom on` saves the file with one, `:bom off` without, and `:bom` alone shows which (see [Byte order mark (BOM)](#byte-order-mark-bom)). Not in a note

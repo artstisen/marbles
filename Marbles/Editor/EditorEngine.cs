@@ -98,7 +98,7 @@ internal sealed partial class EditorEngine
     internal const int DefaultIndent = 4;
 
     /// <summary>
-    /// The setting (indent): how many spaces Tab in Insert mode, and ">>" and "<<", indent and unindent by. An
+    /// The setting (indent): how many spaces Tab in Insert mode, and <c>&gt;&gt;</c> and <c>&lt;&lt;</c>, indent and unindent by. An
     /// editor takes it when it is made (IndentWidth)
     /// </summary>
     internal static int IndentSetting { get; set; } = DefaultIndent;

@@ -1,3 +1,4 @@
+#Requires -Version 7.3
 # Builds the release versions of Marbles in the directory "publish":
 #   portable    The lightweight version for all platforms. It needs the .NET 10 runtime to be installed,
 #               and is started with:  dotnet Marbles.dll

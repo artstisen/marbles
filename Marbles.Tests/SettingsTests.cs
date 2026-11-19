@@ -652,4 +652,35 @@ backup=
         FileIo.SaveSettings();
         Assert.Contains("[SETTINGS]", File.ReadAllText(SettingsFile));
     }
+
+    [Fact]
+    public void SettingsSavedInTheEditor_AreReadWhenItIsLeftByAJump_SoTheNextSettingSavedKeepsThem()
+    {
+        TextArea.LineNumbers = false;
+        FileIo.SaveSettings();
+        Assert.True(FileIo.LoadSettings());
+        // (as the editor is given it)
+        var opened = FileIo.ReadSettingsFile();
+        Assert.Contains("linenumbers=false", opened);
+        try
+        {
+            // Not saved in the editor: nothing is read
+            Assert.False(FileIo.ReloadEditedSettings(opened));
+            // ":w" in the editor (a setting changed by hand), then a jump: the settings are read from the file
+            File.WriteAllText(SettingsFile, opened.Replace("linenumbers=false", "linenumbers=true"));
+            FileIo.EditingSettingsFile = true;
+            Assert.False(FileIo.ReloadEditedSettings(opened));
+            FileIo.EditingSettingsFile = false;
+            Assert.True(FileIo.ReloadEditedSettings(opened));
+            Assert.True(TextArea.LineNumbers);
+            // The next setting saved from anywhere keeps the edit
+            FileIo.SaveSettings();
+            Assert.Contains("linenumbers=true", File.ReadAllText(SettingsFile));
+        }
+        finally
+        {
+            FileIo.EditingSettingsFile = false;
+            TextArea.LineNumbers = false;
+        }
+    }
 }

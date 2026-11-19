@@ -1176,7 +1176,7 @@ internal static class JumpMenu
         if (CommandLine.Name(command) is "colorscheme" or "colo")
         {
             // ":colorscheme name": another color scheme, the menu drawn again in it
-            _message = SchemeEditor.UseByCommand(CommandLine.Argument(command), out _);
+            _message = SchemeEditor.UseByCommand(CommandLine.ArgumentAsTyped(command), out _);
             Tools.ClearScreen();
             return false;
         }

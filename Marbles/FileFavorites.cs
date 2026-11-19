@@ -202,7 +202,7 @@ internal static class FileFavorites
     /// <summary>
     /// Add a file or directory to the favorites, or remove it if it is one. It is added at the top of the list (outside
     /// the folders), where it is found to be moved where it belongs, or at the place given (several added one after
-    /// another keep their order: 0, 1, 2 ...; int.MaxValue: at the end)
+    /// another keep their order: 0, 1, 2 ...)
     /// </summary>
     /// <returns>True if it is a favorite now</returns>
     internal static bool Toggle(string path, int at = 0)
@@ -211,6 +211,10 @@ internal static class FileFavorites
         if (index >= 0)
         {
             List.RemoveAt(index);
+            // (what the favorites page put back with undo goes where it was, one row further up now)
+            Folders.Removed(index);
+            // One added at the top and removed again: the favorites page does not move its selection for it
+            if (index < _addedAtTop) _addedAtTop--;
             return false;
         }
 
