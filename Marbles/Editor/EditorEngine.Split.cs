@@ -39,6 +39,8 @@ internal sealed partial class EditorEngine
         AutoComplete = shown.AutoComplete;
         MacroLoader = shown.MacroLoader;
         CompletionSyntax = shown.CompletionSyntax;
+        FormatKind = shown.FormatKind;
+        FormatBySyntax = shown.FormatBySyntax;
         IndentWidth = shown.IndentWidth;
         SyntaxDefault = shown.SyntaxDefault;
         Syntax = shown.Syntax;

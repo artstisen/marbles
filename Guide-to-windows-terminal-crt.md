@@ -95,7 +95,7 @@ Open the WT (Windows Terminal) settings file found in:
 
 ```C:\Users\User\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json```
 
-(remember to replace "_User_" with your own user)
+(remember to replace "_User_" with your user name)
 
 You can also open the file directly from WT by pressing ```CTRL+,``` and clicking "Open JSON file" found in the bottom left corner of the settings window.
 

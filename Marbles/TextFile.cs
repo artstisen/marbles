@@ -37,7 +37,8 @@ internal sealed class TextFile
     /// <summary>
     /// The encoding of the file as shown to the user: "UTF-8", "UTF-8 (BOM)", "UTF-16", "Windows-1252" ...
     /// </summary>
-    internal string EncodingLabel => EncodingName + (_hasUtf8Bom ? " (BOM)" : string.Empty);
+    // (a file in UTF-16 given a BOM by ":bom on" is told as it was read, until it is saved)
+    internal string EncodingLabel => EncodingName + (_hasUtf8Bom && IsUtf8 ? " (BOM)" : string.Empty);
 
     /// <summary>
     /// The line endings of the file as shown to the user: "CRLF" (Windows), "LF" (Linux, macOS) or "CR"
@@ -49,6 +50,22 @@ internal sealed class TextFile
         _ => "LF"
     };
     private bool _hasUtf8Bom;
+
+    /// <summary>
+    /// The file starts with the byte order mark of UTF-8 (EF BB BF), and is saved with it
+    /// </summary>
+    internal bool HasBom => _hasUtf8Bom;
+
+    /// <summary>
+    /// Save the file with the byte order mark of UTF-8 from now on, or without it (":bom on", ":bom off"). False if it
+    /// is so already
+    /// </summary>
+    internal bool SetBom(bool on)
+    {
+        if (_hasUtf8Bom == on) return false;
+        _hasUtf8Bom = on;
+        return true;
+    }
 
     /// <summary>
     /// A new, empty file

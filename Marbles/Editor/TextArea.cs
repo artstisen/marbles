@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Marbles.Format.Core;
 
 namespace Marbles;
 
@@ -389,6 +390,12 @@ public partial class TextArea
                         ? SyntaxType.Ini
                         : SyntaxType.None;
             _engine.CompletionSyntax = fileType;
+            // ":format": the formatter of the kind of file, as Blyant Validator tells it by the name; a note is
+            // formatted by the syntax it is colored as (it has no file name)
+            _engine.FormatKind = peek == null && saveMode == SaveAsFile && !_singleLine && !readOnly
+                ? SourceDocument.DetectKind(FileExplorer.CurrentFileName)
+                : DocumentKind.Unknown;
+            _engine.FormatBySyntax = peek == null && saveMode == SaveAsEntry && !_singleLine;
             if (fileType != SyntaxType.None)
             {
                 _engine.SyntaxDefault = fileType;
@@ -1070,6 +1077,13 @@ public partial class TextArea
                 _engine.ShowMessage(message, !used && _engine.ColorSchemeArgument.Length > 0);
                 break;
             }
+            case EditorRequest.Bom:
+                // (the text is drawn first, without the box of commands above the command line, for the box of :bom)
+                Draw();
+                Tools.HideCursor();
+                ChangeBom(_engine.BomArgument);
+                RedrawAll();
+                break;
             case EditorRequest.Recent:
             {
                 // The latest files, without this one: the one picked is opened as a jump (changes are asked about)
@@ -1590,6 +1604,8 @@ public partial class TextArea
                 var type = SyntaxHighlighter.TypeOfFile(FileExplorer.CurrentFileName);
                 _engine.SyntaxDefault = type;
                 if (SyntaxHighlighter.ColorFiles) _engine.Syntax = type;
+                // ... and so does ":format"
+                _engine.FormatKind = SourceDocument.DetectKind(FileExplorer.CurrentFileName);
                 _engine.SetMessage(Lang.F("Renamed to {0}", FileExplorer.CurrentFileName), false);
                 return;
             case SaveAsEntry:
@@ -1604,6 +1620,77 @@ public partial class TextArea
 
         // Nothing is said when the box was closed without a name
         if (status.Length > 0) _engine.SetMessage(status, true);
+    }
+
+    // ":bom on" or "off": the file is saved with the byte order mark of UTF-8 or without it from now on (the text has
+    // changes, so it can be saved). Alone: a box tells whether the file has one, what it is, and the commands. A note
+    // of a data file has no file encoding: it is refused there
+    private void ChangeBom(string argument)
+    {
+        if (_saveMode == SaveAsEntry)
+        {
+            _engine.SetMessage(Lang.T("A note has no file encoding: :bom is for files"), true);
+            return;
+        }
+
+        if (_saveMode != SaveAsFile)
+        {
+            _engine.SetMessage(Lang.T("Only a file has a byte order mark"), true);
+            return;
+        }
+
+        if (argument.Length == 0)
+        {
+            ShowBom();
+            return;
+        }
+
+        if (argument is not ("on" or "off"))
+        {
+            _engine.SetMessage(Lang.T("The byte order mark is on or off: :bom on"), true);
+            return;
+        }
+
+        if (_engine.ReadOnly)
+        {
+            _engine.SetMessage(DialogText.EditorReadOnly, true);
+            return;
+        }
+
+        var on = argument == "on";
+        if (!FileExplorer.SetBom(on))
+        {
+            if (on) _engine.SetMessage(Lang.T("The file has a byte order mark already"), false);
+            else _engine.SetMessage(Lang.T("The file has no byte order mark already"), false);
+            return;
+        }
+
+        _engine.MarkModified();
+        if (on) _engine.SetMessage(Lang.T("Byte order mark on: written when the file is saved"), false);
+        else _engine.SetMessage(Lang.T("Byte order mark off: left out when the file is saved"), false);
+    }
+
+    // ":bom": whether the file has a byte order mark, what it is, and the commands that change it
+    private static void ShowBom()
+    {
+        var rows = new List<(string Label, string Value)>
+        {
+            (DialogText.InfoName, System.IO.Path.GetFileName(FileExplorer.CurrentFilePath)),
+            // (as it was read: a file in UTF-16 or another encoding is saved as UTF-8, with a BOM only after :bom on)
+            (Lang.T("Encoding:"), FileExplorer.CurrentEncodingLabel),
+            (Lang.T("Saved as:"), FileExplorer.CurrentHasBom ? Lang.T("UTF-8 with a BOM") : Lang.T("UTF-8 without a BOM")),
+            (string.Empty, string.Empty),
+            (Lang.T("What:"), Lang.T("A byte order mark (BOM) is three bytes (EF BB BF) at the start of a file that " +
+                                     "mark it as UTF-8. UTF-8 does not need it, and most programs do without; some " +
+                                     "Windows programs add it or want it, and scripts and some tools on Linux and " +
+                                     "macOS fail with it. Marbles does not show it in the text, and saves a file " +
+                                     "with a BOM only if it had one.")),
+            (string.Empty, string.Empty),
+            (":bom on", Lang.T("Save the file with a BOM")), // English: the commands
+            (":bom off", Lang.T("Save the file without a BOM")) // English: the commands
+        };
+        ChoiceBox.Forget();
+        ChoiceBox.ShowRows(Lang.T("Byte order mark"), rows, 64);
     }
 
     // ":info": the text being edited in a box: its name (a file) or title (an entry), how many characters, words

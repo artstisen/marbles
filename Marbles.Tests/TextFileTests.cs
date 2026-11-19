@@ -33,6 +33,67 @@ public class TextFileTests
     }
 
     [Fact]
+    public void TheByteOrderMark_IsPutOnAndTakenOff()
+    {
+        // ":bom on" and ":bom off"
+        var plain = Encoding.UTF8.GetBytes("text\n");
+        var file = TextFile.Read(plain);
+        Assert.False(file.HasBom);
+        Assert.Equal("UTF-8", file.EncodingLabel);
+        Assert.True(file.SetBom(true));
+        Assert.False(file.SetBom(true));
+        Assert.Equal("UTF-8 (BOM)", file.EncodingLabel);
+        Assert.Equal(Utf8Bom.Concat(plain).ToArray(), file.GetBytes(file.Text));
+        Assert.True(file.SetBom(false));
+        Assert.False(file.SetBom(false));
+        Assert.Equal(plain, file.GetBytes(file.Text));
+    }
+
+    [Fact]
+    public void ANewFile_HasNoByteOrderMark()
+    {
+        Assert.False(TextFile.Create("new.txt").HasBom);
+        Assert.Equal(Encoding.UTF8.GetBytes("a"), TextFile.Create("new.txt").GetBytes("a"));
+    }
+
+    [Fact]
+    public void AFileInUtf16_IsSavedAsUtf8_WithABomOnlyWhenItIsAskedFor()
+    {
+        var file = TextFile.Read(new byte[] { 0xFF, 0xFE }.Concat(Encoding.Unicode.GetBytes("text")).ToArray());
+        Assert.False(file.HasBom);
+        Assert.Equal("UTF-16", file.EncodingLabel);
+        Assert.Equal(Encoding.UTF8.GetBytes("text"), file.GetBytes(file.Text));
+        // (the label tells how it was read until it is saved)
+        file.SetBom(true);
+        Assert.Equal("UTF-16", file.EncodingLabel);
+        Assert.Equal(Utf8Bom.Concat(Encoding.UTF8.GetBytes("text")).ToArray(), file.GetBytes(file.Text));
+    }
+
+    [Fact]
+    public void TheByteOrderMark_IsWrittenToDisk_WhenTheFileIsSaved()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "marbles-bom-" + Guid.NewGuid().ToString("N") + ".txt");
+        try
+        {
+            File.WriteAllBytes(path, Encoding.UTF8.GetBytes("text\n"));
+            var file = TextFile.Load(path);
+            file.SetBom(true);
+            Assert.Equal(DialogText.Success, file.Save(file.Text));
+            Assert.Equal(Utf8Bom.Concat(Encoding.UTF8.GetBytes("text\n")).ToArray(), File.ReadAllBytes(path));
+            // Read again, it has one, and it is kept
+            file = TextFile.Load(path);
+            Assert.True(file.HasBom);
+            file.SetBom(false);
+            Assert.Equal(DialogText.Success, file.Save(file.Text));
+            Assert.Equal(Encoding.UTF8.GetBytes("text\n"), File.ReadAllBytes(path));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
     public void EmptyFile_IsUtf8WithTheLineEndingOfTheSystem()
     {
         var file = TextFile.Read(Array.Empty<byte>());

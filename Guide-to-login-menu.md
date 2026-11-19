@@ -42,8 +42,8 @@ The settings are on five pages, so they can be changed in one place without logg
 - **Automatic size**: Follow the size of the terminal window: when it is resized, the page you are on (also the editor, the lists and the Jump menu) is drawn again in the new size once the size has stayed the same for a moment, without a key. On from the start, and after _Reset all settings_ (saved as `autosize` in the settings file). Turned off, the default size (79 x 23, for a window of 80 x 24) is used until you set another; a window smaller than the size you set is told about, with the choice to let the size follow the window
 - **Size**: Set the number of columns and rows by hand (shown when _Automatic size_ is off)
 - **Black and white (no colors)**: Show everything in black and white. Your color scheme is kept and is used again when this is turned off
-- **Color scheme**: The color scheme in use. `Enter` opens the [color schemes](Guide-to-main-menu.md#color-schemes), where a scheme is selected, and the colors are edited and saved as a scheme of your own (not shown when _Black and white_ is on)
-- **Logo**: The logo in use. `Enter` opens the [logos](Guide-to-main-menu.md#logos), where a logo is selected, or drawn and saved as one of your own (4 rows of 63 characters)
+- **Color scheme**: The color scheme in use. `Enter` opens the [color schemes](Guide-to-main-menu.md#color-schemes), where a scheme is selected, and the colors are edited and saved as your own scheme (not shown when _Black and white_ is on)
+- **Logo**: The logo in use. `Enter` opens the [logos](Guide-to-main-menu.md#logos), where a logo is selected, or drawn and saved as your own (4 rows of 63 characters)
 - **Logo animation**: How fast the logo is swept in from the left when you arrive at the login page: _Slow_, _Fast_ (the default), _Very fast_ or _Off_. `Enter` shows them in a box to pick from. Saved as `logoanim` (`slow`, `fast`, `veryfast` or `off`) in the settings file
 - **Classic ASCII corners**: Draw the corners of boxes, dialogs and tabs with `+` instead of `.` (top) and `'` (bottom). It is seen at once. Saved as `asciistyle` (`1` for `+`, `0` for `.` and `'`) in the settings file
 
@@ -53,7 +53,7 @@ The settings are on five pages, so they can be changed in one place without logg
 - **Gutter: left margin without line numbers**: Keep the room of the line numbers in front of the text when they are off, as a blank margin of four columns (off from the start). A line with a mark shows its letter there. Line numbers take its place when they are on. See [Line numbers](Guide-to-editor.md#line-numbers). It is the setting `gutter`
 - **Wrap long lines**: Long lines go on to the next rows (on from the start). When off, the view scrolls sideways (see [the guide to the editor](Guide-to-editor.md#long-lines))
 - **Show blank space as . > $ (:whitespace)**: A space is shown as `.`, a tab as `>` and the end of a line as `$`, and blank space at the end of a line is highlighted (off from the start; `:whitespace` in the editor changes it too). It is the setting `whitespace`
-- **Indent with Tab, >> and <<: 4 spaces (Enter: Change)**: How many spaces `Tab` inserts in Insert mode, and `>>` and `<<` (and `>` and `<` on selected lines) indent and unindent by: 2, 4 or 8, and `Enter` goes to the next (4 from the start). Configuration is a page of its own (from the editor, `:jump editor` closes the editor first), so the next note or file opened has the new width, and the help of the editor tells the width of `Tab`. It is the setting `indent`
+- **Indent with Tab, >> and <<: 4 spaces (Enter: Change)**: How many spaces `Tab` inserts in Insert mode, and `>>` and `<<` (and `>` and `<` on selected lines) indent and unindent by: 2, 4 or 8, and `Enter` goes to the next (4 from the start). Configuration is a separate page (from the editor, `:jump editor` closes the editor first), so the next note or file opened has the new width, and the help of the editor tells the width of `Tab`. It is the setting `indent`
 - **Zen mode: only mode, name and line (:zen)**: The editor of a note or a file shows only the mode and the title or name above the text (`[I]test1.md*`) and the line and column of the cursor below it (off from the start; `:zen` in the editor changes it too). See [Zen mode](Guide-to-editor.md#zen-mode). It is the setting `zen`
   - **Colored mode label (Zen mode)**: Shown while Zen mode is on. The mode at the top (`[N]`, `[I]`, `[V]` ...) in the color of its mode, as the mode label on the bottom line outside Zen mode: **Highlight** for Normal (and a command being typed), **Attention** for Insert and **Warning** for the Visual modes (on from the start; turned off, the color of the text). It is the setting `zencolors`
 - **Marks: ' jumps to the exact place**: `'a` jumps to the place of [mark](Guide-to-editor.md#marks) `a`, as `` `a ``, for keyboards where `` ` `` is hard to type or a dead key (off from the start: `'a` goes to the start of the line of the mark, as in Vim). It is the setting `marksapostrophe`
@@ -140,7 +140,7 @@ The data file and the directory are selected on the login page itself, with the 
 ## File browser
 The file browser (`Esc`, `F`) is for editing single text files (.txt, .md, .html ...) with the Marbles editor, without logging in to a data file. **Text files are not encrypted.**
 
-The browser shows two panes side by side, each with its own directory. The pane with the focus has a highlighted label (`PANE 1` or `PANE 2`) in the line above its list, and all keys work on that pane.
+The browser shows two panes side by side, each showing a directory. The pane with the focus has a highlighted label (`PANE 1` or `PANE 2`) in the line above its list, and all keys work on that pane.
 
 - `Tab` Go to the other pane. The selection of the pane without the focus is still shown, but not highlighted
 - `T` or `:panes` Show one pane (the one with the focus, in the full width of the window) or two
@@ -318,12 +318,12 @@ The directory hotlist keeps directories you want to go back to. `B` (or `:hotadd
 - `V` (or `:move`) Move the directory in the list: it is marked `<>` and highlighted, `j` `k` move it, and `Esc` (or `Enter`, `V`) ends the moving. Not while a filter shows only some of the list
 - `T` or `:top` Move the directory to the top, `E` or `:bottom` to the end
 - `I` or `:info` Show information about the directory
-- `X` or `:rename name` The name the directory is shown with in the hotlist (and the Jump menu), such as "Project docs" for a deep path. Without a name you are asked for it. The directory itself keeps its name; an empty name shows its own name again
+- `X` or `:rename name` The name the directory is shown with in the hotlist (and the Jump menu), such as "Project docs" for a deep path. Without a name you are asked for it. The directory itself keeps its name; an empty name shows that name again
 - `D` or `:remove` Take the directory out of the hotlist (the directory itself stays). `u` or `:undo` puts back what was removed last (one directory, or all that `:prune` removed)
 - `:clear` Clear the hotlist. You are asked first
 - `:missing` List the directories whose directory is not there any more, in a box with their full paths; `Enter` selects the one picked in the list. `:prune` removes them all, after asking (`u` puts them all back). One on a drive that is not connected (a USB drive, a network share) is listed, but not removed: it is only missing for now. Each drive is looked at once, so a share that does not answer is waited for only once
 - `:number` Number the rows at the left, as `12gg` and `5j` count them, and `:nonumber` takes the numbers away again (off from the start). Kept in the settings (`hotlistnumbers`), and on the Lists page of [Configuration](#configuration); the Hotlist tab of the Jump menu follows it
-- `:name` Copy the name the directory is shown with (the name you gave it, or its own), `:path` its full path, as in the file browser (also to the string memory, for `p` in the editor)
+- `:name` Copy the name the directory is shown with (the name you gave it, or else the real name), `:path` its full path, as in the file browser (also to the string memory, for `p` in the editor)
 - `/text` Only show the directories whose path contains "text". `Esc` shows all again
 - `?` Help, `:` the command line
 - `Esc`, `Q`, `W`, `h` or `-` Back to the file browser. `:browse` does the same; when the list is shown alone, it shows the file browser

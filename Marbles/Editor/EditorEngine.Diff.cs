@@ -34,6 +34,12 @@ internal sealed partial class EditorEngine
     internal string ColorSchemeArgument { get; private set; } = string.Empty;
 
     /// <summary>
+    /// What was typed after ":bom" (EditorRequest.Bom), in small letters: "on", "off", or empty to show what the file
+    /// has
+    /// </summary>
+    internal string BomArgument { get; private set; } = string.Empty;
+
+    /// <summary>
     /// ":bookmark name": the name the bookmark is given (empty: none), and with "!" the name is moved to it from the
     /// bookmark that has it (EditorRequest.Bookmark)
     /// </summary>

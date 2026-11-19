@@ -1226,6 +1226,22 @@ internal static partial class FileExplorer
     }
 
     /// <summary>
+    /// The encoding of the file being edited, as it was read: "UTF-8", "UTF-8 (BOM)", "UTF-16" ... (":bom")
+    /// </summary>
+    internal static string CurrentEncodingLabel => _file?.EncodingLabel ?? string.Empty;
+
+    /// <summary>
+    /// The file being edited is saved with the byte order mark of UTF-8 (":bom")
+    /// </summary>
+    internal static bool CurrentHasBom => _file?.HasBom ?? false;
+
+    /// <summary>
+    /// Save the file being edited with the byte order mark of UTF-8 from now on, or without it (":bom on", ":bom off").
+    /// False if it is so already (or no file is edited)
+    /// </summary>
+    internal static bool SetBom(bool on) => _file != null && _file.SetBom(on);
+
+    /// <summary>
     /// Read the file being edited from disk again (it can have been changed by another program)
     /// </summary>
     /// <param name="text">The text of the file</param>

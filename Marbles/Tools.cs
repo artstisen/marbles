@@ -2143,6 +2143,8 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":pw", Lang.T("Insert generated strong password"), false));
             _shortcutList.Add(new Shortcut(":trim", Lang.T("Remove blank space at line ends (selection or all)"), false));
             _shortcutList.Add(new Shortcut(":trim!", Lang.T("Also the two spaces of Markdown line breaks"), false));
+            _shortcutList.Add(new Shortcut(":format", Lang.T("Format HTML, CSS or XML (u undoes it)"), false));
+            _shortcutList.Add(new Shortcut(":bom on :bom off", Lang.T("Byte order mark of the file (alone: show)"), false));
             _shortcutList.Add(new Shortcut(":whitespace", Lang.T("Show blank space as . > $ (again: hide it)"), false));
             _shortcutList.Add(new Shortcut(":zen", Lang.T("Zen mode: only mode, name and line (again: off)"), false));
             _shortcutList.Add(new Shortcut(":ol :ul", Lang.T("Numbered/Bulleted list (selected lines)"), false));

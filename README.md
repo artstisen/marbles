@@ -29,7 +29,7 @@ Screenshots are of the real program, made with [tools/screenshots.py](tools/scre
 
 **At home in any terminal**
 - Pure 7-bit ASCII interface that works with any monospaced font
-- Color schemes and logos, which you can edit and make your own
+- Ten color schemes and five logos built in: edit them, or make new ones
 - English built in, and ten more languages as files that can be changed or added to
 - Runs on Windows, Linux (also Raspberry Pi) and macOS, as a single file with nothing else to install
 
@@ -97,7 +97,7 @@ Inside Marbles, press `?` for a list of keys.
 | Core code base | Agnostic: no OS-specific logic, .NET handles differences between platforms |
 | Box drawing | Classic ASCII |
 | Console I/O encoding | UTF-8 |
-| Languages | English built in; Danish, German, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (commands and keys are the same in all languages). Language files are also a pack of their own on the releases page (`Marbles-languages-1.5.4.zip`) |
+| Languages | English built in; Danish, German, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (commands and keys are the same in all languages). Language files are also a separate download on the releases page (`Marbles-languages-1.5.4.zip`) |
 | Date/time format | ISO 8601 |
 | File encryption | AES-256-GCM, with the key derived from the password using PBKDF2-HMAC-SHA256 |
 | Software license | [MIT](LICENSE) |

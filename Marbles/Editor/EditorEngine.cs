@@ -74,6 +74,7 @@ internal enum EditorRequest
     NewDocument, // ":new name": a new file next to this one (in an entry: a new entry), opened in its place
     WhitespaceToggle, // ":whitespace": blank space shown as . > $, or not
     Zen, // ":zen": Zen mode on or off (only the mode and the name above the text, the line and column below it)
+    Bom, // ":bom on": the byte order mark of the file (BomArgument: on, off, or empty to show it)
     Favorite // ":favorite": the file a favorite of the file browser, or the note a favorite of its data file (or not)
 }
 
@@ -1106,6 +1107,16 @@ internal sealed partial class EditorEngine
             return;
         }
 
+        // ":bom on" (or off): the host saves the file with the byte order mark of UTF-8 or without it; alone: it
+        // shows what the file has
+        var bom = Regex.Match(command, "^bom(?: +(.*))?$");
+        if (bom.Success)
+        {
+            BomArgument = bom.Groups[1].Value.Trim().ToLowerInvariant();
+            if (!SingleLine) _request = EditorRequest.Bom;
+            return;
+        }
+
         // ":colorscheme name" (or ":colo"): the host uses another color scheme, and draws all again in it
         var colorScheme = Regex.Match(command, "^(?:colorscheme|colo)(?: +(.*))?$");
         if (colorScheme.Success)
@@ -1380,6 +1391,10 @@ internal sealed partial class EditorEngine
             case "trim!":
                 // Without a selection: all the lines
                 TrimLines(0, Buffer.LineCount - 1, command == "trim!");
+                break;
+            case "format":
+                // An HTML, CSS or XML file (or note), as Blyant Validator formats it (see EditorEngine.Format)
+                FormatText();
                 break;
             case "whitespace":
                 if (!SingleLine) _request = EditorRequest.WhitespaceToggle;

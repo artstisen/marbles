@@ -182,4 +182,17 @@ public class ClipboardTests : IDisposable
     {
         Assert.Equal("\u001b]52;c;w6Z4w7g=\u0007", SystemClipboard.Osc52Sequence("æxø"));
     }
+
+    [Fact]
+    public void ALongPath_IsShownInFull_OnRows()
+    {
+        var path = Path.Combine("C:", "a folder", new string('x', 90), "paste-bin.txt");
+        var rows = ChoiceBox.Rows(path, 30);
+        Assert.All(rows, row => Assert.True(row.Length <= 30));
+        // A row broken at a blank space loses only that space
+        Assert.Equal(path.Replace(" ", string.Empty), string.Concat(rows).Replace(" ", string.Empty));
+        Assert.Equal(new[] { "short" }, ChoiceBox.Rows("short", 30));
+        // A text (what :bom tells) goes on at the blank space between words, not inside a word
+        Assert.Equal(new[] { "A byte order mark (BOM) is", "three bytes" }, ChoiceBox.Rows("A byte order mark (BOM) is three bytes", 30));
+    }
 }

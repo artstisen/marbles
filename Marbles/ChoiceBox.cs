@@ -304,15 +304,8 @@ internal static class ChoiceBox
         var lines = new List<(string Label, string Value)>();
         foreach (var (label, value) in rows)
         {
-            var rest = value;
-            var first = true;
-            do
-            {
-                var part = rest.Length <= room ? rest : rest[..room];
-                lines.Add((first ? label : string.Empty, part));
-                rest = rest[part.Length..];
-                first = false;
-            } while (rest.Length > 0);
+            var valueRows = Rows(value, room);
+            for (var i = 0; i < valueRows.Count; i++) lines.Add((i == 0 ? label : string.Empty, valueRows[i]));
         }
 
         // The box fits on the screen
@@ -331,6 +324,27 @@ internal static class ChoiceBox
 
         Tools.SetCursorEx(Init.LineCount - 1, 0);
         Console.ReadKey(true);
+    }
+
+    /// <summary>
+    /// A long value (a path, a text) on rows of a width, all of it: text goes on on the next row at a blank space, and
+    /// a word without blank space (a path) is cut at the width
+    /// </summary>
+    internal static List<string> Rows(string value, int room)
+    {
+        var rows = new List<string>();
+        var rest = value;
+        do
+        {
+            var part = rest.Length <= room ? rest : rest[..room];
+            // Text goes on at a blank space when there is one in the second half of the row (a path at the room)
+            var space = part.Length < rest.Length ? part.LastIndexOf(' ') : -1;
+            if (space > room / 2) part = part[..(space + 1)];
+            rows.Add(part.TrimEnd());
+            rest = rest[part.Length..];
+        } while (rest.Length > 0);
+
+        return rows;
     }
 
     /// <summary>

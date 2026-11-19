@@ -47,6 +47,7 @@ Text shown to the user is written in English in the code and given to `Lang.T(".
 - The log (`EventLog`) can be read without a password: never log titles, the text of notes, search texts or passwords. Commands are logged by name only
 - The encryption (AES-256-GCM, PBKDF2-HMAC-SHA256) is not to be changed without it being asked for
 - Files are never emptied before they are written: a file that is there is replaced with `FileIo.WriteAllBytesSafe` (a temporary file, then replaced in one step), a new file is made with `FileIo.CreateNewFile`, and a list that only grows is appended to. `SafeWriteTests` reads the source for the ways of writing that empty a file first
+- `Marbles/Format` (`:format` in the editor) and its tests in `Marbles.Tests/Format` are copies of the formatters of Blyant Validator (HTML, CSS, XML) and the parts they need, made by `python tools/formatters.py` (from `../_WEBCODER-VALIDATOR`): only their namespaces differ, and each file names the version it came from. Never change them by hand: change them in Blyant Validator, and copy them again. `python tools/formatters.py --check` tells whether they are still the same. What Marbles adds (choosing the formatter, the change in the editor, its messages) is in `Editor/EditorEngine.Format.cs`
 - A test that can only run on one system, or needs symbolic links, has `[WindowsFact]`, `[UnixFact]` or `[LinksFact]` (`SkipWhen.cs`), so it is shown as skipped elsewhere, not as passed
 
 ## Releases
