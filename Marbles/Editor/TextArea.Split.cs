@@ -123,8 +123,8 @@ public partial class TextArea
         _engine.StopFollowing();
         _engine.TakeSmallRegister(_otherPane.Engine);
         // The mode is written over this pane, and the cursor is shown in it
-        _shownModeLabel = null;
-        _shownStatus = null;
+        _frame.ForgetTop();
+        _frame.ForgetStatus();
     }
 
     // ":q" in a split (also ":q!" and ZQ; ":wq", ":x" and ZZ save first): the pane with the focus is closed, and the
@@ -231,6 +231,4 @@ public partial class TextArea
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
     }
 
-    // The column the mode is centered on: the middle of the pane with the focus (of the window when not split)
-    private int ModeCenter => _otherPane == null ? Init.LineWidth / 2 : _left + _width / 2;
 }

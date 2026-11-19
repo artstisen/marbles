@@ -312,6 +312,100 @@ backup=
         }
     }
 
+    [Fact]
+    public void ZenMode_IsLoadedAndSaved()
+    {
+        try
+        {
+            File.WriteAllText(SettingsFile, LegacySettings + "\nzen=true\n");
+            Assert.True(FileIo.LoadSettings());
+            Assert.True(TextArea.Zen);
+            FileIo.SaveSettings();
+            Assert.Equal("true", FileIo.ParseSettings(File.ReadAllText(SettingsFile))["zen"]);
+            // The defaults: off
+            Actions.ApplyDefaultSettings();
+            Assert.False(TextArea.Zen);
+        }
+        finally
+        {
+            TextArea.Zen = false;
+        }
+    }
+
+    [Fact]
+    public void ZenColors_AreOnUnlessTurnedOff_AndSaved()
+    {
+        try
+        {
+            File.WriteAllText(SettingsFile, LegacySettings + "\nzen=true\nzencolors=false\n");
+            Assert.True(FileIo.LoadSettings());
+            Assert.False(TextArea.ZenColors);
+            FileIo.SaveSettings();
+            Assert.Equal("false", FileIo.ParseSettings(File.ReadAllText(SettingsFile))["zencolors"]);
+            // The defaults: on (also for a settings file from before, without the setting)
+            Actions.ApplyDefaultSettings();
+            Assert.True(TextArea.ZenColors);
+            File.WriteAllText(SettingsFile, LegacySettings + "\nzen=true\n");
+            Assert.True(FileIo.LoadSettings());
+            Assert.True(TextArea.ZenColors);
+        }
+        finally
+        {
+            TextArea.Zen = false;
+            TextArea.ZenColors = true;
+        }
+    }
+
+    [Fact]
+    public void TheBlankGutter_IsLoadedAndSaved()
+    {
+        try
+        {
+            File.WriteAllText(SettingsFile, LegacySettings + "\ngutter=true\n");
+            Assert.True(FileIo.LoadSettings());
+            Assert.True(TextArea.BlankGutter);
+            FileIo.SaveSettings();
+            Assert.Equal("true", FileIo.ParseSettings(File.ReadAllText(SettingsFile))["gutter"]);
+            // The defaults: off
+            Actions.ApplyDefaultSettings();
+            Assert.False(TextArea.BlankGutter);
+        }
+        finally
+        {
+            TextArea.BlankGutter = false;
+        }
+    }
+
+    [Theory]
+    [InlineData("2", 2)]
+    [InlineData("8", 8)]
+    [InlineData(" 4 ", 4)]
+    // A width not of the list, or not a number: the default
+    [InlineData("3", 4)]
+    [InlineData("tab", 4)]
+    [InlineData("", 4)]
+    public void Indent_IsLoadedAndSaved(string value, int expected)
+    {
+        try
+        {
+            File.WriteAllText(SettingsFile, LegacySettings + "\nindent=" + value + "\n");
+            Assert.True(FileIo.LoadSettings());
+            Assert.Equal(expected, EditorEngine.IndentSetting);
+            // A new editor takes it
+            Assert.Equal(expected, new EditorEngine("x", 40, 10, false).IndentWidth);
+            FileIo.SaveSettings();
+            Assert.Equal(expected.ToString(), FileIo.ParseSettings(File.ReadAllText(SettingsFile))["indent"]);
+            // The default: 4
+            EditorEngine.IndentSetting = 8;
+            Actions.ApplyDefaultSettings();
+            Assert.Equal(4, EditorEngine.IndentSetting);
+        }
+        finally
+        {
+            EditorEngine.IndentSetting = EditorEngine.DefaultIndent;
+        }
+    }
+
     [Theory]
     [InlineData("commandlist=false", false)]
     [InlineData("commandlist=true", true)]
@@ -415,7 +509,14 @@ backup=
         Assert.Equal("Marbles", settings["logo"]);
         Assert.False(settings.ContainsKey("logotxt"));
         Assert.Equal("notes.mbls", settings["file"]);
-        Assert.Equal(46, settings.Count);
+        Assert.Equal(50, settings.Count);
+        // No blank gutter unless turned on
+        Assert.Equal("false", settings["gutter"]);
+        // Zen mode is off unless turned on, and its mode is colored unless that is turned off
+        Assert.Equal("false", settings["zen"]);
+        Assert.Equal("true", settings["zencolors"]);
+        // Tab, ">>" and "<<" indent by 4 spaces unless another width is set
+        Assert.Equal("4", settings["indent"]);
         Assert.Equal("true", settings["commandlist"]);
         // Deleting moves to the trash from the start
         Assert.Equal("true", settings["deletetotrash"]);

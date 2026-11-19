@@ -61,6 +61,7 @@ internal enum EditorRequest
     WriteCopy, // ":w name": save the text as a new file (a comparison)
     Bookmark, // ":bookmark name": keep the place of the cursor as a bookmark of the Jump menu (BookmarkName)
     Marks, // ":marks": the marks of the text, to jump to one
+    Changes, // ":changes": the edit history (the steps of undo and redo), to jump to one
     JumpToBookmark, // ":book 3": jump to bookmark 3 (BookArgument)
     StringMemory, // ":reglist": show the strings of the string memory, to pick one to insert
     MacroRecord, // ":record": start recording a macro (the host warns first in a note of a data file)
@@ -72,6 +73,7 @@ internal enum EditorRequest
     OnlyPane, // ":only": close the other pane of a split
     NewDocument, // ":new name": a new file next to this one (in an entry: a new entry), opened in its place
     WhitespaceToggle, // ":whitespace": blank space shown as . > $, or not
+    Zen, // ":zen": Zen mode on or off (only the mode and the name above the text, the line and column below it)
     Favorite // ":favorite": the file a favorite of the file browser, or the note a favorite of its data file (or not)
 }
 
@@ -84,7 +86,39 @@ internal enum EditorRequest
 /// </summary>
 internal sealed partial class EditorEngine
 {
+    // A tab in text put in (pasted, completed, "\t" of a macro) becomes this many spaces
     internal const int TabWidth = 4;
+
+    /// <summary>
+    /// The widths of indent that can be set (Configuration: Editor), in spaces
+    /// </summary>
+    internal static readonly IReadOnlyList<int> IndentWidths = [2, 4, 8];
+
+    internal const int DefaultIndent = 4;
+
+    /// <summary>
+    /// The setting (indent): how many spaces Tab in Insert mode, and ">>" and "<<", indent and unindent by. An
+    /// editor takes it when it is made (IndentWidth)
+    /// </summary>
+    internal static int IndentSetting { get; set; } = DefaultIndent;
+
+    /// <summary>
+    /// The width of indent in this editor (the setting IndentSetting, when the editor was made)
+    /// </summary>
+    internal int IndentWidth { get; set; } = IndentSetting;
+
+    /// <summary>
+    /// The indent of the settings file read: 2, 4 or 8 (another value, or none, is the default, 4)
+    /// </summary>
+    internal static int ParseIndent(string? value) =>
+        int.TryParse(value?.Trim(), out var width) && IndentWidths.Contains(width) ? width : DefaultIndent;
+
+    /// <summary>
+    /// The width of indent after another (Enter in Configuration): 2, 4, 8, and round again
+    /// </summary>
+    internal static int NextIndent(int width) =>
+        IndentWidths[(IndentWidths.ToList().IndexOf(width) + 1) % IndentWidths.Count];
+
     internal const int MaxCommandLength = 64;
 
     internal TextBuffer Buffer { get; }
@@ -242,6 +276,12 @@ internal sealed partial class EditorEngine
     /// width that is left)
     /// </summary>
     internal bool LineNumbers { get; set; }
+
+    /// <summary>
+    /// True to keep the room of the line numbers in front of the text when they are not shown: a blank gutter, as a
+    /// margin (a mark is shown there by its letter, as with line numbers). Line numbers take its place when they are on
+    /// </summary>
+    internal bool BlankGutter { get; set; }
 
     /// <summary>
     /// Change the width the text is wrapped in
@@ -818,7 +858,8 @@ internal sealed partial class EditorEngine
         }
         else if (key.Key == ConsoleKey.Tab)
         {
-            var text = new string(' ', TabWidth);
+            // Blank space of the width of indent set
+            var text = new string(' ', IndentWidth);
             if (HasRoomFor(text)) Cursor = Insert(Cursor, text);
         }
         else if (key.Key == ConsoleKey.Backspace)
@@ -1342,6 +1383,9 @@ internal sealed partial class EditorEngine
                 break;
             case "whitespace":
                 if (!SingleLine) _request = EditorRequest.WhitespaceToggle;
+                break;
+            case "zen":
+                if (!SingleLine) _request = EditorRequest.Zen;
                 break;
             case "dup":
             case "duplicate":

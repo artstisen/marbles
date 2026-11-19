@@ -54,6 +54,7 @@ Give a file or a directory when you start Marbles, and it is opened at once, wit
 
 ```
 marbles notes.md                Open notes.md in the editor (the file browser is in its directory behind it)
+marbles +12 notes.md            Open notes.md at line 12 (also marbles notes.md +12)
 marbles ~/projects/site         Show the directory in the file browser
 marbles .                       Show the directory you are in, in the file browser
 marbles work.mbls               Select the data file on the login page (in the data directory)
@@ -61,7 +62,9 @@ marbles --help                  Show how Marbles is started (also -h)
 marbles --version               Show the version (also -v)
 ```
 
-A path that is not a full path is taken from the directory you are in. Closing the editor (`:q`) shows the file browser in the directory of the file, and closing the file browser the start page, as after a jump from the [Jump menu](Guide-to-main-menu.md#jump-menu); `:exit` leaves Marbles. A file that is not there yet (in a directory that is) is made if you want that: Marbles asks first. A word starting with `-` is an option, not a file to make (unless a file or directory of that name is there): an option Marbles does not know is told, with the usage. A data file outside the data directory is shown in the file browser, which offers to copy it to the data directory. With _Text Editor only_ a data file is not opened, and with _Note Management only_ a text file or directory is not.
+A path that is not a full path is taken from the directory you are in. `+12` is the line the file is opened at, as Vim and other editors are started: a line past the end of the file is its last line, a file named `+12` that is there is opened as that file, and `+12` without a file is told. A data file or a directory has no lines: with one of them the line is left out, and it is opened as without it. One file or directory is given at a time (two are told). Programs that open a file in your editor at a line can open it in Marbles this way.
+
+Closing the editor (`:q`) shows the file browser in the directory of the file, and closing the file browser the start page, as after a jump from the [Jump menu](Guide-to-main-menu.md#jump-menu); `:exit` leaves Marbles. A file that is not there yet (in a directory that is) is made if you want that: Marbles asks first. A word starting with `-` is an option, not a file to make (unless a file or directory of that name is there), wherever it is given (`marbles +12 --help`): an option Marbles does not know is told, with the usage. A data file outside the data directory is shown in the file browser, which offers to copy it to the data directory. With _Text Editor only_ a data file is not opened, and with _Note Management only_ a text file or directory is not.
 
 (On Windows the program is `Marbles.exe`, and the portable version is started with `dotnet Marbles.dll notes.md`.)
 

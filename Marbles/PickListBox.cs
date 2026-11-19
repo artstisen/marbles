@@ -23,6 +23,9 @@ internal static class PickListBox
     private static int _previewTop;
     private static int _previewRows;
 
+    // The rows shown dimmed, of the list shown
+    private static Func<int, bool>? _dimmed;
+
     /// <summary>
     /// Show the list and let the user pick a row
     /// </summary>
@@ -33,12 +36,14 @@ internal static class PickListBox
     /// <param name="hints">The keys, on the bottom line</param>
     /// <param name="extraKey">A key of the caller's own (as D to delete) on the selected row: true if it was used,
     /// and the caller shows the list again (Reload is returned)</param>
+    /// <param name="dimmed">True for a row shown dimmed (the steps undone in ":changes"); null: none</param>
     /// <returns>The number of the row picked, -1, or Reload</returns>
     internal static int Show(string caption, IReadOnlyList<string> rows, Func<int, string> preview, int selected,
-        string hints, Func<ConsoleKeyInfo, int, bool>? extraKey = null)
+        string hints, Func<ConsoleKeyInfo, int, bool>? extraKey = null, Func<int, bool>? dimmed = null)
     {
         // In the colors of boxes
         using var box = ConsoleColors.BoxScope();
+        _dimmed = dimmed;
 
         var filter = string.Empty;
         var filtering = false;
@@ -226,7 +231,10 @@ internal static class PickListBox
                 : i == 0 && filter.Length > 0
                     ? "     " + DialogText.PickListNoMatch
                     : string.Empty;
+            // (a row dimmed in the color of the dividers of the box)
+            if (i < view.Count && _dimmed?.Invoke(view[i]) == true) ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
             Console.Write(text + new string(' ', Math.Max(0, _inner - TextMetrics.WidthOf(text))));
+            ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         }
 
         // More above or below

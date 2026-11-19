@@ -2044,6 +2044,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("`` ''", Lang.T("Back to where the last jump was made from"), false));
             _shortcutList.Add(new Shortcut("  ` " + Lang.T("alternate key"), Lang.T("Configuration, Editor: ' to the exact place"), false));
             _shortcutList.Add(new Shortcut(":marks", Lang.T("Marks in a list: Enter jumps, D deletes"), false));
+            _shortcutList.Add(new Shortcut(":changes", Lang.T("Edit history: the latest edits, Enter jumps to one"), false));
             _shortcutList.Add(new Shortcut(":mark a :k a", Lang.T("Set mark a (:delmarks a b, a-c, or ! all)"), false));
             _shortcutList.Add(new Shortcut("PgUp PgDn", Lang.T("Move one page up/down"), false));
             _shortcutList.Add(new Shortcut("CTRL+U CTRL+D", Lang.T("Move half a page up/down"), false));
@@ -2120,7 +2121,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut("U u ~", Lang.T("UPPERCASE/lowercase/switch case"), false));
             _shortcutList.Add(new Shortcut("O o", Lang.T("Other corner on the line/Opposite corner"), false));
             _shortcutList.Add(new Shortcut(string.Empty, Lang.T("Insert mode"), true));
-            _shortcutList.Add(new Shortcut("Tab", Lang.F("Insert blank space x {0}", EditorEngine.TabWidth), false));
+            _shortcutList.Add(new Shortcut("Tab", Lang.F("Insert blank space x {0}", EditorEngine.IndentSetting), false));
             _shortcutList.Add(new Shortcut("CTRL+W", Lang.T("Delete word before the cursor"), false));
             _shortcutList.Add(new Shortcut("CTRL+U", Lang.T("Delete line before the cursor"), false));
             _shortcutList.Add(new Shortcut("CTRL+R", Lang.T("Paste current memory string"), false));
@@ -2143,6 +2144,7 @@ internal static class Tools
             _shortcutList.Add(new Shortcut(":trim", Lang.T("Remove blank space at line ends (selection or all)"), false));
             _shortcutList.Add(new Shortcut(":trim!", Lang.T("Also the two spaces of Markdown line breaks"), false));
             _shortcutList.Add(new Shortcut(":whitespace", Lang.T("Show blank space as . > $ (again: hide it)"), false));
+            _shortcutList.Add(new Shortcut(":zen", Lang.T("Zen mode: only mode, name and line (again: off)"), false));
             _shortcutList.Add(new Shortcut(":ol :ul", Lang.T("Numbered/Bulleted list (selected lines)"), false));
             _shortcutList.Add(new Shortcut(":dup", Lang.T("Duplicate the selection (or the line)"), false));
             _shortcutList.Add(new Shortcut(":dup 5", Lang.T("Make 5 copies of the selection (or the line)"), false));

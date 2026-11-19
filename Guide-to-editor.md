@@ -10,6 +10,20 @@ The line above the text also tells what the keys do: **NAVIGATE** in Normal mode
 
 When a text file is edited (from the file browser), the bottom line shows its type, encoding and line endings, like `HTML UTF-8 (BOM) CRLF` or `TXT Windows-1252 LF` (a file in another encoding than UTF-8 becomes UTF-8 when it is saved; the line endings are kept: `CRLF` as used by Windows, `LF` as used by Linux and macOS). The bottom line also shows messages, the current memory string, the cursor position as `line:column` and how far into the text the cursor is. Inside Marbles, `:help` shows the list of keys.
 
+## Zen mode
+For writing with as little as possible around the text, `:zen` turns on Zen mode, and `:zen` again turns it off. The choice is kept as the setting `zen` (_Zen mode: only mode, name and line_ on the Editor page of Configuration), so the next note or file opens in Zen mode too. Zen mode is for notes and text files in the editor; the settings file, a peek and a comparison look as usual (`:zen` there tells so).
+
+- **The top row** shows the mode and the name at the left: the title of a note (`[I]Shopping list*`) or the name of a file (`[I]test1.md*`). The star means there are unsaved changes. The mode is `[N]` (Normal), `[I]` (Insert), `[V]` (Visual, V-Line and V-Block), `[C]` (a command or a search being typed) or `[J]` (jumping to a word). The letters are always in English. A text that is read only gets the label _Read only_ after the name, and a file opened from the notes of a data file the reminder _[Not encrypted]_ (when the window has room for it).
+  - The mode is shown in the color of the mode label outside Zen mode (Highlight for Normal, Attention for Insert, Warning for Visual): _Colored mode label (Zen mode)_ on the Editor page of Configuration, shown while Zen mode is on (setting `zencolors`; on from the start, and off: the color of the text)
+- **The mode line is gone**, so the text gets one more row.
+- **The bottom line** shows only the line and column of the cursor, in the middle: `312:17`.
+  - A message is shown at the left until the next key; a message too long to fit before the line and column replaces them
+  - While a macro is recorded, `REC` is shown at the right, and so is the search count (`[2/12]`) while a search is highlighted
+  - The file type, encoding, string memory, spell check and the keys of an unfinished command are not shown: turning Zen mode off shows them again
+- **The command line** works as usual, with the box of commands above it.
+- **Completions** of the word you type are shown on the top row, after the name.
+- **In a split** each pane has the name above it, and the mode is shown over the pane with the cursor.
+
 ## Save and close
 Typed on the command line: press `:`, type the command and press `Enter`. A box above the command line lists the commands while you type, narrowed to those that start with what is typed, and tells what the one typed whole does (see [the command line](Guide-to-main-menu.md), at the top). `Tab` completes the command you are typing (`:spelln` and `Tab` gives `:spellnext`), `Tab` again gives the next command that starts the same and `Shift+Tab` the previous. With nothing typed, `Tab` goes through all commands of the editor. Lines typed in front of a command are kept (`:%d` and `Tab` gives `:%delete`). `Up` and `Down` bring back commands given in the editor before, the newest first (with the start of a command typed: only those that start with it). They are kept in memory only and forgotten at logout; a macro being recorded gets each command line as it was given (also one brought back with `Up` or completed with `Tab`), not the keys.
 
@@ -29,7 +43,7 @@ Typed on the command line: press `:`, type the command and press `Enter`. A box 
 - `I` / `A` Insert at the start/end of the line
 - `o` / `O` Insert on a new line below/above
 
-In Insert mode: `Tab` inserts 4 blank spaces (or completes a word, see [Completing words](#completing-words)), `CTRL+W` deletes the word before the cursor, `CTRL+U` deletes the line before the cursor, `CTRL+R` pastes the current memory string, and `CTRL+K` shows the snippets (see [Snippets](#snippets)). Text can be pasted from the clipboard with the paste function of your terminal.
+In Insert mode: `Tab` inserts 4 blank spaces, or 2 or 8 as set (**Indent with Tab, >> and <<** on the Editor page of Configuration), or completes a word, see [Completing words](#completing-words)), `CTRL+W` deletes the word before the cursor, `CTRL+U` deletes the line before the cursor, `CTRL+R` pastes the current memory string, and `CTRL+K` shows the snippets (see [Snippets](#snippets)). Text can be pasted from the clipboard with the paste function of your terminal.
 
 ## Moving the cursor (Normal and Visual mode)
 - `h` `j` `k` `l` Left/Down/Up/Right (as the arrow keys). `j` and `k` move by rows as shown on screen
@@ -58,9 +72,9 @@ A number before a movement or command repeats it: `5j` moves 5 rows down and `3w
 - `D` `C` `Y` Delete/Change to the end of the line, Yank the line
 - `p` `P` Paste after/before the cursor. With a count (`3p`) it is pasted that many times; more than 10 million characters at once is refused
 - `J` Join the line with the next
-- `>>` `<<` Indent/Unindent the line
+- `>>` `<<` Indent/Unindent the line, by the width set for `Tab` (4 spaces unless 2 or 8 is set on the Editor page of Configuration; `>` and `<` on selected lines too)
 - `~` Switch the case of the character, `gUU` `guu` Line to UPPERCASE/lowercase, `gUw` `guw` Word to UPPERCASE/lowercase
-- `u` Undo (500 steps), `U` or `CTRL+R` Redo
+- `u` Undo (500 steps), `U` or `CTRL+R` Redo. `:changes` lists them: see [Edit history](#edit-history)
 - `.` Repeat the last change. A count given to `.` takes the place of the count of the change, as in Vim: after `3x`, `2.` deletes 2 characters
 
 ## Visual mode
@@ -176,12 +190,26 @@ Marks follow the text: lines put in above a mark move it down with its line, lin
 
 **A keyboard where ` is hard to type:** on many keyboards outside the US (Danish, Norwegian, Swedish, German, French, Spanish ...) the backtick is a dead key, which waits for a letter to put an accent on (`` ` `` and `a` make `à`), so `` `a `` does not reach the mark. Turn on **Marks: ' jumps to the exact place** on the Editor page of Configuration (setting `marksapostrophe`): `'a` then jumps to the place of mark `a`, and `''` back. The jump to the start of the line is then `'a` followed by `0` or `_`. `` ` `` still works where it can be typed.
 
+## Edit history
+`:changes` lists the edits of the text, newest first: the steps that `u` undoes, one row each, so you can see what you have done lately and go back to it.
+
+Each row shows where the change is (`line:column`, the current place: it follows later edits), what it did (_Inserted_, _Deleted_, _Replaced_, or _Changes: 14_ for a step that changed several places, as `:%s`), the start of the changed text (`colour -> color` for a replacement) and when it was made.
+
+Below the list, the text the selected change removed is shown with `-` in front, and the text it inserted with `+`.
+
+- Text typed from `i` (or `a`, `o` ...) to `Esc` is one row, also when you deleted some of it with `Backspace` while typing. A played macro is one row too, as `u` undoes it in one step
+- Steps undone with `u` are at the top of the list, dimmed and marked _undone_: `CTRL+R` makes them again
+- `Enter` jumps to the place of the selected change (``` `` ``` goes back), `/` filters the list and `Esc` closes it. The list itself changes nothing
+- The list holds as many steps as undo does (500), and is forgotten when the note or file is closed. It is kept in memory only, as the undo steps: it is never written to a file, the data file or the log, so the text of a note stays as private as the note
+
 ## Line numbers
 - `:number` (or `:nu`) Show or hide line numbers (they are off until turned on). `:set number` and `:set nonumber` do one of the two
 
 The numbers are shown to the left of the text, with a small gap. A long line that continues on the next row has its number on the first row only, so the numbers are the ones used by `:5` and shown as `line:column` on the bottom line. The number of the line the cursor is on stands out. Line numbers are on from the start. The choice is remembered (`linenumbers` in the settings file) and is used for notes and text files alike. It can also be set on the Configuration page of the start page, and with `:number` on page 2 of the main menu.
 
 When text is copied from the terminal window with the mouse, line numbers are copied too: turn them off first (`:nu`). Text yanked in the editor never has them.
+
+Without line numbers, the text starts at the left edge of the window. For a margin there, turn on _Gutter: left margin without line numbers_ on the Editor page of Configuration (the setting `gutter`): the text gets four blank columns in front, where line numbers would be, also in [Zen mode](#zen-mode). A line with a mark shows the mark letter in the gutter, as with line numbers. When line numbers are on, they fill the gutter, and `:nu` switches between the two.
 
 ## Snippets
 Snippets are pieces of text (a tag, a block of CSS, a whole page) with a title, kept for inserting again. They are kept in `snippets.txt` in the data directory, for notes and text files alike.
@@ -410,6 +438,8 @@ The paste bin file cannot be a directory, a data file (`.mbls`) or one of the fi
 - `:pw` Insert a generated strong password
 - `:trim` Remove blank space (spaces and tabs) at the end of the lines: of the selected lines (select them and type `:trim`), or all lines without a selection, or `:2,9trim` lines 2 to 9. Indentation at the start of lines is kept (it was removed before version 1.5.4). In a Markdown file (and a note colored as Markdown), two spaces or more at the end of a line of text with another line of text after it are a line break: they are kept, and the message tells how many. `:trim!` removes them too. One `u` undoes it
 - `:whitespace` Show blank space, or hide it again: a space as `.`, a tab as `>` and the end of a line as `$`, in the color of the line numbers, and blank space at the end of a line highlighted (in Markdown, the two spaces of a line break that `:trim` keeps are only dimmed). Each mark takes the place of the character it marks, so nothing moves. Kept as the setting `whitespace` (_Show blank space as . > $_ on the Editor page of Configuration), for notes and text files alike. Not in a peek or a comparison
+- `:zen` Zen mode on or off: only the mode and the name above the text, and the line and column below it (see [Zen mode](#zen-mode))
+- `:changes` The edit history, to jump to a change (see [Edit history](#edit-history))
 - `:ol` Make the selected lines a numbered list (`1. `, `2. ` ...), and `:ul` a bulleted list (`- `). Select the lines with `V` (or `v`, `Q`) and type the command: the command line then starts with `'<,'>`, which stands for the selected lines. Without a selection the command works on the line of the cursor, and `:2,5ol` on lines 2 to 5. Lines that are a list of the other kind are changed to this kind, and when all lines already are a list of the kind asked for, the list marks are removed again. Blank lines are left as they are, the indentation is kept, and indented lines are numbered as a list of their own (1, 2 ... again under each item). One `u` undoes it
 - `:sort` Sort the selected lines (select them and type `:sort`), or all lines without a selection, or `:2,9sort` lines 2 to 9. `:sort!` sorts them the other way, and `:sort i` (or `:sort! i`) does not tell upper and lower case apart. Lines are sorted by the values of their characters (uppercase before lowercase, æøå after z). One `u` undoes it
 - `:dup` (or `:duplicate`) Duplicate the selection: select the text and type `:dup` (the command line starts with `'<,'>`). Text selected with `v` is copied right after itself, lines selected with `V` are copied below the last of them, and a block selected with `Q` is copied to the right of the block (the text to the right of it stays in line). Without a selection the line of the cursor is duplicated, and `:2,5dup` copies lines 2 to 5 below line 5. A number after the command makes that many copies (at most 500, and no more than 10 million characters at once, as for `p`): `:dup 5` makes five copies of the line (or the selection), to fill out a list of HTML elements afterwards. The cursor goes to the start of the (first) copy, and one `u` undoes it

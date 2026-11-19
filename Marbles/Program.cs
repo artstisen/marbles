@@ -7,10 +7,10 @@ class Program
         // A path given (relative to the directory Marbles is started in, which is read before anything else)
         var currentDirectory = Directory.GetCurrentDirectory();
         // An option (--help, --version) is answered before anything is shown (also to a pipe, as "marbles --help |
-        // less"): it is never taken for the name of a file to make
-        if (args.Length > 0 && StartArgument.IsOption(args[0], currentDirectory))
+        // less"), wherever it is given ("marbles +12 --help"): it is never taken for the name of a file to make
+        if (StartArgument.FirstOption(args, currentDirectory) is { } option)
         {
-            Environment.Exit(StartArgument.AnswerOption(args[0], Console.Out));
+            Environment.Exit(StartArgument.AnswerOption(option, Console.Out));
         }
 
         // Keys are read one at a time from the terminal: with its input from a file or a pipe Marbles cannot run
@@ -34,8 +34,16 @@ class Program
                 Lang.T("Put it in the folder lang next to Marbles (or in the data directory)."));
         }
 
-        // Started with a file or directory ("marbles notes.md"): it is opened as a jump, without the start page
-        if (args.Length > 0 && OpenArgument(args[0], currentDirectory) is { } target)
+        // Started with a file or directory ("marbles notes.md", "marbles +12 notes.md" at line 12): it is opened as
+        // a jump, without the start page
+        var start = StartArgument.Parse(args, currentDirectory);
+        if (start.Message.Length > 0)
+        {
+            Tools.ClearScreen();
+            ChoiceBox.Message(DialogText.ApplicationName, start.Message, string.Empty);
+            StartMenu.Start();
+        }
+        else if (start.Path != null && OpenArgument(start.Path, start.Line, currentDirectory) is { } target)
         {
             Jump.OpenAtStart(target);
         }
@@ -49,9 +57,9 @@ class Program
 
     // The place a path given at startup leads to, or null (a message tells why, or the user did not want a file
     // that is not there to be made)
-    private static JumpTarget? OpenArgument(string argument, string currentDirectory)
+    private static JumpTarget? OpenArgument(string argument, int? line, string currentDirectory)
     {
-        var result = StartArgument.Resolve(argument, currentDirectory, StartMenu.Only);
+        var result = StartArgument.Resolve(argument, currentDirectory, StartMenu.Only, line);
         if (result.Message.Length > 0)
         {
             Tools.ClearScreen();

@@ -143,10 +143,7 @@ public partial class TextArea
     // half the width as when it was split
     private void Resize(int widthChange, int heightChange)
     {
-        _height = Math.Max(1, _height + heightChange);
-        _shownRows = new string?[_height];
-        _shownCells = new int[_height];
-        _engine.SetHeight(_height);
+        SetTextHeight(_height + heightChange);
         if (_otherPane == null)
         {
             SetPlace(_left, Math.Max(2, _width + widthChange));
@@ -163,6 +160,17 @@ public partial class TextArea
         _otherPane.Width = focusAtLeft ? rightWidth : leftWidth;
         _otherPane.TextWidth = _otherPane.Width - 1;
         _otherPane.Gutter = -1;
+    }
+
+    // The rows of the text (both panes of a split): the window was resized, or the frame changed (":zen"). The
+    // whole text area is drawn again after it
+    private void SetTextHeight(int height)
+    {
+        _height = Math.Max(1, height);
+        _shownRows = new string?[_height];
+        _shownCells = new int[_height];
+        _engine.SetHeight(_height);
+        if (_otherPane == null) return;
         _otherPane.ShownRows = new string?[_height];
         _otherPane.ShownCells = new int[_height];
         _otherPane.Engine.SetHeight(_height);

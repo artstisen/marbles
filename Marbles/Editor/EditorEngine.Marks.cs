@@ -85,6 +85,18 @@ internal sealed partial class EditorEngine
     internal void JumpToMark(char name) => JumpToMark(name, true);
 
     /// <summary>
+    /// Place the cursor at a place in the text, as a jump ("``" goes back): a change picked in ":changes"
+    /// </summary>
+    internal void JumpToPlace(TextPos at)
+    {
+        var from = Cursor;
+        Cursor = Buffer.Clamp(at);
+        ClampCursor();
+        EnsureCursorVisible();
+        RememberJump(from);
+    }
+
+    /// <summary>
     /// Delete a mark (from the list of ":marks")
     /// </summary>
     internal bool DeleteMark(char name) => Marks.Remove(name);
@@ -108,6 +120,13 @@ internal sealed partial class EditorEngine
         if (command == "marks")
         {
             if (!SingleLine) _request = EditorRequest.Marks;
+            return true;
+        }
+
+        // ":changes": the edit history, to jump to the place of a change
+        if (command == "changes")
+        {
+            if (!SingleLine) _request = EditorRequest.Changes;
             return true;
         }
 

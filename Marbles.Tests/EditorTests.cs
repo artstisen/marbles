@@ -305,6 +305,46 @@ public class EditorTests
         Assert.False(editor.IsModified);
     }
 
+    [Fact]
+    public void Indent_NextWidth_GoesRound_AndAWidthNotOfTheListIsTheDefault()
+    {
+        Assert.Equal(new[] { 2, 4, 8 }, EditorEngine.IndentWidths);
+        Assert.Equal(8, EditorEngine.NextIndent(4));
+        Assert.Equal(2, EditorEngine.NextIndent(8));
+        Assert.Equal(4, EditorEngine.NextIndent(2));
+        // (a width not of the list: the first)
+        Assert.Equal(2, EditorEngine.NextIndent(3));
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    [InlineData(8)]
+    public void Indent_TabAndShiftOperators_UseTheWidthSet(int width)
+    {
+        var spaces = new string(' ', width);
+        // Tab in Insert mode
+        var editor = new EditorEngine("foo", 60, 10, false) { IndentWidth = width };
+        editor.Type("i<Tab><Esc>");
+        Assert.Equal(spaces + "foo", editor.GetText());
+        // ">>" and "<<", and on a selection of lines
+        editor = new EditorEngine("foo\nbar", 60, 10, false) { IndentWidth = width };
+        editor.Type(">>");
+        Assert.Equal(spaces + "foo\nbar", editor.GetText());
+        editor.Type(">>");
+        Assert.Equal(spaces + spaces + "foo\nbar", editor.GetText());
+        editor.Type("<lt><lt>");
+        Assert.Equal(spaces + "foo\nbar", editor.GetText());
+        editor.Type("ggVj>");
+        Assert.Equal(spaces + spaces + "foo\n" + spaces + "bar", editor.GetText());
+        editor.Type("ggVj<lt>");
+        Assert.Equal(spaces + "foo\nbar", editor.GetText());
+        // "<<" takes no more than there is
+        editor = new EditorEngine(" foo", 60, 10, false) { IndentWidth = width };
+        editor.Type("<lt><lt>");
+        Assert.Equal("foo", editor.GetText());
+    }
+
     [Theory]
     [InlineData("gUUguu", "foo bar")]
     [InlineData("gUUg~~", "foo bar")]

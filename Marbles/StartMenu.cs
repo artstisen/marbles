@@ -366,8 +366,12 @@ internal static class StartMenu
         LogoAnimation,
         Corners,
         LineNumbers,
+        Gutter,
         WordWrap,
         Whitespace,
+        Indent,
+        Zen,
+        ZenColors, // Shown below Zen when Zen mode is on
         MarksApostrophe,
         ScrollOff,
         Clipboard,
@@ -418,8 +422,13 @@ internal static class StartMenu
         settings.Add(Setting.Corners);
         // Editor
         settings.Add(Setting.LineNumbers);
+        settings.Add(Setting.Gutter);
         settings.Add(Setting.WordWrap);
         settings.Add(Setting.Whitespace);
+        settings.Add(Setting.Indent);
+        settings.Add(Setting.Zen);
+        // (only while Zen mode is on)
+        if (TextArea.Zen) settings.Add(Setting.ZenColors);
         settings.Add(Setting.MarksApostrophe);
         settings.Add(Setting.ScrollOff);
         settings.Add(Setting.Clipboard);
@@ -472,8 +481,13 @@ internal static class StartMenu
             Setting.Size => indent + DialogText.ConfigSize + Init.LineWidth + " x " + Init.LineCount +
                             DialogText.ConfigSizeNote,
             Setting.LineNumbers => Check(TextArea.LineNumbers) + DialogText.ConfigLineNumbers,
+            Setting.Gutter => Check(TextArea.BlankGutter) + Lang.T("Gutter: left margin without line numbers"),
             Setting.WordWrap => Check(TextArea.WordWrap) + Lang.T("Wrap long lines"),
             Setting.Whitespace => Check(TextArea.ShowWhitespace) + Lang.T("Show blank space as . > $ (:whitespace)"),
+            Setting.Indent => indent + Lang.F("Indent with Tab, >> and <<: {0} spaces (Enter: Change)",
+                EditorEngine.IndentSetting),
+            Setting.Zen => Check(TextArea.Zen) + Lang.T("Zen mode: only mode, name and line (:zen)"),
+            Setting.ZenColors => indent + Check(TextArea.ZenColors) + Lang.T("Colored mode label (Zen mode)"),
             Setting.MarksApostrophe => Check(EditorEngine.MarksApostrophe) + Lang.T("Marks: ' jumps to the exact place"),
             Setting.ScrollOff => Check(TextArea.ScrollOff) +
                                  Lang.F("Lines kept around cursor: {0}", TextArea.ScrollOffLines),
@@ -522,8 +536,8 @@ internal static class StartMenu
                 or Setting.Language => 0,
             Setting.AutoSize or Setting.Size or Setting.Monochrome or Setting.ColorScheme or Setting.Logo
                 or Setting.LogoAnimation or Setting.Corners => 1,
-            Setting.LineNumbers or Setting.WordWrap or Setting.Whitespace or Setting.MarksApostrophe
-                or Setting.ScrollOff or Setting.Clipboard
+            Setting.LineNumbers or Setting.Gutter or Setting.WordWrap or Setting.Whitespace or Setting.Indent
+                or Setting.Zen or Setting.ZenColors or Setting.MarksApostrophe or Setting.ScrollOff or Setting.Clipboard
                 or Setting.SyntaxColors or Setting.Spell or Setting.Snippets or Setting.AutoComplete
                 or Setting.Completions => 2,
             Setting.FileNumbers or Setting.FavoriteNumbers or Setting.HistoryNumbers or Setting.HotlistNumbers
@@ -1072,6 +1086,20 @@ internal static class StartMenu
                 break;
             case Setting.Whitespace:
                 TextArea.ShowWhitespace = !TextArea.ShowWhitespace;
+                break;
+            case Setting.Gutter:
+                TextArea.BlankGutter = !TextArea.BlankGutter;
+                break;
+            case Setting.Zen:
+                TextArea.Zen = !TextArea.Zen;
+                break;
+            case Setting.ZenColors:
+                TextArea.ZenColors = !TextArea.ZenColors;
+                break;
+            case Setting.Indent:
+                // 2, 4, 8 spaces, and round again (the help tells the width of Tab: made again)
+                EditorEngine.IndentSetting = EditorEngine.NextIndent(EditorEngine.IndentSetting);
+                Tools.ClearEditorHelpData();
                 break;
             case Setting.MarksApostrophe:
                 EditorEngine.MarksApostrophe = !EditorEngine.MarksApostrophe;

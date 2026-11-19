@@ -484,6 +484,8 @@ public class EditorNavigationTests
     {
         var editor = Editor("text");
         Assert.Equal(EditorRequest.WhitespaceToggle, editor.Type(":whitespace<CR>"));
+        Assert.Equal(EditorRequest.Zen, editor.Type(":zen<CR>"));
+        Assert.Equal(EditorRequest.Changes, editor.Type(":changes<CR>"));
     }
 
     [Fact]

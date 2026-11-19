@@ -37,7 +37,7 @@ internal sealed partial class EditorEngine
     private static bool IsSideEffect(EditorRequest request) => request is EditorRequest.Clipboard
         or EditorRequest.WrapChanged or EditorRequest.LineNumbersChanged or EditorRequest.ScrollOffChanged
         or EditorRequest.CompleteChanged or EditorRequest.SyntaxChanged or EditorRequest.Help
-        or EditorRequest.WhitespaceToggle;
+        or EditorRequest.WhitespaceToggle or EditorRequest.Zen;
 
     internal void StartRecording()
     {

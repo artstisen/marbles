@@ -94,7 +94,7 @@ internal static class Commands
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
-            "favorite record play macro trim trim! whitespace mark marks delmarks delmarks! clear registers reglist regclear putall vsel vline block ol ul dup duplicate surround pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete diff scrolloff info jump book recent bookmark bookmark! yankall rename title split only new" + Everywhere,
+            "favorite record play macro trim trim! whitespace zen mark marks changes delmarks delmarks! clear registers reglist regclear putall vsel vline block ol ul dup duplicate surround pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete diff scrolloff info jump book recent bookmark bookmark! yankall rename title split only new" + Everywhere,
             "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw reg sn ju jmp fav sur k" + EverywhereShort)
     };
 

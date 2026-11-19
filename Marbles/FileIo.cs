@@ -1339,10 +1339,19 @@ internal static class FileIo
         _tempSettings += "syntaxcolors=" + (SyntaxHighlighter.ColorFiles ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Line numbers in the editor (the editor command :number turns them on and off)
         _tempSettings += "linenumbers=" + (TextArea.LineNumbers ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // A blank gutter in front of the text when the line numbers are off, as a margin
+        _tempSettings += "gutter=" + (TextArea.BlankGutter ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Long lines in the editor wrapped (on unless turned off)
         _tempSettings += "wrap=" + (TextArea.WordWrap ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // Blank space shown in the editor as . (space), > (tab) and $ (line end) (:whitespace)
         _tempSettings += "whitespace=" + (TextArea.ShowWhitespace ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // The indent of Tab, ">>" and "<<" in the editor, in spaces: 2, 4 or 8
+        _tempSettings += "indent=" + EditorEngine.IndentSetting + Entries.NewLineChar;
+        // Zen mode: the editor of a file or a note shows only the mode and the name above the text, the line and
+        // column below (:zen)
+        _tempSettings += "zen=" + (TextArea.Zen ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
+        // In Zen mode, the mode ([N], [I] ...) in the color of its mode, as the mode label outside Zen mode
+        _tempSettings += "zencolors=" + (TextArea.ZenColors ? DialogText.BTrue : DialogText.BFalse) + Entries.NewLineChar;
         // ' jumps to the place of a mark, as ` (for keyboards where ` is hard to type)
         _tempSettings += "marksapostrophe=" + (EditorEngine.MarksApostrophe ? DialogText.BTrue : DialogText.BFalse) +
                          Entries.NewLineChar;
@@ -1509,6 +1518,12 @@ internal static class FileIo
         TextArea.WordWrap = Tools.TrimToLower(Get("wrap")) != DialogText.BFalse;
         // Off unless turned on
         TextArea.ShowWhitespace = Tools.TrimToLower(Get("whitespace")) == DialogText.BTrue;
+        TextArea.BlankGutter = Tools.TrimToLower(Get("gutter")) == DialogText.BTrue;
+        TextArea.Zen = Tools.TrimToLower(Get("zen")) == DialogText.BTrue;
+        // (on unless turned off)
+        TextArea.ZenColors = Tools.TrimToLower(Get("zencolors")) != DialogText.BFalse;
+        // 4 spaces unless another width of the list is set
+        EditorEngine.IndentSetting = EditorEngine.ParseIndent(Get("indent"));
         EditorEngine.MarksApostrophe = Tools.TrimToLower(Get("marksapostrophe")) == DialogText.BTrue;
         // The box of commands above the command line: on unless turned off
         CommandList.Enabled = Tools.TrimToLower(Get("commandlist")) != DialogText.BFalse;

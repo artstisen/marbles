@@ -659,7 +659,7 @@ internal sealed partial class EditorEngine
             case '>':
                 for (var i = first; i <= last; i++)
                 {
-                    if (Buffer.LineLength(i) > 0) Insert(new TextPos(i, 0), new string(' ', TabWidth));
+                    if (Buffer.LineLength(i) > 0) Insert(new TextPos(i, 0), new string(' ', IndentWidth));
                 }
 
                 Cursor = new TextPos(first, FirstNonBlank(first));
@@ -667,7 +667,7 @@ internal sealed partial class EditorEngine
             case '<':
                 for (var i = first; i <= last; i++)
                 {
-                    var indent = Math.Min(TabWidth, FirstNonBlank(i));
+                    var indent = Math.Min(IndentWidth, FirstNonBlank(i));
                     Delete(new TextPos(i, 0), new TextPos(i, indent));
                 }
 

@@ -336,6 +336,10 @@ internal static class Init
         FileExplorer.HotlistNumbers = false;
         FileExplorer.SearchNumbers = false;
         JumpMenu.BookmarkNumbers = false;
+        TextArea.BlankGutter = false;
+        TextArea.Zen = false;
+        TextArea.ZenColors = true;
+        EditorEngine.IndentSetting = EditorEngine.DefaultIndent;
         TextArea.LineNumbers = false;        Logo.AnimateNext(); // Sweep the logo when the login page is first shown
         WriteProgressBar(8); // progress
         // Set default colors

@@ -48,9 +48,27 @@ public partial class TextArea
     internal static bool LineNumbers { get; set; }
 
     /// <summary>
+    /// A blank gutter in front of the text when the line numbers are off (setting "gutter"): the room of the numbers,
+    /// as a margin
+    /// </summary>
+    internal static bool BlankGutter { get; set; }
+
+    /// <summary>
     /// Long lines are wrapped (setting "wrap", on unless turned off)
     /// </summary>
     internal static bool WordWrap { get; set; } = true;
+
+    /// <summary>
+    /// Zen mode (setting "zen", ":zen"): the editor of a file or a note shows only the mode and the name above the
+    /// text and the line and column below it (ZenFrame)
+    /// </summary>
+    internal static bool Zen { get; set; }
+
+    /// <summary>
+    /// The mode in Zen mode ([N], [I], [V] ...) in the color of its mode, as the mode label outside Zen mode (setting
+    /// "zencolors", on unless turned off): else in the color of the text
+    /// </summary>
+    internal static bool ZenColors { get; set; } = true;
 
     /// <summary>
     /// Blank space is shown: a space as ".", a tab as ">" and the end of a line as "$", in the color of the line
@@ -81,7 +99,7 @@ public partial class TextArea
 
     // The editor of the text (in a split: of the pane with the focus, TextArea.Split.cs), and its place
     private EditorEngine _engine;
-    private readonly int _top;
+    private int _top; // Changed when the frame changes (":zen")
     private int _left;
     private int _width;
     private int _height; // Changed when the terminal window is resized (TextArea.Resize.cs)
@@ -212,7 +230,57 @@ public partial class TextArea
     // What is currently shown on screen, used to only write the rows that have changed
     private string?[] _shownRows;
     private int[] _shownCells;
-    private string? _shownStatus;
+    // What is around the text: the rows above it and the bottom line (EditorFrame)
+    private EditorFrame _frame = new StandardFrame();
+
+    // The editor of a file or a note on the whole window: it can be in Zen mode (not the settings file, a peek or a
+    // comparison, or a field)
+    private bool IsZenEditor => _saveMode is SaveAsFile or SaveAsEntry && _peek == null && !_singleLine && !_readOnly;
+
+    // ":zen": Zen mode on or off, as the setting (saved), and for this editor: the text moves up or down a row
+    private void ToggleZen()
+    {
+        if (!IsZenEditor)
+        {
+            _engine.ShowMessage(Lang.T("Zen mode is only for editing files and notes"), true);
+            return;
+        }
+
+        Zen = !Zen;
+        FileIo.SaveSettings();
+        RedrawAll();
+        _engine.ShowMessage(Zen ? Lang.T("Zen mode on (:zen turns it off)") : Lang.T("Zen mode off"), false);
+    }
+
+    // The setting indent (it can be changed in Configuration, opened from the Jump menu): Tab, ">>" and "<<" of both
+    // panes indent by the width set. Called when all is drawn again
+    private void FollowIndentSetting()
+    {
+        _engine.IndentWidth = EditorEngine.IndentSetting;
+        if (_otherPane != null) _otherPane.Engine.IndentWidth = EditorEngine.IndentSetting;
+    }
+
+    // The setting gutter (it can be changed in Configuration, opened from the Jump menu): both panes keep the margin
+    // or leave it out. Called when all is drawn again (not for a peek or a field, which have no gutter)
+    private void FollowGutterSetting()
+    {
+        if (_peek != null || _singleLine || _readOnly) return;
+        _engine.BlankGutter = BlankGutter;
+        if (_otherPane != null) _otherPane.Engine.BlankGutter = BlankGutter;
+    }
+
+    // The frame of the setting Zen mode (it can also be changed in Configuration, opened from the Jump menu): when it
+    // is not the one in use, the text moves up or down a row. Called when all is drawn again
+    private void FollowZenSetting()
+    {
+        if (!IsZenEditor || _frame is ZenFrame == Zen) return;
+        EditorFrame frame = Zen ? new ZenFrame() : new StandardFrame();
+        var shift = frame.RowsAbove - _frame.RowsAbove;
+        _frame = frame;
+        _top += shift;
+        SetTextHeight(_height - shift);
+        EventLog.Add(DialogText.LogEditorCommand + ": frame " + _frame.Name);
+    }
 
     /// <summary>
     /// True if the editor was closed without accepting or saving the text
@@ -259,6 +327,17 @@ public partial class TextArea
         _singleLine = height == 1;
         _readOnly = readOnly;
         _saveMode = saveMode;
+        // The editor of a file or a note in Zen mode has the frame of Zen mode, and the text starts higher: it is laid
+        // out by the page for the standard frame
+        if (IsZenEditor && Zen)
+        {
+            _frame = new ZenFrame();
+            _top += ZenFrame.Rows - StandardFrame.Rows;
+            _height -= ZenFrame.Rows - StandardFrame.Rows;
+            // The page drew what is around the text of the standard frame (Actions.DrawEditMenu)
+            _redrawWhole = true;
+        }
+
         _leftMargin = _singleLine ? " " : string.Empty;
         _shownRows = new string?[_height];
         _shownCells = new int[_height];
@@ -272,6 +351,7 @@ public partial class TextArea
             MaxCells = width - 3,
             // A peek is narrow: no line numbers
             LineNumbers = LineNumbers && !_singleLine && !readOnly && peek == null,
+            BlankGutter = BlankGutter && !_singleLine && !readOnly && peek == null,
             Wrap = _singleLine || (WordWrap && peek?.NoWrap != true),
             ScrollOffLines = ScrollOffLines,
             ScrollOff = ScrollOff && !_singleLine && !readOnly ? ScrollOffLines : 0,
@@ -756,7 +836,7 @@ public partial class TextArea
                 var (message, isError) = SystemClipboard.Copy(_engine.ClipboardText, NoteText,
                     !SystemClipboard.EveryYank);
                 if (message.Length > 0) _engine.ShowMessage(message, isError);
-                _shownStatus = null;
+                _frame.ForgetStatus();
                 break;
             }
             case EditorRequest.PasteBinWrite:
@@ -808,7 +888,7 @@ public partial class TextArea
                 // Also to the string memory, as the current string: "p" puts it in
                 var (message, isError) = SystemClipboard.CopyWithMemory(FileExplorer.CurrentFilePath);
                 _engine.ShowMessage(message, isError);
-                _shownStatus = null;
+                _frame.ForgetStatus();
                 break;
             }
             case EditorRequest.Snippets:
@@ -842,6 +922,12 @@ public partial class TextArea
                 Tools.HideCursor();
                 DrawStatusLine();
                 PickMark();
+                RedrawAll();
+                break;
+            case EditorRequest.Changes:
+                Tools.HideCursor();
+                DrawStatusLine();
+                ShowChanges();
                 RedrawAll();
                 break;
             case EditorRequest.StringMemory:
@@ -1043,6 +1129,9 @@ public partial class TextArea
                 LineNumbers = _engine.LineNumbers;
                 if (_saveMode != SaveAsSettings) FileIo.SaveSettings();
                 break;
+            case EditorRequest.Zen:
+                ToggleZen();
+                break;
             case EditorRequest.WhitespaceToggle:
                 ShowWhitespace = !ShowWhitespace;
                 if (ShowWhitespace) _engine.ShowMessage(Lang.T("Blank space shown: . space, > tab, $ line end"), false);
@@ -1068,7 +1157,7 @@ public partial class TextArea
                 if (_saveMode == SaveAsEntry)
                 {
                     Actions.SetEntrySyntax(_engine.Syntax);
-                    _shownStatus = null;
+                    _frame.ForgetStatus();
                 }
 
                 // Colors on or off is remembered for the files that are colored when they are opened
@@ -1115,6 +1204,75 @@ public partial class TextArea
             if (picked >= 0) _engine.JumpToMark(marks[picked].Name);
             return;
         }
+    }
+
+    // ":changes": the edit history, newest first (the steps undone at the top, dimmed): where each change is now,
+    // what it did, the start of its text and when it was made. Below the list: the text removed (-) and inserted (+).
+    // Enter jumps to the place of the change. Only shown: the history is in memory, and nothing of it is logged
+    private void ShowChanges()
+    {
+        var changes = ChangeHistory.Of(_engine.Buffer.History());
+        if (changes.Count == 0)
+        {
+            _engine.ShowMessage(Lang.T("No edits yet"), false);
+            return;
+        }
+
+        var kinds = changes.Select(KindOf).ToList();
+        var places = changes.Select(change => PlaceOf(change.Place)).ToList();
+        var times = changes.Select(change => change.Undone ? Lang.T("undone") : change.Time.ToString("HH:mm:ss"))
+            .ToList();
+        var kindWidth = kinds.Max(TextMetrics.WidthOf);
+        var placeWidth = places.Max(TextMetrics.WidthOf);
+        var timeWidth = times.Max(TextMetrics.WidthOf);
+        // The room of a row in the box (PickListBox), and the text in what is left
+        var textWidth = Math.Max(8, Init.LineWidth - 14 - placeWidth - kindWidth - timeWidth - 6);
+        var rows = changes.Select((change, i) =>
+            Pad(places[i], placeWidth) + "  " + Pad(kinds[i], kindWidth) + "  " +
+            Pad(Tools.TruncateString(TextOf(change), textWidth, true), textWidth) + "  " + times[i]).ToList();
+        var picked = PickListBox.Show(Lang.T("Edit history"), rows, i => Preview(changes[i]), 0,
+            Lang.T("j/k Select | Enter Jump | / Filter | Esc Close"), dimmed: i => changes[i].Undone);
+        if (picked >= 0) _engine.JumpToPlace(changes[picked].Place);
+        return;
+
+        static string Pad(string text, int width) => text + new string(' ', Math.Max(0, width - TextMetrics.WidthOf(text)));
+    }
+
+    // What a change did, as the list of ":changes" shows it
+    private static string KindOf(ChangeHistory.Change change) => change.Kind switch
+    {
+        ChangeHistory.ChangeKind.Inserted => Lang.T("Inserted"),
+        ChangeHistory.ChangeKind.Deleted => Lang.T("Deleted"),
+        ChangeHistory.ChangeKind.Replaced => Lang.T("Replaced"),
+        ChangeHistory.ChangeKind.Several => Lang.F("Changes: {0}", change.Count),
+        _ => Lang.T("No change")
+    };
+
+    // The text of a change in a row: the start of the text inserted or deleted, or both ("colour -> color")
+    private static string TextOf(ChangeHistory.Change change)
+    {
+        var removed = ChangeHistory.Excerpt(change.Removed);
+        var inserted = ChangeHistory.Excerpt(change.Inserted);
+        if (removed.Length == 0) return inserted;
+        return inserted.Length == 0 ? removed : removed + " -> " + inserted;
+    }
+
+    // The place of a change as line:column (the column on the screen, as on the bottom line)
+    private string PlaceOf(TextPos place)
+    {
+        var at = _engine.Buffer.Clamp(place);
+        return at.Line + 1 + ":" + (TextMetrics.WidthOfRange(_engine.Buffer[at.Line], 0, at.Col) + 1);
+    }
+
+    // Below the list: the lines removed (-) and inserted (+) by the change (its first part)
+    private static string Preview(ChangeHistory.Change change)
+    {
+        var lines = new List<string>();
+        if (change.Removed.Length > 0) lines.AddRange(change.Removed.TrimEnd(TextBuffer.NewLine).Split(TextBuffer.NewLine)
+            .Select(line => "- " + line.Replace("\t", "    ")));
+        if (change.Inserted.Length > 0) lines.AddRange(change.Inserted.TrimEnd(TextBuffer.NewLine).Split(TextBuffer.NewLine)
+            .Select(line => "+ " + line.Replace("\t", "    ")));
+        return string.Join("\n", lines.Take(8));
     }
 
     private IEnumerable<string> SurroundWords() =>
@@ -1815,34 +1973,17 @@ public partial class TextArea
         return true;
     }
 
-    // Show or remove the "unsaved" indicator when the state changes
-    // The label "Read only" at the top right, where the label "Unsaved" is shown for a text with changes
-    private void DrawReadOnlyLabel()
-    {
-        if (!_engine.ReadOnly || _peek != null) return;
-        // At the right of the top row, where Unsaved is shown (a text that is read only is not changed)
-        var label = DialogText.ReadOnlyLabel;
-        Tools.SetCursorEx(0, Math.Max(0, Init.LineWidth - 1 - TextMetrics.WidthOf(label)));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.AttentionInverted);
-        Console.Write(label);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-    }
+    // The label of a text that is read only, drawn by the frame
+    private void DrawReadOnlyLabel() => _frame.DrawReadOnlyLabel(Facts());
 
+    // Show or remove the "unsaved" indicator when the state changes
     private void UpdateChangeIndicator()
     {
         var modified = _engine.IsModified;
         if (modified == DocumentInfo.HasChanged) return;
         DocumentInfo.HasChanged = modified;
         if (_singleLine) return;
-        if (modified)
-        {
-            Menu.IndicateChanges(true);
-        }
-        else
-        {
-            Menu.ClearChangeIndicator();
-            Menu.InitializeSaveIndicator();
-        }
+        _frame.ShowChanged(Facts());
     }
 
     #endregion
@@ -1852,6 +1993,7 @@ public partial class TextArea
     // Redraw the whole screen (after a dialog or message has been shown on top of the editor)
     private void RedrawAll()
     {
+        FollowIndentSetting();
         Tools.HideCursor();
         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
         Tools.ClearScreen();
@@ -1861,30 +2003,16 @@ public partial class TextArea
             _peek.DrawBehind();
             Array.Fill(_shownRows, null);
             Array.Fill(_shownCells, _width - 1);
-            _shownStatus = null;
+            _frame.ForgetStatus();
             Draw();
             return;
         }
 
-        switch (_saveMode)
-        {
-            case SaveAsSettings:
-                Actions.DrawEditSettingsMenu();
-                break;
-            case SaveAsFile:
-                Actions.DrawEditFileMenu();
-                break;
-            default:
-                Actions.DrawEditMenu();
-                break;
-        }
-
-        Menu.IndicateChanges(true);
-        DrawReadOnlyLabel();
+        FollowZenSetting();
+        FollowGutterSetting();
+        _frame.DrawAround(Facts());
         Array.Fill(_shownRows, null);
         Array.Fill(_shownCells, 0);
-        _shownStatus = null;
-        _shownModeLabel = null;
         RedrawSplit();
         Draw();
     }
@@ -1897,6 +2025,12 @@ public partial class TextArea
         if (_engine.LineNumbers)
         {
             gutter = Math.Max(MinNumberWidth, _engine.Buffer.LineCount.ToString().Length) + GutterGap;
+        }
+        else if (_engine.BlankGutter)
+        {
+            // The room of two digits and the gap, whatever the length of the text (the text does not move sideways
+            // when the text gets more lines)
+            gutter = MinNumberWidth + GutterGap;
         }
 
         if (gutter == _gutter) return;
@@ -1975,8 +2109,8 @@ public partial class TextArea
         // the box is there), and the divider and the status line
         Array.Fill(_shownRows, null);
         Array.Fill(_shownCells, _width);
-        _shownStatus = null;
-        _shownModeLabel = null;
+        _frame.ForgetStatus();
+        _frame.ForgetTop();
         Draw();
         return true;
     }
@@ -2010,87 +2144,20 @@ public partial class TextArea
         }
     }
 
-    private string? _shownModeLabel; // The mode written on the divider above the text
-
-    // The mode on the divider above the text: EDIT (Insert), NAVIGATE (Normal), SELECT (the Visual modes) or
-    // COMMAND (the command line and search). Written when it changes
-    private void DrawModeDivider()
-    {
-        // A peek has no divider above it: the pane is shown there
-        if (_top < 1 || _peek != null) return;
-        if (_engine.CompletionList.Count > 0)
-        {
-            DrawCompletions();
-            return;
-        }
-
-        var label = _engine.IsJumping ? DialogText.DividerJump : _engine.Mode switch
-        {
-            EditorMode.Insert => DialogText.CaptionsEdit,
-            EditorMode.Visual or EditorMode.VisualLine or EditorMode.VisualBlock => DialogText.DividerSelect,
-            EditorMode.Command or EditorMode.Search => DialogText.DividerCommand,
-            _ => DialogText.DividerNavigate
-        };
-        if (label == _shownModeLabel) return;
-        _shownModeLabel = label;
-        Tools.SetCursorEx(_top - 1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', Init.LineWidth - 1));
-        // Over the pane with the focus in a split
-        Tools.SetCursorEx(_top - 1, Math.Max(0, ModeCenter - (TextMetrics.WidthOf(label) / 2 + 1)));
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.EditorTitle);
-        Console.Write(" " + label + " ");
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-    }
-
-    // The longest a completion is shown on the divider
-    private const int MaxCompletionWidth = 24;
-
-    // The completions of the word before the cursor, on the divider above the text: the one chosen with Tab is
-    // highlighted, and the keys are shown at the right
-    private void DrawCompletions()
-    {
-        var list = _engine.CompletionList;
-        var chosen = _engine.CompletionIndex;
-        var hints = list.Count == 1 ? DialogText.CompleteOneKeys
-            : chosen < 0 ? DialogText.CompleteChooseKeys : DialogText.CompleteManyKeys;
-        var shown = "\u0001" + chosen + "\u0001" + string.Join("\u0001", list.Select(item => item.Text));
-        if (shown == _shownModeLabel) return;
-        _shownModeLabel = shown;
-        var width = Init.LineWidth - 1;
-        Tools.SetCursorEx(_top - 1, 0);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(new string('-', width));
-        // The keys at the right (as Menu.WriteKeyHints draws them: each with three cells around it)
-        var hintsWidth = hints.Split(" | ").Sum(hint => TextMetrics.WidthOf(hint) + 3) + 1;
-        var hintsAt = Math.Max(0, width - 2 - hintsWidth);
-        var column = 2;
-        for (var i = 0; i < list.Count; i++)
-        {
-            var text = " " + Tools.TruncateString(list[i].Shown, MaxCompletionWidth, true) + " ";
-            var cells = TextMetrics.WidthOf(text);
-            if (column + cells > hintsAt - 1) break;
-            Tools.SetCursorEx(_top - 1, column);
-            ConsoleColors.SetColors(i == chosen
-                ? ConsoleColors.ColorPreset.KeyHintInverted
-                : ConsoleColors.ColorPreset.EditorTitle);
-            Console.Write(text);
-            column += cells + 1;
-        }
-
-        Tools.SetCursorEx(_top - 1, hintsAt);
-        Menu.WriteKeyHints(hints);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-    }
+    // The row above the text (the mode, the completions, the names of the panes), drawn by the frame
+    private void DrawModeDivider() => _frame.DrawTop(Facts());
 
     // Build the content of a row: the text of a segment of a line, split where the color changes
     private int BuildRow(StringBuilder row, int line, int segment)
     {
         if (_gutter == 0) return BuildTextRow(row, line, segment);
         // The number of the line on its first row (the following rows of a long line have none); a line with a mark
-        // shows its letter instead
+        // shows its letter instead. A blank gutter shows only the letters of the marks
         var mark = segment == 0 ? _engine.MarkOnLine(line) : '\0';
-        var number = segment != 0 ? string.Empty : mark != '\0' ? mark.ToString() : (line + 1).ToString();
+        var number = segment != 0 ? string.Empty
+            : mark != '\0' ? mark.ToString()
+            : _engine.LineNumbers ? (line + 1).ToString()
+            : string.Empty;
         row.Append(StyleMarker)
             .Append((char)('0' + (line == _engine.Cursor.Line ? StyleCurrentLineNumber : StyleLineNumber)))
             .Append(number.PadLeft(_gutter - GutterGap)).Append(' ', GutterGap);
@@ -2469,136 +2536,74 @@ public partial class TextArea
         _shownCells[r] = cells;
     }
 
-    // The bottom line of the window: mode, messages or command line to the left and cursor position to the right
-    private void DrawStatusLine()
+    // The bottom line of the window (the command line while a command is typed), drawn by the frame
+    private void DrawStatusLine() => _frame.DrawStatus(Facts());
+
+    /// <summary>
+    /// What the frame shows, as it is now (EditorFrame)
+    /// </summary>
+    private EditorFacts Facts()
     {
-        var width = Init.LineWidth - 1;
-        var label = string.Empty;
-        var text = string.Empty;
-        switch (_engine.Mode)
-        {
-            case EditorMode.Command:
-            case EditorMode.Search:
-                text = _engine.CommandPrefix + _engine.CommandText + " ";
-                break;
-            case EditorMode.Insert:
-                label = DialogText.EditorModeInsert;
-                break;
-            case EditorMode.Visual:
-                label = DialogText.EditorModeVisual;
-                break;
-            case EditorMode.VisualLine:
-                label = DialogText.EditorModeVisualLine;
-                break;
-            case EditorMode.VisualBlock:
-                label = DialogText.EditorModeVisualBlock;
-                break;
-            default:
-                label = DialogText.EditorModeNormal;
-                break;
-        }
-
-        // The mode is highlighted, with a blank space on each side inside the highlight (" NORMAL ")
-        if (label.Length > 0) label = " " + label + " ";
-
-        if (text.Length == 0 && _engine.Message.Length > 0)
-        {
-            // A message follows the blank space after the mode (" NORMAL  Saved ---"). An error is
-            // highlighted, with a blank space on each side inside the highlight
-            text = (_engine.MessageIsError ? " " : string.Empty) + _engine.Message + " ";
-        }
-
-        // Pending keys, string memory, line:column and position in the document
         var cursor = _engine.Cursor;
         var rows = _engine.Layout.TotalRows();
-        var percent = rows <= 1 ? 100 : _engine.Layout.RowOf(cursor) * 100 / (rows - 1);
-        var column = TextMetrics.WidthOfRange(_engine.Buffer[cursor.Line], 0, cursor.Col) + 1;
-        var right = " ";
-        if (_engine.PendingKeys.Length > 0) right += _engine.PendingKeys + " | ";
-        // A macro is being recorded (English, as the names of the modes)
-        if (_engine.IsRecording) right += "REC | ";
         // The match of the search the cursor is on, and how many there are: "[2/12]", "[-/12]" when it is on none
         // (English, as Vim shows it)
+        var searchCount = string.Empty;
         if (_engine.GetSearchCount(out var current, out var total))
         {
-            right += (total > EditorEngine.SearchCountLimit
+            searchCount = total > EditorEngine.SearchCountLimit
                 ? "[>" + EditorEngine.SearchCountLimit + "]"
-                : "[" + (current > 0 ? current.ToString() : "-") + "/" + total + "]") + " | ";
+                : "[" + (current > 0 ? current.ToString() : "-") + "/" + total + "]";
         }
 
-        if (Tools.HasLineMemory()) right += DialogText.EditorMemory + " " + Tools.GetLineMemoryPosition() + " | ";
-        if (_engine.IsSpellOn) right += DialogText.SpellStatus + " " + _engine.SpellLanguages + " | ";
-        // A text file: its type and encoding
-        // (not in a peek or a comparison: it is not the file being edited)
-        if (_saveMode == SaveAsFile && _peek == null) right += FileExplorer.CurrentFileLabel + " | ";
-        right += (cursor.Line + 1) + ":" + column + " | " + percent + "% ";
-
-        // A blank space between the mode and the line, as a break in the line
-        var gap = label.Length > 0 ? " " : string.Empty;
-        // A message comes before what is at the right (it is shown until the next key): if it does not fit, only
-        // the line and column are kept, and else nothing
-        var room = width - label.Length - gap.Length;
-        // (all that is at the right can be wider than the line too, in a narrow window or a long language: then
-        // the line and column are kept, as with a message)
-        if (TextMetrics.WidthOf(right) > room) right = " " + (cursor.Line + 1) + ":" + column + " ";
-        if (TextMetrics.WidthOf(right) > room) right = string.Empty;
-        if (text.Length > 0 && TextMetrics.WidthOf(text) > room - right.Length)
-        {
-            right = " " + (cursor.Line + 1) + ":" + column + " ";
-            if (TextMetrics.WidthOf(text) > room - right.Length) right = string.Empty;
-        }
-
-        // Make it fit
-        var available = room - right.Length;
-        while (text.Length > 0 && TextMetrics.WidthOf(text) > available)
-        {
-            text = text[..^TextMetrics.PreviousElementLength(text, text.Length)];
-        }
-
-        var commandLine = _engine.Mode is EditorMode.Command or EditorMode.Search;
-        if (commandLine)
-        {
-            // The whole line is highlighted while typing a command
-            right = string.Empty;
-            text = CommandLinePrefix + _engine.CommandText;
-            while (TextMetrics.WidthOf(text) > width - 1)
+        var kind = _peek != null ? EditorKind.Peek
+            : _singleLine || _readOnly ? EditorKind.Other
+            : _saveMode switch
             {
-                text = text[..^TextMetrics.PreviousElementLength(text, text.Length)];
-            }
-
-            text += new string(' ', width - TextMetrics.WidthOf(text));
-            available = width;
-        }
-
-        var filler = new string(commandLine ? ' ' : '-', Math.Max(0, available - TextMetrics.WidthOf(text)));
-        var status = label + gap + StyleMarker + text + StyleMarker + filler + right + _engine.MessageIsError +
-                     _engine.MessageIsCommandError;
-        if (status == _shownStatus) return;
-        _shownStatus = status;
-
-        Tools.SetCursorEx(Init.LineCount - 1, 0);
-        // The mode label has a color of its own for each mode
-        ConsoleColors.SetColors(_engine.Mode switch
+                SaveAsFile => EditorKind.File,
+                SaveAsSettings => EditorKind.Settings,
+                _ => EditorKind.Note
+            };
+        return new EditorFacts
         {
-            EditorMode.Insert => ConsoleColors.ColorPreset.AttentionInverted,
-            EditorMode.Visual or EditorMode.VisualLine or EditorMode.VisualBlock =>
-                ConsoleColors.ColorPreset.WarningInverted,
-            _ => ConsoleColors.ColorPreset.HighlightInverted
-        });
-        Console.Write(label);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-        Console.Write(gap);
-        ConsoleColors.SetColors(commandLine
-            ? ConsoleColors.ColorPreset.CommandLineInverted
-            : _engine.MessageIsCommandError
-                ? ConsoleColors.ColorPreset.CommandErrorInverted
-                : _engine.MessageIsError
-                    ? ConsoleColors.ColorPreset.AttentionInverted
-                    : ConsoleColors.ColorPreset.Normal);
-        Console.Write(text);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-        Console.Write(filler + right);
-        ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
+            Kind = kind,
+            Top = _top,
+            Mode = _engine.Mode,
+            Jumping = _engine.IsJumping,
+            CommandLinePrefix = CommandLinePrefix,
+            CommandText = _engine.CommandText,
+            Message = _engine.Message,
+            MessageIsError = _engine.MessageIsError,
+            MessageIsCommandError = _engine.MessageIsCommandError,
+            Line = cursor.Line + 1,
+            Column = TextMetrics.WidthOfRange(_engine.Buffer[cursor.Line], 0, cursor.Col) + 1,
+            Percent = rows <= 1 ? 100 : _engine.Layout.RowOf(cursor) * 100 / (rows - 1),
+            PendingKeys = _engine.PendingKeys,
+            Recording = _engine.IsRecording,
+            SearchCount = searchCount,
+            LineMemory = Tools.HasLineMemory()
+                ? DialogText.EditorMemory + " " + Tools.GetLineMemoryPosition()
+                : string.Empty,
+            Spell = _engine.IsSpellOn ? DialogText.SpellStatus + " " + _engine.SpellLanguages : string.Empty,
+            // A text file: its type and encoding (not in a peek or a comparison: it is not the file being edited)
+            FileLabel = _saveMode == SaveAsFile && _peek == null ? FileExplorer.CurrentFileLabel : string.Empty,
+            Completions = _engine.CompletionList,
+            CompletionIndex = _engine.CompletionIndex,
+            // (the title of a note is shown, never logged)
+            Title = _saveMode switch
+            {
+                SaveAsSettings => FileIo.SettingsFileName,
+                SaveAsFile => FileExplorer.CurrentFileName,
+                _ => Entries.CurrentEntryExists() ? Entries.CurrentEntry.Title : string.Empty
+            },
+            // A file opened from the notes of a data file: a reminder that it is not encrypted
+            Reminder = _saveMode == SaveAsFile && FileExplorer.FromDataFile ? DialogText.NotEncrypted : string.Empty,
+            Modified = _engine.IsModified,
+            ReadOnly = _engine.ReadOnly,
+            FocusLeft = _left,
+            FocusWidth = _width,
+            Other = _otherPane == null ? null : (_otherPane.Left, _otherPane.Width)
+        };
     }
 
     // What is shown in front of the text on the command line: "COMMAND:" for a command, "/" or "?" for a search

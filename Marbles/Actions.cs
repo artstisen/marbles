@@ -900,16 +900,44 @@ internal static class Actions
     }
 
 
-    // The editor frame for an entry: its title at the top
+    // Before the editor of an entry is opened (by a page): its frame, or in Zen mode nothing, as the editor draws its
+    // own row above the text (ZenFrame). The cursor is left where the text of the standard frame starts, as the
+    // editor is laid out for it
     internal static void DrawEditMenu()
+    {
+        if (TextArea.Zen)
+        {
+            Tools.SetCursorEx(StandardFrame.Rows, 0);
+            return;
+        }
+
+        DrawEditFrame();
+    }
+
+    // The standard frame of the editor of an entry: its title at the top (StandardFrame, also when the editor draws
+    // itself again)
+    internal static void DrawEditFrame()
     {
         Menu.DrawTopMenu(false, false, false);
         DrawEditorFrame(DialogText.CaptionsEditor,
             Entries.CurrentEntryExists() ? Entries.CurrentEntry.Title : string.Empty, string.Empty);
     }
 
-    // The editor frame for a plain text file opened from the file browser
+    // Before the editor of a plain text file opened from the file browser is opened: its frame, or in Zen mode
+    // nothing (as DrawEditMenu)
     internal static void DrawEditFileMenu()
+    {
+        if (TextArea.Zen)
+        {
+            Tools.SetCursorEx(StandardFrame.Rows, 0);
+            return;
+        }
+
+        DrawEditFileFrame();
+    }
+
+    // The standard frame of the editor of a file (StandardFrame, also when the editor draws itself again)
+    internal static void DrawEditFileFrame()
     {
         Menu.DrawTopMenu(false, false, false);
         // Coming from the encrypted notes of a data file: a reminder that this file is not
@@ -1343,6 +1371,10 @@ internal static class Actions
         JumpMenu.BookmarkNumbers = false;
         TextArea.LineNumbers = false;        TextArea.WordWrap = true;
         TextArea.ShowWhitespace = false;
+        TextArea.BlankGutter = false;
+        TextArea.Zen = false;
+        TextArea.ZenColors = true;
+        EditorEngine.IndentSetting = EditorEngine.DefaultIndent;
         EditorEngine.MarksApostrophe = false;
         CommandList.Enabled = true;
         TextArea.ScrollOff = true;

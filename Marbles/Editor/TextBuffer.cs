@@ -47,13 +47,43 @@ internal sealed class TextBuffer
     /// </summary>
     internal TextMarks Marks { get; } = new();
 
-    private sealed record Edit(TextPos Start, string Removed, string Inserted);
+    /// <summary>
+    /// An edit of the text: at a place, the text removed and the text inserted there
+    /// </summary>
+    internal sealed record Edit(TextPos Start, string Removed, string Inserted);
 
     private sealed class UndoStep
     {
         internal readonly List<Edit> Edits = new();
         internal TextPos CursorBefore;
         internal TextPos CursorAfter;
+        internal DateTime Time; // When it was made (for ":changes")
+    }
+
+    /// <summary>
+    /// A step of the undo history, as ":changes" shows it: its edits in the order they were made, when it was made,
+    /// and whether it was undone (and can be redone). Kept in memory only, as the history itself
+    /// </summary>
+    internal sealed record Step(IReadOnlyList<Edit> Edits, TextPos CursorAfter, DateTime Time, bool Undone);
+
+    /// <summary>
+    /// The clock the steps are timed with (set by the tests)
+    /// </summary>
+    internal Func<DateTime> Clock { get; set; } = () => DateTime.Now;
+
+    /// <summary>
+    /// The undo history, oldest first: the steps that can be undone, then the steps that were undone (which redo
+    /// makes again), in the order they were made
+    /// </summary>
+    internal IReadOnlyList<Step> History()
+    {
+        var steps = _undo.Select(step => new Step(step.Edits.ToList(), step.CursorAfter, step.Time, false)).ToList();
+        for (var i = _redo.Count - 1; i >= 0; i--)
+        {
+            steps.Add(new Step(_redo[i].Edits.ToList(), _redo[i].CursorAfter, _redo[i].Time, true));
+        }
+
+        return steps;
     }
 
     internal TextBuffer(string text)
@@ -145,7 +175,7 @@ internal sealed class TextBuffer
     /// <summary>
     /// The position just after a text inserted at a position
     /// </summary>
-    private static TextPos EndOf(TextPos start, string text)
+    internal static TextPos EndOf(TextPos start, string text)
     {
         var lastNewLine = text.LastIndexOf(NewLine);
         if (lastNewLine < 0) return start with { Col = start.Col + text.Length };
@@ -300,7 +330,9 @@ internal sealed class TextBuffer
         if (count >= 2)
         {
             var merged = new UndoStep
-                { CursorBefore = _undo[_groupStart].CursorBefore, CursorAfter = _undo[^1].CursorAfter };
+            {
+                CursorBefore = _undo[_groupStart].CursorBefore, CursorAfter = _undo[^1].CursorAfter, Time = _undo[^1].Time
+            };
             foreach (var step in _undo.Skip(_groupStart)) merged.Edits.AddRange(step.Edits);
             _undo.RemoveRange(_groupStart, count);
             _undo.Add(merged);
@@ -336,6 +368,7 @@ internal sealed class TextBuffer
 
     private void AddStep(UndoStep step)
     {
+        step.Time = Clock();
         _undo.Add(step);
         // (in a group the steps are kept until they are merged into one: then the oldest are forgotten)
         if (_groupDepth == 0) ForgetOldestSteps();
