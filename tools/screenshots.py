@@ -300,12 +300,17 @@ def svg(screen, title, show_cursor):
 # drawn
 
 SCENES = [
-    ('main-menu', 'Marbles: the main menu of a data file', {}, [], False),
-    ('notes-list', 'Marbles: all the notes of a data file', {'colorscheme': 'Deep Blue'}, ['A'], False),
-    ('editor', 'Marbles: editing a note as Markdown, a search with its count', {},
+    ('main-menu', 'Marbles: the data file main menu', {}, [], False),
+    ('notes-list', 'Marbles: all notes of a data file', {'colorscheme': 'Deep Blue'}, ['A'], False),
+    ('editor', 'Marbles: editing a note as Markdown, a search with a count', {},
      ['A', '8', '<wait>', 'gg', '/walk<Enter>'], True),
-    ('color-schemes', 'Marbles: the color schemes', {'colorscheme': 'Tasty Bytes'},
+    ('color-schemes', 'Marbles: color schemes', {'colorscheme': 'Tasty Bytes'},
      [':jump colors<Enter>', '<wait>', '<Tab>', '<Tab>'], False),
+    ('zen-mode', 'Marbles: Zen mode, only the title and the text', {'colorscheme': 'Lush Blue'},
+     ['A', '8', '<wait>', ':zen<Enter>', 'gg', '/Packing<Enter>'], True),
+    ('edit-history', 'Marbles: the edit history of a note (:changes)', {},
+     ['A', '8', '<wait>', '/Budget<Enter>', 'O', 'Book the hotel before March.', '<Esc>',
+      '/Tram<Enter>', 'dd', 'gg', '/Four days<Enter>', 'cwFive<Esc>', ':changes<Enter>'], False),
 ]
 
 
@@ -322,7 +327,7 @@ def main():
         shutil.rmtree(work)
     program = os.path.join(work, 'program')
     shutil.copytree(os.path.dirname(os.path.abspath(options.exe)), program,
-                    ignore=shutil.ignore_patterns('data', '*.pdb'))
+                    ignore=shutil.ignore_patterns('data', 'data-*', '*.pdb'))
     exe = os.path.join(program, os.path.basename(options.exe))
     demo = os.path.join(work, 'demo.mbls')
     shutil.copyfile(make_data_file(exe, program), demo)

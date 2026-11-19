@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="868" height="572" viewBox="0 0 868 572">
-<title>Marbles: the main menu of a data file</title>
+<title>Marbles: the data file main menu</title>
 <style>text{font-family:"Cascadia Mono","Cascadia Code",Consolas,"DejaVu Sans Mono",Menlo,monospace;font-size:14px;white-space:pre}</style>
 <rect width="100%" height="100%" rx="10" fill="#0C0C0C"/>
 <rect width="100%" height="34" rx="10" fill="#2B2B2B"/>
@@ -7,7 +7,7 @@
 <circle cx="20" cy="17" r="6" fill="#FF5F57"/>
 <circle cx="40" cy="17" r="6" fill="#FEBC2E"/>
 <circle cx="60" cy="17" r="6" fill="#28C840"/>
-<text x="434.0" y="22" fill="#A0A0A0" text-anchor="middle">Marbles: the main menu of a data file</text>
+<text x="434.0" y="22" fill="#A0A0A0" text-anchor="middle">Marbles: the data file main menu</text>
 <rect x="14.0" y="48" width="134.4" height="17" fill="#61D6D6"/>
 <text x="14.0" y="60.8" fill="#0C0C0C" textLength="126.0" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> DATA FILE MENU</text>
 <text x="392.0" y="60.8" fill="#61D6D6" textLength="67.2" lengthAdjust="spacingAndGlyphs" xml:space="preserve"> Marbles</text>

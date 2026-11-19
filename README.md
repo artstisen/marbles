@@ -9,8 +9,9 @@ All your notes are kept in a single encrypted file that is easy to back up and c
 |---|---|
 | ![Editing a note as Markdown](docs/screenshots/editor.svg) | ![All notes of a data file](docs/screenshots/notes-list.svg) |
 | ![The data file main menu](docs/screenshots/main-menu.svg) | ![Color schemes](docs/screenshots/color-schemes.svg) |
+| ![Zen mode: only the title and the text](docs/screenshots/zen-mode.svg) | ![Edit history of a note](docs/screenshots/edit-history.svg) |
 
-Screenshots are of the real program, made with [tools/screenshots.py](tools/screenshots.py) from a data file of made-up notes, in the color schemes Default, Deep Blue and Tasty Bytes.
+Screenshots are of the real program, made with [tools/screenshots.py](tools/screenshots.py) from a data file of made-up notes, in the color schemes Default, Deep Blue, Tasty Bytes and Lush Blue.
 
 ## Key features
 
