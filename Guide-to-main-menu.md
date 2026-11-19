@@ -16,14 +16,23 @@ The same keys are used everywhere in Marbles:
 - If one of the lists of the file browser (favorites, history, hotlist) or of the Jump menu (bookmarks, recent places) cannot be read, as when another program has the file open for a moment, it is not saved until it has been read again, so nothing in it is lost (a message tells it)
 - `Up` and `Down` on the command line bring back the commands given before on the same page (each page has its own, the newest first, at most 20). With the start of a command typed, only the commands that start with it are shown (`:co` and `Up` finds `:copy`, not `:delete`); `Down` past the newest gives back what you typed. Commands are kept in memory only, never written to a file, and are forgotten when you log out (or close Marbles)
 - `:q` Close/Return. In the main menu: Exit Marbles
-- `:qa` Exit Marbles from anywhere
+- `:qa` (or `:exit`) Exit Marbles from anywhere (see [On every command line](#on-every-command-line))
 - `:logout` (or `X`) Close the data file and return to the [login page](Guide-to-login-menu.md). What Marbles kept of notes in memory is forgotten: the string memory, the texts of the find-and-replace box, the block yanked last and the last command typed (on Linux and macOS, where the terminal has no alternate screen, also its scrollback)
 - `Esc` Return/Cancel
 
 Notes are saved in the data file after each change. When the same data file is open in two windows (or programs) and the other one has saved it since you logged in, you are asked before saving: **Save anyway** replaces the changes made there; **Do not save** keeps them (log out and in again to see them; the change made here is not saved).
 
+## On every command line
+These commands work on every command line: the start page, the main menu, the lists of entries, the file browser and its lists (favorites, history, hotlist, search results), the Jump menu and the editor.
+
+- `:exit` (or `:qa`, `:quitall`) Exit Marbles, after asking. In the editor, changes that are not saved are asked about first (save, discard, or `Esc` to stay in the editor). On a page opened on top of the editor (the Jump menu opened from it) Marbles is not left while the editor has changes that are not saved: a box tells you to close the page and save or discard them there first
+- `:log` The [log](Guide-to-login-menu.md#log), on top of the page you are on; closing it returns there
+- `:colorscheme name` (or `:colo`) Use another color scheme at once, and save it, without opening Color schemes (see [Changing the scheme by command](#changing-the-scheme-by-command))
+- `:favorites` (or `:favs`), `:history` (or `:hist`) and `:hotlist` (or `:hot`) The favorites, the file history or the directory hotlist of the [file browser](Guide-to-login-menu.md#file-browser), shown alone. They leave the page you are on, as a jump does: the editor asks about changes that are not saved first, and from the main menu and the lists of entries you are logged out of the data file, unless you stay logged into it (**Stay logged into data file (Session)**). Closing the list shows the Select mode page, or with the session kept the main menu of the data file; a directory shown from the list (`B`, a directory opened, `:browse`) shows the file browser, which then closes in the same way. In the file browser itself, `:favorites` opens the list over the browser, as `F`. Not with _Note Management only_
+- `:browse` The file browser. In the editor it shows the directory of the file being edited, with the file selected (`N` makes a new file next to it); from a note, which has no file, the file browser is shown where it was left. In a list of the file browser, `:browse` goes back to the browser. In the main menu and the lists of entries, `:browse` opens the file browser on top of the menu, as before: you stay logged in until a file is opened
+
 ## Jump menu
-The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`, `:jmp`), from the main menu, the lists of entries, the file browser (with its favorites, history and search results) and the editor, and from the options of the login page (`Esc`, `O`), and it is a choice of the Mode tab of the start page (`3`, or `Ctrl+O` there too). It is a box on top of the page with five tabs, one of them with sub-tabs:
+The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+O`, or the command `:jump` (`:ju`, `:jmp`), from the main menu, the lists of entries, the file browser (with its favorites, history, hotlist and search results) and the editor, and from the options of the login page (`Esc`, `O`), and it is a choice of the Mode tab of the start page (`3`, or `Ctrl+O` there too). It is a box on top of the page with five tabs, one of them with sub-tabs:
 
 - **Bookmarks**: places you have kept as bookmarks (see [Bookmarks](#bookmarks) below)
 - **Recent**: places you have jumped to with the menu, the latest first, with the time (today) or the date of the jump. Only jumps made in the menu are kept, not files and pages opened in other ways (the tab says so next to the filter)
@@ -31,7 +40,7 @@ The Jump menu takes you straight to a place in Marbles. It is opened with `Ctrl+
   - **History**: files opened from the file browser, with when they were opened
   - **Favorites**: files and directories of the favorites of the file browser (not the favorite notes of a data file). A favorite with a color of its own is shown in it, on every tab
   - **Hotlist**: directories of the [directory hotlist](Guide-to-login-menu.md#directory-hotlist), in its order and with the names they are shown with there
-- **Marbles**: pages of Marbles: the Configuration tab (General, Layout, Editor, Lists, System), Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Help and About
+- **Marbles**: pages of Marbles: the Configuration tab (General, Layout, Editor, Lists, System), the file browser and its lists (File browser favorites, File history, Directory hotlist, File browser), Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Log review, Help and About. With _Note Management only_ the file browser and its lists are left out
 - **Data files**: data files in the data directory and the directories in it
 
 In a language where the names of the tabs do not fit in a row, _File browser_ and _Data files_ are shown shorter (as _Files_ and _Data_).
@@ -52,6 +61,7 @@ The rows of the Bookmarks tab and of the History, Favorites and Hotlist tabs can
 - `:path` Copy the full path of the selected file, directory or data file, and `:name` its name (the name of the file or directory itself, also when a bookmark or a directory of the hotlist is shown with a name of its own), as in the file browser: to the system clipboard and/or the paste bin, as set, and to the string memory (so `p` in the editor puts it in). On every tab; a page of Marbles and a folder of bookmarks have neither
 - `Ctrl+K` (or `:recent`) The latest files you opened, in a box over the menu: the file picked is opened (as a jump from the menu), and `Esc` goes back to the menu. The file being edited is left out
 - `:jump name` Go to a page of Marbles at once, as if it were picked on the Marbles tab (`:jump colors`; see **Jumping to a page by its name** below)
+- `:favorites`, `:history`, `:hotlist` and `:browse` Leave the menu for the file browser or one of its lists, `:log` shows the log over the menu, `:colorscheme name` uses another color scheme, and `:exit` (or `:qa`) exits Marbles (see [On every command line](#on-every-command-line))
 - `Esc` (or `Q`, `Ctrl+O`) Close the menu; `?` shows its keys. The menu opens on the tab it was on the last time (while Marbles runs), so jumping between files from the Files or Favorites tab goes on there
 
 ### Bookmarks
@@ -71,7 +81,7 @@ Bookmarks are places you keep to jump to: a file, a directory, a page of Marbles
 - `A` or `:folder name` Create a folder in front of the selected bookmark. It is shown as `[-] Name (3)` when open and `[+] Name (3)` when closed, with the number of bookmarks in it; the bookmarks of an open folder are shown below it, two spaces in
 - `Enter` on a folder: Open or close it. `:expand` opens all folders, `:collapse` closes them
 - **Into and out of a folder:** move a bookmark (`V`, then `j` `k`) onto a folder to put it in, and on past the first or last bookmark of the folder to take it out. A folder moves with its bookmarks
-- **Several at once:** mark bookmarks with `Space` (a marked bookmark has a `+` in front); `M` (or `:move`) moves the marked bookmarks (or the selected one) to a folder picked from a list (or a new folder, or out of the folders), `T` `E` to the top or the end, and `D` removes them. `Esc` takes the marks away
+- **Several at once:** mark bookmarks with `Space` (a marked bookmark has a `+` in front); `M` (or `:move`) moves the marked bookmarks (or the selected one) to a folder picked from a list (at the top of it, where you see them at once; or a new folder, or out of the folders), `T` `E` to the top or the end, and `D` removes them. `Esc` takes the marks away
 - `D` on a folder: Remove it with its bookmarks (you are asked first if there are bookmarks in it); `u` puts it back
 
 While the list is filtered with `/text`, the bookmarks found are shown without the folders, and nothing can be moved.
@@ -84,17 +94,18 @@ While the list is filtered with `/text`, the bookmarks found are shown without t
 
 Bookmarks are kept in `bookmarks.txt` in the data directory, one on each line: the kind (`file`, `dir`, `page` or `data`), a tab character, the place, and after other tab characters the name you gave it and its color (if any), and for a place in a file its line and column (`120:5`), so the file can also be edited by hand. A folder has its name in brackets (`[Work]`), its color and `collapsed` if it is closed, and the bookmarks in it are the lines after it that start with a blank space. There is no limit to the number of bookmarks. A file or directory that is renamed or moved in the file browser (or renamed with `:rename` in the editor) keeps its bookmark, and one that is gone is shown dimmed with _(missing)_.
 
-**Jumping to a page by its name:** `:jump name` goes straight to a page of Marbles, without the menu: `general`, `layout`, `editor`, `lists`, `system` (the pages of Configuration), `colors`, `logos`, `clipboard`, `snippets`, `completions`, `help` and `about`. The names are English in all languages, and `Tab` after `:jump ` completes them. It works wherever `:jump` does (the start page, the main menu and the lists of a data file, the file browser with its lists, the editor) and in the Jump menu, and the page goes where it would from the menu (below): a page of Configuration leaves the page you are on, the others open on top of it. A name that is not a page is told about in a box, with the names. None of these pages needs a data file to be logged in to: from a data file, a page of Configuration logs you out as a jump does, unless you stay logged in.
+**Jumping to a page by its name:** `:jump name` goes straight to a page of Marbles, without the menu: `general`, `layout`, `editor`, `lists`, `system` (the pages of Configuration), `favorites`, `history`, `hotlist`, `browse` (the file browser and its lists), `colors`, `logos`, `clipboard`, `snippets`, `completions`, `log`, `help` and `about`. The names are English in all languages, and `Tab` after `:jump ` completes them. It works wherever `:jump` does (the start page, the main menu and the lists of a data file, the file browser with its lists, the editor) and in the Jump menu, and the page goes where it would from the menu (below): a page of Configuration and the file browser with its lists leave the page you are on, the others open on top of it. A name that is not a page is told about in a box, with the names. None of these pages needs a data file to be logged in to: from a data file, a page of Configuration or the file browser logs you out as a jump does, unless you stay logged in.
 
 Where a jump goes:
 
 - **A file** is opened in the editor (where the cursor was the last time), with the file browser in its directory behind it. Closing the browser shows the Select mode page
 - **A directory** is shown in the file browser
 - **A page of Configuration** (on the Pages tab) opens the Select mode page on that page
+- **The file browser and its lists** (`favorites`, `history`, `hotlist`, `browse`) are shown alone; closing them shows the Select mode page
 - **A data file** is selected on the login page
-- **Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Help and About** open on top of the page you jumped from; closing them returns there
+- **Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Log review, Help and About** open on top of the page you jumped from; closing them returns there
 
-When you jump from the editor and the text has changes that are not saved, you are asked whether to save them first (`Esc` stays in the editor). A jump to a file, directory, Configuration page or data file from a data file you are logged in to logs you out of it first. With **Stay logged into data file (Session)** on (Configuration, General) you stay logged in: only a jump to another data file logs you out, and the data file main menu comes back when you close the file browser or the Configuration pages. With _Text Editor only_ the Data tab is not shown, and with _Note Management only_ the Files, Favorites and Hotlist tabs are not.
+When you jump from the editor and the text has changes that are not saved, you are asked whether to save them first (`Esc` stays in the editor). A jump to a file, directory, Configuration page, the file browser (or one of its lists) or data file from a data file you are logged in to logs you out of it first. With **Stay logged into data file (Session)** on (Configuration, General) you stay logged in: only a jump to another data file logs you out, and the data file main menu comes back when you close the file browser (or its list) or the Configuration pages. With _Text Editor only_ the Data tab is not shown, and with _Note Management only_ the Files, Favorites and Hotlist tabs are not.
 
 Jumps are kept in the file `jump.txt` in the data directory, one line for each place (at most 100): the time, a tab character, the kind (`file`, `dir`, `page` or `data`), a tab character and the place (the path of a file or directory, the name of a page such as `config/editor`, or the path of a data file in the data directory such as `notes/work.mbls`). Like the file history it is not encrypted, and it holds no titles or text of notes.
 
@@ -132,7 +143,7 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 
 ### Page 2: Settings and Marbles
 **Settings**
-- `:scheme` **Color schemes**: Select a color scheme, edit the colors and save them as a scheme of your own, on [a page of their own](#color-schemes). The item shows the scheme in use. `:scheme Name` uses the scheme with the name at once
+- `:scheme` **Color schemes**: Select a color scheme, edit the colors and save them as a scheme of your own, on [a page of their own](#color-schemes). The item shows the scheme in use. `:scheme Name` uses the scheme with the name at once, as `:colorscheme name` does
 - `:logo` **Logos**: Select the logo of the start and login pages, or draw one of your own, on [a page of their own](#logos). The item shows the logo in use. `:logo Name` uses the logo with the name at once
 - `:bw` **Black and white**: Show everything in black and white, whatever the color scheme is. The color scheme is kept and is used again when black and white is turned off with the same command. While it is on, the terminal's own background is used
 - `:language` **Language**: Pick the language in a box on top of the menu, or select one by its code: `:language en` (English), `da` (Danish), `de` (German), `nb` (Norwegian), `sv` (Swedish), `es` (Spanish), `fr` (French), `it` (Italian), `pl` (Polish), `nl` (Dutch), `fi` (Finnish), or the code of a language file you added (see [Language files](Guide-to-installation.md#language-files)). The language is saved as `language` in the settings file, and can also be changed on the Configuration page
@@ -151,12 +162,12 @@ The main menu is a frame with four tabs: **Notes**, **Data file**, **Settings** 
 - `:logout` **Logout**
 - `:q` **Exit**
 
-`:about` (general information about Marbles) and `:restart` are not in the menu, but still work as commands.
+`:about` (general information about Marbles) and `:restart` are not in the menu, but still work as commands, and so do the commands of [every command line](#on-every-command-line): `:favorites`, `:history`, `:hotlist`, `:log`, `:colorscheme name` and `:exit`.
 
 ### Color schemes
 The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEMES_, opened with `:scheme` in the main menu (or its item on the Settings tab) or from the Configuration page of the start page (select _Color scheme_ and press `Enter`). It is a frame with three tabs, as the start page: **Schemes**, **Colors** (with the sub-tabs _Page 1_ to _Page 5_) and **Preview**. `Tab` goes from tab to tab, and `Shift+Tab` the other way. `h` and `l` (or `Left`/`Right`) go through the pages of Colors.
 
-**Schemes** lists the color schemes: the nine built-in ones (Default, Deep Blue, Marbles Quest, Tasty Bytes, Yellow Monochrome, Green Monochrome, Ice Warp, Gray Box and Bright Typist, black text on a white background, as on paper), and below them the ones you have saved yourself. The one in use is marked `[x]`. A scheme can have a logo that goes with it: _Default_, _Deep Blue_, _Gray Box_ and _Bright Typist_ have the logo _Marbles_, and _Marbles Quest_ and _Tasty Bytes_ the logo _Reflections_, which is used too when the scheme is selected (in a scheme file this is the line `uselogo=Reflections`, with the name of a logo; the logo can be changed afterwards as usual).
+**Schemes** lists the color schemes: the ten built-in ones (Default, Deep Blue, Lush Blue, Marbles Quest, Tasty Bytes, Yellow Monochrome, Green Monochrome, Ice Warp, Gray Box and Bright Typist, black text on a white background, as on paper), and below them the ones you have saved yourself. The one in use is marked `[x]`. A scheme can have a logo that goes with it: _Default_, _Deep Blue_, _Lush Blue_, _Gray Box_ and _Bright Typist_ have the logo _Marbles_, and _Marbles Quest_ and _Tasty Bytes_ the logo _Reflections_, which is used too when the scheme is selected (in a scheme file this is the line `uselogo=Reflections`, with the name of a logo; the logo can be changed afterwards as usual).
 
 - `j` `k` (or `Up`/`Down`, `gg` `G`) Select a scheme
 - `Enter` (or `Space`, `l`) Use the selected scheme: it is used at once, and its name is saved (`colorscheme` in the settings file). Its colors are then the ones edited on the Colors tab
@@ -164,6 +175,11 @@ The colors of Marbles are chosen and edited on a page of their own, _COLOR SCHEM
 - `R` Rename a scheme of your own: type the new name and press `Enter`. Its file is renamed, and if it is the scheme in use, the setting follows. The name of a built-in scheme or of another scheme of yours cannot be used, and built-in schemes cannot be renamed
 - `D` Delete a scheme of your own (you are asked first). Built-in schemes cannot be deleted
 - `:scheme Name` in the main menu uses a scheme by its name at once
+
+**Lush Blue** has a dark blue background, as Deep Blue, with green, cyan and magenta, yellow dividers, and boxes in dark magenta.
+
+#### Changing the scheme by command
+`:colorscheme name` (or `:colo name`) on every command line uses another scheme without opening Color schemes, and saves it, as `Enter` on the Schemes tab does (with the logo of the scheme, if it has one): `:colorscheme Lush Blue`. Upper and lower case are alike, and the start of a name is enough when only one scheme has it (`:colo lu`); when several have it, they are not used, and the message says so. `Tab` completes the names of the schemes, also after a space (`:colo Deep B`), and the box above the command line lists them. `:colorscheme` alone tells the scheme in use. In the editor and the file browser the message is shown on the bottom line; on the start page, in the main menu and in the lists of entries a box tells it when no scheme was used.
 
 **Colors** shows the colors of the scheme being edited, each group with a sample and the names of its colors. _Page 1_ has Text, Logo and labels, Dividers, Favorites, Accent, Editor title, Line numbers, Current line number, Key hints, Unsaved label and Background; _Page 2_ has Highlight, Attention, Warning, Selector, Tab text, Tab frames, Tab corner, Tab highlight, Tab focus and Other tabs, and _Highlight focused tabs_; _Page 3_ has Box borders, Box corner, Box and Box title, with a small box below them in these colors; _Page 4_ has Command line, Command box borders, Command box corner, Command box, Typed part, Whole command, Command hints and Command error, with a small command line and its box below them in these colors; _Page 5_ has the colors of colored text in the editor, Syntax 1 to 12.
 

@@ -344,6 +344,22 @@ public class EditorNavigationTests
     }
 
     [Fact]
+    public void AMarkPickedInTheList_ShowsThePlace()
+    {
+        // Picked in the list of ":marks", far below the rows shown: the view goes there (it was empty until a key)
+        var editor = Editor(string.Join("\n", Enumerable.Range(1, 60).Select(i => "line " + i)));
+        editor.Type("50Gmagg");
+        Assert.Equal(0, editor.TopRow);
+        editor.JumpToMark('a');
+        Assert.Equal(49, editor.Cursor.Line);
+        Assert.InRange(49 - editor.TopRow, 0, 9);
+        editor.Type("ggmbG");
+        editor.JumpToMark('b');
+        Assert.Equal(0, editor.Cursor.Line);
+        Assert.Equal(0, editor.TopRow);
+    }
+
+    [Fact]
     public void WithTheSetting_TheApostropheJumpsToTheExactPlace()
     {
         try

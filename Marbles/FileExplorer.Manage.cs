@@ -78,6 +78,15 @@ internal static partial class FileExplorer
                 // ":book 3": jump to bookmark 3
                 Jump.ToBookmark(argument);
                 break;
+            case "colorscheme":
+            case "colo":
+                // ":colorscheme name": another color scheme, the browser drawn again in it
+                _message = SchemeEditor.UseByCommand(argument, out _);
+                break;
+            case "log":
+                // The log, on top of the browser
+                Jump.ShowLog();
+                break;
             case "recent":
                 // The latest files, to open one (the browser drawn first: the box of commands has just been taken away)
                 Draw(true);
@@ -1377,9 +1386,11 @@ internal static partial class FileExplorer
         {
             // All become favorites, or none if they all are
             var add = !items.All(item => FileFavorites.Contains(item.Path));
+            // (added at the top, in their order; one that is not added, a path with a line break, takes no place)
+            var at = 0;
             foreach (var item in items.Where(item => FileFavorites.Contains(item.Path) != add))
             {
-                FileFavorites.Toggle(item.Path);
+                if (FileFavorites.Toggle(item.Path, at)) at++;
             }
 
             _message = add

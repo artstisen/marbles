@@ -81,8 +81,10 @@ On every tab of the start page (Mode, the pages of Configuration, Help), `:` ope
 - `:mode` The Mode tab; `:config` (or `:general`), `:layout`, `:editor`, `:lists` and `:system` The pages of the Configuration tab (`:editor` is the Editor page of Configuration, not the text editor)
 - `:jump` (or `:ju`, `:jmp`) The [Jump menu](Guide-to-main-menu.md#jump-menu); `:jump name` goes straight to a page of Marbles (`:jump colors`, `:jump help`; `Tab` completes the names, see [Jumping to a page by its name](Guide-to-main-menu.md#bookmarks))
 - `:help` (or `:h`) The help of the start page, as `?`; `:about` The about page; `:quick` (or `:guide`) The quick guide
+- `:favorites` (or `:favs`), `:history` (or `:hist`) and `:hotlist` (or `:hot`) The favorites, the file history or the directory hotlist of the [file browser](#file-browser), shown alone: closing the list comes back here, and a directory shown from it (`B`, a directory opened) shows the file browser. Not with _Note Management only_
 - `:scheme` Color schemes; `:logo` Logos; `:snippet` (or `:snip`) The snippet editor; `:completions` (or `:comp`) The completions editor; `:clipboard` Clipboard settings; `:log` The log
-- `:restart` Restart Marbles (asks first); `:reset` Reset all settings (asks first, as on the System page); `:quit`, `:exit` (or `:q`) Exit Marbles (asks first)
+- `:colorscheme name` (or `:colo`) Use another color scheme at once, and save it: `:colo lush blue`, or the start of a name that only one scheme has (`:colo lu`). `Tab` completes the names, also after a space. `:colorscheme` alone tells the scheme in use (see [Changing the scheme by command](Guide-to-main-menu.md#changing-the-scheme-by-command))
+- `:restart` Restart Marbles (asks first); `:reset` Reset all settings (asks first, as on the System page); `:quit`, `:exit`, `:qa` (or `:q`) Exit Marbles (asks first)
 
 Command names are the same in all languages, and the names of the main menu work here too (`:browse`, `:guide`, `:scheme`, `:logo`).
 
@@ -175,7 +177,8 @@ The file browser can also be opened with the command `:browse` when you are logg
 - `Tab` on the command line completes the command you are typing, and goes through the commands of the file browser when pressed again; `Up` and `Down` bring back commands given in the file browser before (see [the command line](Guide-to-main-menu.md))
 - `?` Help
 - `Esc`, `Q` or `:q` Close the file browser
-- `:exit` Exit Marbles (asks first)
+- `:exit` (or `:qa`) Exit Marbles (asks first)
+- `:log` The log, on top of the browser; `:colorscheme name` (or `:colo`) Use another color scheme. These and `:exit` work on every command line: see [On every command line](Guide-to-main-menu.md#on-every-command-line)
 - `:logout` Log out of the data file, when you stay logged into it (see **Stay logged into data file (Session)** under [Configuration](#configuration)). The login page is shown when the browser is closed
 
 A text file is opened in the [editor](Guide-to-editor.md), where `:w` saves it and `:q` returns to the browser. Files are saved as UTF-8 with the line endings they had. Files larger than 10 MB and files that are not text are not opened.
@@ -235,16 +238,17 @@ The files found are shown in a list, with the directory they are in. When you se
 - `l` or `Enter` Open the file in the editor, at the line that was found. Closing the editor returns to the list
 - `B` or `:goto` Show the file in the browser: its directory is opened in the pane with the focus, with the file selected
 - `I` or `:info` Show information about the file
-- `P` or `:fav` Add the file to the favorites, or remove it
+- `P` or `:fav` Add the file to the favorites (at the top of the list), or remove it
 - `/text` Only show the files with "text" in the path or the line found. `Esc` shows all again
 - `S` or `:find` Search again
+- `:browse` Back to the file browser, as `Esc`; `:favorites`, `:history` and `:hotlist` show that list alone (see [On every command line](Guide-to-main-menu.md#on-every-command-line))
 - `:number` Number the rows at the left, as `12gg` and `5j` count them, and `:nonumber` takes the numbers away again (off from the start). Kept in the settings (`searchnumbers`), and on the Lists page of [Configuration](#configuration)
 - `Esc`, `Q`, `h` or `-` Return to the browser
 
 ### Favorites
 Files and directories you use often can be marked as favorites:
 
-- `P` or `:fav` Add the selected file or directory to the favorites, or remove it. Favorites are marked with a `*`
+- `P` or `:fav` Add the selected file or directory to the favorites, or remove it. Favorites are marked with a `*`. A favorite added goes to the top of the list, outside the folders, where you find it to move it where it belongs; several marked files go to the top in their order. The same goes for `P` in the file history and the search results, and `:favorite` in the editor
 - `F` or `:favorites` Show the list of favorites
 
 In the list of favorites:
@@ -261,14 +265,14 @@ In the list of favorites:
 - `:missing` List the favorites whose file or directory is not there any more, in a box with their full paths; `Enter` selects the one picked in the list. `:prune` removes them all, after asking (`u` puts them back). One on a drive that is not connected (a USB drive, a network share) is listed, but not removed: it is only missing for now. Each drive is looked at once, so a share that does not answer is waited for only once
 - `:number` Number the rows at the left, as `12gg` and `5j` count them, and `:nonumber` takes the numbers away again (off from the start). Kept in the settings (`favoritenumbers`), and on the Lists page of [Configuration](#configuration); the Favorites tab of the Jump menu follows it
 - `?` Help
-- `Esc`, `Q`, `F`, `h` or `-` Return to the browser
+- `Esc`, `Q`, `F`, `h` or `-` Return to the browser. `:browse` does the same; when the list is shown alone (`:favorites` on another page), it shows the file browser
 
 **Folders:** Favorites can be grouped in folders. A folder only exists in the list of favorites; nothing is created on disk and no files are moved.
 
 - `A` or `:folder name` Create a folder in front of the selected item. It is shown as `[-] Name` when open and `[+] Name` when closed, with the number of favorites in it
 - `l` or `Enter` on a folder: Open or close it. Favorites in an open folder are shown below it, two spaces in
 - `:expand` Open all folders, `:collapse` Close all folders
-- **Several at once:** Mark the favorites with `Space` (it marks or unmarks the selected favorite and goes to the next; a marked favorite has a `+` in front, and the number of marked is shown at the bottom right). Then press `M` and pick where they go from the list: one of your folders, _New folder..._ (you are asked for its name, and it is placed where the first of the favorites is) or _(No folder)_. Without marks, `M` moves the selected favorite. With marks, `D` removes all marked favorites (you are asked first), and `u` puts them back. `Esc` clears the marks
+- **Several at once:** Mark the favorites with `Space` (it marks or unmarks the selected favorite and goes to the next; a marked favorite has a `+` in front, and the number of marked is shown at the bottom right). Then press `M` and pick where they go from the list (into a folder: at the top of it, where you see them at once): one of your folders, _New folder..._ (you are asked for its name, and it is placed where the first of the favorites is) or _(No folder)_. Without marks, `M` moves the selected favorite. With marks, `D` removes all marked favorites (you are asked first), and `u` puts them back. `Esc` clears the marks
 - **To the top or the end:** `T` (or `:top`) moves the marked favorites to the top of the list, and `E` (or `:bottom`) to the end, in the order they have. Without marks it moves the selected favorite, or the selected folder with its favorites. A favorite in a folder goes to the top or the end of its folder (`M` moves it out of the folder)
 - **Into a folder:** Move a favorite (`V`, then `j` `k`) onto the folder. Moving down onto a folder puts it first in the folder, moving up from below puts it last. A closed folder opens
 - **Out of a folder:** Move the favorite on, past the first or last favorite in the folder
@@ -288,7 +292,7 @@ The file history lists the files you have opened in the editor from the file bro
 - `j` `k` Select, `gg` `G` First/Last, `PgUp` `PgDn` One page up/down. With a count: `5j` `5k` move 5 rows down/up, `5gg` (or `5G`) goes to row 5 (the rows shown, as numbered at the bottom right); the count shows there while you type it, and `Esc` drops it
 - `l` or `Enter` Open the file in the editor (`:q` returns to the history)
 - `B` or `:goto` Show the file in the file browser: its directory, with the file selected
-- `P` or `:fav` Add the file to the favorites, or remove it. A favorite has a `*` after its name
+- `P` or `:fav` Add the file to the favorites (at the top of the list), or remove it. A favorite has a `*` after its name
 - `I` or `:info` Show information about the file
 - `D` or `:remove` Take the file out of the history (the file itself stays)
 - `X` or `:clear` Clear the file history. You are asked first, in a box on top of the list
@@ -297,7 +301,7 @@ The file history lists the files you have opened in the editor from the file bro
 - `:name` Copy the name of the file, `:path` its full path, as in the file browser: to the system clipboard and/or the paste bin, as set, and to the string memory (so `p` in the editor puts it in)
 - `/text` Only show the files whose path contains "text". `Esc` shows all again
 - `?` Help, `:` the command line
-- `Esc`, `Q`, `O`, `h` or `-` Back to the file browser
+- `Esc`, `Q`, `O`, `h` or `-` Back to the file browser. `:browse` does the same; when the list is shown alone, it shows the file browser
 
 The history holds the last 100 files: when it is full, the file opened longest ago is dropped. A file that is gone is shown as _(missing)_. The list is kept in the file `history.txt` in the data directory (one line per file: the time it was opened, a tab character and the path, with the line and column of the cursor and a tab character before the path once the file has been closed in the editor). Like the favorites, it is not encrypted.
 
@@ -318,7 +322,7 @@ The directory hotlist keeps directories you want to go back to. `B` (or `:hotadd
 - `:name` Copy the name the directory is shown with (the name you gave it, or its own), `:path` its full path, as in the file browser (also to the string memory, for `p` in the editor)
 - `/text` Only show the directories whose path contains "text". `Esc` shows all again
 - `?` Help, `:` the command line
-- `Esc`, `Q`, `W`, `h` or `-` Back to the file browser
+- `Esc`, `Q`, `W`, `h` or `-` Back to the file browser. `:browse` does the same; when the list is shown alone, it shows the file browser
 
 The hotlist holds at most 100 directories. A directory that is gone is shown as _(missing)_. When a directory is renamed or moved in the file browser, the hotlist follows it (also the directories in it). The list is kept in `hotlist.txt` in the data directory, with the path of a directory on each line (and after it a tab character and the name you gave it, if any), so it can also be edited by hand (`:data` in the file browser goes there).
 
@@ -326,7 +330,7 @@ The hotlist holds at most 100 directories. A directory that is gone is shown as 
 When a file is closed in the editor, the line and column of the cursor are kept: in the history, and in the favorites if the file is one. The next time the file is opened, the cursor is placed there, so you go on where you left off; entries of a data file work the same way. The favorites are looked in first, as the history holds only the last 100 files. If the file has changed since and the line or column is no longer there, the cursor goes to the end of the line or of the text. A file opened from the results of a [search](#searching-for-files) is opened at the line found instead.
 
 ## Log
-The log lists what has happened since Marbles was started: the startup, logins, commands, and the file operations of the file browser (new, open, rename, copy, move and delete, with the reason if one failed). It is shown from the Configuration tab of the Select mode page (_View log_).
+The log lists what has happened since Marbles was started: the startup, logins, commands, and the file operations of the file browser (new, open, rename, copy, move and delete, with the reason if one failed). It is shown from the Configuration tab of the Select mode page (_View log_), and with `:log` on every command line: the start page, the main menu, the lists of entries, the file browser and its lists, the Jump menu and the editor, on top of the page you are on (closing it returns there). It is also a page of the Jump menu (`:jump log`, or _Log review_ on its Marbles tab).
 
 - The log opens at the end, with the latest lines
 - `h` `l` Previous/Next page, `j` `k` One line, `gg` `G` First/Last

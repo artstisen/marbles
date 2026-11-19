@@ -31,7 +31,8 @@ internal static partial class FileExplorer
         while (true)
         {
             var action = ShowFavorites(out var path);
-            if (action == FavoriteAction.Close) return KeyResult.Handled;
+            // (shown alone: closed back to where it was opened from)
+            if (action == FavoriteAction.Close) return ListClosed;
             var isDirectory = Directory.Exists(path);
             if (!isDirectory && !File.Exists(path))
             {
@@ -52,7 +53,8 @@ internal static partial class FileExplorer
                 }
 
                 ChangeDirectory(parent, isDirectory && action == FavoriteAction.Open ? null : path);
-                return KeyResult.Handled;
+                // The file browser is shown now, and closed as usual
+                return ShownInBrowser();
             }
 
             _message = string.Empty;
@@ -83,6 +85,15 @@ internal static partial class FileExplorer
 
         FilterFavorites();
         _favoriteIndex = Math.Max(0, _favorites.IndexOf(number));
+    }
+
+    // Favorites added at the top elsewhere (P in the file browser, the history, the search results, :favorite in the
+    // editor): the selection moves down as many rows as are shown, so the favorite selected before is selected still
+    private static void FollowAddedAtTop()
+    {
+        var added = FileFavorites.TakeAddedAtTop();
+        if (added == 0) return;
+        _favoriteIndex += _favorites.Count(number => number < added);
     }
 
     private static void FilterFavorites()
@@ -122,6 +133,7 @@ internal static partial class FileExplorer
         while (true)
         {
             FilterFavorites();
+            FollowAddedAtTop();
             _favoriteIndex = Math.Clamp(_favoriteIndex, 0, Math.Max(0, _favorites.Count - 1));
             // Follow the size of the terminal window, and draw again if the page could not be drawn
             if (Init.ApplyAutoSize()) redraw = true;
@@ -201,12 +213,43 @@ internal static partial class FileExplorer
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read(CommandContext.Favorites);
-                if (command != null && CommandLine.Name(command) is "jump" or "ju" or "jmp")
+                if (command != null && CommandLine.Name(command) is "jump" or "ju" or "jmp" or "favorites" or "favs"
+                        or "history" or "hist" or "hotlist" or "hot")
                 {
-                    // The Jump menu (":jump colors": that page at once)
-                    Jump.ToPage(CommandLine.Argument(command));
+                    // The Jump menu, or ":jump colors": that page at once (":favorites", ":history" and ":hotlist": the
+                    // list alone)
+                    Jump.ToPage(Jump.PageOf(command));
                     continue;
                 }
+
+                if (command != null && CommandLine.Name(command) is "exit" or "qa" or "quitall")
+                {
+                    // Leave Marbles (asked first)
+                    Jump.Exit();
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) == "log")
+                {
+                    // The log, on top of the list
+                    Jump.ShowLog();
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) is "colorscheme" or "colo")
+                {
+                    // ":colorscheme name": another color scheme, the list drawn again in it
+                    _favoriteMessage = SchemeEditor.UseByCommand(CommandLine.Argument(command), out _);
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) == "browse")
+                {
+                    // The file browser: the list is closed (when it is shown alone, the file browser is shown)
+                    _listOnly = false;
+                    return FavoriteAction.Close;
+                }
+
 
                 if (command != null && CommandLine.Name(command) == "book")
                 {

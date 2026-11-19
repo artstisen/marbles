@@ -44,6 +44,9 @@ internal enum EditorRequest
     DocumentInfo, // ":info": show the size, the dates and the path of the text being edited
     Jump, // ":jump", ":ju" or Ctrl+O: show the Jump menu
     Recent, // Ctrl+K (Normal mode) or ":recent": the latest files, to switch to one
+    Log, // ":log": the log, shown on top of the editor
+    Exit, // ":exit" (":qa", ":quitall"): leave Marbles (changes that are not saved are asked about first)
+    ColorScheme, // ":colorscheme name": another color scheme (ColorSchemeArgument: the name, or empty to tell it)
     Rename, // ":rename" or ":title": rename the file (RenameText: the new name, or empty to ask), or the title
             // of the entry
     WrapChanged, // Wrapping of long lines was turned on or off
@@ -570,7 +573,7 @@ internal sealed partial class EditorEngine
         // While recording, :q, :wq and ZZ ask about the macro first (as Esc does)
         if (IsRecording && !IsPlayingMacro &&
             _request is EditorRequest.Quit or EditorRequest.ForceQuit or EditorRequest.SaveAndQuit
-                or EditorRequest.ClosePane)
+                or EditorRequest.ClosePane or EditorRequest.Exit)
         {
             _request = EditorRequest.MacroStop;
         }
@@ -1062,6 +1065,15 @@ internal sealed partial class EditorEngine
             return;
         }
 
+        // ":colorscheme name" (or ":colo"): the host uses another color scheme, and draws all again in it
+        var colorScheme = Regex.Match(command, "^(?:colorscheme|colo)(?: +(.*))?$");
+        if (colorScheme.Success)
+        {
+            ColorSchemeArgument = colorScheme.Groups[1].Value.Trim();
+            if (!SingleLine) _request = EditorRequest.ColorScheme;
+            return;
+        }
+
         // ":jump general": a page of Marbles at once, by its name (":jump" alone: the Jump menu)
         var jumpPage = Regex.Match(command, "^(?:jump|ju|jmp) +(.+)$");
         if (jumpPage.Success)
@@ -1401,6 +1413,26 @@ internal sealed partial class EditorEngine
                 break;
             case "recent":
                 if (!SingleLine) _request = EditorRequest.Recent;
+                break;
+            case "log":
+                if (!SingleLine) _request = EditorRequest.Log;
+                break;
+            case "exit":
+            case "qa":
+            case "quitall":
+                if (!SingleLine) _request = EditorRequest.Exit;
+                break;
+            case "favorites":
+            case "favs":
+            case "history":
+            case "hist":
+            case "hotlist":
+            case "hot":
+            case "browse":
+                // The file browser, or one of its lists alone: a page of Marbles, as ":jump favorites" (the editor is
+                // left)
+                JumpArgument = JumpPages.ListPageOf(command) ?? string.Empty;
+                if (!SingleLine) _request = EditorRequest.Jump;
                 break;
             case "rename":
             case "title":

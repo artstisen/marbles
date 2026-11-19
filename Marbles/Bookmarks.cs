@@ -348,7 +348,7 @@ internal static class Bookmarks
     internal static int MoveToEnd(ICollection<Entry> items, bool top) => Folders.MoveToEnd(items, top);
 
     /// <summary>
-    /// Move bookmarks into a folder (last in it), or out of their folders (null: last in the list)
+    /// Move bookmarks into a folder (at the top of it), or out of their folders (null: last in the list)
     /// </summary>
     /// <returns>The place in the list of the first of them, or -1 if nothing was moved</returns>
     internal static int MoveToFolder(ICollection<Entry> items, Entry? folder) => Folders.MoveToFolder(items, folder);

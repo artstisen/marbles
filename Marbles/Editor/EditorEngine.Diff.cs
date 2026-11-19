@@ -29,6 +29,11 @@ internal sealed partial class EditorEngine
     internal string JumpArgument { get; private set; } = string.Empty;
 
     /// <summary>
+    /// The name typed after ":colorscheme" (EditorRequest.ColorScheme; empty: the name of the scheme in use is told)
+    /// </summary>
+    internal string ColorSchemeArgument { get; private set; } = string.Empty;
+
+    /// <summary>
     /// ":bookmark name": the name the bookmark is given (empty: none), and with "!" the name is moved to it from the
     /// bookmark that has it (EditorRequest.Bookmark)
     /// </summary>

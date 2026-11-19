@@ -167,12 +167,42 @@ internal static partial class FileExplorer
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read(CommandContext.Search);
-                if (command != null && CommandLine.Name(command) is "jump" or "ju" or "jmp")
+                if (command != null && CommandLine.Name(command) is "jump" or "ju" or "jmp" or "favorites" or "favs"
+                        or "history" or "hist" or "hotlist" or "hot")
                 {
-                    // The Jump menu (":jump colors": that page at once)
-                    Jump.ToPage(CommandLine.Argument(command));
+                    // The Jump menu, or ":jump colors": that page at once (":favorites", ":history" and ":hotlist": the
+                    // list alone)
+                    Jump.ToPage(Jump.PageOf(command));
                     continue;
                 }
+
+                if (command != null && CommandLine.Name(command) is "exit" or "qa" or "quitall")
+                {
+                    // Leave Marbles (asked first)
+                    Jump.Exit();
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) == "log")
+                {
+                    // The log, on top of the list
+                    Jump.ShowLog();
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) is "colorscheme" or "colo")
+                {
+                    // ":colorscheme name": another color scheme, the list drawn again in it
+                    _foundMessage = SchemeEditor.UseByCommand(CommandLine.Argument(command), out _);
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) == "browse")
+                {
+                    // The file browser: the files found are closed
+                    return KeyResult.Handled;
+                }
+
 
                 if (command != null && CommandLine.Name(command) == "book")
                 {

@@ -427,9 +427,9 @@ public class FileManagementTests : IDisposable
     {
         var a = MakeFile("a", "a.txt");
         var b = MakeFile("b", "b.txt");
-        Assert.True(FileFavorites.Toggle(a));
-        Assert.True(FileFavorites.Toggle(b));
-        Assert.True(FileFavorites.Toggle(_root));
+        Assert.True(FileFavorites.Toggle(a, int.MaxValue));
+        Assert.True(FileFavorites.Toggle(b, int.MaxValue));
+        Assert.True(FileFavorites.Toggle(_root, int.MaxValue));
         Assert.True(FileFavorites.Contains(a));
         FileFavorites.SetColor(1, ConsoleColor.Yellow);
         Assert.True(FileFavorites.Move(2, true));
@@ -505,9 +505,9 @@ public class FileManagementTests : IDisposable
     {
         var file = MakeFile("a", "dir", "a.txt");
         var other = MakeFile("b", "b.txt");
-        FileFavorites.Toggle(file);
-        FileFavorites.Toggle(In("dir"));
-        FileFavorites.Toggle(other);
+        FileFavorites.Toggle(file, int.MaxValue);
+        FileFavorites.Toggle(In("dir"), int.MaxValue);
+        FileFavorites.Toggle(other, int.MaxValue);
 
         // The directory is renamed: the directory and the file in it follow
         Assert.True(FileFavorites.PathChanged(In("dir"), In("new")));
@@ -696,7 +696,7 @@ public class FileManagementTests : IDisposable
         FileFavorites.RemoveAt(Find("d"));
         FileFavorites.Toggle("/x/d");
         Assert.Equal(-1, FileFavorites.UndoRemove());
-        Assert.Equal("[F] d", Show());
+        Assert.Equal("d [F]", Show());
     }
 
     private static List<FileFavorites.Favorite> Items(params string[] names)
@@ -708,19 +708,54 @@ public class FileManagementTests : IDisposable
     public void Folders_SeveralFavoritesAreMovedToAFolder()
     {
         FileFavorites.Parse("\t/x/a\n\t/x/b\n\t[F]\tcollapsed\n \t/x/c\n\t/x/d\n\t[G]\n \t/x/e\n");
-        // Last in the folder, in the order they have in the list (the folder opens)
-        Assert.Equal(3, FileFavorites.MoveToFolder(Items("d", "a", "e"), FileFavorites.Items[Find("F")]));
-        Assert.Equal("b [F] .c .a .d .e [G]", Show());
+        // At the top of the folder, in the order they have in the list (the folder opens)
+        Assert.Equal(2, FileFavorites.MoveToFolder(Items("d", "a", "e"), FileFavorites.Items[Find("F")]));
+        Assert.Equal("b [F] .a .d .e .c [G]", Show());
         // Out of the folders: last in the list
         Assert.Equal(5, FileFavorites.MoveToFolder(Items("c", "e"), null));
-        Assert.Equal("b [F] .a .d [G] c e", Show());
+        Assert.Equal("b [F] .a .d [G] e c", Show());
         // Folders are not moved, and a favorite is not a folder to move to
         Assert.Equal(-1, FileFavorites.MoveToFolder(Items("G"), FileFavorites.Items[Find("F")]));
         Assert.Equal(-1, FileFavorites.MoveToFolder(Items("b"), FileFavorites.Items[Find("c")]));
-        Assert.Equal("b [F] .a .d [G] c e", Show());
-        // A favorite that is in the folder already goes last in it
-        FileFavorites.MoveToFolder(Items("a"), FileFavorites.Items[Find("F")]);
-        Assert.Equal("b [F] .d .a [G] c e", Show());
+        Assert.Equal("b [F] .a .d [G] e c", Show());
+        // A favorite that is in the folder already goes to the top of it
+        FileFavorites.MoveToFolder(Items("d"), FileFavorites.Items[Find("F")]);
+        Assert.Equal("b [F] .d .a [G] e c", Show());
+    }
+
+    [Fact]
+    public void Favorites_AFileAdded_GoesToTheTop_AndSeveralKeepTheirOrder()
+    {
+        FileFavorites.Parse("\t[F]\n \t/x/in\n");
+        Assert.True(FileFavorites.Toggle("/x/old", int.MaxValue));
+        Assert.True(FileFavorites.Toggle("/x/new"));
+        // At the top, outside the folders
+        Assert.Equal("new [F] .in old", Show());
+        // Several, as the file browser adds the marked files: at the top, in their order
+        Assert.True(FileFavorites.Toggle("/x/a", 0));
+        Assert.True(FileFavorites.Toggle("/x/b", 1));
+        Assert.Equal("a b new [F] .in old", Show());
+        Assert.False(FileFavorites.Items[0].InFolder);
+    }
+
+    [Fact]
+    public void Favorites_AddedAtTheTop_AreCounted_AndUndoFollows()
+    {
+        FileFavorites.Parse("\t[F]\n \t/x/in\n\t/x/keep\n");
+        FileFavorites.TakeAddedAtTop();
+        // Removed (as D on the favorites page does), then another added at the top: undo puts it back where it was
+        FileFavorites.RemoveAt(Find("keep"));
+        Assert.True(FileFavorites.Toggle("/x/new"));
+        Assert.Equal("new [F] .in", Show());
+        Assert.True(FileFavorites.UndoRemove() >= 0);
+        Assert.Equal("new [F] .in keep", Show());
+        Assert.False(FileFavorites.Items[^1].InFolder);
+        // The favorites page moves its selection down as many rows
+        Assert.Equal(1, FileFavorites.TakeAddedAtTop());
+        Assert.Equal(0, FileFavorites.TakeAddedAtTop());
+        // Added at the end: not counted
+        Assert.True(FileFavorites.Toggle("/x/last", int.MaxValue));
+        Assert.Equal(0, FileFavorites.TakeAddedAtTop());
     }
 
     [Fact]

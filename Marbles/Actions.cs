@@ -297,7 +297,8 @@ internal static class Actions
         if (RunCommonCommand(command)) return;
         // Only some commands have something after them (":new Title", ":scheme Name")
         if (CommandLine.Argument(command).Length > 0 && command != "size auto" &&
-            CommandLine.Name(command) is not ("new" or "language" or "scheme" or "logo" or "book" or "jump" or "ju" or "jmp"))
+            CommandLine.Name(command) is not ("new" or "language" or "scheme" or "logo" or "book" or "jump" or "ju" or "jmp"
+                or "colorscheme" or "colo"))
         {
             CommandLine.ShowUnknown(command);
             Menu.DrawTopMenu(false, true, false);
@@ -334,6 +335,28 @@ internal static class Actions
             case "recent":
                 // The latest files, and the menu again (drawing it waits for the next key)
                 RecentBox.Open();
+                Menu.DrawTopMenu(false, true, false);
+                break;
+            case "favorites":
+            case "favs":
+            case "history":
+            case "hist":
+            case "hotlist":
+            case "hot":
+                // A list of the file browser alone, as ":jump favorites": the notes are left (unless staying logged in)
+                Jump.ToPage(Jump.PageOf(command));
+                Menu.DrawTopMenu(false, true, false);
+                break;
+            case "log":
+                // The log, and the menu again
+                Jump.ShowLog();
+                Menu.DrawTopMenu(false, true, false);
+                break;
+            case "colorscheme":
+            case "colo":
+                // ":colorscheme name": another color scheme, the menu drawn again in it (a box tells the scheme in
+                // use, or that the name is not known)
+                ShowSchemeMessage(CommandLine.Argument(command));
                 Menu.DrawTopMenu(false, true, false);
                 break;
             case "config":
@@ -565,6 +588,24 @@ internal static class Actions
                 // The latest files (the list is shown again afterwards)
                 RecentBox.Open();
                 break;
+            case "favorites":
+            case "favs":
+            case "history":
+            case "hist":
+            case "hotlist":
+            case "hot":
+                // A list of the file browser alone, as ":jump favorites": the notes are left (unless staying logged in)
+                Jump.ToPage(Jump.PageOf(command));
+                break;
+            case "log":
+                // The log (the list is shown again afterwards)
+                Jump.ShowLog();
+                break;
+            case "colorscheme":
+            case "colo":
+                // ":colorscheme name": another color scheme (the list is shown again in it)
+                ShowSchemeMessage(CommandLine.Argument(command));
+                break;
             case "readonly":
             case "ro":
                 // The entry is read only, or not any more
@@ -623,6 +664,16 @@ internal static class Actions
                 CommandLine.ShowUnknown(command);
                 break;
         }
+    }
+
+    // ":colorscheme name" in the main menu or a list of entries: the scheme is used and saved. The page has no line for
+    // messages: a box tells the scheme in use (":colorscheme" alone), or that the name is not known
+    private static void ShowSchemeMessage(string argument)
+    {
+        var message = SchemeEditor.UseByCommand(argument, out var used);
+        if (used) return;
+        ChoiceBox.Forget();
+        ChoiceBox.Message(DialogText.CaptionsColorScheme, message, string.Empty);
     }
 
     // Move the selection pointer in a list of entries

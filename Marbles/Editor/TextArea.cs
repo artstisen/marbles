@@ -940,16 +940,50 @@ public partial class TextArea
                 _engine.SetMessage(Lang.T("Stop recording the macro first (Esc)"), true);
                 break;
             case EditorRequest.Jump:
+                // (the text drawn first, without the box of commands above the command line, as the editor can ask
+                // about its changes before it is left)
+                if (_engine.JumpArgument.Length > 0) Draw();
                 Tools.HideCursor();
-                // Leaving the text asks about changes that are not saved (":jump colors": that page at once)
-                Jump.ToPage(_engine.JumpArgument, LeaveForJump, MoveToBookmark);
+                // Leaving the text asks about changes that are not saved (":jump colors": that page at once). The
+                // editor is below the Jump menu while it is shown: ":exit" there is not done while it has changes
+                if (_engine.JumpArgument == "browse") JumpToBrowser();
+                else Jump.OnTop(() => _engine.IsModified,
+                    () => Jump.ToPage(_engine.JumpArgument, LeaveForJump, MoveToBookmark));
+                // (a page opened on top of the editor can be the clipboard settings)
+                _engine.ClipboardEveryYank = SystemClipboard.EveryYank;
                 RedrawAll();
                 break;
             case EditorRequest.JumpToBookmark:
                 Tools.HideCursor();
-                Jump.ToBookmark(_engine.BookArgument, LeaveForJump, MoveToBookmark);
+                Jump.OnTop(() => _engine.IsModified,
+                    () => Jump.ToBookmark(_engine.BookArgument, LeaveForJump, MoveToBookmark));
                 RedrawAll();
                 break;
+            case EditorRequest.Log:
+                // The log on top of the text, which is then drawn again
+                Tools.HideCursor();
+                Jump.ShowLog();
+                RedrawAll();
+                break;
+            case EditorRequest.Exit:
+                // Marbles is left: changes that are not saved are asked about (Save, Discard, Cancel), else the usual
+                // question; where the cursor is, is kept as when the file is closed. (The text is drawn first, without
+                // the box of commands above the command line)
+                Draw();
+                Tools.HideCursor();
+                Jump.Exit(() => (_engine.IsModified ||
+                                 ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false)) &&
+                                LeaveForJump());
+                RedrawAll();
+                break;
+            case EditorRequest.ColorScheme:
+            {
+                // ":colorscheme name": another color scheme, all drawn again in it
+                var message = SchemeEditor.UseByCommand(_engine.ColorSchemeArgument, out var used);
+                RedrawAll();
+                _engine.ShowMessage(message, !used && _engine.ColorSchemeArgument.Length > 0);
+                break;
+            }
             case EditorRequest.Recent:
             {
                 // The latest files, without this one: the one picked is opened as a jump (changes are asked about)
@@ -1270,6 +1304,21 @@ public partial class TextArea
         }
 
         Completions.Refresh();
+    }
+
+    // ":browse": the editor is left (changes that are not saved are asked about first) for the file browser in the
+    // directory of the file being edited, with the file selected (to make a new file next to it with N). A note has
+    // no file: the file browser is shown where it was, as ":jump browse"
+    private void JumpToBrowser()
+    {
+        if (_saveMode == SaveAsFile && FileExplorer.CurrentFilePath is { Length: > 0 } path &&
+            System.IO.Path.GetDirectoryName(path) is { Length: > 0 } directory)
+        {
+            Jump.ToPlace(new JumpTarget(JumpKind.Directory, directory) { Select = path }, LeaveForJump);
+            return;
+        }
+
+        Jump.ToPage("browse", LeaveForJump);
     }
 
     // Before a jump leaves the text: changes that are not saved are asked about (false: stay)

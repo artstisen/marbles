@@ -126,12 +126,42 @@ internal static partial class FileExplorer
             if (key.KeyChar == ':')
             {
                 var command = CommandLine.Read(CommandContext.Hotlist);
-                if (command != null && CommandLine.Name(command) is "jump" or "ju" or "jmp")
+                if (command != null && CommandLine.Name(command) is "jump" or "ju" or "jmp" or "favorites" or "favs"
+                        or "history" or "hist" or "hotlist" or "hot")
                 {
-                    // The Jump menu (":jump colors": that page at once)
-                    Jump.ToPage(CommandLine.Argument(command));
+                    // The Jump menu, or ":jump colors": that page at once (":favorites", ":history" and ":hotlist": the
+                    // list alone)
+                    Jump.ToPage(Jump.PageOf(command));
                     continue;
                 }
+
+                if (command != null && CommandLine.Name(command) is "exit" or "qa" or "quitall")
+                {
+                    // Leave Marbles (asked first)
+                    Jump.Exit();
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) == "log")
+                {
+                    // The log, on top of the list
+                    Jump.ShowLog();
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) is "colorscheme" or "colo")
+                {
+                    // ":colorscheme name": another color scheme, the list drawn again in it
+                    _hotlistMessage = SchemeEditor.UseByCommand(CommandLine.Argument(command), out _);
+                    continue;
+                }
+
+                if (command != null && CommandLine.Name(command) == "browse")
+                {
+                    // The file browser: the list is closed (when it is shown alone, the file browser is shown)
+                    return ShownInBrowser();
+                }
+
 
                 if (command != null && CommandLine.Name(command) == "book")
                 {
@@ -158,7 +188,7 @@ internal static partial class FileExplorer
                     case "q":
                     case "quit":
                     case "close":
-                        return KeyResult.Handled;
+                        return ListClosed;
                     case "h":
                     case "help":
                         Tools.WriteEditorHelp(false, Tools.HelpTopic.Hotlist);
@@ -243,7 +273,7 @@ internal static partial class FileExplorer
                 }
                 else
                 {
-                    return KeyResult.Handled;
+                    return ListClosed;
                 }
             }
             else if (navigation == ConsoleKey.DownArrow)
@@ -281,7 +311,7 @@ internal static partial class FileExplorer
             }
             else if (key.Key == ConsoleKey.Enter || navigation == ConsoleKey.RightArrow)
             {
-                if (GoToHotlistDirectory(selected)) return KeyResult.Handled;
+                if (GoToHotlistDirectory(selected)) return ShownInBrowser();
             }
             else if (key.Key == ConsoleKey.V)
             {

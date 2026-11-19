@@ -119,6 +119,8 @@ public class MacroTests : IDisposable
         // A command for the host (":w") is left out whole, and so is a recording asked about with ":q"
         Assert.Equal(EditorRequest.Save, editor.Type(":w<CR>"));
         Assert.Equal(EditorRequest.MacroStop, editor.Type(":q<CR>"));
+        // So is ":exit": the recording is asked about first
+        Assert.Equal(EditorRequest.MacroStop, editor.Type(":exit<CR>"));
         Assert.True(editor.IsRecording);
         Assert.Equal(new[] { "insert \"€5\"" }, editor.StopRecording());
     }

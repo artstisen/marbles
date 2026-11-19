@@ -592,7 +592,7 @@ internal sealed class ColorScheme
     // set; "default" there is what it is in any scheme (the color another follows, or that of the terminal)
     private static readonly string[] BuiltInNames =
     {
-        DefaultName, "Deep Blue", "Marbles Quest", "Tasty Bytes", "Yellow Monochrome", "Green Monochrome", "Ice Warp",
+        DefaultName, "Deep Blue", "Lush Blue", "Marbles Quest", "Tasty Bytes", "Yellow Monochrome", "Green Monochrome", "Ice Warp",
         "Gray Box", "Bright Typist"
     };
 
@@ -789,4 +789,30 @@ internal static class ColorSchemes
     /// </summary>
     internal static string DisplayName(string name) =>
         name.Equals(ColorScheme.DefaultName, StringComparison.OrdinalIgnoreCase) ? Lang.T("Default") : name;
+
+    /// <summary>
+    /// The scheme a typed name means (":colorscheme lush"): the one of that name as typed, or else in any case (also
+    /// the name the default scheme is shown with), or else the only one whose name starts with it. (On Linux the
+    /// schemes of the user can have names that differ only in case: "Mine" and "mine")
+    /// </summary>
+    /// <param name="typed">What was typed</param>
+    /// <param name="names">The names of the schemes</param>
+    /// <param name="several">True when no name is the one typed, and several start with it</param>
+    /// <returns>The name of the scheme, or null</returns>
+    internal static string? Find(string typed, IEnumerable<string> names, out bool several)
+    {
+        several = false;
+        typed = typed.Trim();
+        if (typed.Length == 0) return null;
+        var all = names.ToList();
+        var same = all.FirstOrDefault(name => name.Equals(typed, StringComparison.Ordinal)) ??
+                   all.FirstOrDefault(name => name.Equals(typed, StringComparison.OrdinalIgnoreCase) ||
+                                              DisplayName(name).Equals(typed, StringComparison.OrdinalIgnoreCase));
+        if (same != null) return same;
+        var starting = all.Where(name => name.StartsWith(typed, StringComparison.OrdinalIgnoreCase) ||
+                                         DisplayName(name).StartsWith(typed, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        several = starting.Count > 1;
+        return starting.Count == 1 ? starting[0] : null;
+    }
 }

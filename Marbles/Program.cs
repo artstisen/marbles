@@ -89,6 +89,8 @@ class Program
         CommandCompletion.Arguments["book"] = Bookmarks.NamesToComplete;
         // and after ":jump " the names of the pages
         foreach (var jump in new[] { "jump", "ju", "jmp" }) CommandCompletion.Arguments[jump] = () => JumpPages.Names;
+        // ... and after ":colorscheme " the names of the color schemes (which can have spaces in them)
+        foreach (var scheme in CommandCompletion.SchemeCommands) CommandCompletion.Arguments[scheme] = ColorSchemes.AllNames;
         var starting = true;
         while (true)
         {

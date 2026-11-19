@@ -52,6 +52,8 @@ internal sealed partial class EditorEngine
         var from = Cursor;
         Cursor = exact ? at : new TextPos(at.Line, FirstNonBlank(at.Line));
         ClampCursor();
+        // (also when picked in the list of ":marks": the text is drawn where the cursor is)
+        EnsureCursorVisible();
         RememberJump(from);
     }
 

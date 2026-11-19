@@ -52,6 +52,12 @@ internal sealed record JumpTarget(JumpKind Kind, string Target)
     internal (int Line, int Column)? At { get; init; }
 
     /// <summary>
+    /// The file selected in a directory shown in the file browser (":browse" in the editor: the file edited). Null:
+    /// the first entry
+    /// </summary>
+    internal string? Select { get; init; }
+
+    /// <summary>
     /// True if what it goes to is there (a page always is)
     /// </summary>
     internal bool Exists => Kind switch
@@ -101,9 +107,34 @@ internal static class JumpPages
 {
     internal static readonly IReadOnlyList<string> Ids = new[]
     {
-        "config/general", "config/layout", "config/editor", "config/lists", "config/system", "schemes", "logos",
-        "clipboard", "snippets", "completions", "help", "about"
+        "config/general", "config/layout", "config/editor", "config/lists", "config/system", "favorites", "history",
+        "hotlist", "browse", "schemes", "logos", "clipboard", "snippets", "completions", "log", "help", "about"
     };
+
+    /// <summary>
+    /// The page of the file browser a command goes to: ":favorites" (":favs"), ":history" (":hist"), ":hotlist"
+    /// (":hot") or ":browse", or null for another command
+    /// </summary>
+    internal static string? ListPageOf(string command) => command switch
+    {
+        "favorites" or "favs" => "favorites",
+        "history" or "hist" => "history",
+        "hotlist" or "hot" => "hotlist",
+        "browse" => "browse",
+        _ => null
+    };
+
+    /// <summary>
+    /// True for the file browser and its lists (a file opened from them opens the editor, which cannot be on top of
+    /// another page)
+    /// </summary>
+    internal static bool IsFileBrowser(string id) => id is "favorites" or "history" or "hotlist" or "browse";
+
+    /// <summary>
+    /// True for the pages that leave the page the jump was made from (and the notes, unless staying logged in): the
+    /// pages of the Configuration tab, and the file browser and its lists
+    /// </summary>
+    internal static bool Leaves(string id) => ConfigurationPage(id) >= 0 || IsFileBrowser(id);
 
     // The name of a page in ":jump general"
     private static string NameOf(string id) => id == "schemes" ? "colors" : id[(id.IndexOf('/') + 1)..];
@@ -144,11 +175,16 @@ internal static class JumpPages
             "config/editor" => Lang.F("{0}: {1}", DialogText.StartConfiguration, Lang.T("Editor")),
             "config/lists" => Lang.F("{0}: {1}", DialogText.StartConfiguration, Lang.T("Lists")),
             "config/system" => Lang.F("{0}: {1}", DialogText.StartConfiguration, Lang.T("System")),
+            "favorites" => DialogText.HelpSectionFavorites,
+            "history" => DialogText.HelpSectionHistory,
+            "hotlist" => DialogText.HelpSectionHotlist,
+            "browse" => DialogText.HelpSectionFiles,
             "schemes" => DialogText.CaptionsColorScheme,
             "logos" => DialogText.CaptionsLogos,
             "clipboard" => Lang.T("Clipboard"),
             "snippets" => Lang.T("Snippet editor"),
             "completions" => Lang.T("Completions editor"),
+            "log" => DialogText.LogReview,
             "help" => Lang.T("Help"),
             "about" => Lang.T("About"),
             _ => id
@@ -354,7 +390,7 @@ internal static class Jump
     /// True for the places that are opened where the jump was made from (the page is not left)
     /// </summary>
     internal static bool OpensInPlace(JumpTarget target) =>
-        target.Kind == JumpKind.Page && JumpPages.ConfigurationPage(target.Target) < 0;
+        target.Kind == JumpKind.Page && !JumpPages.Leaves(target.Target);
 
     /// <summary>
     /// Show the Jump menu and go to the place picked. Returns when nothing was picked, or the place was opened
@@ -503,6 +539,14 @@ internal static class Jump
         }
 
         var target = new JumpTarget(JumpKind.Page, page);
+        if (!JumpMenu.Usable(target))
+        {
+            // The file browser and its lists, with Note Management only
+            ChoiceBox.Forget();
+            ChoiceBox.Message(DialogText.CaptionsJump, DialogText.EditorNotUsed, string.Empty);
+            return;
+        }
+
         if (here != null && here(target))
         {
             Remember(target);
@@ -536,6 +580,60 @@ internal static class Jump
         Navigation.Wait();
     }
 
+    /// <summary>
+    /// What a command that goes to a page goes to, for ToPage: ":favorites", ":history", ":hotlist" and ":browse" the
+    /// file browser and its lists, and ":jump name" the page named (or the Jump menu)
+    /// </summary>
+    internal static string PageOf(string command) =>
+        JumpPages.ListPageOf(CommandLine.Name(command)) ?? CommandLine.Argument(command);
+
+    /// <summary>
+    /// ":log": the log, on top of the page (which must then be drawn again). Not a jump: as the help, it is not kept
+    /// in the jump history (":jump log" and the Jump menu are)
+    /// </summary>
+    internal static void ShowLog() => OpenInPlace("log");
+
+    // The pages that pages were opened on top of (the editor below the Jump menu), each with what tells if it has
+    // changes that are not saved. A page below cannot be asked to save from the page on top
+    private static readonly List<Func<bool>> PagesBelow = new();
+
+    /// <summary>
+    /// Show something on top of a page (the Jump menu from the editor): the page is one of the pages below while it is
+    /// shown, so ":exit" there does not leave its changes that are not saved
+    /// </summary>
+    internal static void OnTop(Func<bool>? hasChanges, Action show)
+    {
+        PagesBelow.Add(hasChanges ?? (() => false));
+        try
+        {
+            show();
+        }
+        finally
+        {
+            PagesBelow.RemoveAt(PagesBelow.Count - 1);
+        }
+    }
+
+    /// <summary>
+    /// ":exit" (":qa", ":quitall") on a page: leave Marbles. Not while a page below has changes that are not saved (it
+    /// is told); else the page asks about its own changes (beforeLeaving: the editor asks to save them, or the usual
+    /// question), or the usual question is asked. Returns when Marbles is not left
+    /// </summary>
+    internal static void Exit(Func<bool>? beforeLeaving = null)
+    {
+        ChoiceBox.Forget();
+        if (PagesBelow.Any(hasChanges => hasChanges()))
+        {
+            ChoiceBox.Message(DialogText.Exit, Lang.T("A page below this one has changes that are not saved"),
+                Lang.T("Close this page, then save or discard changes there."));
+            return;
+        }
+
+        var leave = beforeLeaving?.Invoke() ??
+                    ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false);
+        if (leave) Tools.ExitApplication();
+    }
+
     // Keep a jump in the jump history
     private static void Remember(JumpTarget target)
     {
@@ -565,6 +663,9 @@ internal static class Jump
                 break;
             case "completions":
                 FileExplorer.EditCompletions();
+                break;
+            case "log":
+                EventLog.Show();
                 break;
             case "help":
                 Tools.WriteEditorHelp(false);
@@ -617,7 +718,16 @@ internal static class Jump
                 // directory. Closing it shows the Select mode page, as when it is closed there (staying logged in:
                 // the main menu of the data file)
                 if (target.Kind == JumpKind.File) FileExplorer.RunAtFile(target.FullPath, target.At);
-                else FileExplorer.RunAtDirectory(target.FullPath);
+                else FileExplorer.RunAtDirectory(target.FullPath, target.Select);
+                if (FileExplorer.DataFileSelected) break;
+                if (DataSession.Keep) DataSession.ReturnToMainMenu();
+                StartMenu.Open();
+                break;
+            case JumpKind.Page when JumpPages.IsFileBrowser(target.Target):
+                // The file browser, or one of its lists alone: closing it shows the Select mode page, as when the
+                // browser is closed there (staying logged in: the main menu of the data file)
+                if (target.Target == "browse") FileExplorer.Run();
+                else FileExplorer.RunList(target.Target);
                 if (FileExplorer.DataFileSelected) break;
                 if (DataSession.Keep) DataSession.ReturnToMainMenu();
                 StartMenu.Open();

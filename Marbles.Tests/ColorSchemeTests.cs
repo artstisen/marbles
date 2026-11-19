@@ -65,7 +65,8 @@ public class ColorSchemeTests : IDisposable
                 Assert.True(scheme.Get(item) != null, scheme.Name + ": " + item);
             }
 
-            Assert.Equal(scheme.Background, scheme.CommandBox);
+            // (Lush Blue has a box of commands in a color of its own)
+            if (scheme.Name != "Lush Blue") Assert.Equal(scheme.Background, scheme.CommandBox);
         }
     }
 
@@ -74,15 +75,18 @@ public class ColorSchemeTests : IDisposable
     {
         Assert.Equal(new[]
         {
-            "Default", "Deep Blue", "Marbles Quest", "Tasty Bytes", "Yellow Monochrome", "Green Monochrome",
+            "Default", "Deep Blue", "Lush Blue", "Marbles Quest", "Tasty Bytes", "Yellow Monochrome", "Green Monochrome",
             "Ice Warp", "Gray Box", "Bright Typist"
         }, ColorScheme.BuiltIn.Select(scheme => scheme.Name));
         Assert.Equal(ConsoleColor.DarkBlue, ColorScheme.BuiltIn[1].Background);
-        Assert.Equal(ConsoleColor.DarkGray, ColorScheme.BuiltIn[7].Background);
+        // Lush Blue, after Deep Blue: dark blue too, with the logo of Marbles
+        Assert.Equal(ConsoleColor.DarkBlue, ColorScheme.BuiltIn[2].Background);
+        Assert.Equal("Marbles", ColorScheme.BuiltIn[2].UseLogo);
+        Assert.Equal(ConsoleColor.DarkGray, ColorScheme.BuiltIn[8].Background);
         // A light scheme: black text on white
-        Assert.Equal(ConsoleColor.White, ColorScheme.BuiltIn[8].Background);
-        Assert.Equal(ConsoleColor.Black, ColorScheme.BuiltIn[8].Text);
-        Assert.All(ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Deep Blue" or "Gray Box" or "Bright Typist")),
+        Assert.Equal(ConsoleColor.White, ColorScheme.BuiltIn[9].Background);
+        Assert.Equal(ConsoleColor.Black, ColorScheme.BuiltIn[9].Text);
+        Assert.All(ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Deep Blue" or "Lush Blue" or "Gray Box" or "Bright Typist")),
             scheme => Assert.Null(scheme.Background));
         // The default scheme: white box borders, the focused tab cyan on black and highlighted, with a white corner,
         // the other tabs dark gray, and the logo of Marbles
@@ -97,9 +101,9 @@ public class ColorSchemeTests : IDisposable
         Assert.Equal(ConsoleColor.Cyan, standard.TabShownColor);
         Assert.Equal(ConsoleColor.DarkGray, standard.OtherTabsColor);
         Assert.True(standard.TabHighlight);
-        // In the others (but Tasty Bytes, with colors of its own) the new colors are those of the dividers, and
-        // the tab is highlighted
-        Assert.All(ColorScheme.BuiltIn.Skip(1).Where(scheme => scheme.Name != "Tasty Bytes"), scheme =>
+        // In the others (but Tasty Bytes and Lush Blue, with colors of their own) the new colors are those of the
+        // dividers, and the tab is highlighted
+        Assert.All(ColorScheme.BuiltIn.Skip(1).Where(scheme => scheme.Name is not ("Tasty Bytes" or "Lush Blue")), scheme =>
         {
             Assert.Equal(scheme.Dividers, scheme.TabFrameColor);
             Assert.Equal(scheme.Dividers, scheme.BoxBorderColor);
@@ -274,18 +278,74 @@ public class ColorSchemeTests : IDisposable
         var read = ColorScheme.Parse(scheme.Serialize(), "Mine");
         Assert.Equal("Reflections", read.UseLogo);
         Assert.Equal("Reflections", read.Clone().UseLogo);
-        Assert.All(ColorScheme.BuiltIn.Skip(2).Where(builtIn => builtIn.Name is not ("Tasty Bytes" or "Gray Box" or "Marbles Quest" or "Bright Typist")),
+        Assert.All(ColorScheme.BuiltIn.Skip(2).Where(builtIn => builtIn.Name is not ("Lush Blue" or "Tasty Bytes" or "Gray Box" or "Marbles Quest" or "Bright Typist")),
             builtIn => Assert.Equal(string.Empty, builtIn.UseLogo));
-        Assert.DoesNotContain("uselogo", ColorScheme.BuiltIn[6].Serialize());
-        Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.BuiltIn[6].Serialize(), "X").UseLogo);
+        Assert.DoesNotContain("uselogo", ColorScheme.BuiltIn[7].Serialize());
+        Assert.Equal(string.Empty, ColorScheme.Parse(ColorScheme.BuiltIn[7].Serialize(), "X").UseLogo);
         // A scheme file without it has no logo (not the one of the default scheme)
         Assert.Equal(string.Empty, ColorScheme.Parse("text=White\n", "X").UseLogo);
     }
 
     [Fact]
+    public void ASchemeTypedInACommand_IsFound_ByItsNameOrTheStartOfIt()
+    {
+        var names = new[] { "Default", "Deep Blue", "Lush Blue", "Gray Box", "Gray", "Mine", "mine" };
+        // The whole name, in any case
+        Assert.Equal("Lush Blue", ColorSchemes.Find(" lush BLUE ", names, out var several));
+        Assert.False(several);
+        // The start of a name, when only one starts with it
+        Assert.Equal("Lush Blue", ColorSchemes.Find("lu", names, out several));
+        Assert.Equal("Deep Blue", ColorSchemes.Find("dee", names, out several));
+        // Several start with it: none, and told
+        Assert.Null(ColorSchemes.Find("d", names, out several));
+        Assert.True(several);
+        // A name that is whole goes before those that start with it, and one typed exactly before one in another case
+        Assert.Equal("Gray", ColorSchemes.Find("gray", names, out several));
+        Assert.False(several);
+        Assert.Equal("mine", ColorSchemes.Find("mine", names, out _));
+        Assert.Equal("Mine", ColorSchemes.Find("Mine", names, out _));
+        // Not known
+        Assert.Null(ColorSchemes.Find("Mauve", names, out several));
+        Assert.False(several);
+        Assert.Null(ColorSchemes.Find("  ", names, out several));
+    }
+
+    [Fact]
+    public void TheNamesOfTheSchemes_AreCompleted_AlsoAfterASpace()
+    {
+        CommandCompletion.Arguments["colorscheme"] = ColorSchemes.AllNames;
+        CommandCompletion.Arguments["colo"] = ColorSchemes.AllNames;
+        foreach (var context in new[] { CommandContext.Editor, CommandContext.Start, CommandContext.Menu, CommandContext.Jump })
+        {
+            Assert.Equal("colo Lush Blue", new CommandCompletion(context).Next("colo lu", true));
+            Assert.Equal("colorscheme Deep Blue", new CommandCompletion(context).Next("colorscheme Deep B", true));
+            // In turn: the names starting with it
+            var completion = new CommandCompletion(context);
+            Assert.Equal("colo Default", completion.Next("colo d", true));
+            Assert.Equal("colo Deep Blue", completion.Next("colo Default", true));
+        }
+
+        // ... and listed above the command line
+        Assert.Equal(new[] { "Deep Blue" }, CommandList.Matches(CommandContext.Editor, "colorscheme deep b").Names);
+
+        // Other commands are not completed after a space, as before
+        var play = CommandCompletion.Arguments.GetValueOrDefault("play");
+        CommandCompletion.Arguments["play"] = () => new[] { "Bullet list" };
+        try
+        {
+            Assert.Equal("play Bullet l", new CommandCompletion(CommandContext.Editor).Next("play Bullet l", true));
+        }
+        finally
+        {
+            if (play == null) CommandCompletion.Arguments.Remove("play");
+            else CommandCompletion.Arguments["play"] = play;
+        }
+    }
+
+    [Fact]
     public void TheSelector_KeepsItsColors_WhenTheHighlightIsChanged()
     {
-        foreach (var builtIn in ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Tasty Bytes" or "Deep Blue" or "Gray Box" or "Bright Typist")))
+        foreach (var builtIn in ColorScheme.BuiltIn.Where(scheme => scheme.Name is not ("Tasty Bytes" or "Deep Blue" or "Lush Blue" or "Gray Box" or "Bright Typist")))
         {
             // From the start the colors of the highlight, as colors of its own
             Assert.Equal(builtIn.Highlight, builtIn.Selector);

@@ -102,14 +102,19 @@ public class JumpTests : IDisposable
             new[] { "config/general", "config/layout", "config/editor", "config/lists", "config/system" }
                 .Select(JumpPages.ConfigurationPage));
         Assert.Equal(-1, JumpPages.ConfigurationPage("schemes"));
-        foreach (var page in new[] { "schemes", "logos", "clipboard", "snippets", "completions", "help", "about" })
+        foreach (var page in new[] { "schemes", "logos", "clipboard", "snippets", "completions", "log", "help", "about" })
         {
             Assert.True(Jump.OpensInPlace(new JumpTarget(JumpKind.Page, page)));
         }
 
-        Assert.False(Jump.OpensInPlace(new JumpTarget(JumpKind.Page, "config/system")));
+        // The file browser and its lists leave the page, as the pages of Configuration do
+        foreach (var page in new[] { "config/system", "favorites", "history", "hotlist", "browse" })
+        {
+            Assert.False(Jump.OpensInPlace(new JumpTarget(JumpKind.Page, page)));
+        }
+
         Assert.False(Jump.OpensInPlace(new JumpTarget(JumpKind.File, In("a.md"))));
-        Assert.Equal(12, JumpPages.Ids.Count);
+        Assert.Equal(17, JumpPages.Ids.Count);
         Assert.All(JumpPages.Ids, id => Assert.NotEqual(id, JumpPages.Label(id)));
     }
 
@@ -188,8 +193,8 @@ public class JumpTests : IDisposable
         // ":jump colors", ":jump general" ...: the names are English, upper and lower case alike
         Assert.Equal(new[]
         {
-            "general", "layout", "editor", "lists", "system", "colors", "logos", "clipboard", "snippets", "completions",
-            "help", "about"
+            "general", "layout", "editor", "lists", "system", "favorites", "history", "hotlist", "browse", "colors", "logos",
+            "clipboard", "snippets", "completions", "log", "help", "about"
         }, JumpPages.Names);
         Assert.Equal("schemes", JumpPages.IdOf("colors"));
         Assert.Equal("config/lists", JumpPages.IdOf("Lists"));
@@ -206,5 +211,68 @@ public class JumpTests : IDisposable
         Assert.Equal("colors", editor.JumpArgument);
         Assert.Equal(EditorRequest.Jump, editor.Type(":ju<CR>"));
         Assert.Equal(string.Empty, editor.JumpArgument);
+    }
+
+    [Fact]
+    public void TheListsOfTheFileBrowser_AreCommandsOnEveryCommandLine()
+    {
+        // ":favorites", ":history", ":hotlist" and ":browse", and their short forms: pages of the Jump menu
+        Assert.Equal("favorites", JumpPages.ListPageOf("favs"));
+        Assert.Equal("history", JumpPages.ListPageOf("hist"));
+        Assert.Equal("hotlist", JumpPages.ListPageOf("hot"));
+        Assert.Equal("browse", JumpPages.ListPageOf("browse"));
+        Assert.Null(JumpPages.ListPageOf("fav"));
+        Assert.Equal("favorites", Jump.PageOf("favs"));
+        Assert.Equal("colors", Jump.PageOf("jump colors"));
+        foreach (var context in new[]
+                 {
+                     CommandContext.Menu, CommandContext.List, CommandContext.Favorites, CommandContext.History,
+                     CommandContext.Hotlist, CommandContext.Search, CommandContext.Start, CommandContext.Jump,
+                     CommandContext.Editor
+                 })
+        {
+            foreach (var name in new[] { "favorites", "favs", "history", "hist", "hotlist", "hot", "log", "colorscheme", "colo", "exit", "qa" })
+            {
+                Assert.True(Commands.IsKnown(context, name), context + ": " + name);
+            }
+        }
+
+        // In the editor: the page is given to the host as a jump
+        var editor = new EditorEngine("text", 40, 10, false);
+        Assert.Equal(EditorRequest.Jump, editor.Type(":favs<CR>"));
+        Assert.Equal("favorites", editor.JumpArgument);
+        Assert.Equal(EditorRequest.Jump, editor.Type(":hotlist<CR>"));
+        Assert.Equal("hotlist", editor.JumpArgument);
+        Assert.Equal(EditorRequest.Jump, editor.Type(":browse<CR>"));
+        Assert.Equal("browse", editor.JumpArgument);
+        // ":exit" (":qa", ":quitall"), ":log" and ":colorscheme name" (the name as typed, with its spaces)
+        Assert.Equal(EditorRequest.Exit, editor.Type(":exit<CR>"));
+        Assert.Equal(EditorRequest.Exit, editor.Type(":qa<CR>"));
+        Assert.Equal(EditorRequest.Exit, editor.Type(":quitall<CR>"));
+        Assert.Equal(EditorRequest.Log, editor.Type(":log<CR>"));
+        Assert.Equal(EditorRequest.ColorScheme, editor.Type(":colorscheme Deep Blue<CR>"));
+        Assert.Equal("Deep Blue", editor.ColorSchemeArgument);
+        Assert.Equal(EditorRequest.ColorScheme, editor.Type(":colo<CR>"));
+        Assert.Equal(string.Empty, editor.ColorSchemeArgument);
+        Assert.Equal("text", editor.Buffer.GetText());
+    }
+
+    [Fact]
+    public void TheFileBrowserPages_AreNotUsed_WithNoteManagementOnly()
+    {
+        var only = StartMenu.Only;
+        try
+        {
+            StartMenu.Only = StartMenu.OnlyMode.Notes;
+            Assert.False(JumpMenu.Usable(new JumpTarget(JumpKind.Page, "favorites")));
+            Assert.False(JumpMenu.Usable(new JumpTarget(JumpKind.Page, "browse")));
+            Assert.True(JumpMenu.Usable(new JumpTarget(JumpKind.Page, "log")));
+            StartMenu.Only = StartMenu.OnlyMode.None;
+            Assert.True(JumpMenu.Usable(new JumpTarget(JumpKind.Page, "favorites")));
+        }
+        finally
+        {
+            StartMenu.Only = only;
+        }
     }
 }

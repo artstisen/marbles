@@ -297,4 +297,17 @@ public class BookmarksTests : IDisposable
         Assert.DoesNotContain(JumpMenu.Tab.History, JumpMenu.Tabs(StartMenu.OnlyMode.Notes));
         Assert.DoesNotContain(JumpMenu.Tab.DataFiles, JumpMenu.Tabs(StartMenu.OnlyMode.Editor));
     }
+
+    [Fact]
+    public void Bookmarks_MovedIntoAFolder_GoToTheTopOfIt()
+    {
+        foreach (var name in new[] { "a", "b", "c" }) Bookmarks.Add(FileAt(name));
+        Assert.Equal(0, Bookmarks.AddFolder("Work", 0));
+        Bookmarks.MoveToFolder(Bookmarks.Places.Where(entry => entry.Shown == "b").ToList(), Bookmarks.Items[0]);
+        Bookmarks.MoveToFolder(Bookmarks.Places.Where(entry => entry.Shown == "c").ToList(), Bookmarks.Items[0]);
+        // c moved last: first in the folder
+        Assert.Equal(new[] { "c", "b" }, Bookmarks.Items.Skip(1).Take(2).Select(entry => entry.Shown));
+        Assert.All(Bookmarks.Items.Skip(1).Take(2), entry => Assert.True(entry.InFolder));
+        Assert.False(Bookmarks.Items[3].InFolder);
+    }
 }

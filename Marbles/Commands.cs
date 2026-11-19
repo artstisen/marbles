@@ -51,46 +51,51 @@ internal static class Commands
     private const string Common = " quitall exit logout";
     private const string CommonShort = " qa";
 
+    // On every command line (but that of the file browser when a file or directory is picked): leaving Marbles, the
+    // log, a color scheme, and the file browser and its lists
+    private const string Everywhere = " exit log colorscheme favorites history hotlist browse";
+    private const string EverywhereShort = " qa quitall colo favs hist hot";
+
     private static readonly Dictionary<CommandContext, Table> Tables = new()
     {
         [CommandContext.Menu] = new Table(
             "quit help about guide jump book recent new browse number import transfer undelete backup defaults scheme " +
-            "bw size password restart language clipboard logo config" + Common,
-            "q h nu ju jmp" + CommonShort),
+            "bw size password restart language clipboard logo config log colorscheme favorites history hotlist" + Common,
+            "q h nu ju jmp colo favs hist hot" + CommonShort),
         [CommandContext.List] = new Table(
             "quit close help jump book recent browse new title delete color transfer size duplicate revert export import info clipboard" +
-            " readonly" + Common,
-            "q h ro ju jmp" + CommonShort),
+            " readonly log colorscheme favorites history hotlist" + Common,
+            "q h ro ju jmp colo favs hist hot" + CommonShort),
         [CommandContext.Files] = new Table(
-            "quit close exit home data help jump book peek diff cd new info mkdir rename copy duplicate move delete favorite favorites history hotlist hotadd bookmark bookmark! refresh logout panes match path name find number nonumber recent trash protect",
-            "q h fav favs hist hot ju jmp"),
+            "quit close exit home data help jump book peek diff cd new info mkdir rename copy duplicate move delete favorite favorites history hotlist hotadd bookmark bookmark! refresh logout panes match path name find number nonumber recent trash protect log colorscheme",
+            "q h fav favs hist hot ju jmp qa quitall colo"),
         [CommandContext.FilePicker] = new Table(
             "quit close home data help cd number nonumber",
             "q h"),
         [CommandContext.Favorites] = new Table(
-            "quit close help jump book recent color info remove move top bottom undo folder expand collapse rename goto path name missing prune number nonumber",
-            "q h u ju jmp"),
+            "quit close help jump book recent color info remove move top bottom undo folder expand collapse rename goto path name missing prune number nonumber" + Everywhere,
+            "q h u ju jmp" + EverywhereShort),
         [CommandContext.History] = new Table(
-            "quit close help jump book recent info goto favorite remove clear path name missing prune number nonumber",
-            "q h fav ju jmp"),
+            "quit close help jump book recent info goto favorite remove clear path name missing prune number nonumber" + Everywhere,
+            "q h fav ju jmp" + EverywhereShort),
         [CommandContext.Hotlist] = new Table(
-            "quit close help jump book recent info remove undo top bottom move rename clear path name missing prune number nonumber",
-            "q h u ju jmp"),
+            "quit close help jump book recent info remove undo top bottom move rename clear path name missing prune number nonumber" + Everywhere,
+            "q h u ju jmp" + EverywhereShort),
         [CommandContext.Search] = new Table(
-            "quit close help jump book recent find info goto favorite number nonumber",
-            "q h fav ju jmp"),
+            "quit close help jump book recent find info goto favorite number nonumber" + Everywhere,
+            "q h fav ju jmp" + EverywhereShort),
         [CommandContext.Start] = new Table(
             "note file mode config general layout editor lists system jump book recent help about quick scheme logo snippet completions clipboard " +
-            "log restart reset quit exit",
-            "notes browse ju jmp h guide snip comp q"),
+            "log restart reset quit exit colorscheme favorites history hotlist",
+            "notes browse ju jmp h guide snip comp q qa quitall colo favs hist hot"),
         [CommandContext.Jump] = new Table(
-            "quit close help info jump recent folder expand collapse rename color remove move top bottom undo clearbook path name number nonumber missing prune",
-            "q h u ju jmp"),
+            "quit close help info jump recent folder expand collapse rename color remove move top bottom undo clearbook path name number nonumber missing prune" + Everywhere,
+            "q h u ju jmp" + EverywhereShort),
         [CommandContext.Editor] = new Table(
             "write quit quit! wq help edit edit! reload reload! undo redo delete yank replace nohlsearch " +
             "spell nospell spellnext spellprev suggest spelladd syntax number nonumber timestamp password " +
-            "favorite record play macro trim trim! whitespace mark marks delmarks delmarks! clear registers reglist regclear putall vsel vline block ol ul dup duplicate surround pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete diff scrolloff info jump book recent bookmark bookmark! yankall rename title split only new",
-            "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw reg sn ju jmp fav sur k")
+            "favorite record play macro trim trim! whitespace mark marks delmarks delmarks! clear registers reglist regclear putall vsel vline block ol ul dup duplicate surround pb pbappend pbread pbclear clipboard path sort sort! wrap nowrap snip complete diff scrolloff info jump book recent bookmark bookmark! yankall rename title split only new" + Everywhere,
+            "w q q! wq! x h e e! u red d y s rep noh set spellsuggest spellgood nu nonu ts pw reg sn ju jmp fav sur k" + EverywhereShort)
     };
 
     /// <summary>
@@ -189,6 +194,17 @@ internal sealed class CommandCompletion
     /// </summary>
     internal static Dictionary<string, Func<IEnumerable<string>>> Arguments { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>
+    /// The commands that take one name that can have spaces in it (":colorscheme Deep Blue"): what is typed after the
+    /// command is completed and listed as a whole, also after a space
+    /// </summary>
+    internal static bool TakesNameWithSpaces(string command) => SchemeCommands.Contains(command);
+
+    /// <summary>
+    /// The names of ":colorscheme" (its short form too), which takes the name of a color scheme
+    /// </summary>
+    internal static readonly string[] SchemeCommands = { "colorscheme", "colo" };
+
     // Find the commands that start with what is typed (or what follows a command, see Arguments)
     private bool Start(string text)
     {
@@ -199,7 +215,7 @@ internal sealed class CommandCompletion
         {
             _before = text[..(space + 1)];
             _typed = text[(space + 1)..];
-            if (_typed.Contains(' ')) return false;
+            if (_typed.Contains(' ') && !TakesNameWithSpaces(name)) return false;
             _matches = words().Where(word => word.StartsWith(_typed, StringComparison.OrdinalIgnoreCase) &&
                                              !string.Equals(word, _typed, StringComparison.OrdinalIgnoreCase)).ToList();
             return _matches.Count > 0;

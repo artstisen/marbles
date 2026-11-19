@@ -106,13 +106,54 @@ internal static partial class FileExplorer
     /// <param name="favorites">True to open the favorites list first</param>
     internal static void Run(bool favorites = false)
     {
-        _openFavorites = favorites;
+        _openList = favorites ? ListKey("favorites") : null;
         Browse(BrowseMode.Edit, DialogText.CaptionsFiles);
+    }
+
+    /// <summary>
+    /// Show a list of the file browser alone: "favorites", "history" or "hotlist" (":favorites", ":history" and
+    /// ":hotlist" on a command line). Closing it closes the file browser too; a file or directory shown from it (B, a
+    /// directory opened, ":browse") shows the file browser, which is then closed as usual
+    /// </summary>
+    internal static void RunList(string list)
+    {
+        _listOnly = true;
+        try
+        {
+            _openList = ListKey(list);
+            Browse(BrowseMode.Edit, DialogText.CaptionsFiles);
+        }
+        finally
+        {
+            _listOnly = false;
+        }
+    }
+
+    // The key of the file browser that opens a list (F, O or W)
+    private static ConsoleKeyInfo ListKey(string list) => list switch
+    {
+        "history" => new ConsoleKeyInfo('O', ConsoleKey.O, true, false, false),
+        "hotlist" => new ConsoleKeyInfo('W', ConsoleKey.W, true, false, false),
+        _ => new ConsoleKeyInfo('F', ConsoleKey.F, true, false, false)
+    };
+
+    // A list is shown alone (RunList): closing it closes the file browser too
+    private static bool _listOnly;
+
+    // How a list closes: back to the file browser, or with it when the list is shown alone
+    private static KeyResult ListClosed => _listOnly ? KeyResult.Close : KeyResult.Handled;
+
+    // A directory was shown from a list (or ":browse" there): the file browser is shown now, and closed as usual
+    private static KeyResult ShownInBrowser()
+    {
+        _listOnly = false;
+        return KeyResult.Handled;
     }
 
     // A jump: the directory to show, and the file to open in the editor when the browser is shown
     private static string? _jumpDirectory;
     private static string? _jumpFile;
+    private static string? _jumpSelect; // The file selected in the directory of a jump (RunAtDirectory)
     private static (int Line, int Column)? _jumpAt; // Where in the file (a bookmark made in the editor)
 
     // The file is opened at this line and column (not where it was left)
@@ -133,14 +174,15 @@ internal static partial class FileExplorer
     /// <summary>
     /// Open the file browser in a directory (a jump)
     /// </summary>
-    internal static void RunAtDirectory(string path)
+    internal static void RunAtDirectory(string path, string? select = null)
     {
         _jumpDirectory = path;
         _jumpFile = null;
+        _jumpSelect = select;
         Run();
     }
 
-    private static bool _openFavorites; // The favorites list is opened as soon as the file browser is shown
+    private static ConsoleKeyInfo? _openList; // The key of a list opened as soon as the file browser is shown
 
     /// <summary>
     /// Let the user select a file
@@ -234,11 +276,12 @@ internal static partial class FileExplorer
         var jumpAt = _jumpAt;
         if (mode == BrowseMode.Edit && _jumpDirectory != null && System.IO.Directory.Exists(_jumpDirectory))
         {
-            StartPaneIn(ActivePane, _jumpDirectory);
+            StartPaneIn(ActivePane, _jumpDirectory, _jumpSelect);
         }
 
         _jumpDirectory = null;
         _jumpFile = null;
+        _jumpSelect = null;
         _jumpAt = null;
         // The places of the panes are saved however the browser is left: closed, a jump (to another page),
         // logging in from it, or exiting Marbles (Tools.ExitApplication)
@@ -324,11 +367,10 @@ internal static partial class FileExplorer
 
         while (true)
         {
-            // Starting in the favorites list is the same as pressing F (closing the list shows the file browser)
-            var key = _openFavorites && _mode == BrowseMode.Edit
-                ? new ConsoleKeyInfo('F', ConsoleKey.F, true, false, false)
-                : Keyboard.ReadKey();
-            _openFavorites = false;
+            // Starting in a list is the same as pressing its key: F, O or W (closing the list shows the file browser,
+            // or closes it when the list is shown alone)
+            var key = _openList is { } first && _mode == BrowseMode.Edit ? first : Keyboard.ReadKey();
+            _openList = null;
             // The window was resized (or Marbles went on after Ctrl+Z): all is drawn again, with the message (nothing
             // on the disk changed: the panes are not read again)
             if (Keyboard.IsRedraw(key))
@@ -419,14 +461,10 @@ internal static partial class FileExplorer
                     break;
                 }
 
-                if (name == "exit" && _mode == BrowseMode.Edit)
+                if (name is "exit" or "qa" or "quitall" && _mode == BrowseMode.Edit)
                 {
                     // Leave Marbles (if the user wants that)
-                    if (ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false))
-                    {
-                        Tools.ExitApplication();
-                    }
-
+                    Jump.Exit();
                     Draw(true);
                     continue;
                 }
@@ -747,7 +785,15 @@ internal static partial class FileExplorer
         if (pane.MarksDirectory != pane.Directory) pane.Marks.Clear();
         pane.Marks.RemoveWhere(path => !File.Exists(path) && !Directory.Exists(path));
         pane.MarksDirectory = pane.Directory;
-        pane.Index = Math.Max(0, select == null ? 0 : items.FindIndex(i => i.Name == select || i.Path == select));
+        // The entry to select: by its name or path as written, else by a path as the file system compares them (a file
+        // opened by a name in other capitals, on Windows and macOS: on Linux they are other files)
+        var index = select == null ? 0 : items.FindIndex(i => i.Name == select || i.Path == select);
+        if (index < 0 && select != null && System.IO.Path.IsPathRooted(select))
+        {
+            index = items.FindIndex(i => FileOperations.SamePath(i.Path, select));
+        }
+
+        pane.Index = Math.Max(0, index);
         pane.Top = 0;
         return true;
     }

@@ -71,7 +71,7 @@ internal static partial class QuickGuide
         (Kind.Item, "V", Lang.T("Peek on/off: the file in the other pane, j/k the next")),
         (Kind.Text, "", ""),
         (Kind.Heading, "", Lang.T("Finding files again")),
-        (Kind.Item, "P", Lang.T("Add to/Remove from the favorites (*)")),
+        (Kind.Item, "P", Lang.T("Add to top of the favorites/Remove (*)")),
         (Kind.Item, "F", Lang.T("Show favorites")),
         (Kind.Item, "O", Lang.T("Show files opened before (file history)")),
         (Kind.Item, "B", Lang.T("Add the directory shown to the hotlist")),

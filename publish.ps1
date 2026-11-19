@@ -9,6 +9,8 @@
 # Windows and the portable version (Marbles-1.5.4-win-x64.zip), and a tar.gz for Linux and macOS
 # (Marbles-1.5.4-linux-x64.tar.gz), where the program is marked as one that can be run. Each has a folder "Marbles"
 # with the files in it. The language pack is Marbles-languages-1.5.4.zip
+# Last, Marbles-1.5.4-checksums.txt lists the SHA256 checksum of each archive of the release and of the language
+# pack, so a download can be checked: sha256sum -c (Linux), shasum -a 256 -c (macOS), or Get-FileHash (Windows)
 # The tests are run first (nothing is published when one fails), and the version must be the same in all the
 # places it is set: AssemblyVersion and FileVersion in Marbles.csproj, and DialogText.ApplicationVersion.
 # Usage:  ./publish.ps1                     (all versions)
@@ -144,6 +146,21 @@ foreach ($platform in $Platforms) {
     }
     if ($LASTEXITCODE -ne 0) { throw "Publishing $platform failed" }
     New-ReleaseArchive $platform $folder
+}
+
+# The SHA256 checksums of the files of the release of this version, one line each in the form sha256sum reads
+# ("<hash>  <name>", lowercase, LF), made again from the files there now (the file of an earlier version is removed)
+if (Test-Path $release) {
+    Get-ChildItem $release -Filter "Marbles-*-checksums.txt" -File | Remove-Item
+    $released = Get-ChildItem $release -File | Where-Object {
+        $_.Name -like "Marbles-$version-*" -or $_.Name -eq "Marbles-languages-$version.zip"
+    } | Sort-Object Name
+    $lines = $released | ForEach-Object { (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() + "  " + $_.Name }
+    if ($lines) {
+        $sums = Join-Path $release "Marbles-$version-checksums.txt"
+        [System.IO.File]::WriteAllText($sums, (($lines -join "`n") + "`n"), [System.Text.UTF8Encoding]::new($false))
+        Write-Host "Checksums: $sums"
+    }
 }
 
 Get-ChildItem $output -Recurse -File |

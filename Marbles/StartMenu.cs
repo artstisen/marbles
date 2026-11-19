@@ -206,6 +206,22 @@ internal static class StartMenu
                 if (Only != OnlyMode.Notes) return BrowseFiles() ? TabResult.Close : TabResult.Redraw;
                 Refused(DialogText.EditorNotUsed);
                 break;
+            case "favorites":
+            case "favs":
+            case "history":
+            case "hist":
+            case "hotlist":
+            case "hot":
+                // A list of the file browser alone (closing it returns here; not with Note Management only)
+                if (Only != OnlyMode.Notes)
+                {
+                    FileExplorer.RunList(JumpPages.ListPageOf(CommandLine.Name(command)) ?? "favorites");
+                    if (FileExplorer.DataFileSelected) return TabResult.Close;
+                    break;
+                }
+
+                Refused(DialogText.EditorNotUsed);
+                break;
             case "mode":
                 ShowPage(0);
                 break;
@@ -274,6 +290,21 @@ internal static class StartMenu
             case "log":
                 EventLog.Show();
                 break;
+            case "colorscheme":
+            case "colo":
+            {
+                // ":colorscheme name": another color scheme, the page drawn again in it (the page has no line for
+                // messages: a box tells the scheme in use, or that the name is not known)
+                var message = SchemeEditor.UseByCommand(CommandLine.Argument(command), out var used);
+                if (!used)
+                {
+                    _frame?.Redraw();
+                    ChoiceBox.Forget();
+                    ChoiceBox.Message(DialogText.CaptionsColorScheme, message, string.Empty);
+                }
+
+                break;
+            }
             case "restart":
                 ChangeSetting(Setting.Restart, true);
                 break;
@@ -284,12 +315,10 @@ internal static class StartMenu
             case "quit":
             case "exit":
             case "q":
+            case "qa":
+            case "quitall":
                 // As Q on the Mode tab: asked first
-                if (ChoiceBox.Confirm(DialogText.Exit, DialogText.ExitQuestion, string.Empty, false))
-                {
-                    Tools.ExitApplication();
-                }
-
+                Marbles.Jump.Exit();
                 break;
             default:
                 CommandLine.ShowUnknown(command);

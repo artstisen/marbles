@@ -205,7 +205,7 @@ internal static class JumpMenu
     {
         JumpKind.File or JumpKind.Directory => StartMenu.Only != StartMenu.OnlyMode.Notes,
         JumpKind.DataFile => StartMenu.Only != StartMenu.OnlyMode.Editor,
-        _ => true
+        _ => !JumpPages.IsFileBrowser(target.Target) || StartMenu.Only != StartMenu.OnlyMode.Notes
     };
 
     // The places of a tab
@@ -238,7 +238,7 @@ internal static class JumpMenu
                     }).ToList();
             case Tab.Configuration:
                 return JumpPages.Ids.Select(id => new Row(new JumpTarget(JumpKind.Page, id), DateTime.MinValue))
-                    .ToList();
+                    .Where(row => Usable(row.Target)).ToList();
             default:
                 return DataFiles().Select(path => new Row(new JumpTarget(JumpKind.DataFile, path), DateTime.MinValue))
                     .ToList();
@@ -1152,6 +1152,35 @@ internal static class JumpMenu
             return JumpToPage(CommandLine.Argument(command));
         }
 
+        if (CommandLine.Name(command) is "favorites" or "favs" or "history" or "hist" or "hotlist" or "hot" or "browse")
+        {
+            // The file browser, or one of its lists alone (the page is left)
+            return JumpToPage(Jump.PageOf(command));
+        }
+
+        if (CommandLine.Name(command) is "exit" or "qa" or "quitall")
+        {
+            // Leave Marbles (not while the page the menu was opened from has changes that are not saved)
+            Jump.Exit();
+            Tools.ClearScreen();
+            return false;
+        }
+
+        if (CommandLine.Name(command) == "log")
+        {
+            // The log, over the menu (as the help): the menu stays open
+            Jump.ShowLog();
+            return false;
+        }
+
+        if (CommandLine.Name(command) is "colorscheme" or "colo")
+        {
+            // ":colorscheme name": another color scheme, the menu drawn again in it
+            _message = SchemeEditor.UseByCommand(CommandLine.Argument(command), out _);
+            Tools.ClearScreen();
+            return false;
+        }
+
         if (command is "q" or "quit" or "close") return true;
         if (command is "recent")
         {
@@ -1262,6 +1291,13 @@ internal static class JumpMenu
         if (JumpPages.IdOf(argument) is not { } page)
         {
             _message = Lang.F("No page named {0}", argument);
+            return false;
+        }
+
+        if (!Usable(new JumpTarget(JumpKind.Page, page)))
+        {
+            // The file browser and its lists, with Note Management only
+            _message = DialogText.EditorNotUsed;
             return false;
         }
 

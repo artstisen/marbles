@@ -106,7 +106,18 @@ internal sealed class FolderList<T> where T : class, IFolderItem
     }
 
     /// <summary>
-    /// Move items into a folder (last in it, in the order they have in the list), or out of their folders
+    /// An item was put in the list at this place (a favorite added at the top): what was removed last and had a place
+    /// at it or after it goes back one place further on
+    /// </summary>
+    internal void Inserted(int index)
+    {
+        if (_removed == null) return;
+        _removed = _removed.Select(part => (part.Index >= index ? part.Index + 1 : part.Index, part.Items)).ToList();
+    }
+
+    /// <summary>
+    /// Move items into a folder (at the top of it, in the order they have in the list, where they are seen at once), or
+    /// out of their folders
     /// </summary>
     /// <param name="items">The items</param>
     /// <param name="folder">The folder, or null to place them last in the list, outside the folders</param>
@@ -120,7 +131,7 @@ internal sealed class FolderList<T> where T : class, IFolderItem
         var index = Items.Count;
         if (folder != null)
         {
-            index = FolderEnd(Items.IndexOf(folder)) + 1;
+            index = Items.IndexOf(folder) + 1;
             // Opened, so that what was moved into it can be seen
             folder.Collapsed = false;
         }
