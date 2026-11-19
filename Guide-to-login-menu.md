@@ -25,14 +25,14 @@ The settings are on five pages, so they can be changed in one place without logg
 - **Show choices on startup**: Show the Mode tab of the start page
 - **Start in Note Management** (the default): Go directly to the login page
 - **Start in Text Editor (file browser)**: Go directly to the file browser
-  - **Open the favorites list first** (shown when starting in the Text Editor): Start in the [favorites](#favorites) of the file browser. Closing the list shows the file browser. Saved as `startfavorites` in the settings file
+  - **Open favorites list first** (shown when starting in the Text Editor): Start in the [favorites](#favorites) of the file browser. Closing the list shows the file browser. Saved as `startfavorites` in the settings file
   - The choice is saved as `startmode` (`select`, `notes` or `editor`) in the settings file, and `:defaults` in the main menu sets it back to starting in Note Management. A settings file without `startmode` starts in Note Management, and one written by Marbles 1.5.3 or earlier keeps the choice it has (`select` shows the choices)
 - **Stay logged into data file (Session)**: Off from the start. Normally, going from your notes to something else logs you out of the data file: opening a text file in the file browser, or a jump to a file, a directory or a page of Configuration. The notes are cleared from memory and the password is asked for again. With this on, the data file stays open until you log out yourself (Logout in the main menu, `:logout` in the file browser), choose another data file, or exit Marbles: text files are edited, the file browser and the pages of Configuration are used, and the data file main menu comes back afterwards without the password. The string memory is kept too, so text yanked in a note can be put in a text file (and the other way round). The notes are in memory, decrypted, while you work on files, so anyone at your computer can open them: use it on a computer only you use. Saved as `stayloggedin` in the settings file. Not shown with _Text Editor only_
 - **Text Editor only** and **Note Management only**: Use this Marbles for one of the two modes only. They are for running two copies of Marbles in separate directories, one as a text editor and one for notes. Only one of them can be set (setting one clears the other, and setting it again turns it off)
   - _Text Editor only_: _Note Management_ is not shown in the Mode tab, and the file browser does not open data files (`.mbls`): it says so on its bottom line
   - _Note Management only_: _Text Editor/File Management_ is not shown in the Mode tab
 - **Delete to trash (:trash in file browser)**: Deleting in the file browser, and a data file on the login page, moves to the trash (`trash` in the data directory) instead of deleting for good (on from the start; setting `deletetotrash`). See [Managing files](#managing-files)
-- **List the commands above the command line**: While a command is typed (after `:`), a box above the command line lists the commands of the page, narrowed while you type, with what the command typed does (on from the start). See [the command line](Guide-to-main-menu.md). Saved as `commandlist` in the settings file
+- **List commands above command line**: While a command is typed (after `:`), a box above the command line lists the commands of the page, narrowed while you type, with what the command typed does (on from the start). See [the command line](Guide-to-main-menu.md). Saved as `commandlist` in the settings file
   - The choices of the Mode tab are numbered as they are shown (`1` to `4`), and starting in the mode that is not used cannot be chosen (if it was chosen, the choices are shown at startup)
   - Saved as `onlymode` (`none`, `editor` or `notes`) in the settings file. _Reset all settings_ and `:defaults` turn both off
 - **Language**: The language of the menus, help and messages. English is built in; Dansk (Danish), Deutsch (German), Norsk bokmål (Norwegian), Svenska (Swedish), Español (Spanish), Français (French), Italiano (Italian), Polski (Polish), Nederlands (Dutch) and Suomi (Finnish) are language files in the folder `lang` next to Marbles (see [Language files](Guide-to-installation.md#language-files)). `Enter` shows the languages in a box to pick from (`1` to `9` pick the first nine at once, and letters the ones after them); each language shows how much of its file is translated (`Polski (pl)  98%`). Commands, keys and the names of the editor modes (NORMAL, INSERT, VISUAL ...) are English in all languages, so they can be talked about the same way everywhere. The guides, the settings file and the log are in English
@@ -72,7 +72,7 @@ The settings are on five pages, so they can be changed in one place without logg
 - **Edit settings.ini**: Open the settings file in the editor (it can also be edited from the file system). When the file is saved, Marbles starts over and reads the settings again; closing it without saving returns to the page
 - **Restart Marbles**: Start Marbles over: the settings are read again and the start page is shown as at startup (you are asked first, in a box)
 - **Info**: Show the version of Marbles, the directory of the program, the data directory and the settings file in a box. Any key closes it
-- **View log**: Show the [log](#the-log)
+- **View log**: Show the [log](#log)
 
 ### Commands
 On every tab of the start page (Mode, the pages of Configuration, Help), `:` opens the command line on the bottom line. `Tab` completes the command you are typing, from the commands of this page, and `Up`/`Down` bring back commands given here before:
@@ -253,7 +253,7 @@ In the list of favorites:
 - `l` or `Enter` Open the file in the editor (closing the editor returns to the list). A directory: go to it in the browser
 - `B` or `:goto` Show the file in the browser: its directory is opened with the file selected, where it can be renamed, copied, moved or deleted
 - `V` Move the selected favorite or folder: it is marked `<>` and highlighted, and follows `j` `k` up and down the list until you press `Esc` (or `Enter`, `V`); `3j` moves it 3 steps
-- `C` or `:color` Pick a text color for the favorite from the list of 16 colors (a letter picks one at once: `A` Black ... `U` White, `X` _[Default]_; see the [list of colors](Guide-to-main-menu.md#the-list-of-colors))
+- `C` or `:color` Pick a text color for the favorite from the list of 16 colors (a letter picks one at once: `A` Black ... `U` White, `X` _[Default]_; see the [list of colors](Guide-to-main-menu.md#list-of-colors))
 - `P`, `D` or `:remove` Remove it from the favorites (the file itself stays where it is)
 - `u` or `:undo` Put back the favorite, or the folder with its favorites, that was removed last
 - `A` or `:folder name` Create a folder (see below)
@@ -325,7 +325,7 @@ The hotlist holds at most 100 directories. A directory that is gone is shown as 
 ### Where the cursor was
 When a file is closed in the editor, the line and column of the cursor are kept: in the history, and in the favorites if the file is one. The next time the file is opened, the cursor is placed there, so you go on where you left off; entries of a data file work the same way. The favorites are looked in first, as the history holds only the last 100 files. If the file has changed since and the line or column is no longer there, the cursor goes to the end of the line or of the text. A file opened from the results of a [search](#searching-for-files) is opened at the line found instead.
 
-## The log
+## Log
 The log lists what has happened since Marbles was started: the startup, logins, commands, and the file operations of the file browser (new, open, rename, copy, move and delete, with the reason if one failed). It is shown from the Configuration tab of the Select mode page (_View log_).
 
 - The log opens at the end, with the latest lines

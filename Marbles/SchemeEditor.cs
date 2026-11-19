@@ -791,17 +791,17 @@ internal static class SchemeEditor
             return item switch
             {
                 ColorItem.TabFrames or ColorItem.BoxBorders or ColorItem.LineNumbers or ColorItem.CommandHints =>
-                    Lang.T("[Default]: the dividers"),
-                ColorItem.TabCorner => Lang.T("[Default]: the tab frames"),
+                    Lang.T("[Default]: dividers"),
+                ColorItem.TabCorner => Lang.T("[Default]: tab frames"),
                 ColorItem.TabShown or ColorItem.OtherTabs or ColorItem.KeyHints or ColorItem.CurrentLineNumber
-                    or ColorItem.FrameText or ColorItem.CommandBoxText => Lang.T("[Default]: the text"),
-                ColorItem.CommandBorders or ColorItem.BoxCorner => Lang.T("[Default]: the box borders"),
-                ColorItem.CommandCorner => Lang.T("[Default]: the command box borders"),
-                ColorItem.BoxText => Lang.T("[Default]: the tab text"),
+                    or ColorItem.FrameText or ColorItem.CommandBoxText => Lang.T("[Default]: text"),
+                ColorItem.CommandBorders or ColorItem.BoxCorner => Lang.T("[Default]: box borders"),
+                ColorItem.CommandCorner => Lang.T("[Default]: command box borders"),
+                ColorItem.BoxText => Lang.T("[Default]: tab text"),
                 ColorItem.BoxTitle or ColorItem.BoxTitleText =>
                     Lang.F("[Default]: {0}", ColorPicker.Name(Preview.Shown(item))),
                 ColorItem.CommandBox => DialogText.ColorDefault,
-                ColorItem.CommandTyped => Lang.T("[Default]: the accent"),
+                ColorItem.CommandTyped => Lang.T("[Default]: accent"),
                 // One of a pair, when the other has a color of its own: the color it has
                 >= ColorItem.CommandLine and <= ColorItem.CommandErrorText =>
                     Lang.F("[Default]: {0}", ColorPicker.Name(Preview.Shown(item))),
@@ -813,23 +813,23 @@ internal static class SchemeEditor
 
         if (group.Color == ColorItem.Unsaved && Preview.Unsaved == null && Preview.UnsavedText == null)
         {
-            return Lang.T("[Default]: the text inverted");
+            return Lang.T("[Default]: text inverted");
         }
 
         if (group.Color == ColorItem.Tab && Preview.Tab == null && Preview.TabText == null)
         {
-            return Lang.T("[Default]: Tab focus on the tab frames");
+            return Lang.T("[Default]: Tab focus on tab frames");
         }
 
         // The pairs of the boxes that have no colors of their own: what they follow
         if (group.Color == ColorItem.BoxBackground && Preview.BoxBackground == null && Preview.BoxText == null)
         {
-            return Lang.T("[Default]: the tab text");
+            return Lang.T("[Default]: tab text");
         }
 
         if (group.Color == ColorItem.BoxTitle && Preview.BoxTitle == null && Preview.BoxTitleText == null)
         {
-            return Lang.T("[Default]: the tab highlight");
+            return Lang.T("[Default]: tab highlight");
         }
 
         // The pairs of the command line that have no colors of their own: what they follow
@@ -838,9 +838,9 @@ internal static class SchemeEditor
         {
             switch (group.Color)
             {
-                case ColorItem.CommandLine: return Lang.T("[Default]: the highlight");
-                case ColorItem.CommandBox: return Lang.T("[Default]: the text on the background");
-                case ColorItem.CommandWhole: return Lang.T("[Default]: the selector");
+                case ColorItem.CommandLine: return Lang.T("[Default]: highlight");
+                case ColorItem.CommandBox: return Lang.T("[Default]: text on background");
+                case ColorItem.CommandWhole: return Lang.T("[Default]: selector");
                 case ColorItem.CommandError: return Lang.T("[Default]: attention");
             }
         }
@@ -1024,7 +1024,7 @@ internal static class SchemeEditor
         Tools.SetCursorEx(top + 4, left + 1);
         Part(ConsoleColors.ColorPreset.KeyHintInverted, " " + Lang.T("Key") + " ");
         Part(ConsoleColors.ColorPreset.KeyHint, " " + Lang.T("Key hints"));
-        Part(ConsoleColors.ColorPreset.Normal, "  " + Lang.T("Text on the background") + "  ");
+        Part(ConsoleColors.ColorPreset.Normal, "  " + Lang.T("Text on background") + "  ");
         Part(ConsoleColors.ColorPreset.UnsavedInverted, DialogText.SavIndicator);
 
         // Two lines of the editor: the line numbers (the second is the line of the cursor) and colored text

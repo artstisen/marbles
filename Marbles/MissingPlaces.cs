@@ -98,7 +98,7 @@ internal static class MissingPlaces
         var rows = missing.Select(entry => entry.Name).ToList();
         return PickListBox.Show(Lang.F("Missing ({0})", missing.Count), rows,
             i => missing[i].Path + "\n" + (missing[i].AbsentDrive
-                ? Lang.T("Its drive is not connected: :prune keeps it")
+                ? Lang.T("The drive is not connected: :prune keeps it")
                 : Lang.T(":prune removes it from the list")), 0,
             Lang.T("j/k Select | Enter Show in list | / Filter | Esc Close"));
     }
@@ -112,7 +112,7 @@ internal static class MissingPlaces
     /// <param name="undo">True when u puts them back</param>
     internal static bool Confirm(string caption, int count, int kept, bool undo)
     {
-        var note = Lang.T("Their files and directories are not there any more.");
+        var note = Lang.T("The files and directories are not there any more.");
         if (kept > 0) note += " " + Lang.F("Kept, on drives that are not connected: {0}.", kept);
         if (undo) note += " " + Lang.T("u puts them back.");
         ChoiceBox.Forget();
@@ -122,7 +122,7 @@ internal static class MissingPlaces
     /// <summary>
     /// The message when nothing is missing (":missing")
     /// </summary>
-    internal static string NothingMissing => Lang.T("Nothing is missing: all the files and directories are there");
+    internal static string NothingMissing => Lang.T("Nothing is missing: all files and directories are there");
 
     /// <summary>
     /// The message when nothing is pruned: nothing is missing, or only on drives that are not connected

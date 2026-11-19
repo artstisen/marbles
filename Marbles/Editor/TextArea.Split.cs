@@ -61,7 +61,7 @@ public partial class TextArea
             ShownCells = new int[_height]
         };
         RedrawAll();
-        _engine.SetMessage(Lang.T("Tab: the other pane, :only: one pane"), false);
+        _engine.SetMessage(Lang.T("Tab: other pane, :only: one pane"), false);
     }
 
     /// <summary>

@@ -20,13 +20,13 @@ Download the latest Marbles archive for your platform from the [releases page](h
 
 On Linux and macOS, unpack it with ```tar -xzf Marbles-1.5.4-linux-x64.tar.gz``` (with the name of the file you downloaded): the program can then be run as it is.
 
-### The single file
+### Single file
 Open your favorite terminal, go to the Marbles directory and start the program:
 
 - **Windows**: type ```Marbles.exe``` (or ```.\Marbles.exe``` in PowerShell)
 - **Linux and macOS**: type ```./Marbles``` (Linux and macOS are case sensitive). If it was not unpacked with `tar` (some programs leave out that it can be run), make it executable once with ```chmod +x Marbles```. On macOS the program is not signed: if macOS refuses to open it, allow it once with ```xattr -d com.apple.quarantine Marbles```
 
-### The portable version
+### Portable version
 Unzip `Marbles-1.5.4-portable.zip`: its folder _Marbles_ has _Marbles.dll_, _Marbles.deps.json_, _Marbles.runtimeconfig.json_ and the folder _lang_. Open your favorite terminal, go to the Marbles directory and type ```dotnet Marbles.dll``` (Linux and macOS are case sensitive).
 
 ## Install .NET

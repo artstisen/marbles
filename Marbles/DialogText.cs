@@ -543,7 +543,7 @@ internal static class DialogText
     public static string BookNotInThisMode => Lang.T("This bookmark is not used in this mode of Marbles");
     public static string BookmarksEmpty => Lang.T("No bookmarks yet: B on a list, or :bookmark");
     public static string BookmarkRename => Lang.T("Name of the bookmark");
-    public static string BookmarkRenameNote => Lang.T("The place keeps its name (empty: its name is shown)");
+    public static string BookmarkRenameNote => Lang.T("The place is not renamed (empty: its name is shown)");
     public static string BookmarksClearNote => Lang.T("The places themselves stay.");
     public static string BookmarksCleared => Lang.T("The bookmarks are cleared");
     public static string BookmarkNoteNotKept => Lang.T("A note is not bookmarked: B on its data file in the Jump menu");
@@ -608,7 +608,7 @@ internal static class DialogText
     public static string NotLoggedIn => Lang.T("Not logged into a data file");
     public static string FavoriteFolderNoPath => Lang.T("A folder of favorites has no path (:name copies its name)");
     public static string HotlistRename => Lang.T("Name in the hotlist");
-    public static string HotlistRenameNote => Lang.T("The directory keeps its name (empty: its name is shown)");
+    public static string HotlistRenameNote => Lang.T("The directory is not renamed (empty: its name is shown)");
     public static string HotlistCleared => Lang.T("The hotlist is cleared");
     public static string HotlistClearNote => Lang.T("The directories themselves stay.");
     public static string HistoryKeys => Lang.T("Enter Open | B Show | P Fave | D Remove | X Clear | / Filter | Esc Close");

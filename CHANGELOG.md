@@ -1,5 +1,8 @@
 # Changes
 
+## v1.5.5
+- **Shorter texts**: labels, settings, key hints and help rows leave out "the" where they read well without it (_List commands above command line_, _First/last page_, _[Default]: text_), and say "new scheme" and "a color for each row" instead of "a scheme of your own" and "a color of its own". The translations are unchanged. The headings _Single file_, _Portable version_, _Log_ and _List of colors_ in the guides are shorter too (links to them follow).
+
 ## v1.5.4
 - **Fixes from a review before the release**:
   - **`:diff` in a note** is note text: a yank in the comparison goes to the clipboard and the paste bin only when copying from notes is allowed (_Also from the notes of a data file_), as in the note itself, and `:w name` is refused (it wrote the title and the changed lines unencrypted into the data directory)

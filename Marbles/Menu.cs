@@ -285,7 +285,7 @@ internal static class Menu
                 new(":language", "[" + Lang.Current + "] " + Lang.T("Language"), ":language"),
                 new(":number", Check(TextArea.LineNumbers) + " " + Lang.T("Line numbers"), ":number"),
                 new(":size", Lang.T("Size") + " " + Init.GetOutputDimensions(), ":size"),
-                new(":size auto", Check(Init.AutoSize) + " " + Lang.T("Follow the window"), ":size auto"),
+                new(":size auto", Check(Init.AutoSize) + " " + Lang.T("Follow window"), ":size auto"),
                 new(":clipboard", Lang.T("Clipboard"), ":clipboard")
             },
             _ => new MenuItem[]

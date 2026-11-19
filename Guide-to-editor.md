@@ -134,7 +134,7 @@ Spell checking is off until you ask for it. It uses the spell files of Vim and N
 
 - `:spell` Check the text and mark misspelled words. The bottom line tells how many were found. When words are marked already, `:spell` removes the marks (as `:nospell`). `:set spell` only turns checking on
 - `:spell da,en` As above, with Danish and English. The languages are remembered (`spelllang` in the settings file)
-- `:nospell` Remove the marks
+- `:nospell` Remove marks
 - `]s` `[s` (or `gs` `gS`, or `:spellnext` `:spellprev`) Go to the next/previous misspelled word. `gs` and `gS` are for keyboards where `[` and `]` take more than one key (Danish, German ...)
 - `z=` (or `:suggest`) Show suggestions for the word under the cursor. Press the number of a suggestion (or select it with `j` `k` and press `Enter`) to replace the word, `a` to add the word to your word list, or `Esc` to close
 - `zg` (or `:spelladd`) Add the word under the cursor to your word list

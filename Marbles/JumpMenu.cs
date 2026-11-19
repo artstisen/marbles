@@ -1114,7 +1114,7 @@ internal static class JumpMenu
         if (Bookmarks.Items.Count == 0) return;
         ChoiceBox.Forget();
         if (!ChoiceBox.Confirm(Lang.T("Bookmarks"),
-                Lang.F("Remove all the bookmarks ({0})?", Bookmarks.Places.Count), DialogText.BookmarksClearNote, true))
+                Lang.F("Remove all bookmarks ({0})?", Bookmarks.Places.Count), DialogText.BookmarksClearNote, true))
         {
             return;
         }

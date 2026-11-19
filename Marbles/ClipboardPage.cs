@@ -31,16 +31,16 @@ internal static class ClipboardPage
         const string indent = "    ";
         return row switch
         {
-            Row.Osc52 => Check(SystemClipboard.Osc52) + Lang.T("Copy to the system clipboard (OSC 52)"),
-            Row.PasteBin => Check(SystemClipboard.PasteBin) + Lang.T("Copy to the paste bin file"),
+            Row.Osc52 => Check(SystemClipboard.Osc52) + Lang.T("Copy to system clipboard (OSC 52)"),
+            Row.PasteBin => Check(SystemClipboard.PasteBin) + Lang.T("Copy to paste bin file"),
             Row.When => indent + (SystemClipboard.EveryYank
                 ? Lang.T("Copied: every yank (h/l: only with \"+y)")
                 : Lang.T("Copied: only with \"+y (h/l: every yank)")),
             Row.FromNotes => Check(SystemClipboard.FromNotes) + Lang.T("Also from the notes of a data file"),
             Row.File => indent + Lang.F("Paste bin file: {0}", SystemClipboard.PasteBinFile),
             Row.Append => indent + (SystemClipboard.PasteBinAppend
-                ? Lang.T("Paste bin: add to the end")
-                : Lang.T("Paste bin: replace the text")),
+                ? Lang.T("Paste bin: add to end")
+                : Lang.T("Paste bin: replace text")),
             _ => indent + Lang.T("Empty the paste bin")
         };
     }

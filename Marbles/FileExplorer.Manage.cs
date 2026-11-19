@@ -218,7 +218,7 @@ internal static partial class FileExplorer
             case "on":
                 Unprotected = false;
                 EventLog.Add(DialogText.LogFile + "Protection of Marbles' files: on");
-                _message = Lang.T("Marbles' own files are protected again");
+                _message = Lang.T("Marbles' files are protected again");
                 break;
             default:
                 _message = Unprotected

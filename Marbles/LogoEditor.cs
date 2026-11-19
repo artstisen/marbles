@@ -272,7 +272,7 @@ internal static class LogoEditor
             }
             else
             {
-                ColorLine(area, 4, Lang.T("Color of the cell:"), null, Lang.T("[Default]: the row color"));
+                ColorLine(area, 4, Lang.T("Color of the cell:"), null, Lang.T("[Default]: row color"));
             }
         }
 
@@ -477,7 +477,7 @@ internal static class LogoEditor
                     {
                         // All the rows: one color for all of them, or [Default] for the color of the logo
                         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Divider);
-                        Console.Write(Tools.TruncateString(Lang.T("Pick one color for all the rows ([Default]: reset)"),
+                        Console.Write(Tools.TruncateString(Lang.T("Pick one color for all rows ([Default]: reset)"),
                             Math.Max(0, area.Left + area.Width - Console.CursorLeft), true));
                         ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
                         continue;
@@ -488,7 +488,7 @@ internal static class LogoEditor
                     else ConsoleColors.SetColors(ConsoleColors.ColorPreset.HeaderColor);
                     Console.Write(sample);
                     ConsoleColors.SetColors(ConsoleColors.ColorPreset.Normal);
-                    Console.Write("  " + (color is { } named ? ColorPicker.Name(named) : Lang.T("[Default]: the logo color")));
+                    Console.Write("  " + (color is { } named ? ColorPicker.Name(named) : Lang.T("[Default]: logo color")));
                 }
 
                 _shown = -1;
