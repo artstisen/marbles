@@ -7,7 +7,7 @@ The same keys are used everywhere in Marbles:
 - `gg` `G` First/Last (menu page, entry in a list, or top/end of a text)
 - `/` Search
 - `?` Help: the list of keys. The help is shown in pages (`h` `l` previous/next page, `j` `k` one line) and can be searched: `/text` goes to the first line containing "text", and `n` `N` to the next/previous. The help shows the keys of the page you are on (start page, login page, menus and lists, file browser, favorites or editor); press `?` in the help to see all keys, and `?` again to return to the keys of the page
-- `:browse` Open the [file browser](Guide-to-login-menu.md#file-browser) to edit text files. Opening a file logs out of the data file
+- `:browse` Open the [file browser](Guide-to-login-menu.md#file-browser) to edit text files. Opening a file logs out of the data file (unless you stay logged into it, see [On every command line](#on-every-command-line))
 - `Ctrl+O` or `:jump` (`:ju`, `:jmp`) Open the [Jump menu](#jump-menu), to go straight to a file, a page of Marbles or a data file
 - `Ctrl+K` or `:recent` The latest files you opened: a small box with the 9 newest files of the [file history](Guide-to-login-menu.md#file-history), newest first, each with the folder it is in. `j` `k` select, `Enter` opens the selected file and `1` to `9` the file of that number, `Esc` closes the box. A text file opens in the editor where you left it; a data file is selected on the login page. A file that is gone is dimmed. Notes are never in it: they are not files. Opening one leaves the data file as a jump does (it stays open with **Stay logged into data file (Session)**). Also in the lists of entries
 - `:` Command line: type a command and press `Enter`. Commands are shown in the menus
@@ -23,7 +23,9 @@ The same keys are used everywhere in Marbles:
 Notes are saved in the data file after each change. When the same data file is open in two windows (or programs) and the other one has saved it since you logged in, you are asked before saving: **Save anyway** replaces the changes made there; **Do not save** keeps them (log out and in again to see them; the change made here is not saved).
 
 ## On every command line
-These commands work on every command line: the start page, the main menu, the lists of entries, the file browser and its lists (favorites, history, hotlist, search results), the Jump menu and the editor.
+These commands work on every command line: the start page, the main menu, the lists of entries, the file browser and its lists (favorites, history, hotlist, search results), the Jump menu and the editor. (Not when the file browser is opened to pick a file or a directory, as for `:import` or the backup directory.)
+
+**Do they log you out of a data file?** `:log` and `:colorscheme` do not: you stay on the page you are on. `:exit` closes Marbles, and the data file with it. `:favorites`, `:history` and `:hotlist` leave the main menu and the lists of entries as a jump does, so you are logged out, unless **Stay logged into data file (Session)** is on (Configuration, General). `:browse` in the main menu and the lists of entries opens the file browser on top of the menu: you are logged out only when you open a file there (and not with the session kept).
 
 - `:exit` (or `:qa`, `:quitall`) Exit Marbles, after asking. In the editor, changes that are not saved are asked about first (save, discard, or `Esc` to stay in the editor). On a page opened on top of the editor (the Jump menu opened from it) Marbles is not left while the editor has changes that are not saved: a box tells you to close the page and save or discard them there first. The same goes for a jump that leaves a page opened on top of the editor (`:jump snippets`, then `:browse`)
 - `:log` The [log](Guide-to-login-menu.md#log), on top of the page you are on; closing it returns there
@@ -56,7 +58,7 @@ The rows of the Bookmarks tab and of the History, Favorites and Hotlist tabs can
 - `Enter` Jump to the selected place
 - `B` Bookmark the selected place (on any list)
 - `I` Information about the place: its name, kind and full path, whether it is there, and when it was jumped to or opened
-- `D` Take the place out of the jump history (on the Jumps tab)
+- `D` Take the place out of the jump history (on the Recent tab)
 - `:` A command (see the Bookmarks tab below)
 - `:path` Copy the full path of the selected file, directory or data file, and `:name` the name (the name of the file or directory itself, also when a bookmark or a directory of the hotlist is shown with another name), as in the file browser: to the system clipboard and/or the paste bin, as set, and to the string memory (so `p` in the editor puts it in). On every tab; a page of Marbles and a folder of bookmarks have neither
 - `Ctrl+K` (or `:recent`) The latest files you opened, in a box over the menu: the file picked is opened (as a jump from the menu), and `Esc` goes back to the menu. The file being edited is left out
@@ -100,12 +102,12 @@ Where a jump goes:
 
 - **A file** is opened in the editor (where the cursor was the last time), with the file browser in its directory behind it. Closing the browser shows the Select mode page
 - **A directory** is shown in the file browser
-- **A page of Configuration** (on the Pages tab) opens the Select mode page on that page
+- **A page of Configuration** (on the Marbles tab) opens the Select mode page on that page
 - **The file browser and its lists** (`favorites`, `history`, `hotlist`, `browse`) are shown alone; closing them shows the Select mode page
 - **A data file** is selected on the login page
 - **Color schemes, Logos, Clipboard, Snippet editor, Completions editor, Log review, Help and About** open on top of the page you jumped from; closing them returns there
 
-When you jump from the editor and the text has changes that are not saved, you are asked whether to save them first (`Esc` stays in the editor). A jump to a file, directory, Configuration page, the file browser (or one of its lists) or data file from a data file you are logged in to logs you out of it first. With **Stay logged into data file (Session)** on (Configuration, General) you stay logged in: only a jump to another data file logs you out, and the data file main menu comes back when you close the file browser (or its list) or the Configuration pages. With _Text Editor only_ the Data tab is not shown, and with _Note Management only_ the Files, Favorites and Hotlist tabs are not.
+When you jump from the editor and the text has changes that are not saved, you are asked whether to save them first (`Esc` stays in the editor). A jump to a file, directory, Configuration page, the file browser (or one of its lists) or data file from a data file you are logged in to logs you out of it first. With **Stay logged into data file (Session)** on (Configuration, General) you stay logged in: only a jump to another data file logs you out, and the data file main menu comes back when you close the file browser (or its list) or the Configuration pages. With _Text Editor only_ the Data files tab is not shown, and with _Note Management only_ the File browser tab (History, Favorites and Hotlist) is not.
 
 Jumps are kept in the file `jump.txt` in the data directory, one line for each place (at most 100): the time, a tab character, the kind (`file`, `dir`, `page` or `data`), a tab character and the place (the path of a file or directory, the name of a page such as `config/editor`, or the path of a data file in the data directory such as `notes/work.mbls`). Like the file history it is not encrypted, and it holds no titles or text of notes.
 

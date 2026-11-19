@@ -22,9 +22,9 @@ Screenshots are of the real program, made with [tools/screenshots.py](tools/scre
 - Handles large notes and data files with thousands of notes
 
 **Written with Vim keys**
-- Normal, Insert and Visual modes (also block selection), counts, text objects, registers and undo
+- Normal, Insert and Visual modes (also block selection), counts, text objects, registers, and undo with an edit history (`:changes`)
 - Spell checking, word completion, and search and replace with regular expressions
-- Split view, syntax highlighting (Markdown and code), snippets and macros
+- Split view, Zen mode (only the text, the mode, the name and the line), syntax highlighting (Markdown and code), snippets and macros
 - The same keys everywhere: `h` `j` `k` `l` to move, `/` to search, `?` for help and `:` for commands
 
 **At home in any terminal**
@@ -36,12 +36,13 @@ Screenshots are of the real program, made with [tools/screenshots.py](tools/scre
 **Also for files**
 - A file browser with two panes for ordinary text files, edited with the same editor, and for managing files and directories
 - The Jump menu (`Ctrl+O`) goes to bookmarks, recent places, files and data files in a few keys
+- `:format` formats HTML, CSS and XML files, and `marbles +12 notes.md` opens a file at a line
 
 ## Getting started
-1. Download the build for your platform from the [releases page](https://github.com/artstisen/marbles/releases), and unzip it into a directory of your choice.
+1. Download the build for your platform from the [releases page](https://github.com/artstisen/marbles/releases), and unzip it into a directory of your choice. The checksums file there lets you [check the download](Guide-to-installation.md#check-the-download).
 2. Start `Marbles` (or `Marbles.exe` on Windows) in your terminal.
 3. Marbles starts in **Note Management**, at the login page of your data file. The first time, you create the password of your data file. Keep it safe: your notes cannot be recovered without it.
-4. Press `?` on any page to see its keys, or open the Quick guide from the start page.
+4. Press `?` on any page to see the keys of that page, or open the Quick guide from the start page.
 
 See the [guide to installation](Guide-to-installation.md) for builds and details.
 
@@ -92,12 +93,12 @@ Inside Marbles, press `?` for a list of keys.
 | | |
 |---|---|
 | Supported platforms | Windows, Linux and macOS |
-| Requirements | None for single-file builds (the .NET runtime is included); the portable build needs the .NET 10 runtime |
+| Requirements | None for single-file builds (the .NET runtime is included); the portable build needs the .NET 10 runtime. A terminal window of at least 80 columns and 24 rows |
 | Application type | Text mode |
 | Core code base | Agnostic: no OS-specific logic, .NET handles differences between platforms |
 | Box drawing | Classic ASCII |
 | Console I/O encoding | UTF-8 |
-| Languages | English built in; Danish, German, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (commands and keys are the same in all languages). Language files are also a separate download on the releases page (`Marbles-languages-1.5.4.zip`) |
+| Languages | English built in; Danish, German, Norwegian (bokmål), Swedish, Spanish, French, Italian, Polish, Dutch and Finnish as language files that can be changed, and more can be added (commands and keys are the same in all languages). Language files are also a separate download on the releases page (`Marbles-languages-1.5.5.zip`) |
 | Date/time format | ISO 8601 |
 | File encryption | AES-256-GCM, with the key derived from the password using PBKDF2-HMAC-SHA256 |
 | Software license | [MIT](LICENSE) |
